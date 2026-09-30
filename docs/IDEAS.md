@@ -8,3 +8,7 @@
 - Show running cost per conversation
 - Keyboard-first command palette
 - Export a conversation to Markdown
+- Render Markdown in replies (code blocks, lists), with a sanitising renderer (see D-009)
+- Copy button on each message
+- Retry / regenerate the last reply
+- Automated tests for `useChat` (needs a test runner; none is set up, see D-007)

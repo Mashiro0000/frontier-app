@@ -33,3 +33,26 @@ Status: accepted.
 ## D-006 - No secrets in the repo
 
 No API keys, no `.env` files, no pushing to a remote during Stage 0. Status: accepted.
+
+## D-007 - Chat UI is plain React and one stylesheet
+
+No UI kit, state library, Markdown renderer or test framework in Stage 1; `useState` and one hook
+were enough. Each dependency is something to audit, and this app will hold API keys. Status:
+accepted. Revisit: when state is shared across several screens (Stage 2 settings), when Markdown is
+needed, or when automated UI tests are wanted (none exist; Stage 1 was checked by driving the real app).
+
+## D-008 - Replies come from a `ReplyFn`; the echo implements it in the renderer for now
+
+`ReplyFn` is `(history, AbortSignal) => AsyncIterable<string>` (see `chat/types.ts`). Real providers
+stream and can be cancelled, so the UI is built around that, and the echo streams and stops like a
+real one. Keeping the echo in the renderer adds no IPC surface in Stage 1. Status: accepted for
+Stage 1. Revisit: in Stage 2 the implementation moves to the main process behind IPC (keys and
+network stay in main). `ReplyFn`, `useChat` and the components should not need to change. Decide
+then what history to send: `useChat` currently passes every message, including stopped, failed and
+empty replies.
+
+## D-009 - Message text is plain text only
+
+React escapes text, so pasted HTML cannot run; checked with an `<img onerror>` message. Markdown or
+HTML from a model is a bigger risk, and the window still has `sandbox: false` (D-004). Status:
+accepted. Revisit: before adding Markdown, settle D-004 and use a sanitising renderer.
