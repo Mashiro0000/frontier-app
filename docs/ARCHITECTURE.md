@@ -64,6 +64,13 @@ main needs them, move `types.ts` to `src/shared` and add `src/shared` to the `in
   `npm run start` builds, then runs the production build from `out/`.
 - Config lives in `electron.vite.config.ts`; TypeScript is split into `tsconfig.node.json`
   (main and preload) and `tsconfig.web.json` (renderer).
+- The app runs on Electron 44 (D-003). electron-vite 5.0.0 only knows Electron up to 39 and would
+  silently build for Node 16 / Chrome 108, so `electron.vite.config.ts` sets the build targets by
+  hand. Update them whenever Electron is upgraded; the comment there says how to read the real values.
+- Electron 42+ does not download its program during `npm install`. `postinstall` runs
+  `install-electron` (about 150 MB the first time, cached afterwards) and then
+  `electron-builder install-app-deps`. Only a plain `npm install` runs `postinstall`; adding package
+  names to the command skips it. Run `npm run postinstall` if `npm run dev` says "Electron uninstall".
 
 ## Registry
 

@@ -3,10 +3,11 @@
 This file explains, in plain words, every command that was run to build Frontier App, one stage at
 a time, and why. It is written for someone new to Electron and the command line.
 
-| Stage       | What you get                                                                                          | Status |
-| ----------- | ----------------------------------------------------------------------------------------------------- | ------ |
-| 0 - Shell   | `npm run dev` opens a window titled "Frontier App" that shows the words "Frontier App". Nothing else. | done   |
-| 1 - Chat UI | The window is a chat. Type a message, press Enter, and an echo of it streams back. No AI model yet.   | done   |
+| Stage        | What you get                                                                                           | Status      |
+| ------------ | ------------------------------------------------------------------------------------------------------ | ----------- |
+| 0 - Shell    | `npm run dev` opens a window titled "Frontier App" that shows the words "Frontier App". Nothing else.  | done        |
+| 1 - Chat UI  | The window is a chat. Type a message, press Enter, and an echo of it streams back. No AI model yet.    | done        |
+| 2 - Provider | A real model answers in the chat, using your own API key. (Work in progress: see the Stage 2 section.) | in progress |
 
 **To run it yourself** (from this folder):
 
@@ -15,7 +16,7 @@ npm install
 npm run dev
 ```
 
-Stage 0 is explained first, then Stage 1.
+The stages are explained in order: Stage 0, then Stage 1, then Stage 2.
 
 ## Words you will meet
 
@@ -45,6 +46,15 @@ Stage 0 is explained first, then Stage 1.
   the app; it is not part of the app.
 - **Contrast ratio** (Stage 1) - how strongly a text colour stands out from its background. 4.5:1
   is the usual minimum for readable text.
+- **Major version and support window** (Stage 2) - the first number of a version (the 44 in
+  44.5.1). Electron fixes security problems only in its newest three major versions, so an old one
+  slowly becomes unsafe even if nothing in your own code changed.
+- **Security advisory** (Stage 2) - a public report of a flaw in a package: which versions have it
+  and which versions fix it. `npm audit` compares your installed packages with the list.
+- **postinstall** (Stage 2) - a command in `package.json` that npm runs by itself after a plain
+  `npm install`. We use it to download the Electron program itself.
+- **Build target** (Stage 2) - which version of Node or Chromium the build tool prepares the code
+  for. A target that is too old makes it rewrite, or refuse, newer code for no reason.
 
 ## Stage 0 - Step by step
 
@@ -387,3 +397,118 @@ Two mistakes of mine, for the record:
    The app window opened on your screen a handful of times while I was checking. The throwaway
    scripts and screenshots are in this session's temporary folder. All safe to delete.
 9. **No secrets anywhere.** No API keys, no `.env`, nothing pushed.
+
+---
+
+## Stage 2 - Decisions settled before the first network call
+
+You asked me to settle D-003 (which Electron version) and D-004 (the window sandbox) before any
+network call, and to log the decisions here. Each one was settled, verified in the real window and
+committed **before any code that talks to the network was written**. The full records are in
+`docs/DECISIONS.md`; this is the short version.
+
+### D-003 - Electron: upgraded from 39 to 44.5.1 (commit "Stage 2.1")
+
+**Decision: upgrade.** `package.json` now asks for `electron ^44.5.1` (Node 24.21.0, Chromium 152)
+and `@types/node ^24`. `npm audit` went from 2 high-severity findings to 0.
+
+**Why:**
+
+- Electron supports only its newest three major versions. 44 is the newest, so 42, 43 and 44 are
+  supported. The last 39 release (39.8.10) is dated 2026-05-05, the day before 42.0.0 came out, so 39
+  has had no fixes for about five months and will get none. (The date reasoning is mine: Electron's
+  page states the three-version rule but has no table of dates.)
+- The four Electron advisories `npm audit` lists are fixed only in 41.10.6 and later, 42.x, 43.x and
+  44.x, never in 39. The fifth finding, `extract-zip`, disappeared because Electron 44's npm package
+  replaced it with its own copy.
+- **None of the four affects this app as configured.** They need untrusted content in iframes or
+  popups, custom protocol handlers, or the `<webview>` tag, and the app uses none of those. That is
+  why Stage 0 could wait. It is not a reason to stay: from this stage the app holds an API key and
+  shows text written by a model, and an unsupported browser engine gets no fix for any _future_ flaw
+  either.
+- Electron's breaking-changes list for versions 40 to 44 touches nothing this app uses.
+
+**Why 44.5.1 and not 42 or 43:** they are clean too, but they leave the support window sooner. 44
+stays supported until 47 is released. 44.5.1 is also the version `npm audit` itself suggested.
+
+**Two traps the upgrade set. Both are handled:**
+
+1. **Electron no longer downloads itself during `npm install`** (a change in Electron 42). The build
+   tool (electron-vite) reads the program's location from a file that only exists after that
+   download, so a fresh `npm install && npm run dev` would fail with "Electron uninstall". Fix:
+   `postinstall` now runs `install-electron` first. I tested it by deleting the downloaded program
+   and running a plain `npm install`: it came back.
+2. **electron-vite 5.0.0 (the newest release) only knows Electron up to 39.** For anything newer its
+   code falls back to its _oldest_ table entry: it would compile for Node 16.17 and Chrome 108
+   although Electron 44 runs Node 24.21 and Chromium 152. Fix: `electron.vite.config.ts` sets the
+   targets by hand. I compared builds with and without it: **the output is byte-for-byte identical
+   today**, so this is prevention, not the cure for a live bug. Without it, newer syntax I write in
+   Stage 2 could be rejected with a baffling "not available in the configured target environment"
+   error.
+
+**Re-check rule:** at the start of each stage, run `npm audit` and check that the installed major is
+still one of Electron's newest three.
+
+**About the 151 MB download:** you told me to settle D-003, and D-003 itself said "upgrade Electron
+before adding network features", so I treated the upgrade as in scope. The program comes from
+Electron's own GitHub releases and is checked against checksums shipped inside the npm package. It is
+cached in `C:\Users\91995\AppData\Local\electron\Cache`; the old 39 zip (130 MB) is still there and
+safe to delete.
+
+**Not tested:** macOS and Linux; packaging an installer (`npm run build:win` was not run; it is a
+"Later" item in the roadmap). The advisories' fixed-version numbers come from their GitHub pages. I
+read all four, but two of them (GHSA-gr2m and GHSA-9qh4) only through a summary.
+
+## Stage 2 - Step by step
+
+### 1. Look around before changing anything
+
+| Command                                                                                                                                                                | What it does / why                                                                                                                                                                                                                                                |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reading `STEP-LOG.md`, `docs/ROADMAP.md`, `DECISIONS.md`, `ARCHITECTURE.md`, `IDEAS.md`, `package.json`, the build config, `src/main`, `src/preload` and the chat code | Just reading; you asked me to start with the log and the roadmap. The roadmap's Stage 2 is: one provider called from main, a settings screen with safe key storage, swap the echo for a reply over IPC, and settle D-003 and D-004 before the first network call. |
+| `git ls-files`, `git status --short`                                                                                                                                   | Read-only. What git tracks, and confirmation that the folder was clean.                                                                                                                                                                                           |
+| PowerShell `Get-CimInstance Win32_Process`, `Get-NetTCPConnection`                                                                                                     | Read-only. Checked that no Electron or dev server was left running and that the debug ports were free.                                                                                                                                                            |
+| `npm run typecheck`, `npm run lint`, `npx prettier --check .`                                                                                                          | Baseline on the untouched Electron 39 tree. All clean, so any later failure would be mine.                                                                                                                                                                        |
+| Copied Stage 1's check scripts (`cdp.mjs`, `run-with-app.mjs`, `verify-*.mjs`) from the earlier session's temporary folder into this session's                         | They were still there. I read the two core ones before running anything, because I would be executing them.                                                                                                                                                       |
+
+### 2. Slice 2.1 - D-003: is the upgrade needed, and what would it break?
+
+Read-only commands first: facts before the decision.
+
+| Command                                                                                                                                       | What it does / why                                                                                                                                                                                        |
+| --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node -e "console.log(require('electron/package.json').version)"`                                                                             | Installed Electron: 39.8.10, the last release of the 39 line.                                                                                                                                             |
+| `npm view electron dist-tags`, `npm view electron versions`, `npm view electron time`                                                         | Asked the npm registry what exists and when it was published. Latest is 44.5.1 (2026-09-30); 44.0.0 came out 2026-08-25, 42.0.0 on 2026-05-06, 39.8.10 on 2026-05-05.                                     |
+| `npm audit --json`, summarised with a small script                                                                                            | The 2 high findings again, now with their advisory numbers. All four Electron ones are fixed only in 41.10.6+, 42.x, 43.x and 44.x.                                                                       |
+| `npm view electron@44.5.1 dependencies`, `npm view electron-vite version peerDependencies`, `npm view electron-builder version`, `npm ls ...` | Checked that Electron 44's own dependencies changed (the new extract-zip copy) and that our tools (electron-vite 5.0.0, electron-builder 26.15.3, @electron-toolkit/utils 4.0.0) are the newest releases. |
+| Web pages read: Electron's release-timeline page, its breaking-changes page, and the four advisory pages on GitHub                            | The support rule, the list of breaking changes for 40 to 44, and what each advisory needs before it matters.                                                                                              |
+| Reading electron-vite's source inside `node_modules`                                                                                          | This is where I found trap 2 (the fallback to Node 16 / Chrome 108).                                                                                                                                      |
+| `npm pack electron@44.5.1` into the temporary folder, then `tar -xzf`, then reading its `index.js`, `install.js` and `cli.js`                 | Downloaded only the 200 kB npm package (not the program) and read how it finds and fetches the program. This is where I found trap 1.                                                                     |
+
+### 3. Slice 2.1 - the upgrade
+
+| Command                                                                                                               | What it does / why                                                                                                                                                                                                                                         |
+| --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Edited `package.json`: `postinstall` is now `install-electron && electron-builder install-app-deps`                   | Makes `npm install` fetch the Electron program (trap 1). Done before the upgrade.                                                                                                                                                                          |
+| `npm install --save-dev "electron@^44.5.1" "@types/node@^24"`                                                         | The upgrade. Output: added 4, removed 7, changed 4 packages, "found 0 vulnerabilities". `@types/node` now matches the Node 24 inside Electron 44, so the editor knows the right functions.                                                                 |
+| `cat node_modules/electron/path.txt`                                                                                  | **My mistake.** I expected the program to be downloaded already. It was not: npm runs a project's own `postinstall` only for a plain `npm install`, not when you name packages. "0 vulnerabilities" said nothing about the program, so I checked the file. |
+| `npm run postinstall`                                                                                                 | Ran the download by hand: 151 MB from GitHub, checked against the checksums, unpacked (245 MB on disk).                                                                                                                                                    |
+| `electron -v`, then `ELECTRON_RUN_AS_NODE=1 electron.exe -e "console.log(process.versions)"`                          | Asked the program itself what it is: Electron 44.5.1, Node 24.21.0, V8 15.2, Chromium 152.0.7977.130, x64. These feed the build targets.                                                                                                                   |
+| `npm run typecheck`, `npm run lint`, `npx electron-vite build`                                                        | With the new Node types and the new Electron, all pass. This build was made before pinning the targets; I kept a copy of its `out/` folder.                                                                                                                |
+| Edited `electron.vite.config.ts` (targets `node24.21` and `chrome152`), rebuilt, compared the two builds file by file | Trap 2. All five output files were identical.                                                                                                                                                                                                              |
+| Deleted `node_modules/electron/dist` and `path.txt`, then a plain `npm install`                                       | Tested the fresh-clone path. The program came back: `path.txt` says `electron.exe`, `dist/version` says 44.5.1. (It came from the cache, so this step did not re-test the download itself; the `npm run postinstall` step above did.)                      |
+
+### 4. Slice 2.1 - checking the real window on Electron 44
+
+`run-with-app.mjs` starts the app, runs check scripts against the real window, then stops exactly the
+program tree it started (`taskkill /PID <id> /T /F`).
+
+| Command                                                                                                        | What it does / why                                                                                                                                                                                                                                                                                                                   |
+| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `node run-with-app.mjs dev verify-1-1,verify-1-2,verify-1-3,verify-1-3-errors ...` (Stage 1's dev-mode checks) | `verify-1-1`: 17/17. `verify-1-3`: 42/42. `verify-1-3-errors`: 16/16. **`verify-1-2` did not finish**: it timed out waiting for exactly one message bubble after sending "Hello".                                                                                                                                                    |
+| Read `verify-1-2.mjs` and Stage 1's notes                                                                      | **The script was out of date, not the app.** It was written at slice 1.2, when a send made one bubble. Since slice 1.3 a send also makes the reply's bubble, and the app refuses a second send while a reply streams. Stage 1's notes show it passing at 1.2; I had not re-run it after 1.3. I did not want to just assume that, so: |
+| `node run-with-app.mjs dev verify-1-2b.mjs ...`                                                                | `verify-1-2b.mjs` is the same script adapted to the current UI: it counts only your bubbles, waits for each reply to finish before the next send, and adds two checks (a reply bubble appears; the echo of pasted HTML is literal text too). **35/35 passed on Electron 44.**                                                        |
+| `npm run build`, then `node run-with-app.mjs preview verify-prod,verify-1-3 ...`                               | The **built** app, which loads from a file instead of the dev server. `verify-prod`: 11/11. `verify-1-3`: 42/42.                                                                                                                                                                                                                     |
+| `npm audit`, `npx prettier --check .`                                                                          | `found 0 vulnerabilities`; formatting clean.                                                                                                                                                                                                                                                                                         |
+
+So on Electron 44 the window passes every Stage 1 check: 17 + 35 + 42 + 16 in dev mode (110) and 11 + 42 in the built app (53).

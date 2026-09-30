@@ -14,6 +14,9 @@ An Electron application with React and TypeScript
 $ npm install
 ```
 
+The first install also downloads the Electron program itself (about 150 MB). Later installs reuse a
+local cache.
+
 ### Development
 
 ```bash

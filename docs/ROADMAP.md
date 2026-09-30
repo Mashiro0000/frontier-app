@@ -15,13 +15,14 @@
       word and can be stopped, because real providers do both
 - [x] No new packages; `src/main` and `src/preload` untouched
 
-## Stage 2 - First provider (tentative)
+## Stage 2 - First provider (in progress)
 
-- One model provider called from the main process
-- Settings screen and safe per-user storage for the API key
-- Replace the renderer-side `echoReply` with a reply function that asks the main process over IPC.
-  Same `ReplyFn` shape, so the chat components should not need to change (see D-008)
-- Before the first network call: settle D-003 (Electron upgrade) and D-004 (`sandbox: true`)
+- [x] D-003 settled: Electron 39 upgraded to 44.5.1, `npm audit` clean (Stage 2.1)
+- [ ] D-004 settled: `sandbox: true` (before the first network call)
+- [ ] One model provider called from the main process
+- [ ] Settings screen and safe per-user storage for the API key
+- [ ] Replace the renderer-side `echoReply` with a reply function that asks the main process over
+      IPC. Same `ReplyFn` shape, so the chat components should not need to change (see D-008)
 
 ## Stage 3 - Registry in use (tentative)
 
