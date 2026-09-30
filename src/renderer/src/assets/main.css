@@ -84,6 +84,53 @@ body {
   color: var(--color-text-muted);
 }
 
+/* ---------- messages ---------- */
+
+.message-list-inner {
+  flex: none; /* never shrink: a taller list scrolls instead */
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: var(--chat-width);
+  margin: 0 auto;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  max-width: 85%;
+}
+
+.message-user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.message-assistant {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.bubble {
+  padding: 10px 14px;
+  line-height: 1.55;
+  white-space: pre-wrap; /* keep the line breaks the user typed */
+  overflow-wrap: anywhere; /* long words and URLs wrap instead of overflowing */
+  border-radius: 16px;
+}
+
+.message-user .bubble {
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border-bottom-right-radius: 4px;
+}
+
+.message-assistant .bubble {
+  background: var(--color-background-mute);
+  border-bottom-left-radius: 4px;
+}
+
 /* ---------- input box ---------- */
 
 .composer {
