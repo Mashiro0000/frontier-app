@@ -7,9 +7,10 @@ const BOTTOM_THRESHOLD = 48
 
 interface MessageListProps {
   messages: ChatMessage[]
+  isReplying: boolean
 }
 
-function MessageList({ messages }: MessageListProps): React.JSX.Element {
+function MessageList({ messages, isReplying }: MessageListProps): React.JSX.Element {
   const listRef = useRef<HTMLDivElement>(null)
   // True while the user is reading the newest message; false once they scroll up to read older ones.
   const stickToBottom = useRef(true)
@@ -38,6 +39,7 @@ function MessageList({ messages }: MessageListProps): React.JSX.Element {
       className="message-list"
       role="log"
       aria-label="Conversation"
+      aria-busy={isReplying} // screen readers wait for the reply to finish instead of reading every word
       onScroll={handleScroll}
     >
       {messages.length === 0 ? (

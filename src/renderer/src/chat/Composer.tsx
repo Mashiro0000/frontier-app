@@ -1,13 +1,16 @@
 import { useRef, useState } from 'react'
 
 interface ComposerProps {
+  isReplying: boolean
   onSend: (text: string) => void
+  onStop: () => void
 }
 
-function Composer({ onSend }: ComposerProps): React.JSX.Element {
+function Composer({ isReplying, onSend, onStop }: ComposerProps): React.JSX.Element {
   const [text, setText] = useState('')
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const canSend = text.trim() !== ''
+  // You can type the next message while a reply streams in, but not send it until the reply ends.
+  const canSend = text.trim() !== '' && !isReplying
 
   function submit(): void {
     if (!canSend) return
@@ -43,9 +46,25 @@ function Composer({ onSend }: ComposerProps): React.JSX.Element {
             }
           }}
         />
-        <button type="submit" className="composer-button" disabled={!canSend}>
-          Send
-        </button>
+        {/* Two separate buttons (note the keys) rather than one that changes type: otherwise a
+            click on Stop could turn into a form submit and send the half-typed next message. */}
+        {isReplying ? (
+          <button
+            key="stop"
+            type="button"
+            className="composer-button composer-button-stop"
+            onClick={() => {
+              onStop()
+              inputRef.current?.focus()
+            }}
+          >
+            Stop
+          </button>
+        ) : (
+          <button key="send" type="submit" className="composer-button" disabled={!canSend}>
+            Send
+          </button>
+        )}
       </div>
     </form>
   )
