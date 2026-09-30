@@ -18,6 +18,6 @@ export interface ChatMessage {
 /**
  * Where assistant replies come from. Given the conversation so far (it ends with the message the
  * user just sent), it returns the reply as a stream of text pieces. It should stop producing text
- * when `signal` is aborted. Today this is `echoReply`; a real model provider will have this shape.
+ * when `signal` is aborted. `ipcReply` is the implementation: it asks the main process for a real reply.
  */
 export type ReplyFn = (history: ChatMessage[], signal: AbortSignal) => AsyncIterable<string>

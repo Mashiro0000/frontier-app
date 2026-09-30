@@ -23,6 +23,10 @@ local cache.
 $ npm run dev
 ```
 
+The first time, click **Settings** and paste your own Anthropic API key. It is stored encrypted on
+your computer. Replies are billed to your Anthropic account (the default model is Claude Opus 5.5;
+see docs/DECISIONS.md D-012).
+
 ### Build
 
 ```bash

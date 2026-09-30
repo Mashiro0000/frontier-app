@@ -1,21 +1,18 @@
 import { ipcMain, type IpcMainInvokeEvent } from 'electron'
 import { CHANNELS, type SetKeyResult, type SettingsStatus } from '../shared/ipc'
 import { checkApiKey } from '../shared/validate'
+import { registerChatIpc } from './chat'
 import { canStoreKey, clearApiKey, readApiKey, saveApiKey } from './keyStore'
-import { isAppUrl } from './security'
-
-/**
- * True only for a call made by the app's own page, from the window's top frame. The preload's API
- * also exists in an `about:blank` page (the navigation lock cannot stop that one), so being "in our
- * window" is not enough: check who is really calling.
- */
-function isTrusted(event: IpcMainInvokeEvent, appUrl: string): boolean {
-  const frame = event.senderFrame
-  return frame !== null && frame === event.sender.mainFrame && isAppUrl(frame.url, appUrl)
-}
+import { MODEL_LABEL, PROVIDER_NAME } from './provider'
+import { isTrustedSender } from './security'
 
 async function currentStatus(): Promise<SettingsStatus> {
-  return { hasKey: (await readApiKey()) !== null, canStoreKey: canStoreKey() }
+  return {
+    hasKey: (await readApiKey()) !== null,
+    canStoreKey: canStoreKey(),
+    provider: PROVIDER_NAME,
+    modelLabel: MODEL_LABEL
+  }
 }
 
 /** Registers every message the page may send to main. Call once, after the app is ready. */
@@ -24,7 +21,7 @@ export function registerIpc(appUrl: string): void {
   const guarded =
     <A extends unknown[], R>(handler: (...args: A) => Promise<R>) =>
     (event: IpcMainInvokeEvent, ...args: A): Promise<R> => {
-      if (!isTrusted(event, appUrl)) {
+      if (!isTrustedSender(event, appUrl)) {
         throw new Error('Blocked: this call did not come from the app window.')
       }
       return handler(...args)
@@ -55,4 +52,6 @@ export function registerIpc(appUrl: string): void {
       return currentStatus()
     })
   )
+
+  registerChatIpc(appUrl)
 }

@@ -8,9 +8,11 @@ const BOTTOM_THRESHOLD = 48
 interface MessageListProps {
   messages: ChatMessage[]
   isReplying: boolean
+  /** Shown in place of the messages while there are none. */
+  emptyHint: React.ReactNode
 }
 
-function MessageList({ messages, isReplying }: MessageListProps): React.JSX.Element {
+function MessageList({ messages, isReplying, emptyHint }: MessageListProps): React.JSX.Element {
   const listRef = useRef<HTMLDivElement>(null)
   // True while the user is reading the newest message; false once they scroll up to read older ones.
   const stickToBottom = useRef(true)
@@ -43,9 +45,7 @@ function MessageList({ messages, isReplying }: MessageListProps): React.JSX.Elem
       onScroll={handleScroll}
     >
       {messages.length === 0 ? (
-        <p className="empty-state">
-          No model is connected yet. Type a message and it will be echoed back.
-        </p>
+        emptyHint && <p className="empty-state">{emptyHint}</p>
       ) : (
         <div className="message-list-inner">
           {messages.map((message) => (

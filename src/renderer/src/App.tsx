@@ -12,18 +12,28 @@ function App(): React.JSX.Element {
       <header className="app-header">
         <h1 className="app-title">Frontier App</h1>
         <div className="app-header-actions">
-          <span
-            className="app-badge"
-            title="No model is connected yet. Replies just repeat your message."
-          >
-            Echo mode
-          </span>
+          {status?.hasKey === true && (
+            <span
+              className="app-badge"
+              title={`Replies come from ${status.provider}'s ${status.modelLabel}.`}
+            >
+              {status.modelLabel}
+            </span>
+          )}
+          {status?.hasKey === false && (
+            <span
+              className="app-badge app-badge-warn"
+              title="Open Settings to add your Anthropic API key."
+            >
+              No API key
+            </span>
+          )}
           <button type="button" className="header-button" onClick={() => setSettingsOpen(true)}>
             Settings
           </button>
         </div>
       </header>
-      <ChatView />
+      <ChatView status={status} onOpenSettings={() => setSettingsOpen(true)} />
       <SettingsDialog
         open={settingsOpen}
         status={status}

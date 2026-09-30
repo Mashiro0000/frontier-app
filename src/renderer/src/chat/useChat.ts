@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { echoReply } from './echoReply'
 import type { ChatMessage, ReplyFn } from './types'
 
 export interface UseChat {
@@ -13,9 +12,9 @@ export interface UseChat {
 
 /**
  * Holds the conversation and runs one cycle: the user sends, a reply streams in, it finishes.
- * `reply` decides where answers come from: the fake echo today, a real model later.
+ * `reply` decides where answers come from: the main process, which asks the model (see ipcReply).
  */
-export function useChat(reply: ReplyFn = echoReply): UseChat {
+export function useChat(reply: ReplyFn): UseChat {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   // Set while a reply is streaming. Used to stop it, and to refuse a second send meanwhile.
   const activeReply = useRef<AbortController | null>(null)

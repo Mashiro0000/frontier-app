@@ -20,10 +20,10 @@
 - [x] D-003 settled: Electron 39 upgraded to 44.5.1, `npm audit` clean (Stage 2.1)
 - [x] D-004 settled: `sandbox: true`, narrow preload, navigation lock (Stage 2.2). Both decisions
       are done before any network code exists
-- [ ] One model provider called from the main process
+- [x] One model provider called from the main process: Anthropic, `claude-opus-5-5` (Stage 2.4, D-012)
 - [x] Settings screen and safe per-user storage for the API key (Stage 2.3)
-- [ ] Replace the renderer-side `echoReply` with a reply function that asks the main process over
-      IPC. Same `ReplyFn` shape, so the chat components should not need to change (see D-008)
+- [x] Replace the renderer-side `echoReply` with a reply function that asks the main process over
+      IPC. Same `ReplyFn` shape, so the chat components did not need to change (Stage 2.4, D-008)
 
 ## Stage 3 - Registry in use (tentative)
 

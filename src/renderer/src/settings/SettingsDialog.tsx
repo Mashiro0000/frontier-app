@@ -100,9 +100,12 @@ function SettingsDialog({
       <form className="settings-section" onSubmit={save}>
         <h3 className="settings-heading">Anthropic API key</h3>
         <p className="settings-hint">
-          The key lets this app use Anthropic&apos;s models on your account. You can create one in
-          your Anthropic Console account.
+          The key lets this app use Anthropic&apos;s Claude on your account, and the messages you
+          send are billed to that account. You can create a key in your Anthropic Console account.
         </p>
+        {status && (
+          <p className="settings-hint">Model: {status.modelLabel}. It is fixed for now.</p>
+        )}
         <p className="settings-status">{describeStatus(status, loadError)}</p>
 
         <label className="settings-label" htmlFor="api-key">
@@ -153,7 +156,7 @@ function SettingsDialog({
         )}
         <p className="settings-hint">
           Stored encrypted by your operating system, so a copy of the file is useless on another
-          computer or account.
+          computer or account. The key is sent only to Anthropic, together with your messages.
         </p>
       </form>
 

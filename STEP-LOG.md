@@ -71,6 +71,14 @@ The stages are explained in order: Stage 0, then Stage 1, then Stage 2.
   `C:\Users\91995\AppData\Roaming\frontier-app`.
 - **Scratch profile** (Stage 2) - a throwaway user data folder made for a test, so the test cannot
   touch your real one.
+- **API key** (Stage 2) - a long secret that identifies your account to a service and lets it bill you.
+  Anyone who has it can spend your money, which is why it is stored encrypted and never shown to the page.
+- **SDK** (Stage 2) - a package from a service's own maker that does the fiddly parts of calling it
+  (streaming, retrying, error types). Here: Anthropic's `@anthropic-ai/sdk`.
+- **Prompt caching** (Stage 2) - the service remembers the start of a conversation it has already read
+  and charges much less for reading it again. A chat resends everything every turn, so this matters.
+- **Mock server** (Stage 2) - a stand-in for a real service, running on your own computer, that answers the
+  way the real one is documented to. It lets the app be tested with no account, no money and no internet.
 
 ## Stage 0 - Step by step
 
@@ -704,3 +712,97 @@ stub). I stopped it with the task-stop tool; it had changed nothing.
 | Command                 | What it does / why                                                                                                                                                                                                      |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `git add`, `git commit` | **Commit 3 of Stage 2:** "Stage 2.3: Settings screen and encrypted API-key storage". The Anthropic SDK, which I had already installed for the next slice, is deliberately left out of this commit: nothing uses it yet. |
+
+### 10. Slice 2.4 - Claude as the provider, and the reply path over IPC
+
+What was built: in main, `provider.ts` (the one provider: Anthropic's Claude, through Anthropic's SDK;
+it imports nothing from Electron) and `chat.ts` (runs each reply: checks who is asking, reads the key,
+calls the provider, sends the text back to the page as events, and cancels the request on Stop, on reload
+and on closing the window); in the page, `ipcReply.ts` (the reply function that replaces the echo) and
+`history.ts` (what the model is told about earlier turns); the preload gets `window.api.chat` with three
+functions; the header badge now names the model (or warns "No API key"), and the empty chat invites you to
+open Settings. `echoReply.ts` is deleted (it is in git history, Stage 1.3). The decisions, with reasons, are
+D-012 (provider) and D-013 (history) in `docs/DECISIONS.md`; the short version:
+
+- **Anthropic, because nothing else was in the project** (my grep found only a parked "Ollama" idea), and
+  the model is `claude-opus-5-5`, the default in Anthropic's own guidance. **It is the pricier tier, and the
+  bill goes to your account.** It is one constant (`MODEL` in `provider.ts`) if you want a cheaper one.
+- **The SDK instead of hand-written network code**: a new runtime package, the only one added.
+- **Left out on purpose: "refusal fallbacks"**, which the guidance suggests enabling by default. They are a
+  beta feature I could not try without a real key, and they change billing.
+
+| Command                                                                                   | What it does / why                                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `grep` for other provider names in the project                                            | Anthropic's guidance for building with Claude asks for this first. Only `docs/IDEAS.md` matched (a parked Ollama idea), so nothing else is being worked on.                                                                                                                        |
+| Read the guidance's pages on streaming and errors, and its model list                     | Model id, the thinking and effort rules for this model, "no prefill", and how streaming and errors look in TypeScript. **Its own pages disagree** on whether two messages from the same side in a row are allowed, so the app merges them itself (valid under both readings).      |
+| `npm view @anthropic-ai/sdk ...`, then `npm install @anthropic-ai/sdk`                    | Footprint before installing: MIT licence, two small dependencies, 11 MB unpacked. Installed: 7 packages, `npm audit` still 0. (I did this while preparing slice 2.3 and kept its `package.json` change out of that commit; it is in this one.)                                     |
+| Read the SDK's own source and type files in `node_modules`                                | How the client picks its credentials: anything left unset is read from the environment (`ANTHROPIC_AUTH_TOKEN`, `ANTHROPIC_BASE_URL`), which could make it send two credentials or send your key to another server. So the app sets both explicitly. Also the exact request types. |
+| File edits (see "What was built")                                                         | `src/shared/ipc.ts` and `validate.ts` grew the chat messages and their checks (500 messages, 200 000 characters each, 600 000 in total, because the whole chat is sent again with every message).                                                                                  |
+| `npm run typecheck`                                                                       | One error: I used the SDK's error class as a type, which needs its named export. Fixed.                                                                                                                                                                                            |
+| `node provider-node-test.mjs` (runs `provider.ts` under plain Node against the mock)      | 51 checks. See below for what the mock is and what this covers.                                                                                                                                                                                                                    |
+| `node probe-drop.mjs`                                                                     | A dropped connection mid-reply read as "Something went wrong: terminated". I printed the error's shape, found the SDK gives it no class of its own, and added a check for it. It now reads "The connection was interrupted while the reply was arriving...".                       |
+| `node run-with-app.mjs ... setup-key.mjs, verify-1-1 ... verify-1-3-errors` with the mock | **Stage 1's whole UI suite, run through the real IPC, SDK and mock.** First run 108 of 110; see below.                                                                                                                                                                             |
+| `node run-with-app.mjs ... verify-2-4.mjs`                                                | 71 new checks in the real window. First run 68 of 71; see below.                                                                                                                                                                                                                   |
+| Negative controls, then `cp` the backup back and compare hashes                           | Three safeguards switched off one at a time; see below.                                                                                                                                                                                                                            |
+| Built app: `npm run build`, then `verify-2-4`, `verify-prod`, `verify-1-3` with the mock  | 71 of 71, 11 of 11, 42 of 42.                                                                                                                                                                                                                                                      |
+| WCAG contrast script for the new colours; looked at the screenshots                       | The "Open Settings" link is 5.79:1 and the "No API key" badge 7.41:1, both above the bars. The screens look right.                                                                                                                                                                 |
+| `npx prettier --write`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm audit` | All clean; `npm audit` still reports 0 vulnerabilities.                                                                                                                                                                                                                            |
+
+### 11. Slice 2.4 - checking it, and the honest limit of the checking
+
+**I never made a call to the real Anthropic API.** No key was available, and I did not ask you for one or
+try to find one. Everything was checked against a **mock server** I wrote (`mock-anthropic.mjs`, in this
+session's temporary folder, not in the project). It speaks Anthropic's streaming format, and it checks each
+request the way the API is documented to: wrong model, a missing or second credential, consecutive roles,
+an empty message, a last message from the assistant, removed parameters, a missing `effort` or
+`cache_control`. A mistake in the request shape is therefore a loud 400 from the mock. It can also
+misbehave on demand: 401, 403, 404, a credit-balance 400, 429, 500, 529, an error event in the middle of a
+reply, a dropped connection, a reply cut at the length limit, a refusal, a full context window, an empty
+reply, an overload that clears on the third try, a very slow reply, and a server that never answers. The
+SDK parses the mock's events with its real parser, so the wire format is tested, but **the mock is my
+reading of the API, and a real difference would not show up**. The first real message is the real test:
+run `npm run dev`, open Settings, paste your key and send one.
+
+What the 51 provider checks and the 71 window checks cover:
+
+- **The request the app really sends**, read back from the mock: the key goes in `x-api-key` and nothing
+  else; model, streaming, effort, caching and the output ceiling are as designed; no sampling settings, no
+  `thinking` setting, no tools; the system prompt asks for plain text. **With hostile `ANTHROPIC_AUTH_TOKEN`,
+  `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` set in the environment, the request still went to the right
+  place with the right key and no extra credential.**
+- **History**: a second turn contains the first reply, in order; two messages from the person in a row are
+  merged (D-013).
+- **No key, no request**: with no key saved, sending a message explains what to do and **the mock saw zero
+  requests**. The same after "Remove key".
+- **Stop and reload cancel the network request**: after Stop, and after reloading the window mid-reply, the
+  mock saw the connection close (8 ms after Stop, 66 ms after the reload), so an abandoned reply stops costing money.
+- **Every failure, as the person reads it**: key rejected (with the request id), credit balance too low,
+  rate limit, server error, overloaded, an error in the middle of a reply, a dropped connection, cut off at
+  the length limit, declined, conversation too long, empty reply. Each is a red note under the message, the
+  partial text is kept where there is some, and the input is ready again. **The key never appears in any
+  message.**
+- **An overload that clears by itself is invisible**: the mock answered "overloaded" twice and then
+  succeeded; the SDK retried and the person just saw the reply (three requests).
+- **The chat guard**: ten malformed requests sent straight from the page (wrong types, no messages, ends with
+  the assistant, too long, too many...) were all refused and **none reached the API**: eight could be
+  answered and got an error event, and two (not even an object, or an unusable id) were ignored without a
+  reply. A chat request from an `about:blank` page was ignored too.
+- **The key is not in the app's own log output, not in the page, not in local storage.**
+
+| What went wrong, or was found                         | Detail                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stage 1 suite, first run through the mock: 108 of 110 | Two checks still assumed the old echo (which only ever repeated your last message). With the new history rule, a message sent after a reply that ended with no text travels **together with the unanswered one**, and the mock echoes the whole thing. That is the designed behaviour (D-013), so I changed those two assertions to say so. Then 42 of 42 and 16 of 16.                                    |
+| `verify-2-4`, first run: 68 of 71                     | The same merge, in my own test flow: a "no key" message was still in the conversation when I sent "hello". I reset the conversation after saving the key. Then 71 of 71. (My mock also took the first `[[mock:...]]` directive in a merged message; it now takes the newest.)                                                                                                                              |
+| **Negative controls**                                 | I switched off, one edit each in `chat.ts`: the sender check on `chat:start`, the abort on cancel, and the abort on reload. **Exactly the matching checks failed** (Stop left the request open; reload left it open; the `about:blank` request reached the API), plus two that depend on them. So those checks can fail. I restored the file from a backup and compared hashes: identical, no marker left. |
+| Stage 1's `verify-1-3-errors` needed a new target     | It used to swap the echo module inside the running window. It now wraps `ipcReply` the same way, so its 16 checks still test `useChat`'s failure handling.                                                                                                                                                                                                                                                 |
+
+| Result                                       | Detail                                                                                                                                       |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Provider module under Node, against the mock | 51 of 51.                                                                                                                                    |
+| Dev window, through the mock                 | Stage 1's suites 17 + 35 + 42 + 16 = 110 of 110; `verify-2-4` 71 of 71.                                                                      |
+| Built app, through the mock                  | `verify-2-4` 71 of 71; `verify-prod` 11 of 11; `verify-1-3` 42 of 42.                                                                        |
+| Every test profile                           | A scratch profile inside your encrypted `AppData` (`frontier-app-test-scratch-*`), each verified in use by the guard and deleted afterwards. |
+
+| Command                 | What it does / why                                                                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `git add`, `git commit` | **Commit 4 of Stage 2:** "Stage 2.4: Claude as the provider, reply streaming over IPC". It includes the SDK in `package.json` and the lock file. |

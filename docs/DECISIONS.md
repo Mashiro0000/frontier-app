@@ -76,24 +76,28 @@ No API keys, no `.env` files, no pushing to a remote during Stage 0. Status: acc
 No UI kit, state library, Markdown renderer or test framework in Stage 1; `useState` and one hook
 were enough. Each dependency is something to audit, and this app will hold API keys. Status:
 accepted. Revisit: when state is shared across several screens (Stage 2 settings), when Markdown is
-needed, or when automated UI tests are wanted (none exist; Stage 1 was checked by driving the real app).
+needed, or when automated UI tests are wanted (none exist; Stages 1 and 2 were checked by driving the
+real app). Stage 2's settings did not need shared state: one `useState` in `App` and a small hook. Stage 2
+did add one runtime package, Anthropic's SDK, in the main process only (D-012).
 
-## D-008 - Replies come from a `ReplyFn`; the echo implements it in the renderer for now
+## D-008 - Replies come from a `ReplyFn` (the echo in Stage 1, IPC to the main process since Stage 2.4)
 
 `ReplyFn` is `(history, AbortSignal) => AsyncIterable<string>` (see `chat/types.ts`). Real providers
 stream and can be cancelled, so the UI is built around that, and the echo streams and stops like a
 real one. Keeping the echo in the renderer adds no IPC surface in Stage 1. Status: accepted for
 Stage 1. Revisit: in Stage 2 the implementation moves to the main process behind IPC (keys and
-network stay in main). `ReplyFn`, `useChat` and the components should not need to change. Decide
-then what history to send: `useChat` currently passes every message, including stopped, failed and
-empty replies.
+network stay in main). `ReplyFn`, `useChat` and the components should not need to change.
+Settled in Stage 2.4: `ipcReply` (`chat/ipcReply.ts`) implements it over IPC and the echo is gone.
+`ReplyFn` and the components did not change; `useChat` only lost its default reply function, because there
+is nothing left to default to. What history to send is D-013.
 
 ## D-009 - Message text is plain text only
 
 React escapes text, so pasted HTML cannot run; checked with an `<img onerror>` message. Markdown or
 HTML from a model is a bigger risk. The window is now sandboxed (D-004), which limits what a mistake
-can reach but does not replace sanitising. Status: accepted. Revisit: before adding Markdown, use a
-sanitising renderer.
+can reach but does not replace sanitising. Claude writes Markdown by default, so the system prompt
+(D-012) asks it for plain text; remove that once Markdown is rendered. Status: accepted. Revisit: before
+adding Markdown, use a sanitising renderer.
 
 ## D-010 - The API key is stored encrypted by the operating system and never leaves main
 
@@ -127,3 +131,62 @@ window's top frame, on the app's own page. This is needed because the preload AP
 the page are only for quick feedback. Status: accepted (Stage 2.3).
 Revisit: each new message needs the same guard and its own validation; add them in `ipc.ts`, and
 only through the contract.
+
+## D-012 - The first provider: Anthropic's Claude, called from the main process with Anthropic's SDK
+
+The roadmap asked for one provider and named none. Anthropic's Claude was chosen: the project had no other
+provider in it (the only mention was a parked idea about Ollama), and it is the natural default for this
+app. It is reversible: the page knows only `ReplyFn`, and the provider is one module,
+`src/main/provider.ts`, which imports nothing from Electron.
+
+- **The SDK, not hand-written HTTP.** `@anthropic-ai/sdk` (MIT, two small dependencies) handles streaming,
+  retries and typed errors. It runs in the main process only, and `npm audit` stays at 0 vulnerabilities.
+  It is an exception to D-007's "no new packages", and the only one.
+- **Model `claude-opus-5-5`**, the default in Anthropic's own guidance. It is the pricier tier (list price
+  when chosen: about $4 per million input tokens and $20 per million output tokens), and replies are billed
+  to the person's own account. Settings says so and names the model. To change it, edit `MODEL` in
+  `provider.ts`; Stage 3 turns it into a choice.
+- **The request:** `max_tokens` 16000 (a ceiling on what one reply can cost; the model's thinking counts
+  against it); `output_config.effort` "medium", written out because the default differs between models; no
+  `thinking` setting (it is always on for this model), no sampling parameters, and no prefill (the last
+  message is always the person's); automatic prompt caching (`cache_control`), because a chat resends its
+  whole history every turn and a cache hit is billed far lower; and a short system prompt asking for plain
+  text (D-009).
+- **The credential and the address are pinned.** Left alone, the SDK reads `ANTHROPIC_AUTH_TOKEN` from the
+  environment (and would send two credentials, which the API rejects) and `ANTHROPIC_BASE_URL` (which could
+  send the key to another server). The key saved in Settings is the only credential and it goes only to
+  `https://api.anthropic.com`; tested with hostile variables set. The one exception is
+  `FRONTIER_API_BASE_URL`, honoured only when the app runs from source (never in an installer), which exists
+  so the whole path can be tested against a fake server.
+- **Left out on purpose: server-side refusal fallbacks.** Anthropic's guidance suggests enabling them by
+  default. They are a beta feature that I could not check without a real key, and they change billing (the
+  fallback model's own rates). A declined request is shown as "The model declined to answer this
+  (category)". Adding them later is one request field plus a beta header.
+- **Errors** are explained per cause (key rejected, model not found, rate limit, overloaded, interrupted
+  connection...) with the request id for support, and the key is scrubbed from every message. The SDK's own
+  retries (two, for overload and rate limits) are kept: a transient overload is invisible to the person.
+- **Stop, reloading the window and closing it cancel the network request** (checked: the server sees the
+  connection close), so an abandoned reply stops costing money.
+
+Checked against a mock of the API only, never the real one, because no key was available: see STEP-LOG.md.
+Status: accepted (Stage 2.4). Revisit: Stage 3 (model choice from the registry); showing the cost;
+refusal fallbacks; the first check with a real key (a mock cannot reveal where it differs from the real
+API); proxy support (the SDK uses Node's network stack, not Chromium's, so a system proxy is not used).
+
+## D-013 - What the model is told about the conversation
+
+Settles the question D-008 left open. The model is sent everything the person saw, including a reply that
+was stopped or failed halfway (they may refer to it). A reply with no text at all is left out, because it
+says nothing and the API refuses an empty message. Consecutive messages from one side are joined with a blank
+line (the API docs disagree on whether the API does this itself, so the app does it: valid either way).
+One consequence: after a reply that ended with no text (an instant error, or Stop before any text), the
+person's next message travels together with the unanswered one. The alternative, dropping the unanswered
+message, would silently leave out something the person typed. The price: a long message retyped after a
+failure is sent twice.
+
+The whole conversation is sent again with every message, so its size is its price. Limits
+(`CHAT_LIMITS`): 500 messages, 200 000 characters per message, 600 000 in total (about 150 000 tokens).
+Beyond that the request is refused with an explanation. There is no "New chat" button yet; closing and
+reopening the window starts one. Status: accepted (Stage 2.4). Revisit: a New chat button, saved
+conversations, a Retry button (then a failed message need not be retyped), and trimming or summarising old
+turns.

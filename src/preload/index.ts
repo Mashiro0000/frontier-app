@@ -1,5 +1,5 @@
-import { contextBridge, ipcRenderer } from 'electron'
-import { CHANNELS, type FrontierApi } from '../shared/ipc'
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
+import { CHANNELS, type ChatStreamEvent, type FrontierApi } from '../shared/ipc'
 
 // The window is sandboxed (D-004), so this file may only require 'electron' (contextBridge,
 // ipcRenderer, ...), 'events', 'timers' and 'url'. It cannot require npm packages or other files at
@@ -14,6 +14,18 @@ const api: FrontierApi = {
     getStatus: () => ipcRenderer.invoke(CHANNELS.settingsStatus),
     setApiKey: (key) => ipcRenderer.invoke(CHANNELS.settingsSetApiKey, key),
     clearApiKey: () => ipcRenderer.invoke(CHANNELS.settingsClearApiKey)
+  },
+  chat: {
+    start: (request) => ipcRenderer.send(CHANNELS.chatStart, request),
+    cancel: (streamId) => ipcRenderer.send(CHANNELS.chatCancel, streamId),
+    onEvent: (listener) => {
+      // Hand the page only the event's data, not Electron's event object around it.
+      const handler = (_event: IpcRendererEvent, reply: ChatStreamEvent): void => listener(reply)
+      ipcRenderer.on(CHANNELS.chatEvent, handler)
+      return () => {
+        ipcRenderer.removeListener(CHANNELS.chatEvent, handler)
+      }
+    }
   }
 }
 
