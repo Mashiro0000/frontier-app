@@ -15,7 +15,7 @@
       word and can be stopped, because real providers do both
 - [x] No new packages; `src/main` and `src/preload` untouched
 
-## Stage 2 - First provider (in progress)
+## Stage 2 - First provider (done)
 
 - [x] D-003 settled: Electron 39 upgraded to 44.5.1, `npm audit` clean (Stage 2.1)
 - [x] D-004 settled: `sandbox: true`, narrow preload, navigation lock (Stage 2.2). Both decisions

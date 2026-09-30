@@ -1,6 +1,6 @@
 # Architecture (v0.1)
 
-> Stub. Describes what exists during Stage 2 and what is planned. Update as the app grows.
+> Stub. Describes what exists at the end of Stage 2 and what is planned. Update as the app grows.
 
 ## What this is
 

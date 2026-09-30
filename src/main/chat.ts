@@ -16,12 +16,21 @@ const watched = new WeakSet<WebContents>()
  * fake server on this computer. It works only when running from source, never in an installed app,
  * so nothing outside could redirect where a real key is sent.
  */
+let warnedAboutOverride = false
+
 function baseUrlOverride(): string | undefined {
   const value = process.env['FRONTIER_API_BASE_URL']
   if (!value || app.isPackaged) return undefined
   try {
     const { protocol } = new URL(value)
-    if (protocol === 'http:' || protocol === 'https:') return value
+    if (protocol === 'http:' || protocol === 'https:') {
+      // Said once, loudly: requests (and the saved key) are going somewhere other than Anthropic.
+      if (!warnedAboutOverride) {
+        warnedAboutOverride = true
+        console.warn(`FRONTIER_API_BASE_URL is set: requests go to ${value}, NOT to Anthropic.`)
+      }
+      return value
+    }
   } catch {
     // fall through to the warning
   }

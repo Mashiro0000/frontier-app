@@ -3,11 +3,11 @@
 This file explains, in plain words, every command that was run to build Frontier App, one stage at
 a time, and why. It is written for someone new to Electron and the command line.
 
-| Stage        | What you get                                                                                           | Status      |
-| ------------ | ------------------------------------------------------------------------------------------------------ | ----------- |
-| 0 - Shell    | `npm run dev` opens a window titled "Frontier App" that shows the words "Frontier App". Nothing else.  | done        |
-| 1 - Chat UI  | The window is a chat. Type a message, press Enter, and an echo of it streams back. No AI model yet.    | done        |
-| 2 - Provider | A real model answers in the chat, using your own API key. (Work in progress: see the Stage 2 section.) | in progress |
+| Stage        | What you get                                                                                                        | Status |
+| ------------ | ------------------------------------------------------------------------------------------------------------------- | ------ |
+| 0 - Shell    | `npm run dev` opens a window titled "Frontier App" that shows the words "Frontier App". Nothing else.               | done   |
+| 1 - Chat UI  | The window is a chat. Type a message, press Enter, and an echo of it streams back. No AI model yet.                 | done   |
+| 2 - Provider | A real model answers in the chat, using your own API key. Checked only against a mock so far: see "Things to know". | done   |
 
 **To run it yourself** (from this folder):
 
@@ -424,6 +424,28 @@ Two mistakes of mine, for the record:
 
 ---
 
+## Stage 2 - What was built
+
+Running `npm run dev` now opens a chat with a real model, once you give it your own API key:
+
+- **Settings** (a button in the header): paste your Anthropic API key. It is stored encrypted by your
+  operating system and is never shown to the page again. You can remove it there.
+- The header shows **which model answers** ("Claude Opus 5.5"), or a red **"No API key"** if none is
+  saved. With no key, the empty chat offers an "Open Settings" link, and sending a message explains what
+  to do without contacting anyone.
+- **Replies stream in from Claude.** **Stop** cancels the reply and the network request behind it, and so
+  does reloading or closing the window. Failures (a rejected key, no credit, rate limits, overload, a
+  dropped connection, a reply cut off at the length limit, a declined request...) are each explained in a
+  red note under the message, with any partial text kept.
+- Under the hood: the app runs on **Electron 44** (it was 39, which no longer gets security fixes); the
+  window is **sandboxed** and its bridge to the main program is a short list of named functions; the
+  **main program** holds the key and makes the only network call; every message the page sends to it is
+  checked twice.
+
+It was built in five commits: 2.1 the Electron upgrade (D-003), 2.2 the sandbox (D-004), 2.3 settings and
+key storage, 2.4 the provider and the reply path, and 2.5 these docs and the final checks.
+**Nothing has been tried against the real Anthropic API yet** (see "Things to know", point 1).
+
 ## Stage 2 - Decisions settled before the first network call
 
 You asked me to settle D-003 (which Electron version) and D-004 (the window sandbox) before any
@@ -806,3 +828,92 @@ What the 51 provider checks and the 71 window checks cover:
 | Command                 | What it does / why                                                                                                                               |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `git add`, `git commit` | **Commit 4 of Stage 2:** "Stage 2.4: Claude as the provider, reply streaming over IPC". It includes the SDK in `package.json` and the lock file. |
+
+### 12. Final checks
+
+| Command                                                                                                | What it does / why                                                                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node run-with-app.mjs dev plain-check.mjs` (plain `npm run dev`, your real profile, no test settings) | A **read-only** startup check exactly as you would run it: no clicks, no typing, no saving, and the app cannot call the network without a key. 7 of 7: title, Electron 44.5.1, the "No API key" badge and hint, the Settings button, the exact `window.api` surface, no console errors. Your profile held no `credentials*` file before or after. |
+| `npx prettier --check .`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm audit`            | All clean. `npm audit`: 0 vulnerabilities (Stage 0 had 2 high).                                                                                                                                                                                                                                                                                   |
+| `npx prettier --write STEP-LOG.md docs`, `git add`, `git commit`                                       | **Commit 5 of Stage 2:** "Stage 2.5: docs and STEP-LOG for Stage 2". After it, `git status` shows nothing uncommitted.                                                                                                                                                                                                                            |
+
+## Stage 2 - Choices I made where things were unclear ("pick the simplest option")
+
+- **Decisions first, as you asked.** D-003 and D-004 were settled, verified in the real windows, written into
+  `docs/DECISIONS.md` and this log, and committed (2.1 and 2.2) before any provider code existed.
+- **Electron 44.5.1, not an older supported one.** It is supported the longest and is what `npm audit`
+  suggested. `^44.5.1` lets npm take new 44.x patches but not 45; moving to 45 is a decision for then.
+- **I rewrote the preload rather than only flipping `sandbox`.** The scaffold's preload could not load in the
+  sandbox, and it handed the page Electron's whole `ipcRenderer`. It now exposes a short list of named
+  functions, and the package it depended on is removed.
+- **Anthropic, with Claude Opus 5.5, through Anthropic's SDK.** You did not name a provider, so this is the
+  most consequential choice I made for you: it decides who gets paid and how much. It is one constant
+  (`MODEL`) and one module (`provider.ts`).
+- **The key: one encrypted file, never sent back to the page.** Not a third-party keychain package (one more
+  dependency to trust), and not an environment variable or a `.env` file (D-006).
+- **Saving writes in place** and reads the key back before saying "Saved" (your encrypted `AppData`; D-010).
+- **A guard on every message, plus validation in main.** The page cannot be fully trusted, and `about:blank`
+  gets `window.api` too (D-011).
+- **A plain-text system prompt.** Replies are shown as plain text, and Claude writes Markdown by default,
+  which would appear as stray asterisks. Remove it when Markdown is rendered (D-009).
+- **What the model is told: everything you saw, with neighbouring messages merged** (D-013), and a size cap,
+  because the whole chat is resent each time.
+- **Left out on purpose, each a possible next step:** refusal fallbacks, a cost display, a model picker,
+  system-proxy support, saved conversations, and New chat and Retry buttons (see `docs/IDEAS.md`).
+- **A test-only address override (`FRONTIER_API_BASE_URL`)** exists so the whole path can be tried against a
+  fake server. It works only when running from source, never in an installed app, and it logs a warning (once) whenever it is in use.
+- **No test framework, again** (D-007). The checks are throwaway scripts in this session's temporary folder.
+- **Git:** one commit per slice on `main` (messages "Stage 2.1" to "Stage 2.5"), each ending with the
+  "Co-Authored-By" line the tooling requires. Nothing was pushed; there is no remote.
+- **Left as they were:** the `example.com` update address in `electron-builder.yml`, the default icons, and
+  packaging (`npm run build:win` was not run).
+
+## Stage 2 - Things to know (not problems, but worth your attention)
+
+1. **I never called the real Anthropic API.** No key was available, and I did not ask you for one. Every check
+   ran against a mock server I wrote, which speaks the documented format and checks the request shape
+   strictly (section 11). It is my reading of the API, so a real difference would not show up. **The first real
+   message is the real test:** run `npm run dev`, click Settings, paste your key, send something. If it
+   fails, the red note says why and includes a request id. A wrong model name for your account reads "the
+   model ... was not found (404)", an empty balance reads "credit balance is too low", a bad key reads "not
+   accepted (401)". Tell me what it says and I will fix it.
+2. **It costs money, on your account.** Claude Opus 5.5 was listed at about $4 per million tokens in and $20
+   per million out when I chose it. The whole conversation is sent again with every message (the app asks for
+   caching, which bills the repeated part far lower), so long chats cost more per message. One reply is
+   capped at 16 000 tokens, and a conversation at about 150 000 tokens. **There is no cost display yet.** To
+   use a cheaper model, change `MODEL` in `src/main/provider.ts`, but check that the new model accepts the
+   request: some (Haiku 4.5, for one) reject the `effort` setting, so it is not always one line.
+3. **Conversations are not saved, and there is no "New chat" button.** Closing the window ends the
+   conversation; reopening starts a new one. (Both are on the roadmap's "Later" list and in `IDEAS.md`.)
+4. **Stop closes the connection** (the mock saw it close 8 ms later). What Anthropic bills for a reply you
+   stopped is their rule, not something I can see.
+5. **Your `AppData` folders are EFS-encrypted**, so renaming a file in them fails. The key is saved in a way
+   that copes (D-010). Any future feature that saves files there (conversation history is next) must do the
+   same and be tested in an encrypted folder. I saved this as a note for future sessions too.
+6. **The key store has a limit.** It protects a copy of the file on another computer or account. A program
+   running as you on this computer can ask Windows to decrypt it, like a browser's saved passwords.
+7. **Only Windows was tested.** On macOS the key goes to the Keychain, and on Linux the app refuses to save a
+   key when there is no desktop keyring. Both are written but untested.
+8. **The SDK does not use the Windows system proxy** (it uses Node's network stack, not Chromium's). Behind a
+   proxy that would need a change.
+9. **A stalled reply:** I tested Stop with a server that never answers and with one that streams slowly, but
+   not with one that sends the start of a reply and then goes silent. Stop is the way out.
+10. **Packaging is untested.** `npm run build:win` was not run. The SDK is in `dependencies`, so it would be
+    shipped, but I have not seen it.
+11. **`npm install` still prints "3 packages have install scripts not yet covered by allowScripts"** (esbuild
+    twice and electron-winstaller). As in Stage 0, nothing is blocked so far.
+12. **Git may print "LF will be replaced by CRLF" warnings.** Harmless, as before.
+13. **Files outside the project.** Project files are only under `A:\frontier-app`. Elsewhere: Electron's
+    download cache (`C:\Users\91995\AppData\Local\electron\Cache`) now holds the Electron 44 zip (151 MB)
+    and the old 39 zip (130 MB, safe to delete); your app's data folder gained the usual caches plus a few
+    tiny Chromium temp files from force-stopping test windows (`Local State...tmp`, `Preferences...tmp`,
+    harmless); the test scratch profiles I made inside `AppData` were all deleted, and your real profile
+    holds no `credentials*` file. The throwaway scripts and screenshots are in this session's temporary folder.
+14. **The test scripts** are not in the project: the mock API server, the DevTools helper, the runner, and
+    every `verify-*` script. Say the word and I will keep them in the project (for example under `tools/`).
+    The mock server is the useful one: it lets you try the whole app with no account and no spending.
+15. **Not checked:** a real screen reader, macOS and Linux, very long conversations (the longest I tried was
+    about 22 exchanges, plus the refusal at the size cap), window zoom levels, and input-method editors with
+    real replies.
+16. **No secrets anywhere.** No API key, no `.env`, nothing pushed. The test keys were invented per run and are
+    not recorded.

@@ -145,7 +145,8 @@ app. It is reversible: the page knows only `ReplyFn`, and the provider is one mo
 - **Model `claude-opus-5-5`**, the default in Anthropic's own guidance. It is the pricier tier (list price
   when chosen: about $4 per million input tokens and $20 per million output tokens), and replies are billed
   to the person's own account. Settings says so and names the model. To change it, edit `MODEL` in
-  `provider.ts`; Stage 3 turns it into a choice.
+  `provider.ts`, and check that the new model accepts the request: some (Haiku 4.5, for one) reject the
+  `effort` setting. Stage 3 turns it into a choice, with the settings each model takes.
 - **The request:** `max_tokens` 16000 (a ceiling on what one reply can cost; the model's thinking counts
   against it); `output_config.effort` "medium", written out because the default differs between models; no
   `thinking` setting (it is always on for this model), no sampling parameters, and no prefill (the last
@@ -157,7 +158,7 @@ app. It is reversible: the page knows only `ReplyFn`, and the provider is one mo
   send the key to another server). The key saved in Settings is the only credential and it goes only to
   `https://api.anthropic.com`; tested with hostile variables set. The one exception is
   `FRONTIER_API_BASE_URL`, honoured only when the app runs from source (never in an installer), which exists
-  so the whole path can be tested against a fake server.
+  so the whole path can be tested against a fake server. It logs a warning, once, whenever it is in use.
 - **Left out on purpose: server-side refusal fallbacks.** Anthropic's guidance suggests enabling them by
   default. They are a beta feature that I could not check without a real key, and they change billing (the
   fallback model's own rates). A declined request is shown as "The model declined to answer this
