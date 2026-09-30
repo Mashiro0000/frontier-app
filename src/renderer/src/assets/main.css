@@ -6,8 +6,8 @@
 
   --color-border: var(--ev-c-gray-3);
   --color-text-muted: var(--ev-c-text-2);
-  --color-accent: #3b5bdb;
-  --color-accent-hover: #4263eb;
+  --color-accent: #4263eb;
+  --color-accent-hover: #3b5bdb; /* darker on hover, so white text stays above 4.5:1 */
   --color-on-accent: #ffffff;
   --color-focus: #748ffc;
   --color-danger: #ff8787;
