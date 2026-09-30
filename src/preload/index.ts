@@ -1,13 +1,20 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
+import { CHANNELS, type FrontierApi } from '../shared/ipc'
 
 // The window is sandboxed (D-004), so this file may only require 'electron' (contextBridge,
 // ipcRenderer, ...), 'events', 'timers' and 'url'. It cannot require npm packages or other files at
-// run time; the build tool bundles any file this one imports. Keep it that way, or the preload fails
-// to load and the page silently gets no `window.api`.
+// run time; the build tool bundles any file this one imports (the shared contract is one). Keep it
+// that way, or the preload fails to load and the page silently gets no `window.api`.
 //
-// Everything listed in `api` is everything the page can ever ask the main process for. The scaffold
-// also exposed Electron's whole `ipcRenderer` as `window.electron`, which would let any script in
-// the page call any channel, including the ones that will hold the API key. It is gone.
-const api = {}
+// Everything listed in `api` is everything the page can ever ask the main process for. Each function
+// sends one named message; the page never gets Electron's `ipcRenderer` itself, which would let any
+// script in the page call any channel.
+const api: FrontierApi = {
+  settings: {
+    getStatus: () => ipcRenderer.invoke(CHANNELS.settingsStatus),
+    setApiKey: (key) => ipcRenderer.invoke(CHANNELS.settingsSetApiKey, key),
+    clearApiKey: () => ipcRenderer.invoke(CHANNELS.settingsClearApiKey)
+  }
+}
 
 contextBridge.exposeInMainWorld('api', api)

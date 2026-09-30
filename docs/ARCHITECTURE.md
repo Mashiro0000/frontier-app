@@ -1,35 +1,53 @@
 # Architecture (v0.1)
 
-> Stub. Describes what exists at Stage 1 and what is planned. Update as the app grows.
+> Stub. Describes what exists during Stage 2 and what is planned. Update as the app grows.
 
 ## What this is
 
 Frontier App is a desktop AI chat app built with Electron, Vite, React and TypeScript.
-At Stage 1 it is a working chat window whose replies are fake: the app echoes your message back.
-No model provider, network call or API key exists yet.
+At this point in Stage 2 it is a working chat window whose replies are still fake (the app echoes your
+message back), with a Settings screen that stores an API key. Nothing uses the key yet, and no code in
+the app makes a network call.
 
 ## Process model
 
 Electron runs three kinds of code. Each has its own folder under `src/`.
 
-| Folder         | Runs in                       | Job                                                                  |
-| -------------- | ----------------------------- | -------------------------------------------------------------------- |
-| `src/main`     | Main process (Node.js)        | Creates windows, talks to the OS, will own secrets and network calls |
-| `src/preload`  | Bridge (runs before the page) | Exposes a small, safe API from main to the renderer                  |
-| `src/renderer` | Browser window (React)        | The user interface                                                   |
-| `src/shared`   | Imported by any of them       | Types and constants used on both sides (empty for now)               |
+| Folder         | Runs in                       | Job                                                                     |
+| -------------- | ----------------------------- | ----------------------------------------------------------------------- |
+| `src/main`     | Main process (Node.js)        | Creates windows, talks to the OS, will own secrets and network calls    |
+| `src/preload`  | Bridge (runs before the page) | Exposes a small, safe API from main to the renderer                     |
+| `src/renderer` | Browser window (React)        | The user interface                                                      |
+| `src/shared`   | Imported by any of them       | The contract between page and main (`ipc.ts`) and checks both sides run |
 
 The renderer should never touch Node.js or the network for model calls directly. It asks main
 through the preload bridge (IPC).
 
-Stage 1 changed only `src/renderer`. Stage 2.2 then changed main and preload (see Security notes):
+Stage 1 changed only `src/renderer`. Stage 2 added the files below (see Security notes):
 
-| File                     | Job                                                                                   |
-| ------------------------ | ------------------------------------------------------------------------------------- |
-| `src/main/index.ts`      | Creates the sandboxed window and wires the navigation lock                            |
-| `src/main/security.ts`   | Plain functions: is this URL the app's own page? may it be opened in the browser?     |
-| `src/preload/index.ts`   | Builds `window.api`, the only thing the page can ask main for (empty until Stage 2.3) |
-| `src/preload/index.d.ts` | Tells the renderer's TypeScript what `window.api` looks like                          |
+| File                         | Job                                                                                         |
+| ---------------------------- | ------------------------------------------------------------------------------------------- |
+| `src/main/index.ts`          | Creates the sandboxed window, wires the navigation lock, registers the message handlers     |
+| `src/main/security.ts`       | Plain functions: is this URL the app's own page? may it be opened in the browser?           |
+| `src/main/ipc.ts`            | The message handlers. Each one first checks that the app's own page is calling              |
+| `src/main/keyStore.ts`       | Saves, reads and deletes the API key, encrypted by the operating system                     |
+| `src/preload/index.ts`       | Builds `window.api`, the only thing the page can ask main for                               |
+| `src/preload/index.d.ts`     | Tells the renderer's TypeScript what `window.api` looks like                                |
+| `src/shared/ipc.ts`          | Every message that crosses the boundary: types, channel names                               |
+| `src/shared/validate.ts`     | `checkApiKey`: the page uses it for quick feedback, main runs it again and trusts only that |
+| `src/renderer/src/settings/` | The Settings dialog and the hook that asks main whether a key is saved                      |
+
+### Settings and the API key
+
+```
+Settings dialog --window.api.settings.setApiKey(key)--> preload --> ipc.ts guard --> keyStore --> credentials.json
+   (page)             one named function, no ipcRenderer           is the caller the app's       encrypted by the OS
+                                                                   own page? checkApiKey again
+```
+
+The page can ask "is a key saved?" and hand over a new key. It can never read one back: the key is
+not part of any reply. The saved key lives in `credentials.json` in the per-user data folder
+(`app.getPath('userData')`), encrypted by Electron's `safeStorage`. See DECISIONS.md D-010 and D-011.
 
 ## Chat UI (`src/renderer/src/chat/`)
 
@@ -59,9 +77,9 @@ Composer --onSend--> useChat.send --> reply(history, signal) --text pieces--> me
 shape. In Stage 2 the function behind it moves to the main process, reached over IPC. `useChat` and
 the components should stay as they are. See DECISIONS.md D-008.
 
-Message types live in the renderer for now, because nothing crosses the process boundary yet. When
-main needs them, move `types.ts` to `src/shared` and add `src/shared` to the `include` list of both
-`tsconfig.node.json` and `tsconfig.web.json`. Neither covers it today.
+`ChatMessage` (with its status) stays in the renderer: main does not need it. What main will need for
+chat (plain role-and-text messages and the reply events) goes in `src/shared/ipc.ts`, which both
+`tsconfig.node.json` and `tsconfig.web.json` now include.
 
 ## Build tooling
 
@@ -96,7 +114,17 @@ Envelope for both files:
 
 ## Security notes
 
-- No API keys or `.env` files in the repo. Keys will be stored per user, outside git.
+- No API keys or `.env` files in the repo. The key is stored per user, outside git (D-010): encrypted by
+  the operating system, and never sent to the page. It protects against a copy of the file on another
+  computer or account. It does not protect against a program running as you on this computer, which
+  can ask the same secure storage to decrypt it.
+- Do not save files in the data folder by writing a temp file and renaming it over the real one. On
+  this project's own PC, which has Windows EFS encryption on `%APPDATA%`, every rename there fails
+  with EXDEV. Write in place (or copy then delete) and read the result back. Test storage code in an
+  EFS-encrypted folder, not only in `%TEMP%`.
+- Every message handler in main (`src/main/ipc.ts`) runs through a guard: only a call from the window's
+  top frame, on the app's own page, is answered. The preload API also exists in an `about:blank` page,
+  so the guard does not just trust "it came from our window". It then validates the input again.
 - The window is sandboxed, context-isolated and has no Node.js (D-004). A sandboxed preload may only
   require `electron`, `events`, `timers` and `url`: no npm packages, no other files at run time (the
   build tool bundles files the preload imports). If it breaks that rule the preload fails to load and
@@ -111,5 +139,5 @@ Envelope for both files:
 
 ## Not built yet
 
-Provider calls, settings, key storage, conversation history (closing the window loses the chat),
-Markdown rendering. See ROADMAP.md.
+Provider calls (the key is stored, but nothing uses it yet), conversation history (closing the window
+loses the chat), Markdown rendering. See ROADMAP.md.

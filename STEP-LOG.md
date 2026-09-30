@@ -62,6 +62,15 @@ The stages are explained in order: Stage 0, then Stage 1, then Stage 2.
   JavaScript worlds. Only what the preload deliberately hands over (`window.api`) crosses.
 - **Negative control** (Stage 2) - running a check in a situation where it _should_ fail, to prove
   that it can. A check that passes whatever happens proves nothing.
+- **Secure storage / safeStorage** (Stage 2) - the operating system's own place for secrets. On
+  Windows it ties data to your Windows account (the feature is called DPAPI). Electron's
+  `safeStorage` uses it to encrypt the API key before anything is written to disk.
+- **EFS** (Stage 2) - Windows' per-folder file encryption. It is switched on for your `AppData`
+  folders, and it made one obvious way of saving a file fail (Stage 2, slice 2.3).
+- **User data folder** (Stage 2) - where an Electron app keeps its per-user files. For this app:
+  `C:\Users\91995\AppData\Roaming\frontier-app`.
+- **Scratch profile** (Stage 2) - a throwaway user data folder made for a test, so the test cannot
+  touch your real one.
 
 ## Stage 0 - Step by step
 
@@ -622,3 +631,76 @@ traffic, so I am not claiming the process was silent, only that the app's code a
 | Command                                                             | What it does / why                                                                                                                                                                     |
 | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `npx prettier --write STEP-LOG.md docs`, `git add -A`, `git commit` | **Commit 2 of Stage 2:** "Stage 2.2: sandbox on, narrow preload, navigation lock (settles D-004)". After it, D-003 and D-004 are both settled, and still no code talks to the network. |
+
+### 8. Slice 2.3 - the Settings screen and key storage (no network, no provider yet)
+
+What was built: `src/shared/ipc.ts` (the list of everything that may cross between page and main)
+and `src/shared/validate.ts` (a check of the key's shape); in main, `keyStore.ts` (saves, reads and
+deletes the key, encrypted by the operating system) and `ipc.ts` (the message handlers, each behind a
+guard that checks who is calling); in the preload, three named functions under `window.api`; in the
+page, a Settings dialog (the browser's own `<dialog>` element, which traps keyboard focus and closes on
+Escape by itself) and a "Settings" button in the header. The key is stored but nothing uses it yet.
+
+| Command                                                                                                        | What it does / why                                                                                                                                                                                        |
+| -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reading `@electron-toolkit/utils` and electron-vite's `startElectron`                                          | Read-only. `is.dev` means "not packaged": true for `npm run dev` **and** `npm run start`, false in an installer. And how extra arguments reach Electron (I needed that for test profiles; see problem 1). |
+| File edits: the two shared files, `keyStore.ts`, `ipc.ts`, `index.ts`, the preload, both tsconfigs, the dialog | The tsconfigs now include `src/shared` (the architecture notes said to do this when types moved).                                                                                                         |
+| `npm run typecheck`, `npx eslint src`, `npx electron-vite build`                                               | Passed. Lint had 2 formatting warnings; prettier fixed them. The built preload is still one file that requires only `electron`, with the channel names bundled inline, which is what the sandbox needs.   |
+| `node contrast-2.mjs`                                                                                          | WCAG contrast for the new colours. I chose `#6e7a89` for the edges of the field and of secondary buttons: 3.64:1 against the dialog and 3.93:1 against the page, above the 3:1 bar. Every pair passed.    |
+| `node run-with-app.mjs ... verify-2-3.mjs`, then `verify-2-3b.mjs`                                             | The checks; see the next section. `verify-2-3b.mjs` is a second launch of the same profile, to prove the key survives a real restart.                                                                     |
+| `node measure-save.mjs` on three fresh profiles                                                                | How long "Save key" takes: 60, 63 and 61 ms.                                                                                                                                                              |
+| Looked at the dialog screenshots                                                                               | The layout looks right: centred, dimmed background, visible focus ring, Save disabled until the entry is valid, "Remove key" appears after a save.                                                        |
+
+### 9. Slice 2.3 - checking it, and what went wrong (two things)
+
+`verify-2-3.mjs` has 64 checks: 19 on `checkApiKey` run straight under Node, and 45 against the real
+window. The window checks cover: the dialog opens and closes (focus lands in the field, Escape closes
+it, focus returns to the button, Tab never leaves the dialog); validation feedback; saving; what is on
+disk (a JSON file whose key field is unreadable bytes: the key is not in it as text, nor as bytes, and
+the bytes are longer than the key); what the page can learn (`getStatus` returns only `hasKey` and
+`canStoreKey`, and the key appears nowhere in the page); bad input sent straight to the main process
+(numbers, objects, `null`, a 2 MB string...) is refused; **calls from an `about:blank` page are rejected
+by the main process and change nothing on disk**; the key survives a reload; Remove deletes the file.
+`verify-2-3b.mjs` (5 checks) then starts the app again on the same profile and reads the key back.
+
+**Problem 1: my first test run used your real profile.** I asked for a scratch profile through the
+`ELECTRON_CLI_ARGS` environment variable. The electron-vite command overwrites that variable with its
+own (empty) list, so my request was ignored and the app used `C:\Users\91995\AppData\Roaming\frontier-app`.
+I noticed because the scratch folder was empty afterwards. What reached your folder: one file,
+`credentials.json.tmp` (146 bytes), the encrypted form of a made-up 53-character test key. I checked its
+structure without looking at any content (the two field names, Chromium's `v10` marker, and 84 bytes,
+exactly what my test key would give), deleted it, and confirmed that no `credentials*` file remains. Your
+`Local State` was not touched (last written at 01:30, and it already held the OS-protected key from
+Stage 1). The only other residue is two tiny Chromium temp files from force-killing the app
+(`Local State...tmp`, `Preferences...tmp`), the same harmless kind earlier stages left. The fix: my runner
+now passes the profile as an Electron argument after a second `--` (the form `preview` already needed),
+each launch writes its own log, and every test script calls a guard that **aborts before writing
+anything unless the app has really created its profile in the scratch folder**.
+
+**Problem 2: Save failed in your real profile, and only there.** My first guess was "slow first use".
+Wrong: Save takes about 60 ms on fresh profiles. The real cause: **your `AppData` folders have Windows'
+EFS folder encryption switched on** (PowerShell shows the attribute `Encrypted`). In such a folder
+`rename` fails every time with EXDEV ("cross-device link"), even inside a single folder. I proved it
+with a probe that used my own uniquely named files in your profile folder and removed them straight
+after (0 left): 200 of 200 renames failed, while writing a file (new or overwriting) and copying one
+both worked. My first version of the key store wrote a temp file and renamed it over the real one. That
+worked in my scratch folders (under `%TEMP%`, which is not encrypted) and would have failed for you on
+**every** Save with "The key could not be saved on this computer". Clean scratch runs could never have
+shown it; the mistake in problem 1 is what exposed it. The fix: write the file in place, then read the
+key back, and only say "Saved" if it decrypts to the same key. To test this for real, the final runs
+use scratch profiles **inside your encrypted `AppData`** (named `frontier-app-test-scratch-*`, never the
+real `frontier-app`, and deleted afterwards). See DECISIONS D-010.
+
+| Result                               | Detail                                                                                                                                          |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dev window, EFS scratch profile      | 64 of 64, then 5 of 5 after a real restart: a new process decrypted the key saved by the previous one.                                          |
+| Built app, EFS scratch profile       | 64 of 64, then 5 of 5. This is the one where the guard compares `file://` addresses, so it matters separately.                                  |
+| Stage 1's suites with the new header | 110 of 110 in dev, 53 of 53 in the built app.                                                                                                   |
+| After everything                     | The real profile holds no `credentials*` file and none of my probe files. The scratch folders are deleted. No Electron process is left running. |
+
+One unrelated hiccup: a `python3` command I typed hung (on Windows, `python3` can be a Microsoft Store
+stub). I stopped it with the task-stop tool; it had changed nothing.
+
+| Command                 | What it does / why                                                                                                                                                                                                      |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `git add`, `git commit` | **Commit 3 of Stage 2:** "Stage 2.3: Settings screen and encrypted API-key storage". The Anthropic SDK, which I had already installed for the next slice, is deliberately left out of this commit: nothing uses it yet. |

@@ -1,8 +1,8 @@
+import type { FrontierApi } from '../shared/ipc'
+
 declare global {
   interface Window {
-    /** What the preload exposes to the page. Nothing yet; chat and settings arrive in Stage 2. */
-    api: Record<string, never>
+    /** What the preload exposes to the page. The contract is in src/shared/ipc.ts. */
+    api: FrontierApi
   }
 }
-
-export {}

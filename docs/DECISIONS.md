@@ -94,3 +94,36 @@ React escapes text, so pasted HTML cannot run; checked with an `<img onerror>` m
 HTML from a model is a bigger risk. The window is now sandboxed (D-004), which limits what a mistake
 can reach but does not replace sanitising. Status: accepted. Revisit: before adding Markdown, use a
 sanitising renderer.
+
+## D-010 - The API key is stored encrypted by the operating system and never leaves main
+
+The key is saved as one small file, `credentials.json`, in the app's per-user data folder, encrypted
+with Electron's `safeStorage` (Windows DPAPI, the macOS Keychain, the Linux desktop's secret service).
+The page can only ask whether a key is saved and hand a new one over; it can never read one back. On
+Linux with no keyring, saving is refused, because Electron would fall back to a password written in
+its own source code, which is disguise rather than protection.
+
+What this protects against: a copy of the file on another computer or under another account. What it
+does not: a program running as you on this computer can ask the same secure storage to decrypt it.
+That is the limit of any per-user store without a master password, and it is the same limit browsers
+and most desktop apps live with.
+
+The file is written in place and read back before the app says "Saved". A first version wrote a temp
+file and renamed it over the real one, and that failed on this project's own PC: its `%APPDATA%` is
+EFS-encrypted, and every rename inside it fails with EXDEV (a direct write and a copy both work). A
+test in a normal temp folder could not have shown this. Status: accepted (Stage 2.3).
+Revisit: when any other feature writes files in the data folder (conversation history is the next
+one), write in place or copy-then-delete, read back, and test in an EFS-encrypted folder. A "master
+password" or a check that the key works (a real request) are possible later additions.
+
+## D-011 - One shared contract for everything that crosses page, preload and main
+
+`src/shared/ipc.ts` lists every message between the page and the main process: types and channel
+names. The preload exposes exactly those as `window.api`, never Electron's `ipcRenderer`. Every
+handler in main (`src/main/ipc.ts`) runs through a guard that answers only a call made from the
+window's top frame, on the app's own page. This is needed because the preload API also exists in an
+`about:blank` page, which the navigation lock cannot stop (D-004). The guard is checked against real
+`about:blank` calls, in dev and in the built app. The input is validated again in main: the checks in
+the page are only for quick feedback. Status: accepted (Stage 2.3).
+Revisit: each new message needs the same guard and its own validation; add them in `ipc.ts`, and
+only through the contract.

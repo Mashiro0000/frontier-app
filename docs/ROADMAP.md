@@ -21,7 +21,7 @@
 - [x] D-004 settled: `sandbox: true`, narrow preload, navigation lock (Stage 2.2). Both decisions
       are done before any network code exists
 - [ ] One model provider called from the main process
-- [ ] Settings screen and safe per-user storage for the API key
+- [x] Settings screen and safe per-user storage for the API key (Stage 2.3)
 - [ ] Replace the renderer-side `echoReply` with a reply function that asks the main process over
       IPC. Same `ReplyFn` shape, so the chat components should not need to change (see D-008)
 

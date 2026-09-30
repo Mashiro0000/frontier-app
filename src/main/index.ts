@@ -3,14 +3,16 @@ import { join } from 'path'
 import { pathToFileURL } from 'url'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { registerIpc } from './ipc'
 import { isAppUrl, isSafeExternalUrl } from './security'
 
-function createWindow(): void {
-  // The app's own page: the Vite dev server while developing, otherwise the built file.
-  const devUrl = is.dev ? process.env['ELECTRON_RENDERER_URL'] : undefined
-  const pageFile = join(__dirname, '../renderer/index.html')
-  const appUrl = devUrl ?? pathToFileURL(pageFile).href
+// The app's own page: the Vite dev server while developing, otherwise the built file. Kept at module
+// level because the message handlers are registered once, while a window can be created again.
+const devUrl = is.dev ? process.env['ELECTRON_RENDERER_URL'] : undefined
+const pageFile = join(__dirname, '../renderer/index.html')
+const appUrl = devUrl ?? pathToFileURL(pageFile).href
 
+function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
@@ -68,6 +70,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerIpc(appUrl)
   createWindow()
 
   app.on('activate', function () {

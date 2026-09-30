@@ -11,6 +11,8 @@
   --color-on-accent: #ffffff;
   --color-focus: #748ffc;
   --color-danger: #ff8787;
+  /* Edge of a text field or secondary button: 3.6:1 on the dialog, so the control can be seen. */
+  --color-input-border: #6e7a89;
 
   /* Width of the centred column that holds messages and the input box. */
   --chat-width: 760px;
@@ -57,6 +59,32 @@ body {
   color: var(--color-text-muted);
   border: 1px solid var(--color-border);
   border-radius: 999px;
+}
+
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-button {
+  padding: 2px 12px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-input-border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.header-button:hover {
+  background: var(--ev-c-gray-3);
+}
+
+.header-button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 /* ---------- chat area ---------- */
@@ -263,4 +291,129 @@ body {
 /* Needs the same specificity as the Send hover rule above to win over it. */
 .composer-button-stop:hover:not(:disabled) {
   background: var(--ev-c-gray-1);
+}
+
+/* ---------- buttons (settings dialog) ---------- */
+
+.button {
+  height: 36px;
+  padding: 0 16px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  color: var(--ev-c-text-3);
+  background: var(--ev-c-gray-3);
+  cursor: default;
+}
+
+.button-secondary {
+  color: var(--color-text);
+  background: transparent;
+  border-color: var(--color-input-border);
+}
+
+.button-secondary:hover:not(:disabled) {
+  background: var(--ev-c-gray-3);
+}
+
+.button-secondary:disabled {
+  background: transparent;
+}
+
+/* ---------- settings dialog ---------- */
+
+.settings {
+  /* The global reset removes the dialog's automatic centring margin, so put it back. */
+  margin: auto;
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 20px 22px;
+  overflow-y: auto;
+  color: var(--color-text);
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.settings::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.settings-title {
+  margin-bottom: 14px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-heading {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.settings-hint,
+.settings-status {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.settings-label {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.settings-input {
+  width: 100%;
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-background);
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+}
+
+.settings-input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.settings-notice {
+  font-size: 13px;
+}
+
+.settings-notice-error {
+  color: var(--color-danger);
+}
+
+.settings-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
 }
