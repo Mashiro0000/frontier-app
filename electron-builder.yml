@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: frontier-app
+appId: com.frontier.app
+productName: Frontier App
 directories:
   buildResources: build
 files:
