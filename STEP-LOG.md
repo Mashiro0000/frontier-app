@@ -55,6 +55,13 @@ The stages are explained in order: Stage 0, then Stage 1, then Stage 2.
   `npm install`. We use it to download the Electron program itself.
 - **Build target** (Stage 2) - which version of Node or Chromium the build tool prepares the code
   for. A target that is too old makes it rewrite, or refuse, newer code for no reason.
+- **Sandbox** (Stage 2) - a Chromium feature that runs the page in a process that may not touch
+  files, programs or the network by itself. The preload is limited too: it may only load a short list
+  of modules.
+- **Context isolation** (Stage 2) - the preload's code and the page's code run in separate
+  JavaScript worlds. Only what the preload deliberately hands over (`window.api`) crosses.
+- **Negative control** (Stage 2) - running a check in a situation where it _should_ fail, to prove
+  that it can. A check that passes whatever happens proves nothing.
 
 ## Stage 0 - Step by step
 
@@ -459,6 +466,62 @@ safe to delete.
 "Later" item in the roadmap). The advisories' fixed-version numbers come from their GitHub pages. I
 read all four, but two of them (GHSA-gr2m and GHSA-9qh4) only through a summary.
 
+### D-004 - Window sandbox: turned on (commit "Stage 2.2")
+
+**Decision: `sandbox: true`.** The page now runs in Chromium's sandbox. `contextIsolation: true` and
+`nodeIntegration: false` are written out too: they are Electron's defaults, but a security setting
+that is written down is harder to switch off by accident. (The sandbox has been Electron's default
+since version 20. The scaffold's `sandbox: false` was an opt-out, and this decision removes it.)
+
+**What the question turned out to be.** Stage 0 wrote down "not tested whether the preload works with
+the sandbox on". I tested it: **it does not.** With `sandbox: true` and the scaffold's preload, the
+preload dies with `module not found: @electron-toolkit/preload`, because a sandboxed preload may only
+load `electron`, `events`, `timers` and `url`. The failure is **silent**: the window looks normal, and
+`window.electron` and `window.api` are just missing. Stage 2's IPC would have simply not existed, with
+no crash to point at. So flipping the flag was never enough; the preload had to be rewritten.
+
+**What changed:**
+
+1. `src/main/index.ts`: the three settings above.
+2. `src/preload/index.ts`: rewritten to use only `contextBridge`. It exposes `window.api`, empty for
+   now. The scaffold's `window.electron` (Electron's whole `ipcRenderer`) is gone. With it, any script
+   in the page could call any IPC channel, including the ones that will hold the API key. Stage 2
+   adds narrow, named functions instead.
+3. The `@electron-toolkit/preload` package is removed (nothing uses it any more): one dependency fewer.
+4. New `src/main/security.ts` and two rules that use it:
+   - **The window cannot navigate away from the app's own page.** The preload's API exists in
+     whatever page the window shows, so a link that navigated away would hand that API to another
+     site. Electron 44 has a `will-frame-navigate` event for exactly this.
+   - **Only `http:` and `https:` links go to the operating system.** The scaffold passed any URL to
+     `shell.openExternal`, so a `file:` or `ms-msdt:` address could start a program. No link in the
+     app is clickable today (messages are plain text), so this is prevention for when Markdown arrives.
+
+**Evidence (real windows, dev and built):**
+
+- Electron's own report of the window settings, read from inside the main process: `sandbox: true`,
+  `contextIsolation: true`, `nodeIntegration: false`, web security on, no `<webview>`.
+- The preload loads; the page sees `window.api` (empty) and no `window.electron`, `require` or
+  `process`; no console errors.
+- **IPC works through the sandboxed preload**, which all of Stage 2 depends on. A temporary probe (an
+  `invoke` round trip, and a push from main to the page) passed 6/6 in both windows, and main saw the
+  true sender address. I restored the two files afterwards and checked it by hash.
+- **The navigation lock blocks** `http://127.0.0.1:1/` (both windows) and `file:///C:/Windows/win.ini`
+  (built app), and still allows the app's own page. A negative control (lock switched off) shows those
+  same navigations _do_ happen without it: in the built app the window would happily load the local
+  file.
+- All of Stage 1's checks still pass with the sandbox on: 110 of 110 in dev, 53 of 53 in the built app.
+
+**What I found that you should know:**
+
+- **`about:blank` is not blocked.** With the lock on, a page can still navigate itself to `about:blank`
+  (Electron's event does not see it). It is an empty page, and going anywhere from there is blocked
+  (observed). But it does get `window.api`, so every IPC handler I write in main must also check who is
+  calling, not rely on the lock. I will do that in slice 2.3.
+- **The sandbox does not make model output safe.** It limits what a mistake can reach. Text is still
+  shown as plain text, and D-009 still says to sanitise before any Markdown.
+- I could not read `process.sandboxed` from outside the preload (`process` is not a global in that
+  world), so the main-process report above is the proof, not that.
+
 ## Stage 2 - Step by step
 
 ### 1. Look around before changing anything
@@ -512,3 +575,50 @@ program tree it started (`taskkill /PID <id> /T /F`).
 | `npm audit`, `npx prettier --check .`                                                                          | `found 0 vulnerabilities`; formatting clean.                                                                                                                                                                                                                                                                                         |
 
 So on Electron 44 the window passes every Stage 1 check: 17 + 35 + 42 + 16 in dev mode (110) and 11 + 42 in the built app (53).
+
+| Command                    | What it does / why                                                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `git add -A`, `git commit` | **Commit 1 of Stage 2:** "Stage 2.1: upgrade Electron 39 to 44.5.1 (settles D-003)". No app code in it touches the network. |
+
+### 5. Slice 2.2 - D-004: does the preload survive the sandbox?
+
+| Command                                                                                                                       | What it does / why                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `cat out/preload/index.js`; `grep` for `window.electron`, `window.api`, `@electron-toolkit/preload` in `src`                  | Read-only. The built preload does `require("@electron-toolkit/preload")`. Nothing in the page uses `window.electron` or `window.api`.                                                                                                                              |
+| `grep` in Electron's type file for `will-frame-navigate`, `sandbox`, `senderFrame`; Electron's sandbox documentation page     | Read-only. Checked those exist in Electron 44, and read exactly what a sandboxed preload may load (`electron`'s `contextBridge`, `ipcRenderer` and a few more, plus `events`, `timers`, `url`; no npm packages, no other files).                                   |
+| Changed only `sandbox: false` to `true` in `src/main/index.ts`, then `node run-with-app.mjs dev probe-sandbox-before.mjs ...` | The "before" test: flip the flag, leave the scaffold's preload alone. Result: `Unable to load preload script` and `module not found: @electron-toolkit/preload` in the page console; `window.electron` and `window.api` both undefined. The window still rendered. |
+
+### 6. Slice 2.2 - the changes
+
+| Command                                                                                                      | What it does / why                                                                                                                                     |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| File edits: new `src/main/security.ts`; changed `src/main/index.ts`, `src/preload/index.ts` and `index.d.ts` | Everything under "What changed" in the D-004 section above. `security.ts` has no Electron imports, so its two functions can be tested with plain Node. |
+| `npm uninstall @electron-toolkit/preload`                                                                    | Nothing uses it any more. (Named packages on the command line, so `postinstall` does not run: see step 3.)                                             |
+| `npm run typecheck`, `npm run lint`, `npx electron-vite build`                                               | All pass. The built preload is 0.12 kB (it was 0.42 kB) and requires only `electron`.                                                                  |
+
+### 7. Slice 2.2 - checking it, and the mistakes in my checks
+
+I changed `run-with-app.mjs` (my copy) so it can also open Node's inspector on the **main** process
+(`INSPECT_PORT`). That lets a check ask the running app what Electron itself thinks the window's
+settings are, which is stronger proof than what the page can see.
+
+`verify-2-2.mjs` has 43 checks: 24 on the two trust functions, run directly under Node, and 19 against
+the real window. It went wrong three times before it was right. All three were flaws in my tests, not
+in the app, and the second one is the kind that matters:
+
+| Step                                                                                            | What happened                                                                                                                                                                                                                                                                                                                                                                                               |
+| ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| First run, dev window                                                                           | 45 of 46. The failure: I tried to read `process.sandboxed` inside the preload's world, but `process` is not a global there. Dropped that check. The main-process report covers it.                                                                                                                                                                                                                          |
+| **Negative control**, part 1: switch the lock off with a one-line edit and try to navigate away | **The control failed**: with no lock, navigating to a `file:` address still did not happen. Chromium itself refuses an `http:` page navigating to a `file:` address. So my earlier "blocked" check for that target proved nothing in dev. Good thing I asked whether the test could fail.                                                                                                                   |
+| Negative control, part 2: three targets that never leave this computer, lock off, dev and built | Dev window: `about:blank` and a refused loopback address navigate away; the `file:` address does not. Built app: all three navigate, including `file:///C:/Windows/win.ini`. Then I restored the line (`grep` finds no leftover marker; `git diff` shows only the intended changes).                                                                                                                        |
+| Lock restored, re-run                                                                           | **8 failures.** `about:blank` navigated even with the lock on, which left the page stranded there, so every later check ran in the wrong place. The `http://127.0.0.1:1/` attempts from `about:blank` did stay blocked. Fix: `about:blank` is now an informational observation, not a target, and every attempt starts from the app page. Then 43 of 43 in the dev window and 43 of 43 in the built app.    |
+| Stage 1's suites, sandbox on                                                                    | Dev: 17 + 35 + 42 + 16 = 110 of 110. Built app: 11 + 42 = 53 of 53.                                                                                                                                                                                                                                                                                                                                         |
+| **IPC probe** (temporary)                                                                       | Backed up `src/main/index.ts` and `src/preload/index.ts` (hashes noted). Added an `ipcMain.handle`, plus `ping` and `onPush` in the preload, all marked `PROBE-TEMP`. `probe-ipc.mjs`: 6 of 6 in the dev window, and 6 of 6 in a build made from the patched files. Then copied the backups back: the hashes match the pre-probe state, no `PROBE-TEMP` is left, and `out/` was rebuilt from the real code. |
+
+No code in the app makes a network call yet. The only addresses I sent a window towards were
+`127.0.0.1:1` (nothing listens there) and local files. (I did not monitor Electron's own background
+traffic, so I am not claiming the process was silent, only that the app's code asked for nothing.)
+
+| Command                                                             | What it does / why                                                                                                                                                                     |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npx prettier --write STEP-LOG.md docs`, `git add -A`, `git commit` | **Commit 2 of Stage 2:** "Stage 2.2: sandbox on, narrow preload, navigation lock (settles D-004)". After it, D-003 and D-004 are both settled, and still no code talks to the network. |

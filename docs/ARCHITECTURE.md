@@ -22,8 +22,14 @@ Electron runs three kinds of code. Each has its own folder under `src/`.
 The renderer should never touch Node.js or the network for model calls directly. It asks main
 through the preload bridge (IPC).
 
-Stage 1 changed only `src/renderer`. Main and preload are as the scaffold left them, so the chat
-adds no new way to reach the OS or the network.
+Stage 1 changed only `src/renderer`. Stage 2.2 then changed main and preload (see Security notes):
+
+| File                     | Job                                                                                   |
+| ------------------------ | ------------------------------------------------------------------------------------- |
+| `src/main/index.ts`      | Creates the sandboxed window and wires the navigation lock                            |
+| `src/main/security.ts`   | Plain functions: is this URL the app's own page? may it be opened in the browser?     |
+| `src/preload/index.ts`   | Builds `window.api`, the only thing the page can ask main for (empty until Stage 2.3) |
+| `src/preload/index.d.ts` | Tells the renderer's TypeScript what `window.api` looks like                          |
 
 ## Chat UI (`src/renderer/src/chat/`)
 
@@ -91,7 +97,15 @@ Envelope for both files:
 ## Security notes
 
 - No API keys or `.env` files in the repo. Keys will be stored per user, outside git.
-- Context isolation is on. The scaffold sets `sandbox: false` on the window; see DECISIONS.md D-004.
+- The window is sandboxed, context-isolated and has no Node.js (D-004). A sandboxed preload may only
+  require `electron`, `events`, `timers` and `url`: no npm packages, no other files at run time (the
+  build tool bundles files the preload imports). If it breaks that rule the preload fails to load and
+  the page silently gets no `window.api`; check the console for "Unable to load preload script".
+- The page gets only what `src/preload/index.ts` lists under `window.api`. Never expose Electron's
+  whole `ipcRenderer`: any script in the page could then call any channel.
+- The window cannot navigate away from the app's own page, and only http(s) links reach the operating
+  system (`src/main/security.ts`). `about:blank` is the one navigation this cannot stop, and that page
+  still gets `window.api`, so every IPC handler must also check who is calling.
 - Message text is shown as plain text. React escapes it, so pasted HTML cannot run. Markdown or
   HTML from a model needs a sanitising renderer first; see D-009.
 

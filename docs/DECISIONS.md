@@ -38,11 +38,29 @@ Revisit: at the start of every stage, run `npm audit` and check the installed ma
 Electron's latest three. 44 leaves that window when 47 is released. Raise the pinned build targets
 whenever Electron is upgraded.
 
-## D-004 - Keep `sandbox: false` from the scaffold for now
+## D-004 - Window sandbox: turned on in Stage 2
 
-The scaffold ships the window with `sandbox: false`. It was not tested whether the preload works
-with the sandbox on. Context isolation is on. Status: temporary.
-Revisit: try `sandbox: true` before handling API keys or model output.
+The scaffold shipped the window with `sandbox: false`, and nobody had tried it the other way. Tried in
+Stage 2.2: with `sandbox: true` the scaffold's preload does not load (it required an npm package, and
+a sandboxed preload may only require `electron`, `events`, `timers` and `url`). The failure is silent:
+the window looks normal but the page gets no bridge at all.
+
+Decision: `sandbox: true`, `contextIsolation: true` and `nodeIntegration: false`, written out in
+`src/main/index.ts`. The preload is rewritten to use only `contextBridge` (and `ipcRenderer` when IPC
+arrives) and exposes `window.api` only. The scaffold's `window.electron`, which was Electron's whole
+`ipcRenderer`, is removed, and the `@electron-toolkit/preload` package with it: any script in the page
+could have called any IPC channel, including the ones that will hold the API key. Two more rules in
+`src/main/security.ts`: the window cannot navigate away from the app's own page (the preload API
+exists in whatever page the window shows), and only http(s) links are passed to the operating system
+(the scaffold passed any URL to `shell.openExternal`).
+
+Checked in the real dev and built windows: Electron's own report of the window settings from the main
+process, the preload loading and exposing only `window.api`, an IPC round trip and a push through the
+sandboxed preload, the navigation lock (with a negative control showing the test can fail), and all of
+Stage 1's checks. Status: accepted (Stage 2.2).
+Revisit: a preload that needs more than the four modules above must be bundled by the build tool,
+never un-sandboxed. The lock cannot stop a navigation to `about:blank` (an empty page that still gets
+`window.api`; observed), so every IPC handler in main must also check who is calling.
 
 ## D-005 - Registry is plain JSON files in the repo
 
@@ -73,5 +91,6 @@ empty replies.
 ## D-009 - Message text is plain text only
 
 React escapes text, so pasted HTML cannot run; checked with an `<img onerror>` message. Markdown or
-HTML from a model is a bigger risk, and the window still has `sandbox: false` (D-004). Status:
-accepted. Revisit: before adding Markdown, settle D-004 and use a sanitising renderer.
+HTML from a model is a bigger risk. The window is now sandboxed (D-004), which limits what a mistake
+can reach but does not replace sanitising. Status: accepted. Revisit: before adding Markdown, use a
+sanitising renderer.

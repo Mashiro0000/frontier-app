@@ -1,9 +1,16 @@
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
+import { pathToFileURL } from 'url'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { isAppUrl, isSafeExternalUrl } from './security'
 
 function createWindow(): void {
+  // The app's own page: the Vite dev server while developing, otherwise the built file.
+  const devUrl = is.dev ? process.env['ELECTRON_RENDERER_URL'] : undefined
+  const pageFile = join(__dirname, '../renderer/index.html')
+  const appUrl = devUrl ?? pathToFileURL(pageFile).href
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
@@ -13,7 +20,12 @@ function createWindow(): void {
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      // D-004: the page runs sandboxed, cut off from the preload's world, with no Node.js. These are
+      // also Electron's defaults; they are written out so nobody switches one off by accident. A
+      // sandboxed preload may only require 'electron', 'events', 'timers' and 'url' (see preload).
+      sandbox: true,
+      contextIsolation: true,
+      nodeIntegration: false
     }
   })
 
@@ -22,16 +34,23 @@ function createWindow(): void {
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
+    // Only web links go to the browser. Anything else (file:, ms-msdt:, ...) could start a program.
+    if (isSafeExternalUrl(details.url)) shell.openExternal(details.url)
     return { action: 'deny' }
+  })
+
+  // The window never leaves the app's own page. The preload's API is reachable from whatever page
+  // is loaded in this window, so a navigation away would hand that API to another site.
+  mainWindow.webContents.on('will-frame-navigate', (event) => {
+    if (!isAppUrl(event.url, appUrl)) event.preventDefault()
   })
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+  if (devUrl) {
+    mainWindow.loadURL(devUrl)
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    mainWindow.loadFile(pageFile)
   }
 }
 
