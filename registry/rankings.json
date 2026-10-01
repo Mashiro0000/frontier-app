@@ -1,6 +1,56 @@
 {
-  "schemaVersion": "0.1",
-  "updatedAt": null,
-  "source": null,
-  "rankings": []
+  "schemaVersion": "0.2",
+  "updatedAt": "2026-10-01",
+  "source": "Anthropic's and OpenAI's own documentation, read on 2026-10-01; every row quotes the page it came from (D-023)",
+  "rankings": [
+    {
+      "task": "coding",
+      "modelId": "claude-opus-5-5",
+      "note": "\"Complex agentic coding and enterprise work\" (examples: multihour autonomous coding agents, large-scale refactoring)",
+      "source": "https://platform.claude.com/docs/en/about-claude/models/choosing-a-model",
+      "asOf": "2026-10-01"
+    },
+    {
+      "task": "coding",
+      "modelId": "claude-sonnet-5-5",
+      "note": "\"Speed and capability for everyday coding, agent, and enterprise workloads\" (example: code generation)",
+      "source": "https://platform.claude.com/docs/en/about-claude/models/choosing-a-model",
+      "asOf": "2026-10-01"
+    },
+    {
+      "task": "writing",
+      "modelId": "claude-sonnet-5-5",
+      "note": "\"Speed and capability for everyday coding, agent, and enterprise workloads\" (example: content creation)",
+      "source": "https://platform.claude.com/docs/en/about-claude/models/choosing-a-model",
+      "asOf": "2026-10-01"
+    },
+    {
+      "task": "quick",
+      "modelId": "claude-haiku-4-5-20251001",
+      "note": "\"The lowest latency and price, with extended thinking\" (example: real-time applications)",
+      "source": "https://platform.claude.com/docs/en/about-claude/models/choosing-a-model",
+      "asOf": "2026-10-01"
+    },
+    {
+      "task": "coding",
+      "modelId": "gpt-6-astra",
+      "note": "\"Use it for complex reasoning, coding, computer use, research, and document creation.\"",
+      "source": "https://developers.openai.com/api/docs/models/gpt-6-astra",
+      "asOf": "2026-10-01"
+    },
+    {
+      "task": "writing",
+      "modelId": "gpt-6-astra",
+      "note": "\"Use it for complex reasoning, coding, computer use, research, and document creation.\"",
+      "source": "https://developers.openai.com/api/docs/models/gpt-6-astra",
+      "asOf": "2026-10-01"
+    },
+    {
+      "task": "coding",
+      "modelId": "gpt-6.1-sol",
+      "note": "\"near-Astra performance at a lower cost for complex coding, computer use, and professional work.\"",
+      "source": "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+      "asOf": "2026-10-01"
+    }
+  ]
 }

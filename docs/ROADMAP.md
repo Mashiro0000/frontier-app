@@ -1,6 +1,6 @@
 # Roadmap (v0.1)
 
-> Stub. Stages 0 to 5 are done; everything after them is a tentative outline, not a commitment. Stage 4 was
+> Stub. Stages 0 to 6 are done; everything after them is a tentative outline, not a commitment. Stage 4 was
 > not written down in advance: the roadmap's "Later" list began with conversation history, and D-010, D-013 and
 > the architecture notes all named it as the next piece of work, so that is what Stage 4 became.
 
@@ -67,8 +67,18 @@
 - [x] The check scripts live in the repository: `tools/`, with a regression driver and negative controls
 - One new package, `openai`. **No real call has been made to either provider**; the first one is the person's to make
 
+## Stage 6 - Suggestions per task (done)
+
+- [x] `registry/rankings.json` (schema 0.2) holds statements from the providers' own pages: this model is named for this task, in the page's
+      words, with its address and the day it was read. **No scores**: none that compares these models could be backed (D-023)
+- [x] A **Task** menu in the header (any task, chat, coding, writing, quick answer). It chooses nothing: the model menu marks the models named for
+      the task with "(suggested)", for the models on offer whose provider has a key
+- [x] Seven rows; chat, Fable 5.1, GPT-6 Luna and OpenAI's quick answer have none because nothing that was read says it. A broken file costs
+      only the suggestions
+- No new packages. `getStatus` gained `tasks` and `suggestions`
+
 ## Later (tentative)
 
 - A third provider (Gemini): a registry entry, an adapter, and its rows in the provider tables
-- Use `registry/rankings.json` to suggest a model per task
+- Rankings with real scores (and one suggested model per task), once a source compares these models on one scale
 - Packaged installer for Windows

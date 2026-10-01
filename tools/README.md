@@ -19,8 +19,8 @@ tree), and keep the machine idle: `verify-4-3c` (quit with 60 queued saves) fail
 
 | Part        | What it runs                                                                        | About   |
 | ----------- | ----------------------------------------------------------------------------------- | ------- |
-| `node`      | Plain-Node suites: provider, registry, store, adapters, credential store            | 1.5 min |
-| `window`    | The window suites of Stages 1-3 and 5.3, each on its own scratch profile            | 3 min   |
+| `node`      | Plain-Node suites: provider, registry, rankings, store, adapters, credential store  | 1.5 min |
+| `window`    | The window suites of Stages 1-3, 5 and 6, each on its own scratch profile           | 4 min   |
 | `seeds`     | One launch per damaged `preferences.json` (`make-seeds.mjs` makes them)             | 4.5 min |
 | `scenarios` | The registry file deliberately broken in ten ways, restored after each (`run-scenario.mjs`) | 3 min   |
 | `stage4`    | The history suites (`final-new.mjs`): crashes, damaged folders, injected disk faults | long    |
@@ -57,7 +57,7 @@ running; `!! the app is GONE` means no `electron.exe` was left.
 | `mock-providers.mjs`                   | The fake provider API (Anthropic messages and model list; controls for hang, failure, paging) |
 | `verify-*.mjs`, `setup-key.mjs`        | The suites. `verify-N-M` is slice N.M of the roadmap                            |
 | `provider-*-test-5.mjs`, `shim-new.mjs`| Plain-Node suites for the provider layer                                        |
-| `run4*.mjs`, `run53.mjs`, `final-new.mjs` | Launchers that need two launches, a seeded folder or a crash in the middle  |
+| `run4*.mjs`, `run53.mjs`, `run62.mjs`, `final-new.mjs` | Launchers that need two launches, a seeded folder, a damaged file or a crash in the middle |
 | `nc*.mjs`, `specs*/`, `make-specs54.mjs` | Negative controls: sabotage one thing, run the suite, prove it fails, restore the file and prove it by hash |
 | `capture-golden-5.mjs`, `golden-*.json`| The recorded request bodies the Anthropic path must keep sending byte for byte  |
 | `mock-openai.mjs`                      | OpenAI's side of the mock: Responses API streaming and its model list (my reading of the docs and the SDK's types, not the real API) |

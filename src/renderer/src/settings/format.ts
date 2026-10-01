@@ -2,7 +2,20 @@
 // export nothing but components (the dev server's hot reload relies on that).
 
 import type { ProviderStatus, SettingsStatus } from '../../../shared/ipc'
+import type { Suggestion, TaskId } from '../../../shared/rankings'
 import type { ProviderId } from '../../../shared/registry'
+
+/**
+ * What the providers' documentation names for `task`, among the models on offer now (D-023). Empty while no task is
+ * chosen, and when nothing is named: that is an answer, not an error.
+ */
+export function suggestionsForTask(
+  status: SettingsStatus | null,
+  task: TaskId | null
+): Suggestion[] {
+  if (!status || task === null) return []
+  return status.suggestions.filter((suggestion) => suggestion.task === task)
+}
 
 /** What to call a provider: its name from the settings status (the id, if the status does not list it). */
 export function providerName(status: SettingsStatus, id: ProviderId): string {

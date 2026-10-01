@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import type { SettingsStatus } from '../../../shared/ipc'
+import type { TaskId } from '../../../shared/rankings'
+import { suggestionsForTask } from './format'
 
 interface ModelPickerProps {
   /** What the main process says about settings; null until it has answered. */
   status: SettingsStatus | null
+  /** What the person says they are doing: the models named for it are marked in the menu (D-023). */
+  task: TaskId | null
   /**
    * True while a reply is arriving. The model is fixed when a reply starts, so changing it now would
    * leave the header naming a model that is not the one answering.
@@ -15,6 +19,7 @@ interface ModelPickerProps {
 /** The menu in the header that chooses which model answers. The list comes from the registry. */
 function ModelPicker({
   status,
+  task,
   disabled,
   onStatusChange
 }: ModelPickerProps): React.JSX.Element | null {
@@ -51,6 +56,7 @@ function ModelPicker({
 
   const shown = pendingId ?? status.selectedModelId ?? ''
   const label = status.models.find((model) => model.id === shown)?.label
+  const named = new Set(suggestionsForTask(status, task).map((suggestion) => suggestion.modelId))
   return (
     <>
       <select
@@ -67,7 +73,7 @@ function ModelPicker({
       >
         {status.models.map((model) => (
           <option key={model.id} value={model.id}>
-            {model.label}
+            {named.has(model.id) ? `${model.label} (suggested)` : model.label}
           </option>
         ))}
       </select>

@@ -28,7 +28,9 @@ The first time, click **Settings** and paste your own API key for the provider y
 models) and **Remove key**. A key is stored encrypted on your computer, and replies are billed to your account with that
 provider. The default model is Claude Opus 5.5; the menu in the header chooses another (Claude Fable 5.1, Sonnet 5.5,
 Haiku 4.5, or OpenAI's GPT-6 Astra, GPT-6.1 Sol and GPT-6 Luna), and Settings shows what each one costs. A chat can move
-between providers: the whole conversation is sent to whichever model answers next.
+between providers: the whole conversation is sent to whichever model answers next. The **Task** menu next to the model
+menu (chat, coding, writing, quick answer) marks the models the providers' own pages name for a task with "(suggested)";
+it chooses nothing, and the list is `registry/rankings.json` (D-023).
 The list of models is `registry/models.json`: edit it, then restart `npm run dev` (or run `npm run dev -- --watch`
 so it restarts by itself). See docs/DECISIONS.md D-012, D-014, D-015, D-020 and D-022.
 

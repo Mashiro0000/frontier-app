@@ -49,7 +49,7 @@ check('no key: exactly one badge, the warning "No API key" (the model is no long
 const apiKeys = await ev(`JSON.stringify(Object.keys(window.api.settings))`)
 check('window.api.settings is exactly getStatus / setApiKey / clearApiKey / testApiKey / setModel', apiKeys === '["getStatus","setApiKey","clearApiKey","testApiKey","setModel"]', apiKeys)
 const status0 = await H.status()
-check('getStatus: exactly providers, canStoreKey, models, selectedModelId, modelsError, modelsCheckedOn', Object.keys(status0).join() === 'providers,canStoreKey,models,selectedModelId,modelsError,modelsCheckedOn', Object.keys(status0).join())
+check('getStatus: exactly providers, canStoreKey, models, selectedModelId, modelsError, modelsCheckedOn, tasks, suggestions', Object.keys(status0).join() === 'providers,canStoreKey,models,selectedModelId,modelsError,modelsCheckedOn,tasks,suggestions', Object.keys(status0).join())
 check('getStatus: default selected, no registry error, checked on 2026-10-01', status0.selectedModelId === OPUS && status0.modelsError === null && status0.modelsCheckedOn === '2026-10-01')
 check('getStatus: each model has exactly id, label, provider, description, contextWindow, pricing', status0.models.length === models.length && status0.models.every((m) => Object.keys(m).join() === 'id,label,provider,description,contextWindow,pricing'))
 check('the page is told nothing about how a model is called: no "effort", no output limit anywhere in the status', !/effort|maxOutputTokens/i.test(JSON.stringify(status0)))

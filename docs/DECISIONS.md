@@ -641,3 +641,46 @@ one entry in each table, and rows in the registry. OpenAI was chosen as the seco
 Status: accepted (Stage 5.5). Revisit: the first real call (the model ids, the default effort of gpt-6-astra, which the documentation does
 not state, and which is set to "medium" like the other two); Chat Completions as a fallback if the Responses API misbehaves; image input and
 tools (the registry already records which models take them); showing a model's retirement date (D-014); Gemini as the third provider.
+
+## D-023 - `rankings.json` is a shortlist of what the providers' own pages say, not a ranking; the app offers it and never picks
+
+The roadmap said "use `registry/rankings.json` to suggest a model per task". The plan was a score from 0 to 100 per model and task. **No such
+score could be backed.** The pages that were read (Anthropic's model overview and "Choosing a model", OpenAI's model pages, 1 October 2026) give
+words, not numbers that compare these models with each other: a use-case matrix, a latency tier, "best for" lines. A benchmark table on a
+vendor's own page compares its own models with each other and with the previous generation, not Claude with GPT; the one place that put the
+two together (OpenAI's announcement) answered 403 and was never read, and third-party articles that quote it are not a source. A number
+written here anyway would look like a fact. So the file does not hold scores.
+
+- **A row is a statement, with its evidence.** `{ task, modelId, note, source, asOf }`: this provider's page names this model for this task,
+  `note` is what the page says (quoted), `source` is the https address, `asOf` the day it was read. Schema 0.2. Exactly these fields; a typo,
+  a score slipped in, an `http:` address, a date that is not a date, or the same model twice for one task leaves that row out and says so in
+  the log, and the other rows stay (as D-014 does for models). A file that is wrong as a whole (the wrong version) is refused. An empty list
+  is a valid file.
+- **The tasks are four, fixed in the code**: chat, coding, writing, quick answer. The page is told the list; it never makes one up.
+- **Seven rows, and what was left out.** Opus 5.5 coding; Sonnet 5.5 coding and writing; Haiku 4.5 quick; Astra coding and writing; Sol coding.
+  Left out because nothing that was read says it: **chat** (no page names a model for plain chat; "most workloads start with Opus 5.5" is
+  not about chat), **Fable 5.1** (named for "the highest available capability" and long agentic work, which is none of the four), **GPT-6
+  Luna** ("focused, high-volume tasks" is efficiency, not a task of these four), and **quick answer for OpenAI** (OpenAI states no
+  latency). Two rows rest on a reading of the page's wording: "content creation" (Sonnet) and "document creation" (Astra) as _writing_.
+  Chat therefore shows "No suggestion for chat". That is the honest answer today.
+- **The app never picks.** The header has a **Task** menu (any task, or one of the four). Choosing one changes nothing: the model menu then
+  marks the models named for it with "(suggested)", and a tooltip lists each with the page's words, its address and the date. There is no
+  single "best" and no one-click accept, because without scores there is nothing to order by that would not be a guess (the registry's
+  order and the prices are facts, but "cheapest of those named" is a judgement about what the person is billed, and that is theirs). Choosing
+  a task writes nothing to disk and does not touch the model that answers. The task is not saved: it is a hint for the next choice.
+- **Only models that can be used now.** A row is offered if its model is in the registry and its provider has a key saved. A model that has
+  left the registry (Haiku 4.5 may be retired from 15 October 2026) has its row skipped, not reported: that is normal, and the row can be
+  deleted later. The rankings file is **optional**: if it is broken, the log says why, there are no suggestions, and the chat, the models
+  and Settings are unaffected.
+- **Where it runs.** `src/shared/rankings.ts` (the check and `suggestionsFor`, plain functions), `src/main/rankings.ts` (the embedded file,
+  checked once, like the registry), `getStatus` gains `tasks` and `suggestions` (main filters by key; the page filters by task), and two
+  small components, `TaskPicker` and a change to `ModelPicker`. The registry's check helpers were exported to be reused, not copied.
+- **What was checked.** Under plain Node (`verify-6-1.mjs`, 108 checks): the real file, every kind of damage to the file and to a row, the
+  suggestions with each key combination, Haiku removed, hostile and frozen inputs; 10 sabotages of `rankings.ts` were each caught. In the
+  real window (`verify-6-2.mjs`, 27 checks; `verify-6-3.mjs`, 6 and 7 checks with the file damaged on purpose): the menus, the marks per
+  task and per key, the note for chat, nothing chosen or saved by choosing a task, a removed key, a whole file and a single row broken;
+  5 sabotages of the app were each caught. The three older suites that listed the exact fields of `getStatus` were updated for the two new ones.
+
+Status: accepted (Stage 6). Revisit: real benchmark rows once there is a source that compares these models on one scale (then a schema 0.3
+with an optional score, and an order); a row for chat; deleting the Haiku row if it is retired; whether people want a single suggestion
+after all (the cheapest of those named is the obvious rule, and would be a decision about their money).

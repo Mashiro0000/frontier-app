@@ -100,17 +100,17 @@ export type RegistryResult =
   | { ok: false; error: string; problems: string[] }
 
 const MAX_MODELS = 50
-const MODEL_ID = /^[a-z0-9][a-z0-9._-]{0,63}$/
+export const MODEL_ID = /^[a-z0-9][a-z0-9._-]{0,63}$/
 const MAX_TOKEN_COUNT = 100_000_000
 const MAX_PRICE = 10_000
 
 type Fields = Record<string, unknown>
 
-function isFields(value: unknown): value is Fields {
+export function isFields(value: unknown): value is Fields {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-const quoted = (names: readonly string[]): string =>
+export const quoted = (names: readonly string[]): string =>
   names.map((name) => JSON.stringify(name.slice(0, 40))).join(', ')
 
 /**
@@ -118,7 +118,7 @@ const quoted = (names: readonly string[]): string =>
  * an unknown one are both reported: a misspelt name is both at once ("effort" missing, "effrot" unknown),
  * and seeing the two together is what lets a person spot the typo.
  */
-function fieldProblem(value: Fields, names: readonly string[]): string | null {
+export function fieldProblem(value: Fields, names: readonly string[]): string | null {
   const present = Object.keys(value)
   const missing = names.filter((name) => !present.includes(name))
   const unknown = present.filter((name) => !names.includes(name))
@@ -133,7 +133,7 @@ function fieldProblem(value: Fields, names: readonly string[]): string | null {
 }
 
 /** Text for the person to read: not empty, no padding, one line, and not unreasonably long. */
-function isText(value: unknown, maxLength: number): value is string {
+export function isText(value: unknown, maxLength: number): value is string {
   return (
     typeof value === 'string' &&
     value !== '' &&
@@ -143,7 +143,7 @@ function isText(value: unknown, maxLength: number): value is string {
   )
 }
 
-function isCalendarDate(value: unknown): value is string {
+export function isCalendarDate(value: unknown): value is string {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
   const date = new Date(`${value}T00:00:00Z`)
   // 2026-02-30 must not pass as 2026-03-02.

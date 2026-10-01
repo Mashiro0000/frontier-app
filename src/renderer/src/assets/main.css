@@ -118,8 +118,9 @@ body {
   outline-offset: 2px;
 }
 
-/* The model menu. Looks like the pill buttons beside it. */
-.header-select {
+/* The model menu and the task menu. They look like the pill buttons beside them. */
+.header-select,
+.task-select {
   max-width: 200px;
   padding: 2px 8px;
   font: inherit;
@@ -131,16 +132,19 @@ body {
   cursor: pointer;
 }
 
-.header-select:hover:not(:disabled) {
+.header-select:hover:not(:disabled),
+.task-select:hover:not(:disabled) {
   background: var(--ev-c-gray-3);
 }
 
-.header-select:focus-visible {
+.header-select:focus-visible,
+.task-select:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
-.header-select:disabled {
+.header-select:disabled,
+.task-select:disabled {
   color: var(--ev-c-text-3);
   cursor: default;
 }

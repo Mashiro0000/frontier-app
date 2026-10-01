@@ -11,7 +11,13 @@ import {
   type SettingsStatus,
   type TestKeyResult
 } from '../shared/ipc'
-import { PROVIDER_NAMES, SUPPORTED_PROVIDERS, toModelOption } from '../shared/registry'
+import { suggestionsFor, TASKS } from '../shared/rankings'
+import {
+  PROVIDER_NAMES,
+  SUPPORTED_PROVIDERS,
+  toModelOption,
+  type ProviderId
+} from '../shared/registry'
 import {
   checkConversationId,
   checkConversationSave,
@@ -26,6 +32,7 @@ import { canStoreKey, clearApiKey, readApiKey, saveApiKey } from './keyStore'
 import { chooseModel, currentModel, inOrder } from './models'
 import { adapterFor } from './providers'
 import { describeFailure, timeoutError } from './providers/errors'
+import { getRankings, reportRankingsProblems } from './rankings'
 import { getRegistry, reportRegistryProblems } from './registry'
 import { isTrustedSender } from './security'
 
@@ -34,20 +41,29 @@ const TEST_KEY_TIMEOUT_MS = 20_000
 
 async function currentStatus(): Promise<SettingsStatus> {
   const registry = getRegistry()
+  const rankings = getRankings()
   const choice = await currentModel()
+  const providers = await Promise.all(
+    SUPPORTED_PROVIDERS.map(async (id) => ({
+      id,
+      name: PROVIDER_NAMES[id],
+      hasKey: (await readApiKey(id)) !== null
+    }))
+  )
+  const hasKey = (provider: ProviderId): boolean =>
+    providers.some((candidate) => candidate.id === provider && candidate.hasKey)
   return {
-    providers: await Promise.all(
-      SUPPORTED_PROVIDERS.map(async (id) => ({
-        id,
-        name: PROVIDER_NAMES[id],
-        hasKey: (await readApiKey(id)) !== null
-      }))
-    ),
+    providers,
     canStoreKey: canStoreKey(),
     models: registry.ok ? registry.registry.models.map(toModelOption) : [],
     selectedModelId: choice.ok ? choice.entry.id : null,
     modelsError: registry.ok ? null : registry.error,
-    modelsCheckedOn: registry.ok ? registry.registry.updatedAt : null
+    modelsCheckedOn: registry.ok ? registry.registry.updatedAt : null,
+    tasks: TASKS.map((task) => ({ ...task })),
+    suggestions:
+      registry.ok && rankings.ok
+        ? suggestionsFor(rankings.rankings, registry.registry.models, hasKey)
+        : []
   }
 }
 
@@ -58,6 +74,7 @@ async function currentStatus(): Promise<SettingsStatus> {
  */
 export function registerIpc(appUrl: string): () => Promise<void> {
   reportRegistryProblems() // at startup, once: whatever is wrong with registry/models.json goes in the log
+  reportRankingsProblems() // ...and with registry/rankings.json, which only costs the suggestions
 
   // A thrown error rejects the promise the page is waiting on.
   const guarded =

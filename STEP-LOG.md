@@ -3,14 +3,15 @@
 This file explains, in plain words, every command that was run to build Frontier App, one stage at
 a time, and why. It is written for someone new to Electron and the command line.
 
-| Stage               | What you get                                                                                                                                                             | Status |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| 0 - Shell           | `npm run dev` opens a window titled "Frontier App" that shows the words "Frontier App". Nothing else.                                                                    | done   |
-| 1 - Chat UI         | The window is a chat. Type a message, press Enter, and an echo of it streams back. No AI model yet.                                                                      | done   |
-| 2 - Provider        | A real model answers in the chat, using your own API key. Checked only against a mock so far: see "Things to know".                                                      | done   |
-| 3 - Registry        | The list of models comes from `registry/models.json`, and a menu in the header chooses which Claude model answers. Still only checked against a mock.                    | done   |
-| 4 - History         | Chats are saved on your computer as you go. A New chat button starts an empty chat; a History dialog opens a saved one or deletes it. Still only checked against a mock. | done   |
-| 5 - Second provider | OpenAI's GPT-6 models next to Claude, one key per provider, and every reply records which model wrote it. Only checked against mocks: the first real call is yours.      | done   |
+| Stage               | What you get                                                                                                                                                                                        | Status |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 0 - Shell           | `npm run dev` opens a window titled "Frontier App" that shows the words "Frontier App". Nothing else.                                                                                               | done   |
+| 1 - Chat UI         | The window is a chat. Type a message, press Enter, and an echo of it streams back. No AI model yet.                                                                                                 | done   |
+| 2 - Provider        | A real model answers in the chat, using your own API key. Checked only against a mock so far: see "Things to know".                                                                                 | done   |
+| 3 - Registry        | The list of models comes from `registry/models.json`, and a menu in the header chooses which Claude model answers. Still only checked against a mock.                                               | done   |
+| 4 - History         | Chats are saved on your computer as you go. A New chat button starts an empty chat; a History dialog opens a saved one or deletes it. Still only checked against a mock.                            | done   |
+| 5 - Second provider | OpenAI's GPT-6 models next to Claude, one key per provider, and every reply records which model wrote it. Only checked against mocks: the first real call is yours.                                 | done   |
+| 6 - Suggestions     | A Task menu in the header (chat, coding, writing, quick answer) marks the models the providers' own pages name for it. It chooses nothing, and there are no scores: see "Stage 6 - Things to know". |
 
 **To run it yourself** (from this folder):
 
@@ -19,7 +20,7 @@ npm install
 npm run dev
 ```
 
-The stages are explained in order: Stage 0, then Stage 1, then Stage 2, then Stage 3, then Stage 4, then Stage 5.
+The stages are explained in order: Stage 0, then Stage 1, then Stage 2, then Stage 3, then Stage 4, then Stage 5, then Stage 6.
 
 ## Words you will meet
 
@@ -1695,3 +1696,52 @@ then every launch that was not clean was run again:
    `npm audit`.
 8. **Everything in the earlier stages' "Things to know" still applies** (your `AppData` is EFS-encrypted, so files are written in place or
    copied; only Windows was tested; the SDKs ignore the system proxy; line endings can come back as CRLF after a branch switch).
+
+## Stage 6 - What was built
+
+Running `npm run dev` shows one more menu in the header, **Task**, next to the model menu:
+
+- **Say what you are doing.** Pick Chat, Coding, Writing or Quick answer (or "Any task", the start). The model menu then adds
+  "(suggested)" to the models the providers' own documentation names for that task, among the models you can use now (it has to be on the
+  list, and you need a key for its provider). Hover the Task menu to read what each page said, its address and the day it was read.
+- **It never chooses for you.** Picking a task does not change the model, and nothing is saved. You pick from the model menu as before.
+- **No scores, on purpose.** The plan said "a score per model and task". No page that was read gives a number that compares these models, so
+  the file holds quoted statements instead (D-023). Where nothing says it, the page says "No suggestion for chat". That is the case for
+  Chat, for Claude Fable 5.1, for GPT-6 Luna, and for Quick answer with OpenAI.
+- Seven rows in all, each with its page and date. If the file is broken the app logs why and offers no suggestions; nothing else is affected.
+- No new package. One new decision, **D-023**; the files are `registry/rankings.json`, `src/shared/rankings.ts`, `src/main/rankings.ts` and
+  `src/renderer/src/settings/TaskPicker.tsx`.
+
+## Stage 6 - Step by step
+
+1. **Merged Stage 5** into `main` (a fast-forward), checked `prettier --check` and `npm run build` on `main`; fixed the preview port in
+   `.claude/launch.json` (3000 to 5173, Vite's default).
+2. **Haiku 4.5.** Anthropic's deprecation page (read 1 October 2026) lists it as active, "not sooner than October 15, 2026", with no notice
+   sent. Nothing in the code depends on it: a saved choice for a model that left the registry falls back to the default (D-015), and a
+   ranking row for a missing model is skipped (D-023).
+3. **Looked for scores, found none** (see D-023), and wrote the rows only from pages that were read: Anthropic's "Choosing a model" and
+   models overview, and OpenAI's model pages for GPT-6 Astra, GPT-6.1 Sol and GPT-6 Luna (the OpenAI announcement answered 403).
+4. **Built it** in the order: the check and the function (`rankings.ts`), the embedded file, `getStatus` gaining `tasks` and `suggestions`,
+   the two menus. The registry's check helpers were exported so they are not copied. Before the window work, the plain-Node suite
+   `verify-6-1.mjs` (108 checks) was written and 10 deliberate breakages were each caught.
+5. **Checked in the real window** (`verify-6-2.mjs` 27 checks, `verify-6-3.mjs` with the file damaged two ways), and 5 deliberate breakages of
+   the app were each caught. The three older suites that listed the exact fields of `getStatus` were updated.
+
+## Stage 6 - Choices I made where things were unclear ("pick the simplest option")
+
+- **A shortlist, not one suggestion.** Without scores there is nothing to order by that is not a guess. The cheapest of those named is the
+  obvious rule, but that decides what you are billed, so it was left to you.
+- **The task is not saved** and a reload forgets it: it is a hint for the next choice, not a setting.
+- **Two rows rest on a reading of the wording**: "content creation" (Sonnet 5.5) and "document creation" (GPT-6 Astra) as writing.
+- **Suggestions need a saved key.** A model you cannot call yet is not offered; add the key and it appears.
+
+## Stage 6 - Things to know (not problems, but worth your attention)
+
+1. **The rows are the providers' own words, nothing more.** They say "this model is named for this task", not "this model is better than
+   that one". Treat them as a starting list. When you have a source that compares models on one scale, D-023 says what to change.
+2. **Your OpenAI test.** You told me a real call to GPT-6.1 Sol answered. I did not see that: it is your report, and Stage 5's note that no real
+   call was made described what I had been able to do. Anthropic is still untried with a real key, as far as I know.
+3. **Haiku 4.5 may be retired from 15 October 2026** at the earliest. If it is, delete its entry in `registry/models.json` and, if you like, its
+   row in `registry/rankings.json`; nothing breaks if you leave the row.
+4. **The GitHub push.** When it was checked (1 October 2026) the repository had no `origin` remote, so nothing had been pushed from this folder.
+5. **Everything in the earlier stages' "Things to know" still applies.**

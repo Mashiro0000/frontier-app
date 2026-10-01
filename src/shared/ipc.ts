@@ -2,6 +2,7 @@
 // cross that boundary is described here, so all three sides agree. Types, channel names and limits
 // only: this file is bundled into the preload, which runs sandboxed (see D-004).
 
+import type { Suggestion, TaskOption } from './rankings'
 import type { ProviderId } from './registry'
 
 /**
@@ -45,6 +46,13 @@ export interface SettingsStatus {
   modelsError: string | null
   /** When the registry's facts and prices were last checked, as a date like "2026-10-01". */
   modelsCheckedOn: string | null
+  /** The kinds of task a person can say they are doing, in the order to show them (D-023). */
+  tasks: TaskOption[]
+  /**
+   * What the providers' documentation names for each task, for the models that are on offer and whose provider has a key
+   * saved. Never a choice: the app only shows it. Empty if the registry or the rankings could not be loaded.
+   */
+  suggestions: Suggestion[]
 }
 
 export type SetKeyResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }

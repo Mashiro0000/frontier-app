@@ -26,34 +26,36 @@ The renderer should never touch Node.js or the network for model calls directly.
 through the preload bridge (IPC).
 
 Stage 1 changed only `src/renderer`. Stage 2 added the files below (see Security notes), Stage 3 added or
-changed the ones marked (3), Stage 4 the ones marked (4), and Stage 5 the ones marked (5):
+changed the ones marked (3), Stage 4 the ones marked (4), Stage 5 the ones marked (5), and Stage 6 the ones marked (6):
 
-| File                              | Job                                                                                                                                                                                       |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/main/index.ts`               | Creates the sandboxed window, wires the navigation lock, registers the message handlers. (4) Holds the quit until saves finish                                                            |
-| `src/main/security.ts`            | Plain functions: is this URL the app's own page? may it be opened in the browser?                                                                                                         |
-| `src/main/ipc.ts`                 | The message handlers. Each one first checks that the app's own page is calling. (4) The four `history:` handlers                                                                          |
-| `src/main/keyStore.ts`            | Saves, reads and deletes the API keys: the Electron side (the secure storage and the data folder) of the credential store. (5) One key per provider                                       |
-| `src/main/credentialStore.ts`     | (5) One encrypted file per provider (`credentials.<provider>.json`), tied to its provider; reads the old `credentials.json` as Anthropic's key. No Electron imports                       |
-| `src/main/baseUrl.ts`             | (5) The test-only address override (`FRONTIER_API_BASE_URL`), for replies and for Test key; never in an installed app                                                                     |
-| `src/main/chat.ts`                | Runs each reply: reads the key, asks the model's provider adapter, sends text to the page as events. (5) Provider-neutral                                                                 |
-| `src/main/providers/types.ts`     | (5) The provider layer's vocabulary: `ProviderAdapter` (`listModels`, `stream`, `usage`, `normalizeError`), the neutral message and request, usage and errors. No Electron imports        |
-| `src/main/providers/openai.ts`    | (5) The OpenAI adapter (D-022): the Responses API through OpenAI's own SDK, `store: false`, environment pinned; usage with cached tokens taken out of the input                           |
-| `src/main/providers/anthropic.ts` | (5) The Anthropic adapter: the one place that calls Anthropic's API, through the official SDK. It was `provider.ts`                                                                       |
-| `src/main/providers/request.ts`   | (5) The app's own rules for a reply, applied once for every provider: system prompt, reply ceiling, joining consecutive turns (D-013)                                                     |
-| `src/main/providers/errors.ts`    | (5) The sentences for a failure, shared by every provider; adds the request id and scrubs the key                                                                                         |
-| `src/main/providers/usage.ts`     | (5) Reading token counts out of a provider's usage report                                                                                                                                 |
-| `src/main/providers/index.ts`     | (5) The adapter for each provider: a table that must be complete, or it does not compile                                                                                                  |
-| `src/main/registry.ts`            | (3) The registry file, embedded in the build and checked once at startup                                                                                                                  |
-| `src/main/models.ts`              | (3) Which model answers: the saved choice (`preferences.json`) or the registry's default; changes run one at a time                                                                       |
-| `src/preload/index.ts`            | Builds `window.api`, the only thing the page can ask main for. (4) Gained `history`                                                                                                       |
-| `src/preload/index.d.ts`          | Tells the renderer's TypeScript what `window.api` looks like                                                                                                                              |
-| `src/shared/ipc.ts`               | Every message that crosses the boundary: types, channel names. (4) The history types and `HISTORY_LIMITS`                                                                                 |
-| `src/shared/validate.ts`          | `checkApiKey`, `checkChatRequest`, `checkModelChoice`: the page may use them for feedback, main runs them again. (4) `checkConversationId`, `checkConversationSave`, `checkSavedMessages` |
-| `src/shared/registry.ts`          | (3) The shape of the registry file, `parseRegistry` (the strict check), and `toModelOption` (what the page may know about a model)                                                        |
-| `src/renderer/src/settings/`      | (3) The Settings dialog, the model menu in the header, and the hook that asks main for the settings status. (5) One key section per provider (`ProviderKeySection`: add, test, remove)    |
-| `src/main/conversationStore.ts`   | (4) The saved conversations: one JSON file each, saved copy-then-delete, read with a recovery rule, listed from memory. No Electron imports                                               |
-| `src/renderer/src/history/`       | (4) `useHistory` (autosave and the list), `HistoryDialog` (open and delete), and the conversions between the chat and what is saved                                                       |
+| File                              | Job                                                                                                                                                                                                                                                       |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/main/index.ts`               | Creates the sandboxed window, wires the navigation lock, registers the message handlers. (4) Holds the quit until saves finish                                                                                                                            |
+| `src/main/security.ts`            | Plain functions: is this URL the app's own page? may it be opened in the browser?                                                                                                                                                                         |
+| `src/main/ipc.ts`                 | The message handlers. Each one first checks that the app's own page is calling. (4) The four `history:` handlers                                                                                                                                          |
+| `src/main/keyStore.ts`            | Saves, reads and deletes the API keys: the Electron side (the secure storage and the data folder) of the credential store. (5) One key per provider                                                                                                       |
+| `src/main/credentialStore.ts`     | (5) One encrypted file per provider (`credentials.<provider>.json`), tied to its provider; reads the old `credentials.json` as Anthropic's key. No Electron imports                                                                                       |
+| `src/main/baseUrl.ts`             | (5) The test-only address override (`FRONTIER_API_BASE_URL`), for replies and for Test key; never in an installed app                                                                                                                                     |
+| `src/main/chat.ts`                | Runs each reply: reads the key, asks the model's provider adapter, sends text to the page as events. (5) Provider-neutral                                                                                                                                 |
+| `src/main/providers/types.ts`     | (5) The provider layer's vocabulary: `ProviderAdapter` (`listModels`, `stream`, `usage`, `normalizeError`), the neutral message and request, usage and errors. No Electron imports                                                                        |
+| `src/main/providers/openai.ts`    | (5) The OpenAI adapter (D-022): the Responses API through OpenAI's own SDK, `store: false`, environment pinned; usage with cached tokens taken out of the input                                                                                           |
+| `src/main/providers/anthropic.ts` | (5) The Anthropic adapter: the one place that calls Anthropic's API, through the official SDK. It was `provider.ts`                                                                                                                                       |
+| `src/main/providers/request.ts`   | (5) The app's own rules for a reply, applied once for every provider: system prompt, reply ceiling, joining consecutive turns (D-013)                                                                                                                     |
+| `src/main/providers/errors.ts`    | (5) The sentences for a failure, shared by every provider; adds the request id and scrubs the key                                                                                                                                                         |
+| `src/main/providers/usage.ts`     | (5) Reading token counts out of a provider's usage report                                                                                                                                                                                                 |
+| `src/main/providers/index.ts`     | (5) The adapter for each provider: a table that must be complete, or it does not compile                                                                                                                                                                  |
+| `src/main/registry.ts`            | (3) The registry file, embedded in the build and checked once at startup                                                                                                                                                                                  |
+| `src/main/rankings.ts`            | (6) The rankings file, embedded in the build and checked once at startup; optional: if it is broken the app only loses its suggestions                                                                                                                    |
+| `src/main/models.ts`              | (3) Which model answers: the saved choice (`preferences.json`) or the registry's default; changes run one at a time                                                                                                                                       |
+| `src/preload/index.ts`            | Builds `window.api`, the only thing the page can ask main for. (4) Gained `history`                                                                                                                                                                       |
+| `src/preload/index.d.ts`          | Tells the renderer's TypeScript what `window.api` looks like                                                                                                                                                                                              |
+| `src/shared/ipc.ts`               | Every message that crosses the boundary: types, channel names. (4) The history types and `HISTORY_LIMITS`                                                                                                                                                 |
+| `src/shared/validate.ts`          | `checkApiKey`, `checkChatRequest`, `checkModelChoice`: the page may use them for feedback, main runs them again. (4) `checkConversationId`, `checkConversationSave`, `checkSavedMessages`                                                                 |
+| `src/shared/registry.ts`          | (3) The shape of the registry file, `parseRegistry` (the strict check), and `toModelOption` (what the page may know about a model)                                                                                                                        |
+| `src/shared/rankings.ts`          | (6) The task list, the shape of the rankings file, `parseRankings` (the strict check) and `suggestionsFor` (which rows can be used now)                                                                                                                   |
+| `src/renderer/src/settings/`      | (3) The Settings dialog, the model menu in the header, and the hook that asks main for the settings status. (5) One key section per provider (`ProviderKeySection`: add, test, remove) . (6) The Task menu, and the "(suggested)" marks in the model menu |
+| `src/main/conversationStore.ts`   | (4) The saved conversations: one JSON file each, saved copy-then-delete, read with a recovery rule, listed from memory. No Electron imports                                                                                                               |
+| `src/renderer/src/history/`       | (4) `useHistory` (autosave and the list), `HistoryDialog` (open and delete), and the conversions between the chat and what is saved                                                                                                                       |
 
 ### Settings and the API keys
 
@@ -191,8 +193,12 @@ not have to change. See DECISIONS.md D-008.
   `promptCaching`, and `effortLevels`, the effort levels its API accepts) and `effort` (the level the app asks for: one
   of the model's own `effortLevels`, or `null` for a model that takes none, such as Haiku 4.5). Every object must have
   exactly these fields, and `effort` and `effortLevels` must agree (D-019). Ids are unique across providers.
-- `registry/rankings.json` - how models score on tasks, so the app can suggest one. Still an empty template
-  (`{ "schemaVersion": "0.1", "updatedAt": null, "source": null, "rankings": [] }`); nothing reads it yet.
+- `registry/rankings.json` - which models the providers' own pages name for which task (D-023). Schema 0.2: `updatedAt`,
+  `source` and `rankings`, a list of rows `{ task, modelId, note, source, asOf }` with `task` one of chat, coding, writing, quick.
+  A row is a quoted statement with its address and date, not a score. The file is embedded in the build and checked once at startup by
+  `parseRankings` (`src/shared/rankings.ts`); a broken row is left out, a broken file costs only the suggestions. `suggestionsFor` turns the
+  rows into what the page is shown: the rows for models in the registry whose provider has a key (a model that has left the registry is
+  skipped). The Task menu and the "(suggested)" marks in the model menu use it; nothing is ever chosen from it.
 
 `models.json` is **embedded in the app at build time** (a JSON import in `src/main/registry.ts`), so there is no
 file to find at run time, and it is checked once at startup by `parseRegistry` (`src/shared/registry.ts`). Edit it,
@@ -246,5 +252,5 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
 
 Markdown rendering (replies are plain text; the system prompt asks for that), a cost display, naming the model
 that wrote each reply, renaming or searching saved chats, a check against the real API (Stages 2 to 4 were tested
-against a mock, which covers four models), `registry/rankings.json` (an empty template), other providers. See
+against a mock, which covers four models), a single suggested model per task (D-023 says why not), other providers. See
 ROADMAP.md.

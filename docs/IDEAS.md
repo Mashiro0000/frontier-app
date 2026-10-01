@@ -2,7 +2,7 @@
 
 > Parking lot. Unvetted ideas live here so they do not clutter the roadmap. Nothing here is planned.
 
-- Auto-suggest the best model for a message using `registry/rankings.json`
+- Pick the best model for a message by itself (Stage 6 only shortlists models for a task the person names, and has no scores, D-023)
 - Compare two models' answers side by side
 - Support local models (for example through Ollama)
 - Show running cost per conversation

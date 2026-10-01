@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { TaskId } from '../../shared/rankings'
 import ChatView from './chat/ChatView'
 import { ipcReply } from './chat/ipcReply'
 import { useChat } from './chat/useChat'
@@ -7,12 +8,16 @@ import { useHistory } from './history/useHistory'
 import { providerMissingKey } from './settings/format'
 import ModelPicker from './settings/ModelPicker'
 import SettingsDialog from './settings/SettingsDialog'
+import TaskPicker from './settings/TaskPicker'
 import { useSettingsStatus } from './settings/useSettingsStatus'
 
 function App(): React.JSX.Element {
   const { status, loadError, setStatus } = useSettingsStatus()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  // What the person says they are doing. Only the model menu reads it, to mark the models named for it (D-023).
+  // It is not saved: it is a hint for the next choice, not a setting.
+  const [task, setTask] = useState<TaskId | null>(null)
   // The chat is held here, not in ChatView, because the header needs to know when a reply is arriving:
   // the model cannot be changed meanwhile, and no other chat can be opened or started.
   const chat = useChat(ipcReply)
@@ -56,7 +61,13 @@ function App(): React.JSX.Element {
           >
             History
           </button>
-          <ModelPicker status={status} disabled={chat.isReplying} onStatusChange={setStatus} />
+          <TaskPicker status={status} task={task} onChange={setTask} />
+          <ModelPicker
+            status={status}
+            task={task}
+            disabled={chat.isReplying}
+            onStatusChange={setStatus}
+          />
           {history.saveError !== null && (
             <button
               type="button"
