@@ -1,15 +1,17 @@
 import type { ChatStreamEvent } from '../../../shared/ipc'
 import { toWireMessages } from './history'
-import type { ChatMessage } from './types'
+import type { Answerer, ChatMessage } from './types'
 
 /**
  * The reply function (see `ReplyFn`) that asks the main process for a real answer. The page cannot
  * reach the network or the API key: it sends the conversation over the bridge, and the reply comes
- * back as events, which this turns into a stream of text pieces for `useChat`.
+ * back as events, which this turns into a stream of text pieces for `useChat`. The first event says which
+ * model is answering; that goes to `onAnswerer`, not into the text.
  */
 export async function* ipcReply(
   history: ChatMessage[],
-  signal: AbortSignal
+  signal: AbortSignal,
+  onAnswerer: (answerer: Answerer) => void
 ): AsyncGenerator<string> {
   if (!window.api) {
     throw new Error('The window could not connect to the app (the preload did not load).')
@@ -43,7 +45,8 @@ export async function* ipcReply(
         })
         continue
       }
-      if (event.type === 'text') yield event.text
+      if (event.type === 'start') onAnswerer({ provider: event.provider, model: event.model })
+      else if (event.type === 'text') yield event.text
       else if (event.type === 'done') return
       else throw new Error(event.message)
     }

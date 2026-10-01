@@ -159,15 +159,59 @@ export function checkConversationId(input: unknown): ConversationIdCheck {
     : { ok: false, error: 'The conversation was not understood.' }
 }
 
+// A model's id as the providers spell them: lower case letters, digits, dots and hyphens, starting with a letter or digit
+// (claude-opus-5-5, gpt-6.1-sol). Looser than the registry's list on purpose: a retired model must stay readable (D-021).
+const MODEL_ID = /^[a-z0-9][a-z0-9._-]{0,63}$/
+
+export function isModelId(value: unknown): value is string {
+  return typeof value === 'string' && MODEL_ID.test(value)
+}
+
+/**
+ * Where a list of messages comes from, which decides how the two fields that say who wrote a reply (D-021) are read:
+ *  - 'page'    : the page is saving. Strict: a provider the app does not know, or a model that is not an id, refuses the save.
+ *  - 'file'    : a version 2 file. Forgiving: what cannot be used is read as null, because the conversation is still worth reading.
+ *  - 'file-v1' : a version 1 file (Stages 2-4) has no such fields. Every reply in it came from Anthropic, the only provider
+ *                then, and which model it was is not known and cannot be worked out: provider "anthropic", model null.
+ */
+export type MessageSource = 'page' | 'file' | 'file-v1'
+
+function answererOf(
+  item: Record<string, unknown>,
+  source: MessageSource
+): { provider: ProviderId | null; model: string | null } | null {
+  if (source === 'file-v1') return { provider: 'anthropic', model: null }
+  const lenient = source === 'file'
+  let provider: ProviderId | null = null
+  if (item.provider !== undefined && item.provider !== null) {
+    const match = SUPPORTED_PROVIDERS.find((known) => known === item.provider)
+    if (match === undefined) {
+      if (!lenient) return null
+    } else provider = match
+  }
+  let model: string | null = null
+  if (item.model !== undefined && item.model !== null) {
+    if (isModelId(item.model)) model = item.model
+    else if (!lenient) return null
+  }
+  // A model with no provider says nothing a person could use: refused from the page, read as unknown from a file.
+  if (provider === null && model !== null) {
+    if (!lenient) return null
+    model = null
+  }
+  return { provider, model }
+}
+
 export type MessagesCheck = { ok: true; messages: SavedMessage[] } | { ok: false; error: string }
 
 /**
  * Checks the messages of a conversation to be saved, whether they come from the page or are read back from a
  * file, and returns a clean copy (only the fields we know about). A message that is still "streaming" is
  * kept as "stopped": a reply that is cut off by closing the window never finishes. The first message must
- * be the person's, as it is in every conversation the app makes.
+ * be the person's, as it is in every conversation the app makes. A reply says which model wrote it (`answererOf`);
+ * the person's own messages never carry those fields, and whatever the page claims on one is dropped.
  */
-export function checkSavedMessages(input: unknown): MessagesCheck {
+export function checkSavedMessages(input: unknown, source: MessageSource = 'page'): MessagesCheck {
   const refuse = (error: string): MessagesCheck => ({ ok: false, error })
   if (!Array.isArray(input) || input.length === 0) return refuse('There is nothing to save.')
   // The count is looked at before the items, so a huge list costs nothing to refuse.
@@ -205,6 +249,12 @@ export function checkSavedMessages(input: unknown): MessagesCheck {
         return refuse('The conversation was not understood.')
       }
       message.error = error
+    }
+    if (role === 'assistant') {
+      const answerer = answererOf(item as Record<string, unknown>, source)
+      if (answerer === null) return refuse('The conversation was not understood.')
+      message.provider = answerer.provider
+      message.model = answerer.model
     }
     messages.push(message)
   }

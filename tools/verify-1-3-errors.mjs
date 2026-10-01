@@ -8,7 +8,7 @@ const check = checker()
 const page = await connect(port)
 
 const WRAPPER = `
-export async function* ipcReply(history, signal) {
+export async function* ipcReply(history, signal, onAnswerer) {
   const last = history[history.length - 1].content
   if (last === '/fail') throw new Error('Simulated failure')
   if (last === '/fail-mid') { yield 'partial '; throw new Error('Connection lost') }
@@ -25,7 +25,7 @@ export async function* ipcReply(history, signal) {
     yield 'LATE '
     return
   }
-  yield* realReply(history, signal)
+  yield* realReply(history, signal, onAnswerer)
 }
 `
 let patched = false

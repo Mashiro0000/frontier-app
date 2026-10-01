@@ -1,0 +1,14 @@
+{
+  "label": "user-messages-get-fields",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "if (role === 'assistant') {\n      const answerer",
+      "to": "if (true) {\n      const answerer"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-5-4-store.mjs"
+  ],
+  "env": {}
+}

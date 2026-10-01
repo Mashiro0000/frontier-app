@@ -34,7 +34,15 @@ export function useChat(reply: ReplyFn): UseChat {
     controller: AbortController
   ): Promise<void> {
     try {
-      for await (const piece of reply(history, controller.signal)) {
+      // The model that answers is known before any text, and is kept on the reply (D-021), whether it ends well or not.
+      const answered = reply(history, controller.signal, (answerer) =>
+        updateMessage(replyId, (m) => ({
+          ...m,
+          provider: answerer.provider,
+          model: answerer.model
+        }))
+      )
+      for await (const piece of answered) {
         if (controller.signal.aborted) break // ignore a piece that was already on its way
         updateMessage(replyId, (m) => ({ ...m, content: m.content + piece }))
       }
@@ -66,7 +74,9 @@ export function useChat(reply: ReplyFn): UseChat {
       id: crypto.randomUUID(),
       role: 'assistant',
       content: '',
-      status: 'streaming'
+      status: 'streaming',
+      provider: null,
+      model: null
     }
     const history = [...messages, userMessage]
     const controller = new AbortController()

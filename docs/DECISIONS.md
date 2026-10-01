@@ -543,3 +543,51 @@ and written; this decides the layout, and what Settings can do with a key.
 Status: accepted (Stage 5.3). Revisit: keys in Credential Manager (a keyring package); a "master password"; testing a key
 before it is saved; showing which models the key can use next to the registry's list (needs a real key to see how the
 provider spells its model ids).
+
+## D-021 - Each reply records who answered; the saved file is version 2, and version 1 is upgraded as it is read
+
+Stage 5.4. D-017 left this out on purpose ("it cannot be reconstructed later"). The model can change in the middle of a
+chat (D-015), and now the provider can too, so each reply now says which one wrote it.
+
+- **What is stored.** Every assistant message gets two fields, `provider` (one of the registry's providers) and `model`
+  (the model's id), in `conversations/<id>.json`, which becomes `"version": 2`. The person's own messages have neither.
+  The request spoke of "columns" and a "migration", but there is no table here (D-005, D-016: files, not a database), so
+  these are fields, and the migration is a change of file version.
+- **The main process says which model answers, before the first word.** The page cannot know: the model is fixed in main
+  when a reply starts (D-015). So a reply now begins with a `start` event naming the provider and the model, sent before
+  the key is looked up: a reply that fails at once (no key saved, a key that is refused) still records which model was
+  asked. The page keeps what it is told on the message and hands it back in each snapshot (D-017). This is data for
+  display and not a security property: main checks its shape (a provider from the registry's list, a model id that looks
+  like one) as it checks everything, and a page that lies can only mislabel its own conversation.
+- **The migration, version 1 to 2.** A version 1 file has no such fields. It is read as a version 2 file whose assistant
+  messages say provider `anthropic` (every reply the app ever wrote came from Anthropic, so that is known) and model `null`
+  (which of the four models it was is not known and cannot be worked out afterwards; `null` is the honest value, and the
+  page shows no name for it). **Reading never writes** (D-016): the file on disk stays version 1, byte for byte, until the
+  person next saves that conversation, which writes version 2. Nothing is rewritten in bulk, so no crash can leave the
+  history half-converted. A file of version 3 or later is "made by another version" and left alone, as before; a build
+  from before this stage treats a version 2 file the same way.
+- **Reading is forgiving about these two fields and strict about everything else.** A saved file whose provider is one this
+  build does not know, or whose model is not an id, is still a conversation: the unusable field is read as `null`. The
+  page's own saves are strict: a provider that is not in the list, or a model that is not an id, refuses the whole save,
+  like any other malformed conversation.
+- **Shown, quietly.** The list names the model above a reply when it is the first reply and wherever the model changes
+  (a chat that never changes model would otherwise repeat one name above every reply). The name is the registry's
+  label, or the id for a model the registry no longer lists. This is the one thing the request did not ask for; it is
+  what makes the stored field visible, and it is one small component to remove.
+- **Usage.** What a reply used (D-018) is logged by main once per reply, with the provider and model. It is not stored with
+  the message: nothing needs it yet, and a cost display needs the prices of cached tokens too (D-019).
+
+- **What was checked.** Under plain Node (`tools/verify-5-4-store.mjs`, 107 checks, each store check in a normal folder and in the EFS-encrypted
+  one): what the page may save (strict), what is read from a file (forgiving), a version 1 file read as version 2 without being rewritten (same bytes,
+  same modification time), the file that is written; 11 sabotages of the new code were each caught. In the real window against the mock
+  (`tools/verify-5-4.mjs`, 47 checks, in dev and in the built app): a version 1 file opened and left untouched, then saved as version 2 with its old
+  replies "anthropic"/null; the model recorded for replies from Opus and Sonnet, for a refused reply, a stopped one and one with no key saved; the
+  names above the replies, also after a reload; the events (`start` first, and no `start` for a request main refuses); everything the page may
+  not save; one usage line in the log per finished reply; 10 sabotages of the app were each caught. The earlier suites were ported where this stage
+  changes something on purpose (the file version, loaded replies carrying the two fields) and re-run: the plain-Node suites, the window suites of
+  Stages 1-3 and 5.3, the history suites of Stage 4 in dev, and the built app's chat suite. **Not re-run on this slice:** the seeded launches and
+  registry scenarios (nothing here touches them) and the history suites in the built app: the full regression runs again after Stage 5.5. Two
+  scroll checks of the Stage 1 chat suite failed once and passed on the repeat; the cause was not found.
+
+Status: accepted (Stage 5.4). Revisit: storing the usage with each reply; a bulk upgrade of old files, if ever wanted (it
+would have to be written with D-016's care); searching or filtering history by model.

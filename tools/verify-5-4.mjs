@@ -1,10 +1,10 @@
 // Slice 5.4: each reply records which provider and model wrote it; the saved file is version 2; a version 1 file (Stages 2-4) is read as
 // version 2 without being rewritten. In the real window, against the Stage 5 mock. Run through run54.mjs, which seeds the version 1 file.
 // Needs USER_DATA_DIR (a scratch profile), MOCK_PORT, APP_LOG, TEMP (the seed's manifest) and a key saved by setup-key.mjs.
-import '../ts-resolve.mjs'
-import { connect, checker, sleep } from '../cdp.mjs'
-import { assertScratchProfile } from '../profile-guard.mjs'
-import { h4 } from '../lib4.mjs'
+import './ts-resolve.mjs'
+import { connect, checker, sleep } from './cdp.mjs'
+import { assertScratchProfile } from './profile-guard.mjs'
+import { h4 } from './lib4.mjs'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { randomBytes } from 'node:crypto'
@@ -29,8 +29,8 @@ await sleep(500)
 let successes = 0
 
 // ============ A. a conversation saved by Stages 2-4 (version 1) ============
-check('the seeded version 1 conversation is the only file, byte for byte as written', JSON.stringify(H.convFiles()) === JSON.stringify([`${seed.id}.json`]) && H.sha(seed.id) === seed.sha)
-const before = { sha: H.sha(seed.id), mtime: H.mtime(seed.id) }
+check('the seeded version 1 conversation is the only file, byte for byte as written, with its original modification time (the app already scanned the folder when it started)', JSON.stringify(H.convFiles()) === JSON.stringify([`${seed.id}.json`]) && H.sha(seed.id) === seed.sha && H.mtime(seed.id) === seed.mtime)
+const before = { sha: H.sha(seed.id), mtime: seed.mtime } // the mtime from before the app started: the app scans the folder at startup
 await H.openHistory()
 check('History lists it, with its title', (await H.rows()).some((r) => r.title === seed.title))
 await H.clickRow(seed.title)
@@ -88,7 +88,7 @@ await H.send('[[mock:slow]] and this one is stopped')
 await page.waitFor(`document.querySelector('.message-assistant:last-child .bubble')?.textContent.length > 20`, { timeoutMs: 8000 })
 await page.click('.composer-button.stop, .composer-button[aria-label="Stop"], .composer-button:not([type=submit])').catch(() => {})
 await H.waitReady()
-const stopped = await H.waitFirst('one: first', (c) => c.messages.length === 10 && c.messages[9].status === 'stopped')
+const stopped = await H.waitFirst('one: first', (c) => c.messages.length === 10 && c.messages[9].status === 'stopped' && c.messages[9].content.length > 20)
 check('a stopped reply keeps its model too', stopped.conv.messages[9].model === SONNET && stopped.conv.messages[9].provider === 'anthropic')
 // no key at all: the reply fails before anything is sent, and still names the model that would have answered
 const noKeyKey = 'test-' + randomBytes(24).toString('hex')

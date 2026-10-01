@@ -24,6 +24,11 @@ import { checkSavedMessages, isConversationId } from '../shared/validate'
 //
 // Reading never writes: a conversation that cannot be read is left exactly as it is, counted, and named in the
 // log (by its id, never by a path). Nothing here deletes a file except remove().
+//
+// The file is "version": 2 since Stage 5.4 (D-021): each reply says which provider and model wrote it. A version 1 file
+// (Stages 2-4) is read as a version 2 one (its replies came from Anthropic, which model is not known) and stays version 1
+// on disk, byte for byte, until the conversation is next saved. Nothing is converted in bulk, so no crash can leave the
+// history half-converted. A file of any other version was made by another version of the app and is left alone.
 
 // "<id>.json" or "<id>.json.tmp", with the id in the one spelling the app itself produces (lower case: Windows
 // treats upper and lower case as the same file, so two spellings of one id would be one file).
@@ -77,13 +82,13 @@ const isTime = (value: unknown): value is number =>
 export function parseSavedFile(raw: unknown, id: string): SavedConversation | string {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return 'it is not an object'
   const file = raw as Record<string, unknown>
-  if (file.version !== 1) return 'it was made by another version of the app'
+  if (file.version !== 1 && file.version !== 2) return 'it was made by another version of the app'
   if (file.id !== id) return 'the id inside does not match the file name'
   if (typeof file.title !== 'string' || file.title.length > HISTORY_LIMITS.maxTitleChars) {
     return 'its title is not usable'
   }
   if (!isTime(file.createdAt) || !isTime(file.updatedAt)) return 'its dates are not usable'
-  const messages = checkSavedMessages(file.messages)
+  const messages = checkSavedMessages(file.messages, file.version === 1 ? 'file-v1' : 'file')
   if (!messages.ok) return messages.error
   return {
     id,
@@ -242,7 +247,7 @@ export function createConversationStore(dir: string): ConversationStore {
           updatedAt: now,
           messages: input.messages
         }
-        const text = JSON.stringify({ version: 1, ...conversation })
+        const text = JSON.stringify({ version: 2, ...conversation })
         // Whatever is written must be readable again, so the limit on reading is also a limit on writing.
         if (Buffer.byteLength(text) > HISTORY_LIMITS.maxFileBytes) {
           return { ok: false, error: 'This conversation is too large to save.' }

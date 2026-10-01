@@ -1,0 +1,14 @@
+{
+  "label": "v1-reads-its-fields",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "if (source === 'file-v1') return { provider: 'anthropic', model: null }",
+      "to": "if (false) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-5-4-store.mjs"
+  ],
+  "env": {}
+}

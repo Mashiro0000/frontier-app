@@ -10,9 +10,34 @@ interface MessageListProps {
   isReplying: boolean
   /** Shown in place of the messages while there are none. */
   emptyHint: React.ReactNode
+  /** What to call a model: its name from the registry, or its id if the registry no longer lists it. */
+  modelName: (modelId: string) => string
 }
 
-function MessageList({ messages, isReplying, emptyHint }: MessageListProps): React.JSX.Element {
+/**
+ * Who answered is said above a reply when it is the first one, and whenever the model changes (D-021): a chat in which
+ * the model never changes would otherwise repeat one name above every reply. A reply whose model is not known (one saved
+ * before the app recorded it) says nothing, and does not count as a change.
+ */
+function captionsFor(
+  messages: ChatMessage[],
+  modelName: (modelId: string) => string
+): (string | null)[] {
+  let previous: string | null = null
+  return messages.map((message) => {
+    if (message.role !== 'assistant' || !message.model) return null
+    const caption = message.model !== previous ? modelName(message.model) : null
+    previous = message.model
+    return caption
+  })
+}
+
+function MessageList({
+  messages,
+  isReplying,
+  emptyHint,
+  modelName
+}: MessageListProps): React.JSX.Element {
   const listRef = useRef<HTMLDivElement>(null)
   // True while the user is reading the newest message; false once they scroll up to read older ones.
   const stickToBottom = useRef(true)
@@ -35,6 +60,8 @@ function MessageList({ messages, isReplying, emptyHint }: MessageListProps): Rea
     if (stickToBottom.current) list.scrollTop = list.scrollHeight
   }, [messages])
 
+  const captions = captionsFor(messages, modelName)
+
   return (
     <div
       ref={listRef}
@@ -48,8 +75,8 @@ function MessageList({ messages, isReplying, emptyHint }: MessageListProps): Rea
         emptyHint && <p className="empty-state">{emptyHint}</p>
       ) : (
         <div className="message-list-inner">
-          {messages.map((message) => (
-            <MessageBubble key={message.id} message={message} />
+          {messages.map((message, index) => (
+            <MessageBubble key={message.id} message={message} answeredBy={captions[index]} />
           ))}
         </div>
       )}

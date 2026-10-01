@@ -1,0 +1,14 @@
+{
+  "label": "any-version-accepted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "file.version !== 1 && file.version !== 2",
+      "to": "false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-5-4-store.mjs"
+  ],
+  "env": {}
+}

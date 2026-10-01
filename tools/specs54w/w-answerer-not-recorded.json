@@ -1,0 +1,14 @@
+{
+  "label": "w-answerer-not-recorded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ipcReply.ts",
+      "from": "if (event.type === 'start') onAnswerer({ provider: event.provider, model: event.model })",
+      "to": "if (event.type === 'start') void 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run54.mjs"
+  ],
+  "env": {}
+}

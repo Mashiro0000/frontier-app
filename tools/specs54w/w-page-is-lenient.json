@@ -1,0 +1,14 @@
+{
+  "label": "w-page-is-lenient",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "const lenient = source === 'file'",
+      "to": "const lenient = true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run54.mjs"
+  ],
+  "env": {}
+}

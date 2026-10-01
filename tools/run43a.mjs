@@ -33,7 +33,7 @@ add('a failed reply and a stopped reply, saved normally', { [`${id}.json`]: file
 // unreadable ones
 id = randomUUID(); add('torn real file only', { [`${id}.json`]: file(id, 'torn', T, [msg('user', 'torn')]).slice(0, 55) }, { id, listed: null, unreadable: true })
 id = randomUUID(); add('5 MB of random bytes', { [`${id}.json`]: randomBytes(5 * 1024 * 1024) }, { id, listed: null, unreadable: true })
-id = randomUUID(); add('another version', { [`${id}.json`]: file(id, 'v2', T, [msg('user', 'v2')]).replace('"version":1', '"version":2') }, { id, listed: null, unreadable: true })
+id = randomUUID(); add('another version', { [`${id}.json`]: file(id, 'v3', T, [msg('user', 'v3')]).replace('"version":1', '"version":3') }, { id, listed: null, unreadable: true })
 // not conversations at all: ignored, never counted
 const foreign = { 'notes.txt': 'my own notes', [`${randomUUID().toUpperCase()}.json`]: '{"not":"ours"}', 'README.json': '{}' }
 for (const [n, c] of Object.entries(foreign)) writeFileSync(join(dir, n), c)

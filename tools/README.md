@@ -58,10 +58,10 @@ running; `!! the app is GONE` means no `electron.exe` was left.
 | `verify-*.mjs`, `setup-key.mjs`        | The suites. `verify-N-M` is slice N.M of the roadmap                            |
 | `provider-*-test-5.mjs`, `shim-new.mjs`| Plain-Node suites for the provider layer                                        |
 | `run4*.mjs`, `run53.mjs`, `final-new.mjs` | Launchers that need two launches, a seeded folder or a crash in the middle  |
-| `nc*.mjs`, `specs*/`                   | Negative controls: sabotage one thing, run the suite, prove it fails, restore the file and prove it by hash |
+| `nc*.mjs`, `specs*/`, `make-specs54.mjs` | Negative controls: sabotage one thing, run the suite, prove it fails, restore the file and prove it by hash |
 | `capture-golden-5.mjs`, `golden-*.json`| The recorded request bodies the Anthropic path must keep sending byte for byte  |
 | `registry-good.json`                   | A fixed registry for the adapter suites (it is NOT the live one; update it when the schema changes) |
-| `drafts/`                              | Suites written ahead of the code for slices 5.4 (history) and 5.5 (OpenAI). **Never run**; they will need fixing. Move one into `tools/` when its slice is built |
+| `drafts/`                              | Suites written ahead of the code for slice 5.5 (OpenAI). **Never run**; they will need fixing. Move one into `tools/` when its slice is built |
 
 ## Rules learned the hard way
 

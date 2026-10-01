@@ -1,0 +1,14 @@
+{
+  "label": "file-lenient-is-strict",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "const lenient = source === 'file'",
+      "to": "const lenient = source === 'file' && false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-5-4-store.mjs"
+  ],
+  "env": {}
+}

@@ -107,6 +107,10 @@ as `<id>.json.tmp` first, then copied over `<id>.json`, so a crash in the middle
 until the saves in progress have finished (`before-quit`, at most 5 s). The files are plain JSON in the
 per-user data folder, in `conversations/`, and the History dialog shows where.
 
+Since Stage 5.4 the file is `"version": 2` (D-021): every reply in it says which `provider` and `model` wrote it (`null` where that
+is not known), and the person's own messages carry neither. A version 1 file (Stages 2-4) is read as a version 2 one, with the
+provider `anthropic` and the model `null`, and stays version 1 on disk until the conversation is next saved: reading never writes.
+
 ### Sending a message
 
 ```
@@ -121,7 +125,10 @@ Composer -> useChat.send
 ```
 
 Stop, reloading the window and closing it all abort the network request in main. The reply comes back as
-three kinds of event: `text`, `done` and `error` (see `src/shared/ipc.ts`). What the model is told about
+four kinds of event: `start` (always first: which provider and model answer, sent before the key is looked up, so even a reply
+that fails at once says which model was asked, D-021), `text`, `done` and `error` (see `src/shared/ipc.ts`). The page keeps what `start`
+says on the reply, and the list shows the model's name above a reply when it is the first one or the model changed. When a reply
+has finished, main logs once what it used (provider/model and the four token counts). What the model is told about
 earlier turns is D-013.
 
 ## Chat UI (`src/renderer/src/chat/`)

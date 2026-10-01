@@ -1,0 +1,14 @@
+{
+  "label": "v1-not-upgraded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "file.version === 1 ? 'file-v1' : 'file'",
+      "to": "'file'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-5-4-store.mjs"
+  ],
+  "env": {}
+}

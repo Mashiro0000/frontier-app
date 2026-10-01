@@ -22,6 +22,10 @@ function ChatView({
 }: ChatViewProps): React.JSX.Element {
   const { messages, isReplying, send, stop } = chat
 
+  // What to call a model above its reply: its name from the registry, or its id if the registry no longer lists it (D-021).
+  const modelName = (modelId: string): string =>
+    status?.models.find((model) => model.id === modelId)?.label ?? modelId
+
   // Nothing is said until the main process has answered, so the hint never flashes the wrong thing.
   let emptyHint: React.ReactNode = null
   const missingKey = providerMissingKey(status)
@@ -42,7 +46,12 @@ function ChatView({
 
   return (
     <main className="chat">
-      <MessageList messages={messages} isReplying={isReplying} emptyHint={emptyHint} />
+      <MessageList
+        messages={messages}
+        isReplying={isReplying}
+        emptyHint={emptyHint}
+        modelName={modelName}
+      />
       <Composer focusKey={conversationId} isReplying={isReplying} onSend={send} onStop={stop} />
     </main>
   )

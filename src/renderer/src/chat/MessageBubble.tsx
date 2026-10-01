@@ -3,6 +3,8 @@ import type { ChatMessage } from './types'
 
 interface MessageBubbleProps {
   message: ChatMessage
+  /** The name of the model that wrote this reply, when it is worth saying (the first reply, or a change of model). */
+  answeredBy: string | null
 }
 
 /** A short line shown under a message when something other than "all went well" happened. */
@@ -13,7 +15,7 @@ function noteFor(message: ChatMessage): string | null {
   return null
 }
 
-function MessageBubble({ message }: MessageBubbleProps): React.JSX.Element {
+function MessageBubble({ message, answeredBy }: MessageBubbleProps): React.JSX.Element {
   // The reply has been asked for but no text has arrived yet: show animated dots.
   const isWaiting = message.status === 'streaming' && message.content === ''
   const note = noteFor(message)
@@ -23,6 +25,7 @@ function MessageBubble({ message }: MessageBubbleProps): React.JSX.Element {
       className={`message message-${message.role}`}
       aria-label={message.role === 'user' ? 'You' : 'Assistant'}
     >
+      {answeredBy && <p className="message-model">{answeredBy}</p>}
       {(message.content !== '' || isWaiting) && (
         <div className="bubble">
           {isWaiting ? (

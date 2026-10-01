@@ -8,7 +8,7 @@ import { currentModel } from './models'
 import { adapterFor } from './providers'
 import { describeFailure, unknownError } from './providers/errors'
 import { buildStreamRequest } from './providers/request'
-import type { ProviderAdapter, ReplyEnd } from './providers/types'
+import type { ProviderAdapter, ReplyEnd, Usage } from './providers/types'
 import { isTrustedSender } from './security'
 
 const noKeyMessage = (provider: ProviderId): string =>
@@ -87,6 +87,9 @@ async function runReply(
     const { entry } = model
     adapter = adapterFor(entry.provider)
     modelId = entry.id
+    // Before anything else is looked up or sent, say who answers (D-021): the page records it on the reply, so even a reply
+    // that fails at once (no key, a key that is refused) says which model was asked. Nothing secret is in it.
+    send({ streamId, type: 'start', provider: entry.provider, model: entry.id })
     // Each provider has a key of its own (D-020): the one that goes with this model's provider, and no other.
     const saved = await readApiKey(entry.provider)
     if (saved === null) {
@@ -95,6 +98,7 @@ async function runReply(
     }
     apiKey = saved
     let end: ReplyEnd | null = null
+    let usage: Usage | null = null
     const stream = adapter.stream(
       buildStreamRequest({
         credentials: { apiKey, baseURL: baseUrlOverride(entry.provider) },
@@ -105,11 +109,22 @@ async function runReply(
     )
     for await (const event of stream) {
       if (event.type === 'text') send({ streamId, type: 'text', text: event.text })
-      else end = event.end
+      else {
+        end = event.end
+        usage = event.usage
+      }
     }
     // An adapter ends every reply that did not fail with an `end` event. Saying "done" without one would hide a bug.
     if (end === null) throw new Error('the provider ended the reply without saying how it ended')
-    if (!controller.signal.aborted) send(endEvent(streamId, end))
+    if (!controller.signal.aborted) {
+      // What the reply used, once, for the log (D-018, D-021). It is not stored with the message and never holds a key.
+      if (usage) {
+        console.log(
+          `Reply from ${entry.provider}/${entry.id} used ${usage.inputTokens} input, ${usage.cacheReadTokens} cache-read, ${usage.cacheWriteTokens} cache-write and ${usage.outputTokens} output tokens.`
+        )
+      }
+      send(endEvent(streamId, end))
+    }
   } catch (error) {
     // Stopped by the person (or the page went away): not a failure, and nobody is listening.
     if (controller.signal.aborted) return

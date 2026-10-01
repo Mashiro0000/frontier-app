@@ -1,0 +1,14 @@
+{
+  "label": "model-without-provider-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "if (provider === null && model !== null) {\n    if (!lenient) return null\n    model = null\n  }",
+      "to": "if (false) model = null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-5-4-store.mjs"
+  ],
+  "env": {}
+}

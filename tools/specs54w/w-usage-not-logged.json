@@ -1,0 +1,14 @@
+{
+  "label": "w-usage-not-logged",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "if (usage) {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run54.mjs"
+  ],
+  "env": {}
+}

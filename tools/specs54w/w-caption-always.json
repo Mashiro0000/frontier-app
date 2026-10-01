@@ -1,0 +1,14 @@
+{
+  "label": "w-caption-always",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/MessageList.tsx",
+      "from": "message.model !== previous ? modelName(message.model) : null",
+      "to": "modelName(message.model)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run54.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "w-model-not-sent-for-save",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/convert.ts",
+      "from": "...(status === 'error' && error !== undefined ? { error } : {}),\n    ...(role === 'assistant' ? { provider: provider ?? null, model: model ?? null } : {})",
+      "to": "...(status === 'error' && error !== undefined ? { error } : {})"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run54.mjs"
+  ],
+  "env": {}
+}

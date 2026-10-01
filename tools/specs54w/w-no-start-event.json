@@ -1,0 +1,14 @@
+{
+  "label": "w-no-start-event",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "send({ streamId, type: 'start', provider: entry.provider, model: entry.id })",
+      "to": "void 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run54.mjs"
+  ],
+  "env": {}
+}

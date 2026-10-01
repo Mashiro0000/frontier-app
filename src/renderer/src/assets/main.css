@@ -233,6 +233,14 @@ body {
   border-bottom-left-radius: 4px;
 }
 
+/* Who wrote a reply: said above it when it is the first one, or when the model changed (D-021) */
+.message-model {
+  margin-bottom: 4px;
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
 /* "Stopped" / error line under a message */
 .message-note {
   margin-top: 4px;

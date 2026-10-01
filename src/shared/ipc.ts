@@ -68,6 +68,8 @@ export interface ChatRequest {
 
 /** What the main process reports while a reply is being produced. */
 export type ChatStreamEvent =
+  /** Always first, before the key is looked up: which model is answering (D-021). Not sent if no model could be chosen. */
+  | { streamId: string; type: 'start'; provider: ProviderId; model: string }
   | { streamId: string; type: 'text'; text: string }
   | { streamId: string; type: 'done' }
   | { streamId: string; type: 'error'; message: string }
@@ -82,6 +84,12 @@ export interface SavedMessage {
   status: SavedStatus
   /** Why the reply failed. Only present when the status is 'error'. */
   error?: string
+  /**
+   * Who wrote a reply (D-021). Both are present on every reply and absent on the person's own messages. `null` means
+   * not known: a reply saved before the app recorded it knows its provider (there was only one) but not its model.
+   */
+  provider?: ProviderId | null
+  model?: string | null
 }
 
 /** A message as the page hands it over to be saved. Main turns 'streaming' into 'stopped'. */
@@ -90,6 +98,9 @@ export interface MessageToSave {
   content: string
   status: SavedStatus | 'streaming'
   error?: string
+  /** For a reply: which model answered, as main reported it when the reply began (D-021). Checked again by main. */
+  provider?: ProviderId | null
+  model?: string | null
 }
 
 /**

@@ -1,0 +1,14 @@
+{
+  "label": "writes-version-1",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "JSON.stringify({ version: 2, ...conversation })",
+      "to": "JSON.stringify({ version: 1, ...conversation })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-5-4-store.mjs"
+  ],
+  "env": {}
+}

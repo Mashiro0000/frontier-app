@@ -1,0 +1,14 @@
+{
+  "label": "w-caption-forgets-the-model",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/MessageList.tsx",
+      "from": "previous = message.model\n",
+      "to": "previous = null\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run54.mjs"
+  ],
+  "env": {}
+}
