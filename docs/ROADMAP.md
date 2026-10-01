@@ -122,8 +122,13 @@ contract: each stage starts with a short written plan that the owner approves (a
 ## Stage 7 - Chat polish (not started)
 
 - Markdown with code blocks, tables, lists; **copy** buttons; **regenerate**; **edit and resend**; a system prompt of your own per chat.
+- An **Effort** control (a Faster to Smarter slider or menu, like the Claude desktop app's) next to the model menu. It offers only the levels
+  the registry lists for the chosen model (`capabilities.effortLevels`), and is hidden for a model that takes none (Haiku 4.5). The choice is
+  kept per model by the main process, which checks it against the registry again (as it does the model choice), and the default stays what
+  `registry/models.json` says until the owner changes it.
 - Safety: a sanitising renderer (D-009), no raw HTML, links are shown as text and open in the browser only after a click on an https address, no
-  image or resource loads by itself, nothing can navigate or script the app window.
+  image or resource loads by itself, nothing can navigate or script the app window. Higher effort is billed as extra output (thinking), so the
+  control says so, and Stage 8's spending limit must count it.
 
 ## Stage 8 - Usage, cost and spending limits, optional encrypted history (not started)
 
