@@ -11,7 +11,7 @@
 import type { ModelOption } from './ipc'
 
 /** The shape of registry/models.json that this version of the app reads. */
-export const REGISTRY_SCHEMA_VERSION = '0.2'
+export const REGISTRY_SCHEMA_VERSION = '0.3'
 
 /** The providers this version of the app can call. An entry for any other provider is left out. */
 export const SUPPORTED_PROVIDERS = ['anthropic'] as const
@@ -21,11 +21,37 @@ export type ProviderId = (typeof SUPPORTED_PROVIDERS)[number]
 export const PROVIDER_NAMES: Record<ProviderId, string> = { anthropic: 'Anthropic' }
 
 /**
- * The effort levels the registry may name. The models that take the setting differ in which of the
- * higher levels they accept, but every one of them accepts these three.
+ * Every effort level the registry may name. Which of them a model accepts differs from model to model, and from
+ * provider to provider (one has no "none", another no "minimal"), so each entry lists its own (`effortLevels`), and
+ * each provider has the words it knows (below): a word the provider does not know is a typo, not a fact.
  */
-export const EFFORT_LEVELS = ['low', 'medium', 'high'] as const
+export const EFFORT_LEVELS = ['none', 'low', 'medium', 'high', 'xhigh', 'max'] as const
 export type Effort = (typeof EFFORT_LEVELS)[number]
+
+/** The effort words each provider's API knows. */
+export const PROVIDER_EFFORTS: Record<ProviderId, readonly Effort[]> = {
+  anthropic: ['low', 'medium', 'high', 'xhigh', 'max']
+}
+
+/**
+ * What a model can do, as facts from the provider's own documentation (D-019). The app acts on `promptCaching` and
+ * `effortLevels` today; `imageInput` and `toolUse` are facts for the features that will need them (the chat is text only).
+ */
+export interface ModelCapabilities {
+  /** It reads images. */
+  imageInput: boolean
+  /** It can call functions the app offers it. */
+  toolUse: boolean
+  /**
+   * It thinks by itself before it answers. That thinking is billed as output and counts against the reply's token
+   * limit. (A model that thinks only when asked to is false: this app does not ask.)
+   */
+  reasoning: boolean
+  /** It can reuse the start of a conversation it has already read, which the provider bills at a lower price. */
+  promptCaching: boolean
+  /** The effort levels its API accepts. Empty if it rejects the setting altogether. */
+  effortLevels: Effort[]
+}
 
 /** One model as the main process uses it: facts about the model, and the one setting the app picks for it. */
 export interface ModelEntry {
@@ -41,7 +67,11 @@ export interface ModelEntry {
   maxOutputTokens: number
   /** List price in US dollars per million tokens. */
   pricing: { inputPerMTok: number; outputPerMTok: number }
-  /** The effort level to ask for, or null if the model does not take the setting (it would reject it). */
+  capabilities: ModelCapabilities
+  /**
+   * The effort level to ask for: one of `capabilities.effortLevels`, written out because the default differs
+   * between models. Null exactly when the model takes none (it would reject the setting).
+   */
   effort: Effort | null
 }
 
@@ -76,7 +106,7 @@ function isFields(value: unknown): value is Fields {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-const quoted = (names: string[]): string =>
+const quoted = (names: readonly string[]): string =>
   names.map((name) => JSON.stringify(name.slice(0, 40))).join(', ')
 
 /**
@@ -133,11 +163,54 @@ const ENTRY_FIELDS = [
   'contextWindow',
   'maxOutputTokens',
   'pricing',
+  'capabilities',
   'effort'
 ] as const
 const PRICING_FIELDS = ['inputPerMTok', 'outputPerMTok'] as const
+const CAPABILITY_FLAGS = ['imageInput', 'toolUse', 'reasoning', 'promptCaching'] as const
+const CAPABILITY_FIELDS = [...CAPABILITY_FLAGS, 'effortLevels'] as const
 
 type EntryResult = { ok: true; entry: ModelEntry } | { ok: false; problem: string }
+type CapabilitiesResult =
+  { ok: true; capabilities: ModelCapabilities } | { ok: false; problem: string }
+
+/** Checks the capabilities of one entry of `provider`, and returns a clean copy of them. */
+function parseCapabilities(value: unknown, provider: ProviderId): CapabilitiesResult {
+  const bad = (problem: string): CapabilitiesResult => ({ ok: false, problem })
+  if (!isFields(value)) return bad('capabilities must be an object')
+  if (fieldProblem(value, CAPABILITY_FIELDS) !== null) {
+    return bad(`capabilities must have exactly ${quoted(CAPABILITY_FIELDS)}`)
+  }
+  for (const flag of CAPABILITY_FLAGS) {
+    if (typeof value[flag] !== 'boolean') return bad(`capabilities.${flag} must be true or false`)
+  }
+  const { effortLevels } = value
+  const known = PROVIDER_EFFORTS[provider]
+  if (!Array.isArray(effortLevels) || effortLevels.length > known.length) {
+    return bad(`capabilities.effortLevels must be a list of at most ${known.length} effort levels`)
+  }
+  const levels: Effort[] = []
+  for (const level of effortLevels as unknown[]) {
+    if (!isEffort(level) || !known.includes(level)) {
+      return bad(
+        `capabilities.effortLevels: ${quoted([String(level)])} is not an effort level ${provider} knows (${quoted(known)})`
+      )
+    }
+    if (levels.includes(level))
+      return bad(`capabilities.effortLevels names ${quoted([level])} twice`)
+    levels.push(level)
+  }
+  return {
+    ok: true,
+    capabilities: {
+      imageInput: value['imageInput'] as boolean,
+      toolUse: value['toolUse'] as boolean,
+      reasoning: value['reasoning'] as boolean,
+      promptCaching: value['promptCaching'] as boolean,
+      effortLevels: levels
+    }
+  }
+}
 
 /** Checks one entry and returns a clean copy of it: only the known fields, each of a known kind. */
 function parseEntry(item: unknown): EntryResult {
@@ -146,7 +219,17 @@ function parseEntry(item: unknown): EntryResult {
   const fields = fieldProblem(item, ENTRY_FIELDS)
   if (fields) return bad(fields)
 
-  const { provider, id, label, description, contextWindow, maxOutputTokens, pricing, effort } = item
+  const {
+    provider,
+    id,
+    label,
+    description,
+    contextWindow,
+    maxOutputTokens,
+    pricing,
+    capabilities,
+    effort
+  } = item
   if (!isProvider(provider)) {
     return bad(`provider ${quoted([String(provider)])} is not one this version of the app can call`)
   }
@@ -172,8 +255,30 @@ function parseEntry(item: unknown): EntryResult {
   if (!isPrice(inputPerMTok) || !isPrice(outputPerMTok)) {
     return bad('the prices must be numbers from 0 to 10000 (US dollars per million tokens)')
   }
+  const parsed = parseCapabilities(capabilities, provider)
+  if (!parsed.ok) return bad(parsed.problem)
+  const { effortLevels } = parsed.capabilities
+
+  // The effort the app asks for is explicit, never guessed (D-014): written out for a model that takes the setting, and
+  // null for one that rejects it. It must be a level the model's own list names.
   if (effort !== null && !isEffort(effort)) {
-    return bad(`effort must be ${EFFORT_LEVELS.map((level) => `"${level}"`).join(', ')} or null`)
+    return bad(`effort must be one of ${quoted(EFFORT_LEVELS)} or null`)
+  }
+  if (effort === null && effortLevels.length > 0) {
+    return bad(
+      'effort is null, but capabilities.effortLevels is not empty: the level must be written out'
+    )
+  }
+  if (effort !== null && effortLevels.length === 0) {
+    return bad(
+      'effort is set, but capabilities.effortLevels is empty: this model takes no effort setting'
+    )
+  }
+  if (effort !== null && !effortLevels.includes(effort)) {
+    return bad(`effort ${quoted([effort])} is not one of this model's capabilities.effortLevels`)
+  }
+  if (effortLevels.length > 0 && !parsed.capabilities.reasoning) {
+    return bad('capabilities.effortLevels is not empty, but capabilities.reasoning is false')
   }
 
   return {
@@ -186,6 +291,7 @@ function parseEntry(item: unknown): EntryResult {
       contextWindow,
       maxOutputTokens,
       pricing: { inputPerMTok, outputPerMTok },
+      capabilities: parsed.capabilities,
       effort
     }
   }
@@ -228,6 +334,7 @@ export function parseRegistry(input: unknown): RegistryResult {
     if (!result.ok) {
       problems.push(`${name}: ${result.problem}`)
     } else if (entries.some((entry) => entry.id === result.entry.id)) {
+      // Ids are unique across providers, not just within one: the chosen model is saved as its id alone (D-015).
       problems.push(`${name}: this id is already used by an earlier entry`)
     } else {
       entries.push(result.entry)

@@ -224,8 +224,9 @@ in one and how the app reads it.
   sent (checked against a copy of that request taken before any Stage 3 code). Sonnet 5.5 `medium`: its
   default is `high`, and Anthropic suggests `medium` for chat. Fable 5.1 `high`: its default and Anthropic's
   suggested starting point. Haiku 4.5 `null`: it rejects the setting, the case D-012 warned about. `xhigh`
-  and `max` are not allowed in the file, because not every model that takes `effort` accepts them. These
-  values are my reading of the docs, and a one-word edit per model.
+  and `max` are not allowed in the file, because not every model that takes `effort` accepts them (Stage 5.2
+  lifted this: each model now lists the levels it accepts, D-019). These values are my reading of the docs, and a
+  one-word edit per model.
 - **Haiku's id is the dated snapshot** `claude-haiku-4-5-20251001`, which Anthropic's docs list as its API
   id (`claude-haiku-4-5` is an alias for it). Its retirement is "not sooner than October 15, 2026", two
   weeks after this was written. When it goes the API answers 404, the app names the model that was not found
@@ -450,3 +451,37 @@ How "nothing changed" was shown (the check scripts live outside the repository, 
 Status: accepted (Stage 5.1). Revisit: image or tool content in `NeutralMessage` (a new content type, and a
 translation in each adapter); a cost display, which needs cache prices in the registry as well (D-019); showing the
 usage that `end` already carries.
+
+## D-019 - The registry says what a model can do; the app acts on what it needs
+
+Stage 5.2 moves `registry/models.json` to schema `0.3` (D-014 described `0.2`). The file still holds facts about models
+and the one setting the app picks for each, and still never an address or a credential.
+
+- **`capabilities`**, a new object on every entry, with exactly these fields: `imageInput`, `toolUse`, `reasoning`
+  and `promptCaching` (true or false), and `effortLevels` (the effort levels the model's API accepts; an empty list for a
+  model that rejects the setting). They are facts from the provider's own documentation, read on 2026-10-01 (for
+  Anthropic: the models overview and the Models API's capability fields, plus the effort and prompt-caching pages), not
+  settings. `reasoning` means the model thinks by itself before it answers, so Haiku 4.5, which only thinks when it is
+  asked to and is not asked here, is `false`.
+- **What the app acts on today, and what it does not yet.** `promptCaching` decides whether the Anthropic request
+  carries `cache_control` (true for every model now, so no request changed: the golden record from D-018 still
+  matches). `effortLevels` is checked against the effort the app picks (below). `imageInput` and `toolUse` change nothing
+  today, because the chat is text only: they are stated now because the registry is where such facts belong, and each is
+  cheap to state and to check while the file is being edited anyway.
+- **`effort` (the pick) and `effortLevels` (the facts) must agree**, and the file is refused entry by entry when they
+  do not. The pick is `null` exactly when the list is empty; otherwise it is one of the listed levels, written out
+  because the default differs between models (D-014: never guessed). A model that lists levels must be one that
+  thinks. The words are checked against what each provider knows (`PROVIDER_EFFORTS`): `none` is not an Anthropic word.
+- **The effort vocabulary is wider** (`none`, `low`, `medium`, `high`, `xhigh`, `max`). D-014 allowed only `low`, `medium`
+  and `high`, "because not every model that takes `effort` accepts" the higher ones. A model now lists its own, which
+  answers that objection, so `xhigh` and `max` can be picked by editing one word. No pick changed in this stage.
+- **Ids are unique across providers**, not just within one: the chosen model is saved as its id alone (D-015), and two
+  providers each offering the same id would make that choice ambiguous. A second entry with an id already used is left out
+  and reported, as before.
+- **Not in the registry on purpose:** the prices of cached and cache-written tokens. `usage` (D-018) already counts them
+  apart; a cost display (IDEAS) will need their prices too, and they differ by provider and model in ways I could not
+  confirm from the documentation I could read.
+
+Status: accepted (Stage 5.2). Revisit: prices for cache reads and writes; checking the file against each provider's own
+model listing (`listModels`, D-018: Anthropic's reports `max_input_tokens`, `max_tokens` and a capability tree) to notice a
+fact that has drifted, which needs a real key to see how ids and values are spelled; the retirement date of a model.

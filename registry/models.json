@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "0.2",
+  "schemaVersion": "0.3",
   "updatedAt": "2026-10-01",
-  "source": "Anthropic's Claude API documentation (the models overview, effort and prompt-caching pages), read on 2026-10-01. Prices are list prices in US dollars per million tokens.",
+  "source": "Anthropic's Claude API documentation (the models overview, the Models API's capability fields, and the effort and prompt-caching pages), read on 2026-10-01. Prices are list prices in US dollars per million tokens.",
   "defaultModelId": "claude-opus-5-5",
   "models": [
     {
@@ -12,6 +12,13 @@
       "contextWindow": 1000000,
       "maxOutputTokens": 128000,
       "pricing": { "inputPerMTok": 10, "outputPerMTok": 50 },
+      "capabilities": {
+        "imageInput": true,
+        "toolUse": true,
+        "reasoning": true,
+        "promptCaching": true,
+        "effortLevels": ["low", "medium", "high", "xhigh", "max"]
+      },
       "effort": "high"
     },
     {
@@ -22,6 +29,13 @@
       "contextWindow": 1000000,
       "maxOutputTokens": 128000,
       "pricing": { "inputPerMTok": 4, "outputPerMTok": 20 },
+      "capabilities": {
+        "imageInput": true,
+        "toolUse": true,
+        "reasoning": true,
+        "promptCaching": true,
+        "effortLevels": ["low", "medium", "high", "xhigh", "max"]
+      },
       "effort": "medium"
     },
     {
@@ -32,6 +46,13 @@
       "contextWindow": 1000000,
       "maxOutputTokens": 128000,
       "pricing": { "inputPerMTok": 2, "outputPerMTok": 10 },
+      "capabilities": {
+        "imageInput": true,
+        "toolUse": true,
+        "reasoning": true,
+        "promptCaching": true,
+        "effortLevels": ["low", "medium", "high", "xhigh", "max"]
+      },
       "effort": "medium"
     },
     {
@@ -42,6 +63,13 @@
       "contextWindow": 200000,
       "maxOutputTokens": 64000,
       "pricing": { "inputPerMTok": 1, "outputPerMTok": 5 },
+      "capabilities": {
+        "imageInput": true,
+        "toolUse": true,
+        "reasoning": false,
+        "promptCaching": true,
+        "effortLevels": []
+      },
       "effort": null
     }
   ]

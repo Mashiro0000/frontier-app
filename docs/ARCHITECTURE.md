@@ -165,11 +165,13 @@ not have to change. See DECISIONS.md D-008.
 
 `registry/` holds plain JSON data about models (D-005, D-014).
 
-- `registry/models.json` - the models the app offers. **In use since Stage 3.** Envelope: `schemaVersion` ("0.2"),
+- `registry/models.json` - the models the app offers. **In use since Stage 3.** Envelope: `schemaVersion` ("0.3"),
   `updatedAt` and `source` (when and where the facts and prices were checked), `defaultModelId` and `models`. Each model:
   `provider`, `id`, `label`, `description`, `contextWindow`, `maxOutputTokens`, `pricing` (US dollars per million
-  tokens, `inputPerMTok` and `outputPerMTok`) and `effort` (`low`, `medium`, `high`, or `null` for a model that rejects
-  the setting, such as Haiku 4.5). Every object must have exactly these fields.
+  tokens, `inputPerMTok` and `outputPerMTok`), `capabilities` (facts: `imageInput`, `toolUse`, `reasoning`,
+  `promptCaching`, and `effortLevels`, the effort levels its API accepts) and `effort` (the level the app asks for: one
+  of the model's own `effortLevels`, or `null` for a model that takes none, such as Haiku 4.5). Every object must have
+  exactly these fields, and `effort` and `effortLevels` must agree (D-019). Ids are unique across providers.
 - `registry/rankings.json` - how models score on tasks, so the app can suggest one. Still an empty template
   (`{ "schemaVersion": "0.1", "updatedAt": null, "source": null, "rankings": [] }`); nothing reads it yet.
 

@@ -1,5 +1,5 @@
 import Anthropic, { type APIError } from '@anthropic-ai/sdk'
-import { PROVIDER_NAMES } from '../../shared/registry'
+import { PROVIDER_NAMES, type Effort, type ModelEntry } from '../../shared/registry'
 import { isInterrupted, normalizedError, rawMessage, type ErrorFacts } from './errors'
 import type {
   Credentials,
@@ -46,6 +46,14 @@ async function listModels(
   return models
 }
 
+// The registry only lets an Anthropic entry name the levels Anthropic knows (PROVIDER_EFFORTS, D-019), so "none" cannot get
+// here. This is for the compiler, and for a registry that was edited around its validator: the request would be refused
+// by the API, or worse, quietly ask for something other than what the registry says, so it fails here instead.
+function effortOf(model: ModelEntry): Exclude<Effort, 'none'> | null {
+  if (model.effort === 'none') throw new Error('Anthropic has no effort level "none"')
+  return model.effort
+}
+
 function endOf(message: Anthropic.Message): ReplyEnd {
   switch (message.stop_reason) {
     case 'max_tokens':
@@ -73,6 +81,7 @@ function usage(report: unknown): Usage {
 
 async function* stream(request: StreamRequest): AsyncGenerator<StreamEvent> {
   const { model } = request
+  const effort = effortOf(model)
   const reply = newClient(request.credentials).messages.stream(
     {
       model: model.id,
@@ -83,10 +92,11 @@ async function* stream(request: StreamRequest): AsyncGenerator<StreamEvent> {
       // written out for the ones that take it, and left out for the ones that reject it outright (Haiku 4.5). The
       // registry says which (D-014). There is no `thinking` setting: the models that think always do, and the others
       // are not asked to.
-      ...(model.effort ? { output_config: { effort: model.effort } } : {}),
+      ...(effort ? { output_config: { effort } } : {}),
       // The whole conversation is sent again with every message. This lets the server reuse the part it has already
-      // seen (billed far lower) instead of charging full price for it each time.
-      cache_control: { type: 'ephemeral' }
+      // seen (billed far lower) instead of charging full price for it each time. The registry says which models can
+      // (D-019): a model that cannot is not asked to.
+      ...(model.capabilities.promptCaching ? { cache_control: { type: 'ephemeral' as const } } : {})
     },
     { signal: request.signal }
   )
