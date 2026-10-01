@@ -1,12 +1,17 @@
 import { app, ipcMain, type WebContents } from 'electron'
 import { CHANNELS, type ChatRequest, type ChatStreamEvent } from '../shared/ipc'
+import { PROVIDER_NAMES, type ProviderId } from '../shared/registry'
 import { checkChatRequest } from '../shared/validate'
 import { readApiKey } from './keyStore'
 import { currentModel } from './models'
-import { describeError, streamReply, type ReplyEnd } from './provider'
+import { adapterFor } from './providers'
+import { describeFailure, unknownError } from './providers/errors'
+import { buildStreamRequest } from './providers/request'
+import type { ProviderAdapter, ReplyEnd } from './providers/types'
 import { isTrustedSender } from './security'
 
-const NO_KEY_MESSAGE = 'No API key is saved yet. Open Settings and add your Anthropic API key.'
+const noKeyMessage = (provider: ProviderId): string =>
+  `No API key is saved yet. Open Settings and add your ${PROVIDER_NAMES[provider]} API key.`
 
 /** Replies in progress, by "<window id>:<stream id>", so each one can be stopped on its own. */
 const running = new Map<string, AbortController>()
@@ -19,16 +24,18 @@ const watched = new WeakSet<WebContents>()
  */
 let warnedAboutOverride = false
 
-function baseUrlOverride(): string | undefined {
+function baseUrlOverride(provider: ProviderId): string | undefined {
   const value = process.env['FRONTIER_API_BASE_URL']
   if (!value || app.isPackaged) return undefined
   try {
     const { protocol } = new URL(value)
     if (protocol === 'http:' || protocol === 'https:') {
-      // Said once, loudly: requests (and the saved key) are going somewhere other than Anthropic.
+      // Said once, loudly: requests (and the saved key) are going somewhere other than the provider.
       if (!warnedAboutOverride) {
         warnedAboutOverride = true
-        console.warn(`FRONTIER_API_BASE_URL is set: requests go to ${value}, NOT to Anthropic.`)
+        console.warn(
+          `FRONTIER_API_BASE_URL is set: requests go to ${value}, NOT to ${PROVIDER_NAMES[provider]}.`
+        )
       }
       return value
     }
@@ -96,33 +103,46 @@ async function runReply(
   running.set(key, controller)
   let apiKey = ''
   let modelId = ''
+  let adapter: ProviderAdapter | null = null
   try {
-    const saved = await readApiKey()
-    if (saved === null) {
-      send({ streamId, type: 'error', message: NO_KEY_MESSAGE })
-      return
-    }
-    apiKey = saved
-    // The model is fixed here, for this whole reply: a later change of model applies from the next one.
+    // The model is fixed here, for this whole reply: a later change of model applies from the next one. Its provider
+    // decides which adapter answers, and which key goes with the request.
     const model = await currentModel()
     if (!model.ok) {
       send({ streamId, type: 'error', message: model.error })
       return
     }
-    modelId = model.entry.id
-    const end = await streamReply({
-      apiKey,
-      model: model.entry,
-      messages: request.messages,
-      signal: controller.signal,
-      baseURL: baseUrlOverride(),
-      onText: (text) => send({ streamId, type: 'text', text })
-    })
+    const { entry } = model
+    adapter = adapterFor(entry.provider)
+    modelId = entry.id
+    // Until each provider has a key of its own (D-020), there is the one key, and the one provider it belongs to.
+    const saved = await readApiKey()
+    if (saved === null) {
+      send({ streamId, type: 'error', message: noKeyMessage(entry.provider) })
+      return
+    }
+    apiKey = saved
+    let end: ReplyEnd | null = null
+    const stream = adapter.stream(
+      buildStreamRequest({
+        credentials: { apiKey, baseURL: baseUrlOverride(entry.provider) },
+        model: entry,
+        messages: request.messages,
+        signal: controller.signal
+      })
+    )
+    for await (const event of stream) {
+      if (event.type === 'text') send({ streamId, type: 'text', text: event.text })
+      else end = event.end
+    }
+    // An adapter ends every reply that did not fail with an `end` event. Saying "done" without one would hide a bug.
+    if (end === null) throw new Error('the provider ended the reply without saying how it ended')
     if (!controller.signal.aborted) send(endEvent(streamId, end))
   } catch (error) {
     // Stopped by the person (or the page went away): not a failure, and nobody is listening.
     if (controller.signal.aborted) return
-    send({ streamId, type: 'error', message: describeError(error, apiKey, modelId) })
+    const failure = adapter ? adapter.normalizeError(error, { modelId }) : unknownError(error)
+    send({ streamId, type: 'error', message: describeFailure(failure, apiKey) })
   } finally {
     running.delete(key)
   }

@@ -141,7 +141,8 @@ only through the contract. Stage 3 added `settings:set-model` that way (D-015), 
 The roadmap asked for one provider and named none. Anthropic's Claude was chosen: the project had no other
 provider in it (the only mention was a parked idea about Ollama), and it is the natural default for this
 app. It is reversible: the page knows only `ReplyFn`, and the provider is one module,
-`src/main/provider.ts`, which imports nothing from Electron.
+`src/main/provider.ts`, which imports nothing from Electron. (Stage 5.1: that module is now the Anthropic adapter,
+`src/main/providers/anthropic.ts`, one adapter among others behind one interface: D-018.)
 
 - **The SDK, not hand-written HTTP.** `@anthropic-ai/sdk` (MIT, two small dependencies) handles streaming,
   retries and typed errors. It runs in the main process only, and `npm audit` stays at 0 vulnerabilities.
@@ -383,3 +384,69 @@ the tested size); a size or age limit with a clear-out; a "Delete all"; file nam
 Status: accepted (Stage 4.3 and 4.4). Revisit: recording the model per reply (it needs an event from main to
 the page and a field in the file, and old files would lack it); a Retry button for failed replies (D-013); rename
 and search once a person has more than a screenful.
+
+## D-018 - One adapter per provider behind a neutral interface; the app's own rules stay outside the adapters
+
+Stage 5 makes the app talk to more than one provider. Stage 5.1 is the refactor that makes room for that, done first
+and on its own: the Anthropic code moved out of `src/main/provider.ts` into `src/main/providers/` behind an interface,
+and **nothing the app does changed**. (The request said to refactor "all OpenAI calls". There were none: the only
+provider was Anthropic's Claude (D-012). The existing code therefore became the first adapter, and a second provider
+is added in its own slice, D-022.)
+
+- **The interface** (`ProviderAdapter`, `providers/types.ts`) has the four methods asked for.
+  - `stream(request)` is an async generator: `text` events as they arrive, then exactly one `end` event (how the reply
+    ended, and what it used). A failure makes it throw, and so does a Stop (the caller knows which, from its own
+    signal). Both SDKs' streams are used the documented way (iterate the raw events, then `finalMessage()`). A
+    generator also adds a property the old callback did not have: a consumer that stops looping cancels the network
+    request.
+  - `usage(report)` turns a provider's usage report into four buckets that never overlap: ordinary input, cache reads,
+    cache writes and output (the thinking a model does first is output, because it is billed as output). They can be
+    added up and priced one by one. Anthropic reports its cache numbers beside the input ones, not inside them;
+    another provider may report them inside (D-022), which is why each adapter converts its own report. It never
+    throws: a report it cannot read counts as nothing.
+  - `normalizeError(error, { modelId })` reads the facts out of whatever an SDK threw (a kind, the status, the
+    provider's own words, the request id). The sentences are chosen in one place (`errors.ts`), so every provider says
+    the same thing the same way. Anthropic's existing sentences are the old ones character for character.
+    `describeFailure` adds the request id and scrubs the key, as before.
+  - `listModels(credentials)` asks the provider which models this key can use. It costs no tokens, which is why
+    Settings' "Test key" uses it (D-020).
+- **The neutral message** is `{ role, content }` with `content` plain text, as the chat is (D-009). The page's
+  `WireMessage` already had exactly that shape, so nothing about it changed. The provider layer has a type of its own
+  so that either side can grow alone: an image would be a content part here and a translation in each adapter.
+- **The app's rules sit outside the adapters.** `request.ts` decides the system prompt (written per provider: a model
+  told it is Claude when it is not answers oddly), the 16 000-token ceiling lowered to a model's own maximum, and the
+  joining of consecutive turns (D-013). An adapter is handed a finished `StreamRequest` and only translates it. What
+  stays in an adapter is what is true of one API: its address, how the key travels, the SDK's environment fallbacks
+  (still pinned off, D-012) and the wire format.
+- **A table that must be complete.** `providers/index.ts` holds a `Record<ProviderId, ProviderAdapter>`. Add a
+  provider to the registry's list without writing its adapter and the build fails.
+- **One deliberate difference, the only one.** `chat.ts` now looks up the model first and the key second, because the
+  model decides the provider and the provider decides which key to use. Before, the key came first. The two orders
+  differ only when the registry cannot be loaded and no key is saved: the person is now told about the registry first.
+
+How "nothing changed" was shown (the check scripts live outside the repository, as in every stage):
+
+- A **golden record**, taken from the untouched code and again from the new code: for all four models and six shapes
+  of conversation the full request (every header and the exact body text); for 16 behaviours of the mock API the text
+  pieces, the ending and the sentence the person reads; and 33 hand-built errors in four variants each (every status
+  the SDK has a class for, things that are not Errors, chains of causes, a key inside the message). The two records are
+  **byte-identical** (99 KB). Ten one-line sabotages of the new code were each caught (a letter missing from the system
+  prompt, the body's key order, a full stop in a sentence, 529 changed to 500, thinking passed on as text, a cut-off
+  reply reported as done, no request id, no key scrub, effort sent to every model, no joining of turns).
+- The old provider suite (93 checks) passes against the new code through a small shim that gives it its old function
+  names.
+- Every earlier suite again on the new tree: 53 runs, all clean, with the counts they had before. The three plain-Node
+  suites (provider 93 through the shim, registry 162, history store 389); in the dev window Stage 1 to 3's suites (110,
+  64 and 5, 71, 77 and 13), the 16 saved-choice launches (9 each) and the 10 registry scenarios, then Stage 4's seven
+  runs (89, 17, 9 and 8, 4, 32, 24, 19); and the built app (53, 71, 77, and Stage 4's seven again). One of them, the
+  quit with 60 queued saves (`verify-4-3c`), is steady only on an idle machine: it sits at the edge of the 5-second
+  quit grace, and it failed twice in the first baseline while I was running other checks on the same computer. After
+  the refactor, on an idle machine, it passed 4 of 4 in the dev window and in the built app.
+- A new suite for what is new (84 checks): the table of adapters, the request builder, the shape of `stream` (text,
+  then exactly one `end`; a failure or a Stop throws; breaking out of the loop closes the connection), `usage` for
+  reports of every shape, `listModels` (pages, a rejected key, every status, nothing listening, an aborted signal,
+  hostile environment variables) and `normalizeError`. Twelve sabotages of the new code were each caught by it.
+
+Status: accepted (Stage 5.1). Revisit: image or tool content in `NeutralMessage` (a new content type, and a
+translation in each adapter); a cost display, which needs cache prices in the registry as well (D-019); showing the
+usage that `end` already carries.

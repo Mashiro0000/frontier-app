@@ -26,26 +26,31 @@ The renderer should never touch Node.js or the network for model calls directly.
 through the preload bridge (IPC).
 
 Stage 1 changed only `src/renderer`. Stage 2 added the files below (see Security notes), Stage 3 added or
-changed the ones marked (3), and Stage 4 the ones marked (4):
+changed the ones marked (3), Stage 4 the ones marked (4), and Stage 5 the ones marked (5):
 
-| File                            | Job                                                                                                                                                                                       |
-| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/main/index.ts`             | Creates the sandboxed window, wires the navigation lock, registers the message handlers. (4) Holds the quit until saves finish                                                            |
-| `src/main/security.ts`          | Plain functions: is this URL the app's own page? may it be opened in the browser?                                                                                                         |
-| `src/main/ipc.ts`               | The message handlers. Each one first checks that the app's own page is calling. (4) The four `history:` handlers                                                                          |
-| `src/main/keyStore.ts`          | Saves, reads and deletes the API key, encrypted by the operating system                                                                                                                   |
-| `src/main/chat.ts`              | Runs each reply: reads the key, calls the provider, sends text to the page as events                                                                                                      |
-| `src/main/provider.ts`          | (3) The one provider: Anthropic's Claude through the official SDK. Builds each request from a registry entry. No Electron imports                                                         |
-| `src/main/registry.ts`          | (3) The registry file, embedded in the build and checked once at startup                                                                                                                  |
-| `src/main/models.ts`            | (3) Which model answers: the saved choice (`preferences.json`) or the registry's default; changes run one at a time                                                                       |
-| `src/preload/index.ts`          | Builds `window.api`, the only thing the page can ask main for. (4) Gained `history`                                                                                                       |
-| `src/preload/index.d.ts`        | Tells the renderer's TypeScript what `window.api` looks like                                                                                                                              |
-| `src/shared/ipc.ts`             | Every message that crosses the boundary: types, channel names. (4) The history types and `HISTORY_LIMITS`                                                                                 |
-| `src/shared/validate.ts`        | `checkApiKey`, `checkChatRequest`, `checkModelChoice`: the page may use them for feedback, main runs them again. (4) `checkConversationId`, `checkConversationSave`, `checkSavedMessages` |
-| `src/shared/registry.ts`        | (3) The shape of the registry file, `parseRegistry` (the strict check), and `toModelOption` (what the page may know about a model)                                                        |
-| `src/renderer/src/settings/`    | (3) The Settings dialog, the model menu in the header, and the hook that asks main for the settings status                                                                                |
-| `src/main/conversationStore.ts` | (4) The saved conversations: one JSON file each, saved copy-then-delete, read with a recovery rule, listed from memory. No Electron imports                                               |
-| `src/renderer/src/history/`     | (4) `useHistory` (autosave and the list), `HistoryDialog` (open and delete), and the conversions between the chat and what is saved                                                       |
+| File                              | Job                                                                                                                                                                                       |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/main/index.ts`               | Creates the sandboxed window, wires the navigation lock, registers the message handlers. (4) Holds the quit until saves finish                                                            |
+| `src/main/security.ts`            | Plain functions: is this URL the app's own page? may it be opened in the browser?                                                                                                         |
+| `src/main/ipc.ts`                 | The message handlers. Each one first checks that the app's own page is calling. (4) The four `history:` handlers                                                                          |
+| `src/main/keyStore.ts`            | Saves, reads and deletes the API key, encrypted by the operating system                                                                                                                   |
+| `src/main/chat.ts`                | Runs each reply: reads the key, asks the model's provider adapter, sends text to the page as events. (5) Provider-neutral                                                                 |
+| `src/main/providers/types.ts`     | (5) The provider layer's vocabulary: `ProviderAdapter` (`listModels`, `stream`, `usage`, `normalizeError`), the neutral message and request, usage and errors. No Electron imports        |
+| `src/main/providers/anthropic.ts` | (5) The Anthropic adapter: the one place that calls Anthropic's API, through the official SDK. It was `provider.ts`                                                                       |
+| `src/main/providers/request.ts`   | (5) The app's own rules for a reply, applied once for every provider: system prompt, reply ceiling, joining consecutive turns (D-013)                                                     |
+| `src/main/providers/errors.ts`    | (5) The sentences for a failure, shared by every provider; adds the request id and scrubs the key                                                                                         |
+| `src/main/providers/usage.ts`     | (5) Reading token counts out of a provider's usage report                                                                                                                                 |
+| `src/main/providers/index.ts`     | (5) The adapter for each provider: a table that must be complete, or it does not compile                                                                                                  |
+| `src/main/registry.ts`            | (3) The registry file, embedded in the build and checked once at startup                                                                                                                  |
+| `src/main/models.ts`              | (3) Which model answers: the saved choice (`preferences.json`) or the registry's default; changes run one at a time                                                                       |
+| `src/preload/index.ts`            | Builds `window.api`, the only thing the page can ask main for. (4) Gained `history`                                                                                                       |
+| `src/preload/index.d.ts`          | Tells the renderer's TypeScript what `window.api` looks like                                                                                                                              |
+| `src/shared/ipc.ts`               | Every message that crosses the boundary: types, channel names. (4) The history types and `HISTORY_LIMITS`                                                                                 |
+| `src/shared/validate.ts`          | `checkApiKey`, `checkChatRequest`, `checkModelChoice`: the page may use them for feedback, main runs them again. (4) `checkConversationId`, `checkConversationSave`, `checkSavedMessages` |
+| `src/shared/registry.ts`          | (3) The shape of the registry file, `parseRegistry` (the strict check), and `toModelOption` (what the page may know about a model)                                                        |
+| `src/renderer/src/settings/`      | (3) The Settings dialog, the model menu in the header, and the hook that asks main for the settings status                                                                                |
+| `src/main/conversationStore.ts`   | (4) The saved conversations: one JSON file each, saved copy-then-delete, read with a recovery rule, listed from memory. No Electron imports                                               |
+| `src/renderer/src/history/`       | (4) `useHistory` (autosave and the list), `HistoryDialog` (open and delete), and the conversions between the chat and what is saved                                                       |
 
 ### Settings and the API key
 
@@ -98,8 +103,8 @@ page                                 preload               main process         
 Composer -> useChat.send
   -> ipcReply(history, signal)
      toWireMessages (history.ts) ---> chat.start(request) -> chat.ts: sender guard, checkChatRequest,
-                                                               read the key (keyStore) ->  provider.ts
-                                                               (SDK: pin key + address, merge turns)  ------> api.anthropic.com
+                                                               read the key (keyStore) ->  adapter.stream()
+                                                               (providers/anthropic.ts: SDK, pin key + address) ------> api.anthropic.com
      text pieces  <---------------- onEvent(listener) <---- sender.send('chat:event', ...)  <--- stream
   -> useChat: bubble grows; done / stopped / error note
 ```
@@ -177,7 +182,7 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
 - A file that cannot be used as a whole (wrong `schemaVersion`, no usable entry, a `defaultModelId` that is not
   usable) shows "Models unavailable"; replies explain why and no request is made. There is no built-in fallback list.
 - The file holds no addresses and no credentials, and a `provider` the code cannot call is left out: the API
-  address and the key's destination stay in `src/main/provider.ts`.
+  address and the key's destination stay in the adapter (`src/main/providers/anthropic.ts`).
 
 ## Security notes
 
@@ -193,7 +198,7 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
   request setting per model, and a provider the code cannot call is left out (D-014). The model choice is saved in
   `preferences.json`, apart from the key file, written in place like it (D-010, D-015). The page can only choose a
   model that is on offer, and main checks that twice.
-- The key is sent only to `https://api.anthropic.com`, and only by `src/main/provider.ts`. The SDK's
+- The key is sent only to `https://api.anthropic.com`, and only by `src/main/providers/anthropic.ts`. The SDK's
   environment fallbacks (`ANTHROPIC_AUTH_TOKEN`, `ANTHROPIC_BASE_URL`) are switched off on purpose (D-012).
   `FRONTIER_API_BASE_URL` redirects it for testing, but only when running from source.
 - Every message handler in main (`src/main/ipc.ts`, `src/main/chat.ts`) runs through a guard: only a call from the window's
