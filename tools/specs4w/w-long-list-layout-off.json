@@ -1,0 +1,28 @@
+{
+  "label": "w-long-list-layout-off",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/assets/main.css",
+      "from": ".history[open] {\n  display: flex;\n  flex-direction: column;\n}",
+      "to": ".history[open] {\n}"
+    },
+    {
+      "file": "{{REPO}}/src/renderer/src/assets/main.css",
+      "from": "  min-height: 96px; /* at least two rows stay visible */\n  padding: 0;\n  overflow-y: auto;\n}",
+      "to": "  padding: 0;\n}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "verify-4-4.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s4nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8795",
+    "LOG_LABEL": "w-long"
+  }
+}

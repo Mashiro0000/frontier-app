@@ -1,0 +1,14 @@
+{
+  "label": "store-no-queue",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "const run = queue.then(task)\n    queue = run.catch(() => undefined)\n    return run",
+      "to": "return task()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-4-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,24 @@
+{
+  "label": "store-write-in-place",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "const copy = `${file}.tmp`\n        await fs.writeFile(copy, text, { mode: 0o600 })",
+      "to": "const copy = file\n        await fs.writeFile(copy, text, { mode: 0o600 })"
+    },
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "await fs.copyFile(copy, file)",
+      "to": ""
+    },
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "await fs.rm(copy, { force: true }).catch(() => undefined) // if this fails the \".tmp\" only repeats the file",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-4-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,24 @@
+{
+  "label": "menu-always-enabled",
+  "edits": [
+    {
+      "file": "{{REPO}}/src\\renderer\\src\\App.tsx",
+      "from": "disabled={chat.isReplying}",
+      "to": "disabled={false}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "verify-3-4.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s3n",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8795",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc"
+  }
+}

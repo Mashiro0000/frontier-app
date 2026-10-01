@@ -15,8 +15,6 @@
 - Show what each reply cost (the API reports token counts with every reply)
 - Server-side refusal fallbacks for the provider, once there is a real key to try them with (D-012)
 - Use Chromium's network stack (`net.fetch`) for the provider calls, so a system proxy is honoured
-- Keep the mock Anthropic server and the DevTools check scripts in the repo (for example under `tools/`) as
-  the project's automated checks (see D-007)
 - Trim or summarise old turns when a conversation gets long (D-013)
 - Check `registry/models.json` before every build with the same validator the app uses (`src/shared/registry.ts`),
   so a typo cannot ship (D-014)
@@ -33,5 +31,4 @@
 - "Delete all", and an option to clear conversations older than some age
 - Encrypt saved conversations with the operating system's secure storage (D-016 says what it would cost)
 - A Retry button on a failed reply (D-013); a saved conversation makes it more useful
-- Keep the scripts that checked Stage 4 (the store suite, the window suites, the seeded and crash scenarios) with the
-  rest of the verification tools if they are ever kept in the repository (see the `tools/` idea above)
+- Run `tools/regress.mjs` automatically (a pre-release script or CI); today it is run by hand, about 40 minutes

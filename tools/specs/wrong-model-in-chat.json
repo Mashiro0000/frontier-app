@@ -1,0 +1,24 @@
+{
+  "label": "wrong-model-in-chat",
+  "edits": [
+    {
+      "file": "{{REPO}}/src\\main\\chat.ts",
+      "from": "model: model.entry,",
+      "to": "model: { ...model.entry, id: 'claude-haiku-4-5-20251001', effort: null },"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "verify-3-4.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s3n",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8795",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc"
+  }
+}

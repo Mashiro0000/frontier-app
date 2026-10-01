@@ -1,0 +1,23 @@
+{
+  "label": "w-autosave-off",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/useHistory.ts",
+      "from": "window.api.history.save({ id, messages: toMessagesToSave(messages) }).then(",
+      "to": "Promise.resolve({ ok: true as const, summary: { id, title: 'x', updatedAt: 1, messageCount: 1 } }).then("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-4-2.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s4nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8795",
+    "LOG_LABEL": "w-autosave-off"
+  }
+}

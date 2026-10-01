@@ -1,0 +1,14 @@
+{
+  "label": "store-bom-strict",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "if (text.charCodeAt(0) === 0xfeff) text = text.slice(1)",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-4-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,1270 @@
+{
+  "impl": "old",
+  "apiBaseUrl": "https://api.anthropic.com",
+  "requests": {
+    "claude-fable-5-1 / single": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "616",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-fable-5-1\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"hello\"}],\"output_config\":{\"effort\":\"high\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "hello"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-fable-5-1 / multi": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "680",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-fable-5-1\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"q1\"},{\"role\":\"assistant\",\"content\":\"a1\"},{\"role\":\"user\",\"content\":\"q2\"}],\"output_config\":{\"effort\":\"high\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "q2"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-fable-5-1 / merged": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "642",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-fable-5-1\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"first, never answered\\n\\nsecond\"}],\"output_config\":{\"effort\":\"high\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "first, ",
+        "never ",
+        "answered\n\n",
+        "second"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-fable-5-1 / mergedMany": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "687",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-fable-5-1\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"a\\n\\nb\"},{\"role\":\"assistant\",\"content\":\"c\\n\\nd\"},{\"role\":\"user\",\"content\":\"e\"}],\"output_config\":{\"effort\":\"high\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "e"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-fable-5-1 / unicode": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "653",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-fable-5-1\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"héllo 😀 \\\"quotes\\\" \\\\ back\\nslash\\ttab\"}],\"output_config\":{\"effort\":\"high\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "héllo ",
+        "😀 ",
+        "\"quotes\" ",
+        "\\ ",
+        "back\n",
+        "slash\t",
+        "tab"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-fable-5-1 / long": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "5611",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-fable-5-1\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}],\"output_config\":{\"effort\":\"high\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-opus-5-5 / single": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "617",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-opus-5-5\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"hello\"}],\"output_config\":{\"effort\":\"medium\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "hello"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-opus-5-5 / multi": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "681",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-opus-5-5\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"q1\"},{\"role\":\"assistant\",\"content\":\"a1\"},{\"role\":\"user\",\"content\":\"q2\"}],\"output_config\":{\"effort\":\"medium\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "q2"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-opus-5-5 / merged": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "643",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-opus-5-5\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"first, never answered\\n\\nsecond\"}],\"output_config\":{\"effort\":\"medium\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "first, ",
+        "never ",
+        "answered\n\n",
+        "second"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-opus-5-5 / mergedMany": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "688",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-opus-5-5\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"a\\n\\nb\"},{\"role\":\"assistant\",\"content\":\"c\\n\\nd\"},{\"role\":\"user\",\"content\":\"e\"}],\"output_config\":{\"effort\":\"medium\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "e"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-opus-5-5 / unicode": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "654",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-opus-5-5\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"héllo 😀 \\\"quotes\\\" \\\\ back\\nslash\\ttab\"}],\"output_config\":{\"effort\":\"medium\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "héllo ",
+        "😀 ",
+        "\"quotes\" ",
+        "\\ ",
+        "back\n",
+        "slash\t",
+        "tab"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-opus-5-5 / long": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "5612",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-opus-5-5\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}],\"output_config\":{\"effort\":\"medium\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-sonnet-5-5 / single": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "619",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-sonnet-5-5\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"hello\"}],\"output_config\":{\"effort\":\"medium\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "hello"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-sonnet-5-5 / multi": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "683",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-sonnet-5-5\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"q1\"},{\"role\":\"assistant\",\"content\":\"a1\"},{\"role\":\"user\",\"content\":\"q2\"}],\"output_config\":{\"effort\":\"medium\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "q2"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-sonnet-5-5 / merged": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "645",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-sonnet-5-5\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"first, never answered\\n\\nsecond\"}],\"output_config\":{\"effort\":\"medium\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "first, ",
+        "never ",
+        "answered\n\n",
+        "second"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-sonnet-5-5 / mergedMany": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "690",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-sonnet-5-5\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"a\\n\\nb\"},{\"role\":\"assistant\",\"content\":\"c\\n\\nd\"},{\"role\":\"user\",\"content\":\"e\"}],\"output_config\":{\"effort\":\"medium\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "e"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-sonnet-5-5 / unicode": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "656",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-sonnet-5-5\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"héllo 😀 \\\"quotes\\\" \\\\ back\\nslash\\ttab\"}],\"output_config\":{\"effort\":\"medium\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "héllo ",
+        "😀 ",
+        "\"quotes\" ",
+        "\\ ",
+        "back\n",
+        "slash\t",
+        "tab"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-sonnet-5-5 / long": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "5614",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-sonnet-5-5\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}],\"output_config\":{\"effort\":\"medium\"},\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-haiku-4-5-20251001 / single": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "591",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-haiku-4-5-20251001\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"hello\"}],\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "hello"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-haiku-4-5-20251001 / multi": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "655",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-haiku-4-5-20251001\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"q1\"},{\"role\":\"assistant\",\"content\":\"a1\"},{\"role\":\"user\",\"content\":\"q2\"}],\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "q2"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-haiku-4-5-20251001 / merged": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "617",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-haiku-4-5-20251001\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"first, never answered\\n\\nsecond\"}],\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "first, ",
+        "never ",
+        "answered\n\n",
+        "second"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-haiku-4-5-20251001 / mergedMany": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "662",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-haiku-4-5-20251001\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"a\\n\\nb\"},{\"role\":\"assistant\",\"content\":\"c\\n\\nd\"},{\"role\":\"user\",\"content\":\"e\"}],\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "e"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-haiku-4-5-20251001 / unicode": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "628",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-haiku-4-5-20251001\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"héllo 😀 \\\"quotes\\\" \\\\ back\\nslash\\ttab\"}],\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "héllo ",
+        "😀 ",
+        "\"quotes\" ",
+        "\\ ",
+        "back\n",
+        "slash\t",
+        "tab"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    },
+    "claude-haiku-4-5-20251001 / long": {
+      "method": "POST",
+      "problems": [],
+      "headers": {
+        "accept": "application/json",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "*",
+        "anthropic-version": "2023-06-01",
+        "connection": "keep-alive",
+        "content-length": "5586",
+        "content-type": "application/json",
+        "sec-fetch-mode": "cors",
+        "user-agent": "Anthropic/JS 0.130.0",
+        "x-api-key": "test-golden-key-0123456789abcdef0123456789",
+        "x-stainless-arch": "x64",
+        "x-stainless-helper-method": "stream",
+        "x-stainless-lang": "js",
+        "x-stainless-os": "Windows",
+        "x-stainless-package-version": "0.130.0",
+        "x-stainless-retry-count": "0",
+        "x-stainless-runtime": "node",
+        "x-stainless-runtime-version": "v24.21.0",
+        "x-stainless-timeout": "600"
+      },
+      "bodyText": "{\"model\":\"claude-haiku-4-5-20251001\",\"max_tokens\":16000,\"system\":\"You are Claude, chatting with someone in Frontier App, a desktop chat window. The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.\",\"messages\":[{\"role\":\"user\",\"content\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}],\"cache_control\":{\"type\":\"ephemeral\"},\"stream\":true}",
+      "pieces": [
+        "Echo: ",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "error": null
+    }
+  },
+  "outcomes": {
+    "401": {
+      "pieces": [],
+      "end": null,
+      "sentence": "The API key was not accepted (401). Check it in Settings. (request req_mock_401)",
+      "attempts": 1
+    },
+    "403": {
+      "pieces": [],
+      "end": null,
+      "sentence": "This API key is not allowed to do that (403). Your API key does not have permission to use the specified resource. (request req_mock_403)",
+      "attempts": 1
+    },
+    "404": {
+      "pieces": [],
+      "end": null,
+      "sentence": "The model claude-opus-5-5 was not found for this account (404). You can choose another model in the header. model: claude-opus-5-5 (request req_mock_404)",
+      "attempts": 1
+    },
+    "429": {
+      "pieces": [],
+      "end": null,
+      "sentence": "Too many requests right now (429). Wait a moment and try again. (request req_mock_429)",
+      "attempts": 1
+    },
+    "500": {
+      "pieces": [],
+      "end": null,
+      "sentence": "Anthropic had a problem on its side (500). Try again in a moment. (request req_mock_500)",
+      "attempts": 1
+    },
+    "529": {
+      "pieces": [],
+      "end": null,
+      "sentence": "Anthropic is overloaded right now (529). Try again in a moment. (request req_mock_529)",
+      "attempts": 1
+    },
+    "echo": {
+      "pieces": [
+        "Echo: ",
+        "plain ",
+        "hello"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "sentence": null,
+      "attempts": 1
+    },
+    "400-credit": {
+      "pieces": [],
+      "end": null,
+      "sentence": "The request was refused (400): Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits. (request req_mock_400)",
+      "attempts": 1
+    },
+    "flaky": {
+      "pieces": [
+        "Echo: ",
+        "hi"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "sentence": null,
+      "attempts": 3
+    },
+    "midstream-error": {
+      "pieces": [
+        "Partial "
+      ],
+      "end": null,
+      "sentence": "Anthropic stopped the reply: Overloaded (request req_mock_ok)",
+      "attempts": 1
+    },
+    "drop": {
+      "pieces": [
+        "Partial "
+      ],
+      "end": null,
+      "sentence": "The connection was interrupted while the reply was arriving. Check your internet connection and try again.",
+      "attempts": 1
+    },
+    "max-tokens": {
+      "pieces": [
+        "Cut off here"
+      ],
+      "end": {
+        "kind": "cut-off"
+      },
+      "sentence": null,
+      "attempts": 1
+    },
+    "refusal": {
+      "pieces": [],
+      "end": {
+        "kind": "declined",
+        "category": "cyber"
+      },
+      "sentence": null,
+      "attempts": 1
+    },
+    "context-full": {
+      "pieces": [
+        "Almost "
+      ],
+      "end": {
+        "kind": "context-full"
+      },
+      "sentence": null,
+      "attempts": 1
+    },
+    "empty": {
+      "pieces": [],
+      "end": {
+        "kind": "done"
+      },
+      "sentence": null,
+      "attempts": 1
+    },
+    "no-thinking": {
+      "pieces": [
+        "Echo: ",
+        "hi"
+      ],
+      "end": {
+        "kind": "done"
+      },
+      "sentence": null,
+      "attempts": 1
+    },
+    "nothing-listening": {
+      "pieces": [],
+      "end": null,
+      "sentence": "Could not reach Anthropic. Check your internet connection."
+    },
+    "wrong-key": {
+      "pieces": [],
+      "end": null,
+      "sentence": "The API key was not accepted (401). Check it in Settings. (request req_mock_401)"
+    },
+    "unknown-model": {
+      "sentence": "The model claude-nope-1 was not found for this account (404). You can choose another model in the header. model: claude-nope-1 (request req_mock_404)"
+    },
+    "abort-during": {
+      "rejected": true,
+      "someText": true,
+      "closedEarly": true
+    },
+    "abort-before": {
+      "rejected": true,
+      "closedEarly": true
+    }
+  },
+  "errorGrid": {
+    "status 400": {
+      "withModel": "The request was refused (400): bad thing",
+      "otherModel": "The request was refused (400): bad thing",
+      "shortKey": "The request was refused (400): bad thing",
+      "emptyKey": "The request was refused (400): bad thing"
+    },
+    "status 401": {
+      "withModel": "The API key was not accepted (401). Check it in Settings.",
+      "otherModel": "The API key was not accepted (401). Check it in Settings.",
+      "shortKey": "The API key was not accepted (401). Check it in Settings.",
+      "emptyKey": "The API key was not accepted (401). Check it in Settings."
+    },
+    "status 402": {
+      "withModel": "Anthropic returned an error (402): pay up",
+      "otherModel": "Anthropic returned an error (402): pay up",
+      "shortKey": "Anthropic returned an error (402): pay up",
+      "emptyKey": "Anthropic returned an error (402): pay up"
+    },
+    "status 403": {
+      "withModel": "This API key is not allowed to do that (403). forbidden thing",
+      "otherModel": "This API key is not allowed to do that (403). forbidden thing",
+      "shortKey": "This API key is not allowed to do that (403). forbidden thing",
+      "emptyKey": "This API key is not allowed to do that (403). forbidden thing"
+    },
+    "status 404": {
+      "withModel": "The model claude-opus-5-5 was not found for this account (404). You can choose another model in the header. model: x",
+      "otherModel": "The model claude-haiku-4-5-20251001 was not found for this account (404). You can choose another model in the header. model: x",
+      "shortKey": "The model claude-opus-5-5 was not found for this account (404). You can choose another model in the header. model: x",
+      "emptyKey": "The model claude-opus-5-5 was not found for this account (404). You can choose another model in the header. model: x"
+    },
+    "status 409": {
+      "withModel": "Anthropic returned an error (409): conflict",
+      "otherModel": "Anthropic returned an error (409): conflict",
+      "shortKey": "Anthropic returned an error (409): conflict",
+      "emptyKey": "Anthropic returned an error (409): conflict"
+    },
+    "status 413": {
+      "withModel": "Anthropic returned an error (413): too big",
+      "otherModel": "Anthropic returned an error (413): too big",
+      "shortKey": "Anthropic returned an error (413): too big",
+      "emptyKey": "Anthropic returned an error (413): too big"
+    },
+    "status 422": {
+      "withModel": "Anthropic returned an error (422): unprocessable",
+      "otherModel": "Anthropic returned an error (422): unprocessable",
+      "shortKey": "Anthropic returned an error (422): unprocessable",
+      "emptyKey": "Anthropic returned an error (422): unprocessable"
+    },
+    "status 429": {
+      "withModel": "Too many requests right now (429). Wait a moment and try again.",
+      "otherModel": "Too many requests right now (429). Wait a moment and try again.",
+      "shortKey": "Too many requests right now (429). Wait a moment and try again.",
+      "emptyKey": "Too many requests right now (429). Wait a moment and try again."
+    },
+    "status 500": {
+      "withModel": "Anthropic had a problem on its side (500). Try again in a moment.",
+      "otherModel": "Anthropic had a problem on its side (500). Try again in a moment.",
+      "shortKey": "Anthropic had a problem on its side (500). Try again in a moment.",
+      "emptyKey": "Anthropic had a problem on its side (500). Try again in a moment."
+    },
+    "status 502": {
+      "withModel": "Anthropic had a problem on its side (502). Try again in a moment.",
+      "otherModel": "Anthropic had a problem on its side (502). Try again in a moment.",
+      "shortKey": "Anthropic had a problem on its side (502). Try again in a moment.",
+      "emptyKey": "Anthropic had a problem on its side (502). Try again in a moment."
+    },
+    "status 503": {
+      "withModel": "Anthropic had a problem on its side (503). Try again in a moment.",
+      "otherModel": "Anthropic had a problem on its side (503). Try again in a moment.",
+      "shortKey": "Anthropic had a problem on its side (503). Try again in a moment.",
+      "emptyKey": "Anthropic had a problem on its side (503). Try again in a moment."
+    },
+    "status 529": {
+      "withModel": "Anthropic is overloaded right now (529). Try again in a moment.",
+      "otherModel": "Anthropic is overloaded right now (529). Try again in a moment.",
+      "shortKey": "Anthropic is overloaded right now (529). Try again in a moment.",
+      "emptyKey": "Anthropic is overloaded right now (529). Try again in a moment."
+    },
+    "400 no body": {
+      "withModel": "The request was refused (400): no details were given",
+      "otherModel": "The request was refused (400): no details were given",
+      "shortKey": "The request was refused (400): no details were given",
+      "emptyKey": "The request was refused (400): no details were given"
+    },
+    "500 with request id": {
+      "withModel": "Anthropic had a problem on its side (500). Try again in a moment. (request req_abc123)",
+      "otherModel": "Anthropic had a problem on its side (500). Try again in a moment. (request req_abc123)",
+      "shortKey": "Anthropic had a problem on its side (500). Try again in a moment. (request req_abc123)",
+      "emptyKey": "Anthropic had a problem on its side (500). Try again in a moment. (request req_abc123)"
+    },
+    "401 with request id": {
+      "withModel": "The API key was not accepted (401). Check it in Settings. (request req_xyz789)",
+      "otherModel": "The API key was not accepted (401). Check it in Settings. (request req_xyz789)",
+      "shortKey": "The API key was not accepted (401). Check it in Settings. (request req_xyz789)",
+      "emptyKey": "The API key was not accepted (401). Check it in Settings. (request req_xyz789)"
+    },
+    "mid-stream, no status": {
+      "withModel": "Anthropic stopped the reply: Overloaded",
+      "otherModel": "Anthropic stopped the reply: Overloaded",
+      "shortKey": "Anthropic stopped the reply: Overloaded",
+      "emptyKey": "Anthropic stopped the reply: Overloaded"
+    },
+    "mid-stream, odd body": {
+      "withModel": "Anthropic stopped the reply: \"not an object\"",
+      "otherModel": "Anthropic stopped the reply: \"not an object\"",
+      "shortKey": "Anthropic stopped the reply: \"not an object\"",
+      "emptyKey": "Anthropic stopped the reply: \"not an object\""
+    },
+    "connection error": {
+      "withModel": "Could not reach Anthropic. Check your internet connection.",
+      "otherModel": "Could not reach Anthropic. Check your internet connection.",
+      "shortKey": "Could not reach Anthropic. Check your internet connection.",
+      "emptyKey": "Could not reach Anthropic. Check your internet connection."
+    },
+    "timeout": {
+      "withModel": "The request timed out. Check your internet connection and try again.",
+      "otherModel": "The request timed out. Check your internet connection and try again.",
+      "shortKey": "The request timed out. Check your internet connection and try again.",
+      "emptyKey": "The request timed out. Check your internet connection and try again."
+    },
+    "terminated": {
+      "withModel": "The connection was interrupted while the reply was arriving. Check your internet connection and try again.",
+      "otherModel": "The connection was interrupted while the reply was arriving. Check your internet connection and try again.",
+      "shortKey": "The connection was interrupted while the reply was arriving. Check your internet connection and try again.",
+      "emptyKey": "The connection was interrupted while the reply was arriving. Check your internet connection and try again."
+    },
+    "other side closed": {
+      "withModel": "The connection was interrupted while the reply was arriving. Check your internet connection and try again.",
+      "otherModel": "The connection was interrupted while the reply was arriving. Check your internet connection and try again.",
+      "shortKey": "The connection was interrupted while the reply was arriving. Check your internet connection and try again.",
+      "emptyKey": "The connection was interrupted while the reply was arriving. Check your internet connection and try again."
+    },
+    "ECONNRESET cause": {
+      "withModel": "The connection was interrupted while the reply was arriving. Check your internet connection and try again.",
+      "otherModel": "The connection was interrupted while the reply was arriving. Check your internet connection and try again.",
+      "shortKey": "The connection was interrupted while the reply was arriving. Check your internet connection and try again.",
+      "emptyKey": "The connection was interrupted while the reply was arriving. Check your internet connection and try again."
+    },
+    "UND_ERR_SOCKET deep cause": {
+      "withModel": "The connection was interrupted while the reply was arriving. Check your internet connection and try again.",
+      "otherModel": "The connection was interrupted while the reply was arriving. Check your internet connection and try again.",
+      "shortKey": "The connection was interrupted while the reply was arriving. Check your internet connection and try again.",
+      "emptyKey": "The connection was interrupted while the reply was arriving. Check your internet connection and try again."
+    },
+    "cause too deep (5)": {
+      "withModel": "Something went wrong: a",
+      "otherModel": "Something went wrong: a",
+      "shortKey": "Something went wrong: a",
+      "emptyKey": "Something went wrong: a"
+    },
+    "plain Error": {
+      "withModel": "Something went wrong: boom",
+      "otherModel": "Something went wrong: boom",
+      "shortKey": "Something went wrong: boom",
+      "emptyKey": "Something went wrong: boom"
+    },
+    "plain Error with the key inside": {
+      "withModel": "Something went wrong: failed with [key] inside",
+      "otherModel": "Something went wrong: failed with [key] inside",
+      "shortKey": "Something went wrong: failed with test-golden-key-0123456789abcdef0123456789 inside",
+      "emptyKey": "Something went wrong: failed with test-golden-key-0123456789abcdef0123456789 inside"
+    },
+    "APIError whose message has the key": {
+      "withModel": "The request was refused (400): bad key [key] here",
+      "otherModel": "The request was refused (400): bad key [key] here",
+      "shortKey": "The request was refused (400): bad key test-golden-key-0123456789abcdef0123456789 here",
+      "emptyKey": "The request was refused (400): bad key test-golden-key-0123456789abcdef0123456789 here"
+    },
+    "non-Error string": {
+      "withModel": "Something went wrong: plain string",
+      "otherModel": "Something went wrong: plain string",
+      "shortKey": "Something went wrong: plain string",
+      "emptyKey": "Something went wrong: plain string"
+    },
+    "non-Error object": {
+      "withModel": "Something went wrong: [object Object]",
+      "otherModel": "Something went wrong: [object Object]",
+      "shortKey": "Something went wrong: [object Object]",
+      "emptyKey": "Something went wrong: [object Object]"
+    },
+    "null": {
+      "withModel": "Something went wrong: null",
+      "otherModel": "Something went wrong: null",
+      "shortKey": "Something went wrong: null",
+      "emptyKey": "Something went wrong: null"
+    },
+    "undefined": {
+      "withModel": "Something went wrong: undefined",
+      "otherModel": "Something went wrong: undefined",
+      "shortKey": "Something went wrong: undefined",
+      "emptyKey": "Something went wrong: undefined"
+    },
+    "number": {
+      "withModel": "Something went wrong: 42",
+      "otherModel": "Something went wrong: 42",
+      "shortKey": "Something went wrong: 42",
+      "emptyKey": "Something went wrong: 42"
+    }
+  },
+  "merge": {
+    "alternating": {
+      "merged": [
+        {
+          "role": "user",
+          "content": "a"
+        },
+        {
+          "role": "assistant",
+          "content": "b"
+        },
+        {
+          "role": "user",
+          "content": "c"
+        }
+      ],
+      "inputUnchanged": true
+    },
+    "twoUsers": {
+      "merged": [
+        {
+          "role": "user",
+          "content": "a\n\nb"
+        }
+      ],
+      "inputUnchanged": true
+    },
+    "threeUsers": {
+      "merged": [
+        {
+          "role": "user",
+          "content": "a\n\nb\n\nc"
+        }
+      ],
+      "inputUnchanged": true
+    },
+    "empty": {
+      "merged": [],
+      "inputUnchanged": true
+    },
+    "one": {
+      "merged": [
+        {
+          "role": "user",
+          "content": "a"
+        }
+      ],
+      "inputUnchanged": true
+    },
+    "assistantsFirst": {
+      "merged": [
+        {
+          "role": "assistant",
+          "content": "a\n\nb"
+        }
+      ],
+      "inputUnchanged": true
+    }
+  }
+}

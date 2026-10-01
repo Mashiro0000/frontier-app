@@ -1,0 +1,14 @@
+{
+  "label": "store-scan-errors-swallowed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error // no folder yet: nothing saved",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-4-1.mjs"
+  ],
+  "env": {}
+}

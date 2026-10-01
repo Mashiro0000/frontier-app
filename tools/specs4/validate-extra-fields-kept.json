@@ -1,0 +1,14 @@
+{
+  "label": "validate-extra-fields-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "return { ok: true, conversation: { id, messages: checked.messages } }",
+      "to": "return { ok: true, conversation: { ...(input as object), id, messages: checked.messages } as never }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-4-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,24 @@
+{
+  "label": "w-before-quit-off",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/index.ts",
+      "from": "app.on('before-quit', (event) => {",
+      "to": "app.on('before-quit-never-fired', (event) => {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "verify-4-3c.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s4nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8795",
+    "INSPECT_PORT": "9233",
+    "LOG_LABEL": "w-before-quit-off"
+  }
+}

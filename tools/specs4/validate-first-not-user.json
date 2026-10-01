@@ -1,0 +1,14 @@
+{
+  "label": "validate-first-not-user",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "if (messages[0].role !== 'user') return refuse('The conversation was not understood.')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-4-1.mjs"
+  ],
+  "env": {}
+}

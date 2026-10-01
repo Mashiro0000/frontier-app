@@ -33,6 +33,11 @@ Chats are saved on your computer as you go, one plain file each, in a `conversat
 other data (the History dialog shows the path). They are not encrypted, unlike the API key. **New chat** starts an
 empty chat; **History** opens a saved one or deletes it. See docs/DECISIONS.md D-016 and D-017.
 
+### Checks
+
+The app has no test framework (D-007). `tools/` holds the check scripts that drive the real window against a fake
+provider API, with their negative controls: `node tools/regress.mjs <tag>`, see `tools/README.md`.
+
 ### Build
 
 ```bash

@@ -1,0 +1,14 @@
+{
+  "label": "validate-streaming-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "status: status === 'streaming' ? 'stopped' : status",
+      "to": "status: status as SavedMessage['status']"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-4-1.mjs"
+  ],
+  "env": {}
+}
