@@ -43,7 +43,7 @@ const SCENARIOS = {
   'default-missing': { file: withModels((r) => { r.defaultModelId = 'claude-nope' }) },
   'default-is-broken-entry': { file: withModels((r) => { r.models.find((m) => m.id === OPUS).effort = 'extreme' }) },
   'one-bad-entry': { file: withModels((r) => { r.models.find((m) => m.id === HAIKU).effort = 'xhigh' }) },
-  'unknown-provider': { file: withModels((r) => { r.models.find((m) => m.id === HAIKU).provider = 'openai' }) },
+  'unknown-provider': { file: withModels((r) => { r.models.find((m) => m.id === HAIKU).provider = 'gemini' }) },
   'reordered': { file: withModels((r) => { r.models.reverse() }) },
   'default-sonnet': { file: withModels((r) => { r.defaultModelId = SONNET }) },
   'saved-skipped': { file: withModels((r) => { r.models.find((m) => m.id === HAIKU).effort = 'xhigh' }), preseed: join(OUT, 'seeds', 'valid-haiku.json') },

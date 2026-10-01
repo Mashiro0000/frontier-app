@@ -1,6 +1,6 @@
 # Roadmap (v0.1)
 
-> Stub. Stages 0 to 4 are done; everything after them is a tentative outline, not a commitment. Stage 4 was
+> Stub. Stages 0 to 5 are done; everything after them is a tentative outline, not a commitment. Stage 4 was
 > not written down in advance: the roadmap's "Later" list began with conversation history, and D-010, D-013 and
 > the architecture notes all named it as the next piece of work, so that is what Stage 4 became.
 
@@ -55,8 +55,20 @@
 - No new packages. The chat's own seam (`ReplyFn`, `useChat`) is unchanged apart from one `load` function, and the
   input box takes a prop so that it can have the focus after New chat
 
+## Stage 5 - Second provider (done)
+
+- [x] A provider layer: one interface (list models, stream a reply, read the usage, explain an error) with one adapter per
+      provider; Anthropic became the first adapter with no change in behaviour (Stage 5.1, D-018)
+- [x] The registry (schema 0.3) says what each model can do and which effort levels it takes (Stage 5.2, D-019)
+- [x] One encrypted key per provider, and a Settings section for each with Save, Test (a free call) and Remove (Stage 5.3, D-020)
+- [x] Every reply records which provider and model wrote it; the saved chat is version 2 and an older chat is read as version 2
+      without being rewritten (Stage 5.4, D-021)
+- [x] OpenAI as the second provider: the Responses API through OpenAI's own SDK, three GPT-6 models in the registry (Stage 5.5, D-022)
+- [x] The check scripts live in the repository: `tools/`, with a regression driver and negative controls
+- One new package, `openai`. **No real call has been made to either provider**; the first one is the person's to make
+
 ## Later (tentative)
 
-- More providers (a registry entry, plus a provider module that can call it)
+- A third provider (Gemini): a registry entry, an adapter, and its rows in the provider tables
 - Use `registry/rankings.json` to suggest a model per task
 - Packaged installer for Windows

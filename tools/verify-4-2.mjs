@@ -50,6 +50,7 @@ check('Escape closes it and focus goes back to the History button', !(await H.hi
 await resetMock()
 await H.sendAndWait('first question')
 const first = await H.waitFirst('first question', (c) => c.messages.length === 2 && c.messages[1].status === 'done')
+await sleep(500) // a save copies the file over and THEN deletes its .tmp: look after that, not between the two
 check('after the first reply there is exactly one file, <uuid>.json, and no leftover temp file', H.convFiles().length === 1 && H.strays().length === 0, JSON.stringify(H.files()))
 check('it is the documented shape: version 2, id equal to the file name, title, dates, messages', first.conv.version === 2 && first.conv.id === first.id && first.conv.title === 'first question' && Number.isSafeInteger(first.conv.createdAt) && first.conv.updatedAt >= first.conv.createdAt, JSON.stringify(Object.keys(first.conv)))
 check('the messages are the ones on screen: the question and "Echo: first question", both done, the reply naming the model that answered (D-021)', JSON.stringify(first.conv.messages) === JSON.stringify([{ role: 'user', content: 'first question', status: 'done' }, { role: 'assistant', content: 'Echo: first question', status: 'done', provider: 'anthropic', model: 'claude-opus-5-5' }]), JSON.stringify(first.conv.messages))

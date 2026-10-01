@@ -633,7 +633,7 @@ one entry in each table, and rows in the registry. OpenAI was chosen as the seco
   window (\`verify-5-5.mjs\`, 53 checks, against both mocks at once): a key saved for each provider through Settings, Test key for OpenAI,
   each of the three models answering, a conversation that moves from GPT models to Claude and carries all of it, the errors in the app's
   words, a missing key named for the right provider, the two keys never crossing, and the usage in the log; 8 sabotages of the app were
-  each caught. **Not checked: a real call to OpenAI.** No key was ever saved, and a real key cannot be typed for you. Where the mock and
+  each caught. The whole regression then passed on the finished tree (see STEP-LOG, Stage 5, step 7). **Not checked: a real call to OpenAI.** No key was ever saved, and a real key cannot be typed for you. Where the mock and
   the real API could disagree: the exact spelling of the model ids and of the stream's events, what a real 429 for a spent budget carries,
   and whether a real key is allowed to list models (a restricted key may not be, which Test key would report as a 403). The first real call
   is yours: Settings (Save key, Test key, send a message), or \`node tools/real-call.mjs\`.

@@ -19,8 +19,6 @@
 - Check `registry/models.json` before every build with the same validator the app uses (`src/shared/registry.ts`),
   so a typo cannot ship (D-014)
 - Update the registry without a new release: a checked copy in the data folder, written in place (D-010, D-014)
-- Name the model that wrote each reply, now that the model can change in the middle of a chat (D-015). History saved
-  before this is added will not say; the page would need to be told by main which model answers (D-017)
 - Let the person choose the effort level per model (the registry already holds one level per model)
 - When a model answers "not found" (for example once Haiku 4.5 is retired), offer to switch to another
 - Show the retirement date of a model in Settings (needs a field in the registry)
@@ -32,3 +30,9 @@
 - Encrypt saved conversations with the operating system's secure storage (D-016 says what it would cost)
 - A Retry button on a failed reply (D-013); a saved conversation makes it more useful
 - Run `tools/regress.mjs` automatically (a pre-release script or CI); today it is run by hand, about 40 minutes
+- Gemini as the third provider (an adapter and a registry entry; the provider tables will not compile without them, D-018)
+- Windows Credential Manager instead of safeStorage files for the keys (needs a native keyring package; D-020)
+- Chat Completions as a fallback for OpenAI if the Responses API misbehaves (D-022)
+- Image input and tools: the registry already records which models take them (D-019)
+- A cost display per reply (the usage is already read and logged, D-021; needs the prices of cached tokens too)
+- Run `tools/regress.mjs` automatically before a release; today it is run by hand

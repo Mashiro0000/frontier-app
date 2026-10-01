@@ -3,13 +3,14 @@
 This file explains, in plain words, every command that was run to build Frontier App, one stage at
 a time, and why. It is written for someone new to Electron and the command line.
 
-| Stage        | What you get                                                                                                                                                             | Status |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| 0 - Shell    | `npm run dev` opens a window titled "Frontier App" that shows the words "Frontier App". Nothing else.                                                                    | done   |
-| 1 - Chat UI  | The window is a chat. Type a message, press Enter, and an echo of it streams back. No AI model yet.                                                                      | done   |
-| 2 - Provider | A real model answers in the chat, using your own API key. Checked only against a mock so far: see "Things to know".                                                      | done   |
-| 3 - Registry | The list of models comes from `registry/models.json`, and a menu in the header chooses which Claude model answers. Still only checked against a mock.                    | done   |
-| 4 - History  | Chats are saved on your computer as you go. A New chat button starts an empty chat; a History dialog opens a saved one or deletes it. Still only checked against a mock. | done   |
+| Stage               | What you get                                                                                                                                                             | Status |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| 0 - Shell           | `npm run dev` opens a window titled "Frontier App" that shows the words "Frontier App". Nothing else.                                                                    | done   |
+| 1 - Chat UI         | The window is a chat. Type a message, press Enter, and an echo of it streams back. No AI model yet.                                                                      | done   |
+| 2 - Provider        | A real model answers in the chat, using your own API key. Checked only against a mock so far: see "Things to know".                                                      | done   |
+| 3 - Registry        | The list of models comes from `registry/models.json`, and a menu in the header chooses which Claude model answers. Still only checked against a mock.                    | done   |
+| 4 - History         | Chats are saved on your computer as you go. A New chat button starts an empty chat; a History dialog opens a saved one or deletes it. Still only checked against a mock. | done   |
+| 5 - Second provider | OpenAI's GPT-6 models next to Claude, one key per provider, and every reply records which model wrote it. Only checked against mocks: the first real call is yours.      | done   |
 
 **To run it yourself** (from this folder):
 
@@ -18,7 +19,7 @@ npm install
 npm run dev
 ```
 
-The stages are explained in order: Stage 0, then Stage 1, then Stage 2, then Stage 3, then Stage 4.
+The stages are explained in order: Stage 0, then Stage 1, then Stage 2, then Stage 3, then Stage 4, then Stage 5.
 
 ## Words you will meet
 
@@ -118,6 +119,18 @@ The stages are explained in order: Stage 0, then Stage 1, then Stage 2, then Sta
   (CRLF), most other tools one (LF). A project that mixes them gets complaints from its formatting checkers.
 - **Selector** (Stage 4) - a rule such as `dialog.settings` that picks elements on a page by their class names.
   Two parts of a page that share a class name can be mistaken for each other.
+- **Provider** (Stage 5) - a company whose models the app can ask: Anthropic (Claude) and OpenAI (GPT). Each has its own API key.
+- **Adapter** (Stage 5) - the one piece of code that knows how to talk to a provider. The rest of the app speaks one common
+  language and never knows which provider it is talking to.
+- **Responses API** (Stage 5) - OpenAI's current way of asking a model for an answer (it also has an older one, Chat Completions).
+- **Reasoning effort** (Stage 5) - how long a model thinks before it answers: more is slower and costs more. Each model accepts its own levels.
+- **Quota** (Stage 5) - a provider's name for "your account has no credit left, or reached its spending limit".
+- **Version 2 file** (Stage 5) - the new shape of a saved chat, which also says which model wrote each reply. Old chats are read as if
+  they were in the new shape and are only really converted the next time you add to them.
+- **Golden record** (Stage 5) - a recording of exactly what the old code sent, kept so the new code can be shown to send the same,
+  byte for byte, after a rewrite that was meant to change nothing.
+- **Negative control** (Stage 5) - breaking one thing on purpose and checking that the check notices. A check that has never been seen to
+  fail proves little.
 
 ## Stage 0 - Step by step
 
@@ -1529,3 +1542,149 @@ there again), a stale badge, and the raw disk error reaching the page.
     use was `npm audit` and `npm view`.
 13. **Everything in Stage 3's "Things to know" still applies** (your `AppData` is EFS-encrypted so files are written in
     place or copied, only Windows was tested, the SDK ignores the system proxy, and so on).
+
+## Stage 5 - What was built
+
+Running `npm run dev` opens the same chat, but it can now talk to two companies' models, and it remembers which one wrote what:
+
+- **A second provider: OpenAI.** The model menu in the header lists seven models: the four Claude ones and three from OpenAI's
+  GPT-6 family (GPT-6 Astra, GPT-6.1 Sol, GPT-6 Luna). Settings shows what each costs. Claude Opus 5.5 is still the default, so if you
+  never add an OpenAI key nothing changes for you.
+- **One key per provider.** Settings has a section for each provider: **Save key**, **Test key** (asks the provider for its list of
+  models, which costs nothing, to learn whether it accepts the key) and **Remove key**. Each key is encrypted in its own file, tied to its
+  provider, and a request to one provider never carries the other's key. If the model you picked belongs to a provider you have no key for,
+  the header says "No API key" and names that provider.
+- **One conversation, either provider.** Start a chat with Claude, switch to a GPT model in the middle, and switch back: the new model is
+  sent the whole conversation as plain text, whoever wrote it. Above a reply the chat names the model that wrote it when it is the first
+  reply or when the model changed (a chat that never changes model would repeat one name above every reply).
+- **Your saved chats remember who answered.** Each reply in a saved chat records its provider and model. Chats saved by Stages 2 to 4 still
+  open and are not touched when you open them; their replies are shown with no name (it cannot be worked out afterwards which Claude model
+  wrote them), and a chat becomes the new format the next time you add to it.
+- **Nothing is kept on OpenAI's side.** OpenAI keeps a copy of each response by default; this app asks it not to, because it sends the
+  whole conversation each time and uses none of that.
+- Under the hood: a provider layer (one **adapter** per provider, behind one interface), a registry that says what each model can do, the
+  new package `openai` (OpenAI's own SDK), and a new folder, `tools/`, holding every check script that used to live in temporary folders.
+
+It was built in six slices, each committed on its own: 5.1 the provider layer, with no change in behaviour; 5.2 what the registry says
+about each model; 5.3 one key per provider and the Settings sections; 5.4 recording who answered; 5.5 OpenAI; 5.6 the documentation.
+**Nothing has been tried against either real service.** See "Things to know", point 1.
+
+## Stage 5 - Decisions
+
+The full text of each is in `docs/DECISIONS.md`.
+
+- **D-018** - one interface for every provider (list models, stream a reply, read the usage, explain an error), with Anthropic as its
+  first adapter; the app's own rules (system prompt, reply ceiling, joining consecutive messages) are applied once, not per provider.
+- **D-019** - the registry (schema 0.3) says what each model can do and which effort levels it accepts, as facts from the provider's own
+  documentation; the app acts only on the ones it uses.
+- **D-020** - one encrypted key file per provider, each tied to its provider; Settings with add, test and remove; Test key is a free call.
+- **D-021** - every reply records which provider and model wrote it; the saved chat is version 2; a version 1 chat is read as version 2
+  and never rewritten by reading.
+- **D-022** - OpenAI is the second provider: the Responses API through OpenAI's own SDK, nothing kept on their side.
+
+## Stage 5 - Step by step
+
+### 1. Look around, and what in the request did not match the code
+
+The request spoke of "refactoring all OpenAI calls", "columns" with a "migration", and "the OS keychain". The code had **no OpenAI
+calls** (the only provider was Anthropic, so Anthropic became the first adapter and OpenAI the second); there is **no database** (chats are
+files, so the "columns" are fields and the "migration" is a file version, D-021); and keys are kept with **Electron's safeStorage**, which
+on Windows is the operating system's own encryption (DPAPI), kept per provider. You chose OpenAI as the second provider, said to keep
+safeStorage, and said yes to keeping the check scripts in the repository.
+
+### 2. Slice 5.1 - the provider layer, with no change in behaviour
+
+Before touching anything I recorded exactly what the old code sent to Anthropic (request bodies, error sentences) and what the earlier
+checks reported. After the refactor the same recording came out **byte for byte identical**, the earlier checks gave the same results, and
+10 deliberate breakages of the new code were each caught. Only then was it committed.
+
+### 3. Slices 5.2 and 5.3 - the registry, and one key per provider
+
+The registry gained what each model can do and its own effort levels (a model that rejects the setting says so). The key store was split
+into a part that runs under plain Node (tested in a normal folder and in your encrypted `AppData`, with disk faults injected: 174 checks,
+12 deliberate breakages caught) and a thin Electron part. The old single key file is still read for Anthropic and removed the next time a
+key is saved or removed.
+
+### 4. A run that showed "0/0", and what was found
+
+The first full run of the checks on slice 5.3 showed seven launches as "0/0". That did **not** mean no checks ran: the old driver read only
+the "N/M checks passed" line, so any check script that died before printing it (an error, the window or the app going away) looked the
+same. The driver now says `CRASHED ... died after N passing checks: <the first error line>`, and a lost window says so. The same launches
+passed when repeated six times, so the app was not at fault; **why the windows were lost in the original run was not found.** It
+happened once more later, in the built app (one launch, 6 seconds after the window opened, nothing in the app's log), and passed on the
+repeat. One guess is that someone clicked or closed a test window while it ran: the windows come up on your screen. Another harness fault,
+mine, was found by the same run: a note the runner printed started with "!!", which the history checks count as a failure.
+
+### 5. The check scripts move into the repository
+
+About 110 files in `tools/`: the DevTools client, the app launcher, the mock provider server, the suites, the negative controls and the
+regression driver, with a README. `node tools/regress.mjs <tag>` runs everything (about 45 minutes; nothing may touch `src/` while it
+runs). Outputs go to `tools/.out/`, which is not committed. prettier and eslint skip the folder.
+
+### 6. Slices 5.4 and 5.5
+
+5.4 added a first event to every reply (`start`, naming the provider and model, sent before the key is looked up, so even a reply that
+fails at once says which model was asked), version 2 of the saved file, and the names above replies. 5.5 added the OpenAI adapter, its three
+models, a new kind of failure ("no credit left", because OpenAI answers 429 for that as well as for "too many requests"), a second
+half to the mock server and a window suite that moves one conversation between the providers. Each new check was shown able to fail by
+breaking the thing it protects: 11 + 10 breakages for 5.4, 13 + 8 for 5.5, all caught. Two that were **not** caught showed real gaps in
+the checks (a rewrite during the startup scan was invisible to a check that took its "before" too late; a cap on a model listing was
+never exercised), and were fixed; one (a pin on an admin key that the app's two calls never use) cannot be seen from outside and was dropped.
+
+### 7. Final checks
+
+The whole regression was run on the finished tree (`node tools/regress.mjs final`, 63 launches, about 25 minutes, on an idle machine) and
+then every launch that was not clean was run again:
+
+- **Plain Node, 7 suites, all clean:** provider 93, registry 228, history store 389, Anthropic adapter 91, credential store 174, the
+  Stage 5.4 store suite 107, the OpenAI adapter 107.
+- **The window suites** (Stage 1 chain 110, 2.3 64, 2.3b 5, 2.4 71, 3.4 77, 5.3 66, 5.4 47, 5.5 53, 3.4b 13): clean after the ports below, 9
+  of 9 launches. **16 of 16** damaged-preferences launches, **10 of 10** registry scenarios, the Stage 4 history suites in dev and in the
+  built app, and the built app's chat and Settings suites.
+- **What was not clean the first time, and why.** Seven launches were my own checks assuming one provider or four models: the model count in
+  `verify-3-4b`; five registry scenarios whose left-out entry is a Claude model while the three GPT models stay on offer; and a check in
+  `verify-4-2` that looked at the folder in the few milliseconds between a save's file appearing and its temporary copy being deleted. All
+  were ported and pass. **One launch was a lost window:** in the built app, 20 seconds into the Settings suite, the page's connection closed
+  while the app itself was still running (three of its four Electron processes were left), with nothing in the app's log. The same suite
+  passed 3 times in a row afterwards (66 checks each). Together with the "0/0" run and one earlier built-app launch, that is three lost
+  windows in about 250 launches that I could not explain: see "Things to know", point 2.
+- Before committing each slice: `npm run typecheck`, `npm run lint`, `npx prettier --check .`, and `npm run build`; the built app was run
+  for 5.3, 5.4 and the final regression. `npm audit`: 0 vulnerabilities. Electron is still 44.5.1.
+
+## Stage 5 - Choices I made where things were unclear ("pick the simplest option")
+
+- **Responses API, not Chat Completions**, for OpenAI: OpenAI recommends it for new work. The SDK does the streaming and the errors.
+- **The reasoning effort of every OpenAI model is "medium"**, which is the documented default for two of them; the documentation does not
+  state Astra's, so it got the same.
+- **The system prompt does not name a product for OpenAI** ("You are an AI assistant"): the app does not know what OpenAI's models call
+  themselves, and a model told it is someone else answers oddly.
+- **A chat's old replies show no model name**, rather than a guess. Reading an old file never rewrites it (D-016).
+- **The usage of a reply is written to the app's log, not stored with the chat**: nothing needs it yet, and a cost display would need the
+  prices of cached tokens too.
+- **A model with a name the registry no longer knows is still readable** in a saved chat, shown by its id.
+- **The window checks end the chat's random model bursts by choosing Opus**, because one check had depended on the old random sequence
+  happening to end there.
+
+## Stage 5 - Things to know (not problems, but worth your attention)
+
+1. **No real call has been made, to either provider.** Everything was checked against mocks, and the OpenAI mock is _my reading of
+   OpenAI's documentation and of the SDK's types_, not the real API. A real key cannot be typed for you. Your first real call is the true
+   test: in Settings, **Save key**, **Test key**, then send a message with each provider. Things the mock could get wrong: the exact spelling
+   of the model ids, the events of the stream, what a real "out of credit" error carries, and whether a restricted key may list models (Test
+   key would then say 403 although the key works). `node tools/real-call.mjs` asks for a key (masked) and makes one tiny call per provider.
+2. **Windows were lost in a few launches and the cause was not found** (point 4 of "Step by step"). While the checks run, app windows
+   appear on your screen: clicking or closing them can break a launch. The checks now say exactly what happened instead of "0/0".
+3. **Claude Haiku 4.5 may be retired from 15 October 2026** ("not sooner than"). After that its replies fail with "not found (404)"; the
+   fix is to delete its entry in `registry/models.json` (D-014).
+4. **The OpenAI facts in the registry** (ids, prices, 1,050,000-token context, 128,000 output, effort levels) were read from OpenAI's pages on
+   1 October 2026. Check them against your OpenAI account's own list the first time you use it.
+5. **Not done:** Windows Credential Manager (you chose to keep safeStorage); Gemini (third, later); image input and tools (the registry
+   already records which models take them); a packaged build (`npm run build:win` was not run); macOS and Linux.
+6. **`npm install` printed a warning about install scripts it did not run** (for `esbuild`). The build, the checks and the app work; it only
+   means npm now asks before running such scripts.
+7. **Files outside the project.** Project files are only under `A:\frontier-app`. I wrote notes to my own memory folder. The scratch
+   profiles the checks make (`frontier-app-test-scratch-*` in your `AppData\Roaming`) were deleted at the end; your real profile was not
+   touched. Nothing was pushed (there is no remote). The only network use was reading OpenAI's pages and `npm install`, `npm view` and
+   `npm audit`.
+8. **Everything in the earlier stages' "Things to know" still applies** (your `AppData` is EFS-encrypted, so files are written in place or
+   copied; only Windows was tested; the SDKs ignore the system proxy; line endings can come back as CRLF after a branch switch).

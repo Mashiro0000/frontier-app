@@ -4,7 +4,7 @@
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
-import { helpers } from './lib3.mjs'
+import { helpers, readRegistry } from './lib3.mjs'
 import { statSync } from 'node:fs'
 
 const port = Number(process.argv[3] ?? 9222)
@@ -25,7 +25,7 @@ const text0 = H.prefs()
 const menu = await H.menu()
 const status = await H.status()
 check('a new process: the menu shows the model chosen in the previous run', menu.value === EXPECT, JSON.stringify([menu.value, EXPECT]))
-check('...main reports it as selected, and the registry list is complete', status.selectedModelId === EXPECT && status.models.length === 4)
+check('...main reports it as selected, and the registry list is complete', status.selectedModelId === EXPECT && status.models.length === readRegistry().models.length)
 check('...the file holds exactly what the first run saved', text0 === `{"version":1,"modelId":"${EXPECT}"}`, text0)
 check('starting up and reading the choice did NOT rewrite the file (same modification time as at the end of run 1)', statSync(H.prefFile).mtimeMs === MTIME, `${statSync(H.prefFile).mtimeMs} vs ${MTIME}`)
 check('the saved API key survived too, and the choice is independent of it', status.providers[0].hasKey === true)
