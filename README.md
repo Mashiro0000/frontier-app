@@ -24,8 +24,10 @@ $ npm run dev
 ```
 
 The first time, click **Settings** and paste your own Anthropic API key. It is stored encrypted on
-your computer. Replies are billed to your Anthropic account (the default model is Claude Opus 5.5;
-see docs/DECISIONS.md D-012).
+your computer. Replies are billed to your Anthropic account. The default model is Claude Opus 5.5; the menu in
+the header chooses another (Claude Fable 5.1, Sonnet 5.5 or Haiku 4.5), and Settings shows what each one costs.
+The list of models is `registry/models.json`: edit it, then restart `npm run dev` (or run `npm run dev -- --watch`
+so it restarts by itself). See docs/DECISIONS.md D-012, D-014 and D-015.
 
 ### Build
 

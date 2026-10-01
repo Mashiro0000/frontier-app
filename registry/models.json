@@ -1,5 +1,48 @@
 {
-  "schemaVersion": "0.1",
-  "updatedAt": null,
-  "models": []
+  "schemaVersion": "0.2",
+  "updatedAt": "2026-10-01",
+  "source": "Anthropic's Claude API documentation (the models overview, effort and prompt-caching pages), read on 2026-10-01. Prices are list prices in US dollars per million tokens.",
+  "defaultModelId": "claude-opus-5-5",
+  "models": [
+    {
+      "provider": "anthropic",
+      "id": "claude-fable-5-1",
+      "label": "Claude Fable 5.1",
+      "description": "The most capable, and the slowest and priciest. For demanding reasoning and long, multi-step work.",
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "pricing": { "inputPerMTok": 10, "outputPerMTok": 50 },
+      "effort": "high"
+    },
+    {
+      "provider": "anthropic",
+      "id": "claude-opus-5-5",
+      "label": "Claude Opus 5.5",
+      "description": "A strong all-rounder for coding and knowledge work.",
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "pricing": { "inputPerMTok": 4, "outputPerMTok": 20 },
+      "effort": "medium"
+    },
+    {
+      "provider": "anthropic",
+      "id": "claude-sonnet-5-5",
+      "label": "Claude Sonnet 5.5",
+      "description": "Fast, with a good balance of speed and capability for everyday use.",
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "pricing": { "inputPerMTok": 2, "outputPerMTok": 10 },
+      "effort": "medium"
+    },
+    {
+      "provider": "anthropic",
+      "id": "claude-haiku-4-5-20251001",
+      "label": "Claude Haiku 4.5",
+      "description": "The fastest and cheapest. This app uses it without extended thinking.",
+      "contextWindow": 200000,
+      "maxOutputTokens": 64000,
+      "pricing": { "inputPerMTok": 1, "outputPerMTok": 5 },
+      "effort": null
+    }
+  ]
 }

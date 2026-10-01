@@ -1,16 +1,16 @@
 import Anthropic, { type APIError } from '@anthropic-ai/sdk'
 import type { WireMessage } from '../shared/ipc'
+import type { ModelEntry } from '../shared/registry'
 
 // The one provider for now (D-012): Anthropic's Claude, through Anthropic's own SDK. Nothing here
-// imports Electron, so it can be run and checked on its own.
+// imports Electron, so it can be run and checked on its own. Which model to ask, and the settings it
+// takes, come from its registry entry (D-014). The address does not: it is fixed here.
 
-export const PROVIDER_NAME = 'Anthropic'
-export const MODEL = 'claude-opus-5-5'
-export const MODEL_LABEL = 'Claude Opus 5.5'
 export const API_BASE_URL = 'https://api.anthropic.com'
 
 // A ceiling on one reply, and so on what one reply can cost (output tokens are the expensive ones).
-// The thinking the model does before it answers counts against it too.
+// The thinking the model does before it answers counts against it too. A model that cannot write this
+// much gets its own, lower limit from the registry.
 const MAX_TOKENS = 16000
 
 // The chat window shows plain text only (D-009), and Claude writes Markdown by default, which would
@@ -51,6 +51,8 @@ export function mergeAdjacent(messages: WireMessage[]): WireMessage[] {
 
 export interface StreamOptions {
   apiKey: string
+  /** The model to ask. Its registry entry says which settings the request may carry. */
+  model: ModelEntry
   /** The conversation so far, ending with the person's latest message. */
   messages: WireMessage[]
   /** Aborting it cancels the request. The rejected promise is then not a failure. */
@@ -72,15 +74,18 @@ export async function streamReply(options: StreamOptions): Promise<ReplyEnd> {
     baseURL: options.baseURL ?? API_BASE_URL
   })
 
+  const { model } = options
   const stream = client.messages.stream(
     {
-      model: MODEL,
-      max_tokens: MAX_TOKENS,
+      model: model.id,
+      max_tokens: Math.min(MAX_TOKENS, model.maxOutputTokens),
       system: SYSTEM_PROMPT,
       messages: mergeAdjacent(options.messages),
-      // Thinking is always on for this model. `effort` is its dial: written out, because the default
-      // differs between models and this should not change when the model does.
-      output_config: { effort: 'medium' },
+      // `effort` is the dial for how much the model thinks and writes. Its default differs between
+      // models, so it is written out for the ones that take it, and left out for the ones that reject
+      // it outright (Haiku 4.5). The registry says which (D-014). There is no `thinking` setting: the
+      // models that think always do, and the others are not asked to.
+      ...(model.effort ? { output_config: { effort: model.effort } } : {}),
       // The whole conversation is sent again with every message. This lets the server reuse the part
       // it has already seen (billed far lower) instead of charging full price for it each time.
       cache_control: { type: 'ephemeral' }
@@ -133,7 +138,7 @@ function isInterrupted(error: unknown): boolean {
   return false
 }
 
-function explain(error: unknown): string {
+function explain(error: unknown, modelId: string): string {
   // Most specific first: the timeout class is a kind of connection error, which is a kind of API error.
   if (error instanceof Anthropic.AuthenticationError) {
     return 'The API key was not accepted (401). Check it in Settings.'
@@ -142,7 +147,7 @@ function explain(error: unknown): string {
     return `This API key is not allowed to do that (403). ${apiMessage(error) ?? ''}`.trim()
   }
   if (error instanceof Anthropic.NotFoundError) {
-    return `The model ${MODEL} was not found for this account (404). ${apiMessage(error) ?? ''}`.trim()
+    return `The model ${modelId} was not found for this account (404). You can choose another model in the header. ${apiMessage(error) ?? ''}`.trim()
   }
   if (error instanceof Anthropic.RateLimitError) {
     return 'Too many requests right now (429). Wait a moment and try again.'
@@ -175,10 +180,11 @@ function explain(error: unknown): string {
 
 /**
  * A sentence for the person, from whatever went wrong. The API key is scrubbed out of it, in case
- * any text in the error ever contained it, and the request id is added for support.
+ * any text in the error ever contained it, and the request id is added for support. `modelId` is the
+ * model that was asked, for the errors that need to name it.
  */
-export function describeError(error: unknown, apiKey: string): string {
-  let text = explain(error)
+export function describeError(error: unknown, apiKey: string, modelId: string): string {
+  let text = explain(error, modelId)
   if (error instanceof Anthropic.APIError && error.requestID)
     text += ` (request ${error.requestID})`
   return apiKey.length >= 8 ? text.split(apiKey).join('[key]') : text

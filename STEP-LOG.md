@@ -3,11 +3,12 @@
 This file explains, in plain words, every command that was run to build Frontier App, one stage at
 a time, and why. It is written for someone new to Electron and the command line.
 
-| Stage        | What you get                                                                                                        | Status |
-| ------------ | ------------------------------------------------------------------------------------------------------------------- | ------ |
-| 0 - Shell    | `npm run dev` opens a window titled "Frontier App" that shows the words "Frontier App". Nothing else.               | done   |
-| 1 - Chat UI  | The window is a chat. Type a message, press Enter, and an echo of it streams back. No AI model yet.                 | done   |
-| 2 - Provider | A real model answers in the chat, using your own API key. Checked only against a mock so far: see "Things to know". | done   |
+| Stage        | What you get                                                                                                                                          | Status |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 0 - Shell    | `npm run dev` opens a window titled "Frontier App" that shows the words "Frontier App". Nothing else.                                                 | done   |
+| 1 - Chat UI  | The window is a chat. Type a message, press Enter, and an echo of it streams back. No AI model yet.                                                   | done   |
+| 2 - Provider | A real model answers in the chat, using your own API key. Checked only against a mock so far: see "Things to know".                                   | done   |
+| 3 - Registry | The list of models comes from `registry/models.json`, and a menu in the header chooses which Claude model answers. Still only checked against a mock. | done   |
 
 **To run it yourself** (from this folder):
 
@@ -16,7 +17,7 @@ npm install
 npm run dev
 ```
 
-The stages are explained in order: Stage 0, then Stage 1, then Stage 2.
+The stages are explained in order: Stage 0, then Stage 1, then Stage 2, then Stage 3.
 
 ## Words you will meet
 
@@ -79,6 +80,20 @@ The stages are explained in order: Stage 0, then Stage 1, then Stage 2.
   and charges much less for reading it again. A chat resends everything every turn, so this matters.
 - **Mock server** (Stage 2) - a stand-in for a real service, running on your own computer, that answers the
   way the real one is documented to. It lets the app be tested with no account, no money and no internet.
+- **Registry** (Stage 3) - a plain file listing the models the app knows about, with the facts the app needs
+  about each: its name, how much it can read, what it costs, which settings it accepts.
+- **Schema and schema version** (Stage 3) - the agreed shape of a data file. The version number tells the
+  program which shape to expect; a file with another number is refused instead of half-understood.
+- **Strict reading** (Stage 3) - checking data before using it, and refusing anything that is not exactly as
+  expected. A typo in the registry then gives a clear message, not a wrong request to a paid service.
+- **Embedding a file** (Stage 3) - the build tool copying a file's contents into the program, so the program
+  never has to find the file when it runs.
+- **Effort** (Stage 3) - a setting some Claude models accept that says how much to think and write. Others
+  (Haiku 4.5) refuse any request that contains it.
+- **Golden file** (Stage 3) - a saved copy of what the old code produced, used to prove that new code still
+  produces exactly the same thing.
+- **Race** (Stage 3) - two things happening at nearly the same moment, where the result depends on which one
+  finishes first.
 
 ## Stage 0 - Step by step
 
@@ -916,4 +931,305 @@ What the 51 provider checks and the 71 window checks cover:
     about 22 exchanges, plus the refusal at the size cap), window zoom levels, and input-method editors with
     real replies.
 16. **No secrets anywhere.** No API key, no `.env`, nothing pushed. The test keys were invented per run and are
+    not recorded.
+
+---
+
+## Stage 3 - What was built
+
+Running `npm run dev` opens the same chat, with one new control in the header and one new section in Settings:
+
+- **A model menu**, beside the Settings button. It lists the four Claude models in `registry/models.json`: Fable
+  5.1, Opus 5.5, Sonnet 5.5 and Haiku 4.5. It starts on Opus 5.5, exactly as before, so nothing changes (or costs
+  more) until you pick another. Your choice is remembered between launches. The menu greys out while a reply is
+  arriving, because the model is fixed when a reply starts.
+- **Settings has a "Model" section** for the chosen model: what it is for, how much conversation it can read, its
+  list price per million tokens in and out, the date those prices were checked, and a reminder that changing
+  the model in the middle of a chat sends the whole chat so far to the new model.
+- **The registry is a real file now.** `registry/models.json` holds, for each model, its API name, label,
+  description, size limits, prices and one request setting (`effort`). You edit the file and restart the app.
+  It is checked strictly at startup. A typo leaves one entry out and says so in the app's log. A file that cannot
+  be used at all shows "Models unavailable" in the header and makes replies explain why, instead of quietly
+  using some hidden list.
+- Under the hood: the provider builds each request from the chosen model's entry (the `effort` setting only for
+  models that take it, which Haiku 4.5 does not; the reply limit lowered to the model's own if that is smaller).
+  The main program keeps the choice and saves it in its own small file, `preferences.json`. The page can only
+  pick a model the registry offers, and the main program checks that twice.
+- **No new packages.** The default model's request is byte-for-byte what Stage 2 sent, checked against a copy
+  taken before I changed anything.
+
+It was built in four slices: 3.1 the registry file and its check, 3.2 the provider, 3.3 which model answers, 3.4
+the menu and Settings. Slice 3.5 is these docs and the final checks. It is committed as
+one commit (see "Things to know", point 1). **Nothing has been tried against the real Anthropic API**, and four models now
+share that gap (point 2).
+
+## Stage 3 - Decisions
+
+The full records are D-014 and D-015 in `docs/DECISIONS.md`, and I corrected the older records Stage 3 made
+out of date (D-012 still said "edit `MODEL` in `provider.ts`"). The short version:
+
+### D-014 - The registry: plain JSON, embedded in the app, read strictly, never trusted with an address
+
+- **What is in it:** facts about each model, plus the one setting the app picks for it. Policy stays in code (the
+  16 000-token reply ceiling, caching, the plain-text system prompt, the API address), so nothing in the file can
+  change where your key is sent.
+- **Four models**, the current generation. Facts and prices were read on 2026-10-01 from Anthropic's live docs and
+  matched the cached API reference. `effort` is set per model: Opus 5.5 `medium` (its own default, so its
+  request is unchanged), Sonnet 5.5 `medium` (its default is `high`; Anthropic suggests `medium` for chat), Fable
+  5.1 `high` (its default), Haiku 4.5 none (it rejects the setting).
+- **Embedded in the build**, not read from disk at run time. No path to find, in development or in an installer
+  (packaging has never been tried here). Invalid JSON stops the build; a typo drops one entry; a file that is
+  unusable as a whole shows "Models unavailable". No fallback list.
+- **Strict:** exactly the expected fields, so a misspelt field is reported as both missing and unknown. The
+  default model is written down, not guessed, because it decides what you are billed.
+
+### D-015 - Which model answers: main holds the choice, saves it in its own file, the page can only pick from the registry
+
+- The main program is the source of truth, like the API key. `settings:set-model` goes through the same
+  sender guard as every other message, and its input is checked twice.
+- Saved in `preferences.json`, apart from the key file, written in place and read back (D-010) and tested in the
+  EFS-encrypted `AppData`. A saved choice the registry no longer offers, or a file that is empty, corrupt or
+  hostile, means the default, with one line in the log; the file is never rewritten just by reading it.
+- The model is fixed when a reply starts. Changes are handled one at a time, in order (holding an arrow key on
+  the menu fires one change per option passed, and side by side their saves crossed in my test).
+
+## Stage 3 - Step by step
+
+### 1. Look around before changing anything
+
+| Command                                                                                                                                                                                                     | What it does / why                                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reading `STEP-LOG.md`, `docs/DECISIONS.md` and `docs/ROADMAP.md` first, as you asked, then `ARCHITECTURE.md`, `IDEAS.md`, `README.md`, `package.json`, the build config and all the code this stage touches | Just reading. The roadmap's Stage 3 was two lines: fill the registry and load it at startup, and a model picker driven by it. D-012 added the real requirement: turn the fixed model into a choice "with the settings each model takes".                                                                                                                                    |
+| `git status`, `git log`; PowerShell checks for leftover Electron or Node processes and debug ports                                                                                                          | Read-only. A clean tree on `main`, and nothing left running from earlier work.                                                                                                                                                                                                                                                                                              |
+| `npm audit`, `npm view electron dist-tags.latest`, the list of published Electron versions                                                                                                                  | D-003's rule: re-check at the start of every stage. 0 vulnerabilities. 44.5.1 is the newest release and the highest published major is 44, so 42 to 44 are supported and the installed 44 is safe for now.                                                                                                                                                                  |
+| `npm run typecheck`, `npm run lint`, `npx prettier --check .`                                                                                                                                               | Baseline on the untouched tree. All clean, so any later failure would be mine.                                                                                                                                                                                                                                                                                              |
+| Loaded Anthropic's API reference (the `claude-api` skill) and read its model, effort and prompt-caching pages                                                                                               | Which models exist, their ids, sizes and prices, and which accept `effort`. It is a cached copy (dated 2026-09-25), and the prices were about to go into a data file, so I did not stop there.                                                                                                                                                                              |
+| Fetched three pages of Anthropic's live docs: models overview, effort, prompt caching                                                                                                                       | A cross-check. They agreed with the cached copy on every fact the registry uses. They added: Haiku 4.5's retirement is "not sooner than October 15, 2026"; Sonnet 5.5 and Fable 5.1 default to `high` effort and Opus 5.5 to `medium`; automatic caching works on all four, and a prompt too short to cache is not an error (Haiku 4.5 needs 4 096 tokens, the others 512). |
+| Copied Stage 2's check scripts from an earlier session's temporary folder and read each one before running it                                                                                               | They are not in the project (see "Things to know"). I would be executing them, so I read them, and a scan for file and network side effects found only loopback addresses.                                                                                                                                                                                                  |
+
+### 2. The baseline, and two broken checks of mine
+
+Before changing any product file I ran every earlier check on the untouched tree, on scratch profiles inside your
+encrypted `AppData`, so that a later failure would be known to be mine.
+
+| Check                                                                          | Result                                                    |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| The provider module under plain Node, against the mock                         | 51 of 51.                                                 |
+| Stage 1's four UI suites in the dev window, through the real IPC, SDK and mock | 17 + 35 + 42 + 16 = 110 of 110.                           |
+| Stage 2.3's suite (settings, key storage, sender guard)                        | **Could not start**, then 62 of 64 once fixed. See below. |
+| ...its restart check                                                           | 5 of 5.                                                   |
+| Stage 2.4's suite (the chat path, every failure, the guards)                   | 71 of 71.                                                 |
+
+**What was broken, and it was my checks, not the app.**
+
+1. **Stage 2.3's suite died on its first line.** In slice 2.4, `validate.ts` began importing a value (`CHAT_LIMITS`)
+   from `./ipc` without a file extension. Bundlers and TypeScript resolve that; Node's own loader does not, and
+   that suite loads `validate.ts` straight under Node. Slice 2.4's final checks never re-ran the 2.3 suite, so
+   nobody noticed. I wrote a small resolve hook for my test harness (it changes no project file), after which the
+   suite ran.
+2. **Two of its assertions were out of date** for the same reason: they expected `window.api` to have only
+   `settings` and `getStatus` to return only `{ hasKey, canStoreKey }`. Slice 2.4 changed both on purpose.
+   Nothing else in that suite failed. I updated those two assertions in my copy.
+
+Two small things for the record. The tool that runs my commands twice refused a command because it mistook text
+for a file to delete (a regular expression, then a quoted path); nothing ran either time, and I rewrote them.
+And **I recorded a golden copy before writing any Stage 3 code**: the three request bodies the Stage 2 provider
+sends (a single message, a conversation, and two messages from the person merged) and the exact wording of its
+"model not found" message. Stage 3 has to leave the default model's request unchanged, and that can only be
+proved against a copy taken beforehand.
+
+### 3. Slice 3.1 - the registry file, its check and the loader
+
+File edits: `registry/models.json` (the four models); new `src/shared/registry.ts` (the shape of the file,
+`parseRegistry`, the strict check, and `toModelOption`, which says what the page may know about a model); new
+`src/main/registry.ts` (imports the JSON, so the build embeds it, and checks it once); the shared contract in
+`src/shared/ipc.ts` (`ModelOption`, a bigger `SettingsStatus`, `setModel`); `checkModelChoice` in
+`src/shared/validate.ts`; and `tsconfig.node.json` now lists the JSON file. Nothing is wired into the app yet.
+
+| Command                                                        | What it does / why                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node verify-3-1.mjs` (my check script, plain Node, no window) | The real registry file plus every kind of damage: wrong versions, missing and misspelt fields, bad dates (including 30 February), numbers that are negative, fractional, `NaN` or too large, text with line breaks or a megabyte long, 100 000 entries, a `__proto__` key, duplicate ids, a default that does not exist, and the model-choice check against 16 kinds of bad input. **First run 157 of 159.** Both failures were flawed assertions of mine, below. |
+| Fixed the two assertions, re-ran                               | The timing check wrapped the _building_ of a 100 000-entry input, which took longer than the refusal it was timing. The other wanted a problem message under 150 characters when the true bound is about 165 (a 500-character id is cut to 64 characters, then added to a message). Both now assert the real property. **159 of 159.**                                                                                                                            |
+
+### 4. Slice 3.2 - the provider takes a registry entry
+
+`provider.ts` no longer has `MODEL`, `MODEL_LABEL` or `PROVIDER_NAME`. `streamReply` takes the model's entry:
+the request names that model, sends `output_config.effort` only when the entry has one, and caps `max_tokens` at
+the lower of 16 000 and the model's own limit. The "model not found" message names the model that was asked and
+adds "You can choose another model in the header." (There is a menu to choose from now.)
+
+The mock API had to learn about several models. It used to demand `effort: "medium"`, which was a Stage 2 design
+assertion and not an API rule. It now refuses what the docs say the real API refuses: `effort` on Haiku 4.5, a
+level that does not exist, `max_tokens` above a model's maximum, and an unknown model (a 404). It is still my
+reading of the docs, not the real API.
+
+| Command                                                                 | What it does / why                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node provider-node-test-3.mjs` (Stage 2's 51 checks, adapted, plus 42) | Against the real registry file. The default model's three request bodies must equal the golden copy **key order included**; all four models are accepted by the strict mock with exactly their own settings (Haiku carries no `output_config` at all); `max_tokens` follows a model's own limit; a retired model's 404 reads correctly. **93 of 93 on the first run.** A first-time pass proves little, so:               |
+| Negative control A: send `effort` to every model again                  | One-line sabotage of `provider.ts`, run, restore from a backup, compare hashes. 5 checks failed, exactly where they should: Fable's level, Haiku's 400, Haiku carrying an `output_config`, and two that rely on `effort` following the registry. **The golden-copy check alone did not catch it**, because Opus's request is unchanged under that sabotage. The per-model checks are what protect the other three models. |
+| Negative control B: ignore the model's own output limit                 | Exactly the two checks with a limit below 16 000 failed.                                                                                                                                                                                                                                                                                                                                                                  |
+
+### 5. Slice 3.3 - which model answers
+
+New `src/main/models.ts`: the person's saved choice, or the registry's default. `currentModel()` is what the chat
+uses (read once per reply, when it starts), `chooseModel()` saves a choice, and `inOrder()` runs model changes one
+at a time. `ipc.ts` gets the `settings:set-model` handler behind the same sender guard, and `getStatus` now
+returns the model list and the current choice. `chat.ts` asks `currentModel()` after reading the key and tells
+the person plainly if the registry could not be loaded. The preload gains one function, `setModel`.
+
+Why `inOrder` exists. Holding an arrow key on a closed menu changes the choice once for every option it passes,
+so several `setModel` calls can be in flight at once. Their saves can cross, and the answer that arrives last
+may not describe the choice made last. I built the ordering before I had seen the problem; I then saw it (negative
+control below): with the ordering switched off, quick changes produced "The choice could not be saved" errors.
+
+### 6. Slice 3.4 - the menu and Settings
+
+New `settings/ModelPicker.tsx` (the menu) and `settings/format.ts` (writes 1000000 as "1M" and 4 as "$4"). The
+header badge that named the model is gone; the "No API key" badge stays. `App.tsx` now holds the conversation
+(`useChat`) instead of `ChatView`, because the header has to know when a reply is arriving to lock the menu;
+`ChatView` receives it as a prop. Settings gets a "Model" section. The CSS lets the header wrap in a narrow
+window instead of overflowing.
+
+| Command                                                     | What it does / why                                                                                                                                                                                                                                                                   |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npx prettier --write`, `npm run typecheck`, `npm run lint` | Clean. Prettier reformatted five files.                                                                                                                                                                                                                                              |
+| `node contrast-3.mjs`                                       | WCAG contrast for the colours the menu uses: text on the page 12.81:1, on its hover fill 9.37:1, the border 3.93:1, the focus ring 5.79:1, the Settings text 11.98:1 and 5.76:1, all above the bars. The greyed-out state is 3.20:1 (informational: WCAG exempts disabled controls). |
+| Looked at the screenshots                                   | The menu sits beside Settings as a matching pill. At 420 pixels the header wraps (title above, controls below). The menu is greyed out while a reply streams. The Settings dialog gets a divided "Model" section and now scrolls in the default window, because it is taller.        |
+
+### 7. Checking it in the real window, and what went wrong
+
+Same method as before: drive the real Electron window from outside through the DevTools protocol, through the real
+IPC and SDK, against the mock API, on scratch profiles inside your EFS-encrypted `AppData` (named
+`frontier-app-test-scratch-*`, each verified in use before it writes anything, all deleted afterwards). Four new window
+suites (two more run under plain Node), and Stage 1 and 2's suites re-run with only the assertions that Stage 3 changed on purpose updated (the
+model badge became a menu, `window.api` gained `setModel`, the status object grew).
+
+| Suite (checks)                                          | What it covers                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `verify-3-4` (77), a fresh profile                      | The menu lists the registry's models in its order and starts on the default. The page is told nothing about how a model is called. Settings shows the right details and prices. The header fits at 420 and 320 pixels. Keyboard: Tab order, ArrowDown and ArrowUp. The choice is saved as exactly `{"version":1,"modelId":"..."}` with no temporary file. **25 bursts of six quick changes** all end with the menu, main and the file agreeing on the last. A chat with each of the four models sends exactly that model's settings. The menu locks while a reply arrives, and a model switch forced mid-reply does not affect it. A mid-chat switch sends the whole chat to the new model. 14 kinds of bad `setModel` input are refused, and a call from `about:blank` is rejected. |
+| `verify-3-4b` (13), a second launch on the same profile | The choice survives a real restart; starting up and chatting leave the file's modification time untouched; removing the API key does not forget the model.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `verify-3-5` (9 each), 16 launches                      | A saved choice that is: valid; valid with extra fields; a retired model; the right id in the wrong letter case; `__proto__`; a path-traversal string; corrupt JSON; another version; no model; a number; an object; an empty file; a JSON array; `null`; a file starting with a byte-order mark; 5 MB of random bytes. In every case: the right model is shown, the window opens quickly, the file is byte-identical afterwards, a missing model is logged exactly once, and choosing from the menu replaces the bad file.                                                                                                                                                                                                                                                           |
+| `verify-3-6` (10 to 14 each), 9 launches plus a build   | `registry/models.json` deliberately broken or changed, run through the real loader: wrong version; every entry misspelt; default missing; default itself broken; one broken entry; an unknown provider; entries reordered (the default is _not_ the first); a different default; a saved choice whose model is now broken. A file that is not valid JSON must stop the build with no window.                                                                                                                                                                                                                                                                                                                                                                                         |
+
+**What went wrong, or was found, along the way:**
+
+| What                                               | Detail                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `verify-3-4`, first run: 76 of 77                  | My bug. I collected the results of the 14 bad inputs in a plain object, and `out['__proto__'] = '...'` does not create a key; it silently sets the prototype. The `__proto__` case, the one I most wanted, was never recorded (13 results). All 13 recorded ones were refused. I switched to a list of pairs. **77 of 77.**                                                                                                                                                                                                                                                      |
+| One scenario found a **weakness in the validator** | In the "every entry misspelt" scenario (`effort` written `effrot`) the log said only `field "effort" missing`, never mentioning `effrot`. My validator reported the first problem it found, and a renamed field is two problems at once. I changed it to report both (`field "effort" missing; unknown field "effrot"`) and added three checks to the Node suite (159 to 162). My first test had only covered an _added_ field, so it missed this.                                                                                                                               |
+| A claim of mine that was **wrong**                 | I was about to write that editing `registry/models.json` while `npm run dev` runs restarts the app. I tested it: the dev server printed nothing and the app never changed. Electron-vite's hot reload is for the page only. I then tried its `--watch` flag, and the dev server printed "main process rebuilt" and "restarting electron app", and the window came back with the edited label. D-014 now says what is true: restart, or use `npm run dev -- --watch`.                                                                                                             |
+| One **intermittent** failure, not reproduced       | In the first run of the 16 saved-choice launches, the byte-order-mark one failed "no temporary file left, no error badge", although the file content check beside it passed. Re-run three times: all passed; and again in the final full run. My likely cause, **not proven**: Chromium keeps its own `Preferences` file in the same folder and saves it through a temp file (`Preferences~RF….TMP`), which my loose file-name match could catch if the timing was unlucky. I tightened the check to my file's own name, and it now prints what it found if it ever fails again. |
+| The tool refused two commands                      | It mistook text in my command for a file to delete (a regular expression, then a quoted path). Nothing ran either time. I rewrote them without `Remove-Item` near path-like text.                                                                                                                                                                                                                                                                                                                                                                                                |
+
+**Negative controls for the window suite.** Seven one-line sabotages, each run against `verify-3-4`, each file
+restored from a backup and compared by hash afterwards:
+
+| Sabotage                                                 | What the suite said                                                                                                                                                                         |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The sender guard switched off                            | 4 checks failed: `about:blank` was handed the model list and could change the saved choice.                                                                                                 |
+| Only the first validation layer off (`checkModelChoice`) | 1 check failed, and only about the _wording_ of the refusal. Invalid ids were still refused and nothing was saved: the second layer, in `chooseModel`, held. So each layer alone is enough. |
+| Both validation layers off                               | 5 checks failed: an invented model id was accepted and **saved**. Only now can bad input through.                                                                                           |
+| The saved choice ignored                                 | The suite stopped at its first "wait until the choice changes" (25 checks had passed), because the selection never moved.                                                                   |
+| Model changes run side by side (no ordering)             | 3 checks failed: the first burst of quick changes ended with a red "The choice could not be saved on this computer." badge. So the race is real and `inOrder` earns its place.              |
+| The menu never locked                                    | Exactly 1 check failed: "while a reply is arriving the menu is disabled".                                                                                                                   |
+| The chat always asks Haiku, whatever is chosen           | 9 checks failed.                                                                                                                                                                            |
+
+### 8. The built app
+
+| Command                                                                                 | What it does / why                                                                                                                                                                                                                                                                                                                 |
+| --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run build`, then `grep` on `out/main/index.js` and `out/preload/index.js`          | Passed. The four model ids, the default id, the schema version and the date are inside the main program's file, so the registry really is embedded. Nothing in it reads `models.json` from disk or asks for the app's folder (the three matches are log and error text), and the sandboxed preload still requires only `electron`. |
+| `verify-3-4` and `verify-3-4b` on the **built** app                                     | 77 of 77 and 13 of 13. This is the one that loads from a `file://` page, where the sender guard compares file addresses.                                                                                                                                                                                                           |
+| `verify-prod`, `verify-1-3`, `verify-2-4`, `verify-2-3`, `verify-2-3b` on the built app | 11, 42, 71, 64 and 5, all passing.                                                                                                                                                                                                                                                                                                 |
+
+### 9. Final checks
+
+| Command                                                                                                    | What it does / why                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npx prettier --check .`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm audit`                | All clean; `npm audit` reports 0 vulnerabilities.                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Every suite again on the final code                                                                        | Node: provider 93 of 93, registry and model-choice checks 162 of 162. Dev window: Stage 1 (110), 2.3 (64 and 5), 2.4 (71), 3.4 (77 and 13), the 16 saved-choice launches, the 9 registry scenarios and the invalid-JSON build. Built app: as in step 8.                                                                                                                                                                                                                             |
+| `node run-with-app.mjs dev plain-check.mjs` (plain `npm run dev`, **your real profile**, no test settings) | A read-only startup check exactly as you would run it: no clicks, no typing, no saving, and no key, so the app cannot call the network. 8 of 8: title, Electron 44.5.1, the "No API key" badge and hint, the Settings button, the exact `window.api` surface including `setModel`, the model menu with its four models and the default selected, no console errors. Your profile held no `credentials*` or `preferences.json` before or after, so starting up writes nothing there. |
+| Deleted the scratch profiles and my backups                                                                | Nine `frontier-app-test-scratch-*` folders inside `AppData` (never your real `frontier-app`) and the sabotage backups in the temporary folder. No Electron, mock or runner process was left running.                                                                                                                                                                                                                                                                                |
+| `npx prettier --write STEP-LOG.md docs README.md`                                                          | Formatted the docs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `git add -A`, `git commit`                                                                                 | **The one commit of Stage 3**: "Stage 3: model registry in use, model menu in the header (D-014, D-015)". After it, `git status` shows nothing uncommitted (only `node_modules/`, `out/` and `.eslintcache` are ignored).                                                                                                                                                                                                                                                           |
+
+## Stage 3 - Choices I made where things were unclear ("pick the simplest option")
+
+- **Which models.** You did not say. I chose the four current Anthropic models, Fable 5.1, Opus 5.5, Sonnet 5.5
+  and Haiku 4.5, which gives four real price and capability tiers. Older models are superseded, and Mythos is
+  for approved Project Glasswing customers only. **The default stays Opus 5.5**, so nobody's bill changes by
+  itself. Fable 5.1 is the most expensive ($10 and $50 per million tokens, two and a half times Opus). It is one
+  click away in the menu, and Settings shows the price.
+- **The registry is built into the app, not read from a file at run time.** It removes every question about
+  where the file is in an installed app, which this project has never been able to test. The price: editing it
+  needs a restart (or `npm run dev -- --watch`). Reading a user-editable copy from the data folder is a later
+  step (`docs/IDEAS.md`).
+- **Facts in the registry, policy in code.** The file says what a model _is_ (size, price, whether it takes
+  `effort`) and which `effort` level to ask for. The reply ceiling, caching, the plain-text system prompt and
+  the API address stay in code, so the file can never change where your key goes.
+- **`effort` per model, from the docs' own recommendations**, not one value for all (Stage 2 hard-wired
+  `medium`): Opus `medium`, Sonnet `medium`, Fable `high`, Haiku none. `xhigh` and `max` cannot be written in
+  the file, because not every model that takes `effort` accepts them.
+- **Haiku by its dated id** (`claude-haiku-4-5-20251001`), which Anthropic's docs list as its API id, not the
+  alias. The alias moves; the facts I recorded belong to a snapshot.
+- **Strict, with no fallback list.** A broken file is shown, not hidden. A typo drops one entry and names it in
+  the log; a file unusable as a whole shows "Models unavailable".
+- **The schema version went from "0.1" to "0.2".** "0.1" was an empty template; a file with models in it is a
+  different shape, and the loader accepts exactly one version. `rankings.json` stays at "0.1".
+- **The menu is in the header** (Stage 1's notes already called that its natural place), with the details in
+  Settings. A second copy of the control in Settings would be two things to keep in step. To lock the menu during a
+  reply, `useChat` moved up from `ChatView` into `App`: the usual way to share state between two parts of a screen.
+- **The choice is kept by the main program**, in a file of its own, not in the page's storage: the page is the
+  less trusted side, the dev server and the built app have different page storage, and main already keeps the key.
+- **Left out on purpose, each a possible next step** (all in `docs/IDEAS.md`): naming the model that wrote each
+  reply, switching automatically when a model is "not found", choosing the effort level, a cost display, a
+  build-time check of the registry, and server-side refusal fallbacks (D-012, now for three more models).
+- **No new packages, and one commit.** You asked for the working tree to be committed with one message, so slices
+  3.1 to 3.5 are described in this log but are not separate commits (point 1 below).
+
+## Stage 3 - Things to know (not problems, but worth your attention)
+
+1. **Stage 3 is one commit, not one per slice.** Earlier stages ended with a commit per slice. This time you asked
+   for the working tree to be committed with a single message, so slices 3.1 to 3.5 are described in this log but
+   are not separate commits. Nothing was pushed; there is no remote.
+2. **I still have never called the real Anthropic API**, and there are now four models in that position, not one.
+   Every check ran against the mock, which is my reading of Anthropic's docs. Specific things only a real message
+   can settle: Fable 5.1 requires the account to allow 30-day data retention (otherwise the API answers with a
+   400, and the red note will show Anthropic's own words); the `effort` levels I chose for Sonnet 5.5 and Fable
+   5.1 are my reading of the docs; a model your account cannot use reads as "not found (404)". **The first real
+   message is still the real test**; try each model you care about once.
+3. **Money.** The menu makes the expensive model one click away. The prices Settings shows are list prices per
+   million tokens, as read on 2026-10-01; Anthropic can change them, and the file's date says how old they are.
+   Cached reads cost less than the figures shown. One reply is still capped at 16 000 tokens for every model;
+   with thinking on, a long answer from a model that thinks a lot may reach that cap more often (not observed:
+   no real model was run).
+4. **Haiku 4.5 may be retired soon.** Anthropic's page says "not sooner than October 15, 2026", two weeks after
+   this was written. After it goes the app will say "The model claude-haiku-4-5-20251001 was not found for this
+   account (404). You can choose another model in the header." To drop it, delete its entry in
+   `registry/models.json`.
+5. **Editing the registry.** Restart `npm run dev`, or run `npm run dev -- --watch` so it restarts by itself.
+   `npm run dev` with a file that is not valid JSON prints the error (file and position) and exits **with code 0**
+   and no window; the message is easy to miss.
+6. **The Settings dialog now scrolls** in the default 900 by 670 window, because the Model section made it
+   taller. Escape still closes it and the key field still has focus when it opens.
+7. **Not checked:** opening the menu with the mouse and clicking an option (the open list is drawn by the system
+   and DevTools cannot see or click it; I changed the choice with real arrow-key presses and with script
+   events, which fire the same `change`); a real screen reader (only the menu's label); macOS and Linux;
+   packaging (`npm run build:win` was not run; the registry being embedded means it adds no packaging risk of
+   its own); very long conversations; window zoom levels.
+8. **Two of my Stage 2 checks had gone stale and I only noticed because I re-ran everything first** (step 2): the
+   2.3 suite had not been run since slice 2.4. These scripts live in a temporary folder and nothing re-runs them.
+   That is the best evidence yet for the offer I made at the end of Stage 2: **say the word and I will keep them
+   in the project (for example under `tools/`)**, with the mock server, the DevTools helper and a one-command
+   runner. I had to rewrite or repair several of them again this stage.
+9. **Everything in Stage 2's "Things to know" still applies** (your `AppData` is EFS-encrypted, so renaming a
+   file in it fails and `preferences.json` is written in place; the key store's limits; only Windows was
+   tested; packaging is untested; the SDK ignores the system proxy).
+10. **Files outside the project.** Project files are only under `A:\frontier-app`. Elsewhere: I read three pages
+    of Anthropic's public documentation and queried the npm registry (`npm audit`, `npm view`); I installed
+    nothing and downloaded no files. The scratch profiles I made inside `AppData` are deleted, and your real
+    profile holds no `credentials*` or `preferences.json`. The throwaway scripts, screenshots and logs are in this
+    session's temporary folder.
+11. **Git may print "LF will be replaced by CRLF" warnings.** Harmless, as before.
+12. **No secrets anywhere.** No API key, no `.env`, nothing pushed. The test keys were invented per run and are
     not recorded.

@@ -40,9 +40,10 @@ body {
 .app-header {
   flex: none;
   display: flex;
+  flex-wrap: wrap; /* in a narrow window the controls drop under the title instead of overflowing */
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px 12px;
   padding: 10px 20px;
   border-bottom: 1px solid var(--color-border);
 }
@@ -68,8 +69,10 @@ body {
 
 .app-header-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  justify-content: flex-end;
+  gap: 8px 10px;
 }
 
 .header-button {
@@ -90,6 +93,33 @@ body {
 .header-button:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
+}
+
+/* The model menu. Looks like the pill buttons beside it. */
+.header-select {
+  max-width: 200px;
+  padding: 2px 8px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-text);
+  background: var(--color-background);
+  border: 1px solid var(--color-input-border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.header-select:hover:not(:disabled) {
+  background: var(--ev-c-gray-3);
+}
+
+.header-select:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.header-select:disabled {
+  color: var(--ev-c-text-3);
+  cursor: default;
 }
 
 /* ---------- chat area ---------- */
@@ -386,6 +416,12 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.settings-section + .settings-section {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
 }
 
 .settings-heading {

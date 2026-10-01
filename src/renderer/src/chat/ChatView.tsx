@@ -1,21 +1,24 @@
 import type { SettingsStatus } from '../../../shared/ipc'
 import Composer from './Composer'
 import MessageList from './MessageList'
-import { ipcReply } from './ipcReply'
-import { useChat } from './useChat'
+import type { UseChat } from './useChat'
 
 interface ChatViewProps {
-  /** What the main process says about the API key; null until it has answered. */
+  /** What the main process says about settings; null until it has answered. */
   status: SettingsStatus | null
+  /** The conversation. It is held in App, because the header needs to know when a reply is arriving. */
+  chat: UseChat
   onOpenSettings: () => void
 }
 
-function ChatView({ status, onOpenSettings }: ChatViewProps): React.JSX.Element {
-  const { messages, isReplying, send, stop } = useChat(ipcReply)
+function ChatView({ status, chat, onOpenSettings }: ChatViewProps): React.JSX.Element {
+  const { messages, isReplying, send, stop } = chat
 
   // Nothing is said until the main process has answered, so the hint never flashes the wrong thing.
   let emptyHint: React.ReactNode = null
-  if (status?.hasKey === true) {
+  if (status?.modelsError) {
+    emptyHint = `The list of models could not be loaded (${status.modelsError}), so replies are unavailable. Check registry/models.json.`
+  } else if (status?.hasKey === true) {
     emptyHint = 'Type a message to start.'
   } else if (status?.hasKey === false) {
     emptyHint = (

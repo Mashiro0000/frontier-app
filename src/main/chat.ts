@@ -2,6 +2,7 @@ import { app, ipcMain, type WebContents } from 'electron'
 import { CHANNELS, type ChatRequest, type ChatStreamEvent } from '../shared/ipc'
 import { checkChatRequest } from '../shared/validate'
 import { readApiKey } from './keyStore'
+import { currentModel } from './models'
 import { describeError, streamReply, type ReplyEnd } from './provider'
 import { isTrustedSender } from './security'
 
@@ -94,6 +95,7 @@ async function runReply(
   const controller = new AbortController()
   running.set(key, controller)
   let apiKey = ''
+  let modelId = ''
   try {
     const saved = await readApiKey()
     if (saved === null) {
@@ -101,8 +103,16 @@ async function runReply(
       return
     }
     apiKey = saved
+    // The model is fixed here, for this whole reply: a later change of model applies from the next one.
+    const model = await currentModel()
+    if (!model.ok) {
+      send({ streamId, type: 'error', message: model.error })
+      return
+    }
+    modelId = model.entry.id
     const end = await streamReply({
       apiKey,
+      model: model.entry,
       messages: request.messages,
       signal: controller.signal,
       baseURL: baseUrlOverride(),
@@ -112,7 +122,7 @@ async function runReply(
   } catch (error) {
     // Stopped by the person (or the page went away): not a failure, and nobody is listening.
     if (controller.signal.aborted) return
-    send({ streamId, type: 'error', message: describeError(error, apiKey) })
+    send({ streamId, type: 'error', message: describeError(error, apiKey, modelId) })
   } finally {
     running.delete(key)
   }

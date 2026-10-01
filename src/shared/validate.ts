@@ -32,6 +32,22 @@ export function checkApiKey(input: unknown): KeyCheck {
   return { ok: true, key }
 }
 
+export type ModelChoiceCheck = { ok: true; modelId: string } | { ok: false; error: string }
+
+/**
+ * Checks a model choice from the page: it must be exactly the id of a model on offer. The id handed
+ * back is the registry's own string, never the page's, so nothing the page invents is saved or used.
+ */
+export function checkModelChoice(
+  input: unknown,
+  models: readonly { id: string }[]
+): ModelChoiceCheck {
+  if (typeof input !== 'string') return { ok: false, error: 'The model choice was not understood.' }
+  const match = models.find((model) => model.id === input)
+  if (!match) return { ok: false, error: 'That model is not available.' }
+  return { ok: true, modelId: match.id }
+}
+
 const STREAM_ID = /^[A-Za-z0-9_-]{8,64}$/
 
 export type ChatCheck =

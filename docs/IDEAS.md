@@ -19,3 +19,10 @@
 - Keep the mock Anthropic server and the DevTools check scripts in the repo (for example under `tools/`) as
   the project's automated checks (see D-007)
 - Trim or summarise old turns when a conversation gets long (D-013)
+- Check `registry/models.json` before every build with the same validator the app uses (`src/shared/registry.ts`),
+  so a typo cannot ship (D-014)
+- Update the registry without a new release: a checked copy in the data folder, written in place (D-010, D-014)
+- Name the model that wrote each reply, now that the model can change in the middle of a chat (D-015)
+- Let the person choose the effort level per model (the registry already holds one level per model)
+- When a model answers "not found" (for example once Haiku 4.5 is retired), offer to switch to another
+- Show the retirement date of a model in Settings (needs a field in the registry)

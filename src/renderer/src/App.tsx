@@ -1,25 +1,24 @@
 import { useState } from 'react'
 import ChatView from './chat/ChatView'
+import { ipcReply } from './chat/ipcReply'
+import { useChat } from './chat/useChat'
+import ModelPicker from './settings/ModelPicker'
 import SettingsDialog from './settings/SettingsDialog'
 import { useSettingsStatus } from './settings/useSettingsStatus'
 
 function App(): React.JSX.Element {
   const { status, loadError, setStatus } = useSettingsStatus()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  // The chat is held here, not in ChatView, because the header needs to know when a reply is arriving:
+  // the model cannot be changed meanwhile.
+  const chat = useChat(ipcReply)
 
   return (
     <div className="app">
       <header className="app-header">
         <h1 className="app-title">Frontier App</h1>
         <div className="app-header-actions">
-          {status?.hasKey === true && (
-            <span
-              className="app-badge"
-              title={`Replies come from ${status.provider}'s ${status.modelLabel}.`}
-            >
-              {status.modelLabel}
-            </span>
-          )}
+          <ModelPicker status={status} disabled={chat.isReplying} onStatusChange={setStatus} />
           {status?.hasKey === false && (
             <span
               className="app-badge app-badge-warn"
@@ -33,7 +32,7 @@ function App(): React.JSX.Element {
           </button>
         </div>
       </header>
-      <ChatView status={status} onOpenSettings={() => setSettingsOpen(true)} />
+      <ChatView status={status} chat={chat} onOpenSettings={() => setSettingsOpen(true)} />
       <SettingsDialog
         open={settingsOpen}
         status={status}
