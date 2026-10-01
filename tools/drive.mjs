@@ -82,7 +82,24 @@ function analyse(out, run) {
 }
 
 /** Runs one launch. Returns { code, passed, total, fails[], crashes[], detail, ok }. */
-export function runApp({ label, mode = 'dev', scripts, env = {}, port = 9222, timeoutMs = 300000 }) {
+export function runApp(options) {
+  const first = runAppOnce(options)
+  // A launch whose window or app was LOST (the suite died because its page connection closed, or the app was gone) is run once more, and
+  // the summary says so. Evidence points at something outside the app: an instance started from the Claude desktop app's preview ran
+  // against the real profile and shut down at the same second as one lost window, and the other two losses came at moments when the
+  // desktop app was used (see tools/README.md). A real crash will show again on the retry; a retry that passes is reported as RETRIED,
+  // never hidden. NO_RETRY=1 turns it off (negative controls, when diagnosing).
+  const lost = /the page connection (is )?closed|app state at the end: (GONE|ALREADY EXITED)/
+  if (!first.ok && process.env.NO_RETRY !== '1' && first.crashes.length > 0 && first.crashes.every((c) => lost.test(c.reason)) && first.fails.every((f) => /^!! the app exited by itself/.test(f))) {
+    console.log(`!! RETRY: ${options.label} lost its window or its app (${first.crashes[0].reason.slice(0, 150)}); launching it once more`)
+    const second = runAppOnce({ ...options, label: `${options.label}-retry` })
+    second.detail = `${second.detail}  [RETRIED: the first attempt lost its window: ${first.crashes[0].reason.slice(0, 110)}]`
+    return second
+  }
+  return first
+}
+
+function runAppOnce({ label, mode = 'dev', scripts, env = {}, port = 9222, timeoutMs = 300000 }) {
   if (process.env.NO_PORT_WAIT !== "1") waitForPortFree(port)
   const fullEnv = {
     ...process.env,

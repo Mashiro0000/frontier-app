@@ -1610,10 +1610,15 @@ key is saved or removed.
 The first full run of the checks on slice 5.3 showed seven launches as "0/0". That did **not** mean no checks ran: the old driver read only
 the "N/M checks passed" line, so any check script that died before printing it (an error, the window or the app going away) looked the
 same. The driver now says `CRASHED ... died after N passing checks: <the first error line>`, and a lost window says so. The same launches
-passed when repeated six times, so the app was not at fault; **why the windows were lost in the original run was not found.** It
-happened once more later, in the built app (one launch, 6 seconds after the window opened, nothing in the app's log), and passed on the
-repeat. One guess is that someone clicked or closed a test window while it ran: the windows come up on your screen. Another harness fault,
-mine, was found by the same run: a note the runner printed started with "!!", which the history checks count as a failure.
+passed when repeated six times, so the app was not at fault. **Why the windows were lost was not known at the time**, and it happened twice
+more later (a built-app launch 6 seconds after its window opened, and another 20 seconds in, each with nothing in the app's log). The best
+evidence came at the end: the files of your real profile show that an instance of the app ran from 19:13:16 and shut down cleanly at
+19:27:55, the same second one test window was lost, and a launch file for the app appeared in `.claude/` at 19:13: that instance looks like the
+Claude desktop app's own preview of the project, which probably stops every Electron process of the project when it stops, the test's
+included. The other two losses came at moments when you used the desktop app (a message, an interrupt). **This is a probable cause, not a
+proven one.** The check driver now runs a launch that lost its window once more and says so in the summary (`RETRIED`), so it cannot hide a
+real crash: a real crash happens again. Another harness fault, mine, was found by the same run: a note the runner printed started with
+"!!", which the history checks count as a failure.
 
 ### 5. The check scripts move into the repository
 
@@ -1647,7 +1652,7 @@ then every launch that was not clean was run again:
   were ported and pass. **One launch was a lost window:** in the built app, 20 seconds into the Settings suite, the page's connection closed
   while the app itself was still running (three of its four Electron processes were left), with nothing in the app's log. The same suite
   passed 3 times in a row afterwards (66 checks each). Together with the "0/0" run and one earlier built-app launch, that is three lost
-  windows in about 250 launches that I could not explain: see "Things to know", point 2.
+  windows in about 250 launches, probably caused from outside the app: see "Things to know", point 2.
 - Before committing each slice: `npm run typecheck`, `npm run lint`, `npx prettier --check .`, and `npm run build`; the built app was run
   for 5.3, 5.4 and the final regression. `npm audit`: 0 vulnerabilities. Electron is still 44.5.1.
 
@@ -1672,8 +1677,10 @@ then every launch that was not clean was run again:
    test: in Settings, **Save key**, **Test key**, then send a message with each provider. Things the mock could get wrong: the exact spelling
    of the model ids, the events of the stream, what a real "out of credit" error carries, and whether a restricted key may list models (Test
    key would then say 403 although the key works). `node tools/real-call.mjs` asks for a key (masked) and makes one tiny call per provider.
-2. **Windows were lost in a few launches and the cause was not found** (point 4 of "Step by step"). While the checks run, app windows
-   appear on your screen: clicking or closing them can break a launch. The checks now say exactly what happened instead of "0/0".
+2. **Test windows were lost in a few launches, probably by something outside the app** (point 4 of "Step by step"). While the checks run,
+   app windows appear on your screen, and starting or stopping the app from the Claude desktop app's preview, interrupting a session, or
+   clicking or closing a test window can kill a launch. Please leave those alone while `tools/regress.mjs` runs. The checks now say
+   exactly what happened instead of "0/0", and retry such a launch once, saying so.
 3. **Claude Haiku 4.5 may be retired from 15 October 2026** ("not sooner than"). After that its replies fail with "not found (404)"; the
    fix is to delete its entry in `registry/models.json` (D-014).
 4. **The OpenAI facts in the registry** (ids, prices, 1,050,000-token context, 128,000 output, effort levels) were read from OpenAI's pages on

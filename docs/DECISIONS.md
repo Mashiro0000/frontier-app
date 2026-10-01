@@ -536,8 +536,8 @@ and written; this decides the layout, and what Settings can do with a key.
   for any suite that died before its summary line (it is now reported as a crash, with the reason). One flaky check
   was changed: the quit with 60 queued 1.4 MB saves sits right at the 5 s the app waits for saves, and it had already failed once
   before Stage 5 began, so it now queues 30 (3.4 s). A window of the built app was lost 6 s after it opened in one
-  launch (nothing in its log) and the same launch passed when repeated, 77/77; the cause of such losses was never
-  found (see tools/README.md). **Not done:** a real call to either provider (no key was ever saved; the person has to make
+  launch (nothing in its log) and the same launch passed when repeated, 77/77; such losses are probably caused
+  from outside the app (see tools/README.md), and the check driver now retries a lost launch once and says so. **Not done:** a real call to either provider (no key was ever saved; the person has to make
   the first one).
 
 Status: accepted (Stage 5.3). Revisit: keys in Credential Manager (a keyring package); a "master password"; testing a key

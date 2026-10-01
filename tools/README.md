@@ -63,6 +63,18 @@ running; `!! the app is GONE` means no `electron.exe` was left.
 | `mock-openai.mjs`                      | OpenAI's side of the mock: Responses API streaming and its model list (my reading of the docs and the SDK's types, not the real API) |
 | `registry-good.json`                   | A fixed registry for the adapter suites (it is NOT the live one; update it when the schema changes) |
 
+## Lost windows
+
+Now and then (3 launches in about 250, on 2026-10-01) a test window was lost: the suite's connection to the page closed, sometimes with
+the whole app gone, with nothing in the app's log. They were not reproducible, and the evidence points at something outside the app: the
+real profile (`%APPDATA%\frontier-app`) shows an instance of the app that ran from 19:13:16 and shut down cleanly at 19:27:55, the
+second a built-app launch lost its page, and `.claude/launch.json` (the Claude desktop app's own preview of the project) appeared at 19:13;
+the other two losses came when the desktop app was used. It probably stops every Electron process of the project, the tests' included.
+**Probable, not proven.** So: while `tools/regress.mjs` runs, do not start, stop or preview the app from the Claude desktop app, do not
+interrupt the session, and do not click or close the test windows. `drive.mjs` runs a launch that lost its window once more and marks the
+summary `RETRIED` (a real crash happens again and stays BAD); `NO_RETRY=1` turns the retry off. `nc-crash.mjs` has modes that lose the
+window on purpose, to show both cases.
+
 ## Rules learned the hard way
 
 - **Scratch profile:** every launch passes `--user-data-dir=<dir>` after a second `--`. `ELECTRON_CLI_ARGS` does NOT
