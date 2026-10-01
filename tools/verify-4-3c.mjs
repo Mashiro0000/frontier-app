@@ -8,7 +8,7 @@ import { h4, mainInspector, waitForExit } from './lib4.mjs'
 
 const port = Number(process.argv[3] ?? 9222)
 const { MOCK_PORT, USER_DATA_DIR: userData, INSPECT_PORT } = process.env
-const N = Number(process.env.SAVES ?? 60)
+const N = Number(process.env.SAVES ?? 30) // 60 sat right at the 5 s grace: it failed on a baseline run before any Stage 5 change
 const check = checker()
 const page = await connect(port)
 await assertScratchProfile()

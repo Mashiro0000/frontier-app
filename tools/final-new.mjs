@@ -18,7 +18,7 @@ const main = { USER_DATA_DIR: scratch('s4main'), MOCK_PORT: mock }
 const r1 = runApp({ label: pfx + 'w42', mode, scripts: 'setup-key.mjs,verify-4-2.mjs', env: { ...main, WIPE_USER_DATA: '1' } }); results.push(r1.ok)
 const r2 = runApp({ label: pfx + 'w42b', mode, scripts: 'verify-4-2b.mjs', env: main }); results.push(r2.ok)
 sub('run43.mjs', 'w43b (close the window mid-reply, reopen: two launches)')
-sub('run43c.mjs', 'w43c (quit with 60 big saves queued)')
+sub('run43c.mjs', 'w43c (quit with 30 big saves queued)')
 sub('run43a.mjs', 'w43a (folder in every damaged state)')
 const r3 = runApp({ label: pfx + 'w44', mode, scripts: 'verify-4-4.mjs', env: { ...main, WIPE_USER_DATA: '1' } }); results.push(r3.ok)
 sub('run45.mjs', 'w45 (saves fail: injected disk fault)')

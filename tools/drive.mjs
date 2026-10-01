@@ -49,7 +49,7 @@ function crashReason(text, { app = true } = {}) {
     pick(/^Warning: Detected unsettled top-level await/) ??
     lines.find((l) => /^node:internal/.test(l)) ?? 'no error line (it exited without printing a summary)'
   // the page/app went away: the connection helpers now say so, and the runner says what state the app was in
-  const appLines = lines.filter((l) => /^(!! the app|app state at the end)/.test(l))
+  const appLines = lines.filter((l) => /^(!! the app exited|app state at the end)/.test(l))
   if (app && appLines.length === 0) appLines.push('(no app-state line: the runner did not get to print one)')
   return [first.trim(), ...appLines.map((l) => l.trim())].join(' | ').slice(0, 400)
 }

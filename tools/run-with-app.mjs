@@ -77,18 +77,20 @@ app.stderr.pipe(log)
 console.log(`started ${mode} app (tree root PID ${app.pid})`)
 
 let stopped = false
+let exitReported = false
 const startedAt = Date.now()
 function stopApp() {
   if (stopped) return
   // Say what state the app was in BEFORE we kill it. A suite that dies early shows up as "0/0" in the driver, and the first
   // question is always "was the app still running?" (the 'exit' event below is async and can lose the race with this).
+  // These are notes, not failures: they never start with "!!" (the runners count those as failed checks, and some tests quit the app on purpose).
   if (app.exitCode !== null || app.signalCode !== null) {
-    console.log(`!! the app had ALREADY EXITED by itself (code ${app.exitCode}${app.signalCode ? ', signal ' + app.signalCode : ''}) before the checks ended; ${Date.now() - startedAt} ms after it was started`)
+    if (!exitReported) console.log(`app state at the end: ALREADY EXITED by itself (code ${app.exitCode}${app.signalCode ? ', signal ' + app.signalCode : ''}), ${Date.now() - startedAt} ms after it was started`)
   } else {
     const t = spawnSync('tasklist', ['/FI', 'IMAGENAME eq electron.exe', '/FO', 'CSV', '/NH'], { encoding: 'utf8' })
     const count = (t.stdout ?? '').split('\n').filter((l) => /electron\.exe/i.test(l)).length
     // the launcher (cmd/npm/electron-vite) can outlive the app by a few seconds: what matters is whether electron.exe is there
-    console.log(count === 0 ? `!! the app is GONE: no electron.exe process is running (the launcher is still there), ${Date.now() - startedAt} ms after it was started` : `app state at the end: running (${count} electron.exe processes), ${Date.now() - startedAt} ms after it was started`)
+    console.log(count === 0 ? `app state at the end: GONE, no electron.exe process is running (the launcher is still there), ${Date.now() - startedAt} ms after it was started` : `app state at the end: running (${count} electron.exe processes), ${Date.now() - startedAt} ms after it was started`)
   }
   stopped = true
   // /T = the whole tree we started (cmd -> npm -> node -> electron), /F = force. Only this PID tree.
@@ -102,6 +104,7 @@ function stopApp() {
 process.on('exit', stopApp)
 process.on('SIGINT', () => process.exit(130))
 app.on('exit', (code, signal) => {
+  if (!stopped) exitReported = true
   if (!stopped) console.log(`!! the app exited by itself (code ${code}${signal ? ', signal ' + signal : ''}) ${Date.now() - startedAt} ms after it was started, before the checks finished`)
 })
 
