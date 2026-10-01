@@ -1,0 +1,14 @@
+{
+  "label": "custom-headers-env-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "    ['OPENAI_CUSTOM_HEADERS'],",
+      "to": "    [],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/provider-openai-test-5.mjs"
+  ],
+  "env": {}
+}

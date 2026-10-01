@@ -1,0 +1,14 @@
+{
+  "label": "store-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "      store: false",
+      "to": "      store: true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/provider-openai-test-5.mjs"
+  ],
+  "env": {}
+}

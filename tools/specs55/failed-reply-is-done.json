@@ -1,0 +1,14 @@
+{
+  "label": "failed-reply-is-done",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "if (response.status === 'failed') {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/provider-openai-test-5.mjs"
+  ],
+  "env": {}
+}

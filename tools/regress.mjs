@@ -22,9 +22,16 @@ const MOCK = '8790'
 const pfx = (x) => `${tag}-${x}`
 
 const seeded = (label, mode, scripts, env) => runApp({ label: pfx(label), mode, scripts, env })
+// launchers that seed their own profile (run54.mjs, run55.mjs): their exit code decides, and the totals line they print is shown
+const launcher = (script, mode, label, what) => {
+  const r = spawnSync(process.execPath, [join(here, script), mode], { encoding: 'utf8', timeout: 400000, env: { ...process.env, NODE_NO_WARNINGS: '1' } })
+  const out = (r.stdout ?? '') + (r.stderr ?? '')
+  const total = out.match(/(\d+\/\d+|CRASHED[^\n]*?)\s+\(exit/)?.[1] ?? 'no summary'
+  note(r.status === 0, `${r.status === 0 ? 'OK  ' : 'BAD '} ${pfx(label).padEnd(26)} ${what.padEnd(58)} ${total}`)
+}
 
 if (parts.includes('node')) {
-  for (const [label, script] of [['provider', process.env.PROVIDER_TEST ?? 'provider-node-test-5.mjs'], ['registry', process.env.REGISTRY_TEST ?? 'verify-5-2.mjs'], ['store', 'verify-4-1.mjs'], ['adapter', 'provider-adapter-test-5.mjs'], ['credstore', 'verify-5-3-store.mjs'], ['store54', 'verify-5-4-store.mjs'], ...(process.env.EXTRA_NODE_TESTS ? process.env.EXTRA_NODE_TESTS.split(',').map((t, i) => ['extra' + i, t]) : [])]) {
+  for (const [label, script] of [['provider', process.env.PROVIDER_TEST ?? 'provider-node-test-5.mjs'], ['registry', process.env.REGISTRY_TEST ?? 'verify-5-2.mjs'], ['store', 'verify-4-1.mjs'], ['adapter', 'provider-adapter-test-5.mjs'], ['credstore', 'verify-5-3-store.mjs'], ['store54', 'verify-5-4-store.mjs'], ['openai', 'provider-openai-test-5.mjs'], ...(process.env.EXTRA_NODE_TESTS ? process.env.EXTRA_NODE_TESTS.split(',').map((t, i) => ['extra' + i, t]) : [])]) {
     const r = runNode({ label: pfx(label), script })
     note(r.ok, `${r.ok ? 'OK  ' : 'BAD '} ${pfx(label).padEnd(26)} ${script}`)
   }
@@ -38,10 +45,8 @@ if (parts.includes('window')) {
   rec(seeded('24', 'dev', 'verify-2-4.mjs', base), pfx('24'), 'verify-2-4')
   rec(seeded('34', 'dev', 'verify-3-4.mjs', base), pfx('34'), 'verify-3-4')
   rec(seeded('w53', 'dev', 'verify-5-3.mjs', { USER_DATA_DIR: scratch('s5w53'), WIPE_USER_DATA: '1', MOCK_PORT: '8797', INSPECT_PORT: '9230' }), pfx('w53'), 'verify-5-3 (keys, Settings)')
-  const w54 = spawnSync(process.execPath, [join(here, 'run54.mjs'), 'dev'], { encoding: 'utf8', timeout: 400000, env: { ...process.env, NODE_NO_WARNINGS: '1' } })
-  const w54out = (w54.stdout ?? '') + (w54.stderr ?? '')
-  const w54total = w54out.match(/(\d+\/\d+|CRASHED[^\n]*?)\s+\(exit/)?.[1] ?? 'no summary' // the line run54.mjs prints through drive.mjs
-  note(w54.status === 0, `${w54.status === 0 ? 'OK  ' : 'BAD '} ${pfx('w54').padEnd(26)} ${'verify-5-4 (who answered, file v2)'.padEnd(58)} ${w54total}`)
+  launcher('run54.mjs', 'dev', 'w54', 'verify-5-4 (who answered, file v2)')
+  launcher('run55.mjs', 'dev', 'w55', 'verify-5-5 (two providers)')
   const mtime = statSync(join(P, 'preferences.json')).mtimeMs
   rec(seeded('34b', 'dev', 'verify-3-4b.mjs', { USER_DATA_DIR: P, MOCK_PORT: MOCK, EXPECT_MODEL: 'claude-haiku-4-5-20251001', PREFS_MTIME_MS: String(mtime) }), pfx('34b'), 'verify-3-4b (restart)')
 }
@@ -84,6 +89,8 @@ if (parts.includes('preview')) {
   rec(seeded('prev-24', 'preview', 'verify-2-4.mjs', base), pfx('prev-24'), 'built: verify-2-4')
   rec(seeded('prev-34', 'preview', 'verify-3-4.mjs', base), pfx('prev-34'), 'built: verify-3-4')
   rec(seeded('prev-w53', 'preview', 'verify-5-3.mjs', { USER_DATA_DIR: scratch('s5w53p'), WIPE_USER_DATA: '1', MOCK_PORT: '8797', INSPECT_PORT: '9230' }), pfx('prev-w53'), 'built: verify-5-3')
+  launcher('run54.mjs', 'preview', 'prev-w54', 'built: verify-5-4')
+  launcher('run55.mjs', 'preview', 'prev-w55', 'built: verify-5-5')
   stage4('preview')
 }
 

@@ -12,7 +12,10 @@ import type { Credentials, NeutralMessage, StreamRequest } from './types'
 export const MAX_REPLY_TOKENS = 16000
 
 /** What the assistant is called in the system prompt: a model that is told it is someone else answers oddly. */
-const ASSISTANT_NAME: Record<ProviderId, string> = { anthropic: 'Claude' }
+const ASSISTANT_NAME: Record<ProviderId, string> = {
+  anthropic: 'Claude',
+  openai: 'an AI assistant'
+}
 
 // The chat window shows plain text only (D-009), and models write Markdown by default, which would appear as stray
 // asterisks and backticks. Remove this once replies are rendered as Markdown.

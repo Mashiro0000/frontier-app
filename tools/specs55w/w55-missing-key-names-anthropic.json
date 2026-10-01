@@ -1,0 +1,14 @@
+{
+  "label": "w55-missing-key-names-anthropic",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "${PROVIDER_NAMES[provider]} API key.`",
+      "to": "${PROVIDER_NAMES.anthropic} API key.`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run55.mjs"
+  ],
+  "env": {}
+}

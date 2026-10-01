@@ -1,0 +1,14 @@
+{
+  "label": "w55-wrong-providers-key-sent",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "const saved = await readApiKey(entry.provider)",
+      "to": "const saved = await readApiKey('anthropic')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run55.mjs"
+  ],
+  "env": {}
+}

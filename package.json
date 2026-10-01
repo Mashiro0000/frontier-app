@@ -21,7 +21,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.130.0",
-    "@electron-toolkit/utils": "^4.0.0"
+    "@electron-toolkit/utils": "^4.0.0",
+    "openai": "^7.25.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",

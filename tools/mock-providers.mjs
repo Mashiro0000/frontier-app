@@ -1,4 +1,4 @@
-// The fake provider API for the checks (Anthropic Messages and GET /v1/models; OpenAI is added in a later slice).
+// The fake provider API for the checks: Anthropic (Messages) and OpenAI (Responses), and each one's model list.
 // A stand-in for POST /v1/messages (streaming) on this computer, for testing Frontier App without a real
 // API key or any network. It speaks Anthropic's server-sent-event format, validates requests the way the
 // real API is documented to (so a wrong request shape fails loudly), and misbehaves on demand.
@@ -9,6 +9,7 @@
 //   POST /__reset      -> forget it
 //   POST /__expect-key -> { key }  requests carrying any other x-api-key get a 401
 //   POST /__models    -> { pageSize?: n, fail?: status, hang?: true }  GET /v1/models serves pages of at most n models, fails with that status, or never answers
+import { createOpenAIMock } from './mock-openai.mjs'
 import http from 'node:http'
 
 // Stage 3: what each model accepts, from Anthropic's documentation (models overview, effort page), read on
@@ -28,7 +29,8 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 export function startMock(port = 8787) {
   const requests = []
-  let expectKey = null
+  let expectKey = null // the key the Anthropic side accepts (null: any)
+  let expectKeyOpenAI = null // the key the OpenAI side accepts (null: any); POST /__expect-key { key, provider: 'openai' }
   let modelsControl = { pageSize: null, fail: null }
 
   const json = (res, status, body, headers = {}) => {
@@ -87,7 +89,7 @@ export function startMock(port = 8787) {
     ['claude-haiku-4-5-20251001', 'Claude Haiku 4.5', 200000, 64000]
   ].map(([id, display_name, max_input_tokens, max_tokens]) => ({ type: 'model', id, display_name, created_at: '2026-01-01T00:00:00Z', max_input_tokens, max_tokens, capabilities: null }))
   function listModels(req, res) {
-    const record = { headers: req.headers, url: req.url, listing: true, body: null, problems: [], closedEarly: false }
+    const record = { provider: 'anthropic', headers: req.headers, url: req.url, listing: true, body: null, problems: [], closedEarly: false }
     requests.push(record)
     res.on('close', () => { if (!res.writableFinished) record.closedEarly = true })
     if (modelsControl.hang) return // never answered: the client has to give up
@@ -144,12 +146,22 @@ export function startMock(port = 8787) {
     }
   }
 
+  // OpenAI's side (Responses API and model list) lives in mock-openai.mjs; it shares the server, the request log and the controls.
+  const openai = createOpenAIMock({ json, readBody, requests, expectedKey: () => expectKeyOpenAI, modelsControl: () => modelsControl })
+
   const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && req.url === '/__requests') return json(res, 200, requests)
-    if (req.method === 'POST' && req.url === '/__reset') { requests.length = 0; expectKey = null; modelsControl = { pageSize: null, fail: null }; return json(res, 200, { ok: true }) }
+    if (req.method === 'POST' && req.url === '/__reset') { requests.length = 0; expectKey = null; expectKeyOpenAI = null; modelsControl = { pageSize: null, fail: null }; return json(res, 200, { ok: true }) }
     if (req.method === 'POST' && req.url === '/__models') { modelsControl = { pageSize: null, fail: null, ...JSON.parse(await readBody(req)) }; return json(res, 200, { ok: true }) }
-    if (req.method === 'GET' && req.url.split('?')[0] === '/v1/models') return listModels(req, res)
-    if (req.method === 'POST' && req.url === '/__expect-key') { expectKey = JSON.parse(await readBody(req)).key; return json(res, 200, { ok: true }) }
+    // Both providers list their models at GET /v1/models; they are told apart by how the key is sent (x-api-key, or Authorization: Bearer)
+    if (req.method === 'GET' && req.url.split('?')[0] === '/v1/models') return !req.headers['x-api-key'] && req.headers['authorization'] ? openai.listModels(req, res) : listModels(req, res)
+    if (req.method === 'POST' && req.url.split('?')[0] === '/v1/responses') return openai.handleResponses(req, res)
+    if (req.method === 'POST' && req.url === '/__expect-key') {
+      const { key, provider } = JSON.parse(await readBody(req))
+      if (provider === 'openai') expectKeyOpenAI = key
+      else expectKey = key
+      return json(res, 200, { ok: true })
+    }
     if (!(req.method === 'POST' && req.url.split('?')[0] === '/v1/messages')) return json(res, 404, errorBody('not_found_error', `no route ${req.method} ${req.url}`, 'req_mock_404'))
 
     const raw = await readBody(req)
@@ -158,7 +170,7 @@ export function startMock(port = 8787) {
     // The newest directive wins: after a failed reply the app merges the unanswered message into the next one.
     const directive = [...lastUserText(body).matchAll(/\[\[mock:([a-z0-9-]+)\]\]/g)].at(-1)?.[1] ?? 'echo'
     const problems = problemsWith(req.headers, body)
-    const record = { headers: req.headers, body, directive, problems, closedEarly: false, startedAt: Date.now(), finishedAt: null }
+    const record = { provider: 'anthropic', headers: req.headers, body, directive, problems, closedEarly: false, startedAt: Date.now(), finishedAt: null }
     requests.push(record)
     let alive = true
     res.on('close', () => { alive = false; record.finishedAt = Date.now(); if (!res.writableFinished) record.closedEarly = true })

@@ -1,0 +1,14 @@
+{
+  "label": "w55-badge-ignores-the-model",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/format.ts",
+      "from": "const answering = answeringProvider(status)\n  if (answering) return answering.hasKey ? null : answering",
+      "to": "const answering = null as ReturnType<typeof answeringProvider>\n  if (answering) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run55.mjs"
+  ],
+  "env": {}
+}

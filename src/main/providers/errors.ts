@@ -54,6 +54,8 @@ function sentence(facts: ErrorFacts, providerName: string, modelId: string): str
       return `The model ${modelId} was not found for this account (404). You can choose another model in the header. ${detail ?? ''}`.trim()
     case 'rate-limit':
       return 'Too many requests right now (429). Wait a moment and try again.'
+    case 'quota':
+      return `Your ${providerName} account has no credit left, or has reached its spending limit (429). Check your billing with ${providerName}.`
     case 'bad-request':
       return `The request was refused (400): ${detail ?? 'no details were given'}`
     case 'timeout':

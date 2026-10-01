@@ -84,6 +84,7 @@ export type ErrorKind =
   | 'permission' //   the key is not allowed to do this
   | 'not-found' //    usually: the model, for this account
   | 'rate-limit' //   too many requests
+  | 'quota' //        no credit left, or a spending limit reached (some providers answer 429 for this too)
   | 'bad-request' //  the provider refused the request itself
   | 'timeout'
   | 'connection' //   could not reach the provider

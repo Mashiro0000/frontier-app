@@ -23,15 +23,15 @@ let r = parseRegistry(fileJson)
 check('the real registry/models.json is accepted', r.ok, errOf(r))
 check('...with no problems at all', r.ok && r.problems.length === 0, r.ok ? probs(r) : '')
 const ids = r.ok ? r.registry.models.map((m) => m.id) : []
-check('...it lists the four current models, in this order', JSON.stringify(ids) === JSON.stringify(['claude-fable-5-1', 'claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-4-5-20251001']), JSON.stringify(ids))
+check('...it lists the four Anthropic models and then the three OpenAI models, in this order', JSON.stringify(ids) === JSON.stringify(['claude-fable-5-1', 'claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-4-5-20251001', 'gpt-6-astra', 'gpt-6.1-sol', 'gpt-6-luna']), JSON.stringify(ids))
 check('...the default is Claude Opus 5.5, as in Stage 2 (billing does not change by itself)', r.ok && r.registry.defaultModel.id === 'claude-opus-5-5')
 check('...and the default is the same object as the list entry', r.ok && r.registry.models.includes(r.registry.defaultModel))
 check('...updatedAt is the day the facts were checked', r.ok && r.registry.updatedAt === '2026-10-01')
 const by = Object.fromEntries((r.ok ? r.registry.models : []).map((m) => [m.id, m]))
 check('effort per model: Fable high, Opus medium, Sonnet medium, Haiku none (it rejects the setting)', by['claude-fable-5-1']?.effort === 'high' && by['claude-opus-5-5']?.effort === 'medium' && by['claude-sonnet-5-5']?.effort === 'medium' && by['claude-haiku-4-5-20251001']?.effort === null)
 check('context: 1M for three models, 200K for Haiku; max output 128K and 64K', [by['claude-fable-5-1'], by['claude-opus-5-5'], by['claude-sonnet-5-5']].every((m) => m?.contextWindow === 1_000_000 && m.maxOutputTokens === 128_000) && by['claude-haiku-4-5-20251001']?.contextWindow === 200_000 && by['claude-haiku-4-5-20251001']?.maxOutputTokens === 64_000)
-check('prices (USD per million tokens, in/out): 10/50, 4/20, 2/10, 1/5', JSON.stringify(Object.values(by).map((m) => [m.pricing.inputPerMTok, m.pricing.outputPerMTok])) === JSON.stringify([[10, 50], [4, 20], [2, 10], [1, 5]]))
-check('every entry is for the one provider this app can call', Object.values(by).every((m) => m.provider === 'anthropic'))
+check('prices (USD per million tokens, in/out): 10/50, 4/20, 2/10, 1/5 (Anthropic), 10/50, 2/10, 0.1/0.5 (OpenAI)', JSON.stringify(Object.values(by).map((m) => [m.pricing.inputPerMTok, m.pricing.outputPerMTok])) === JSON.stringify([[10, 50], [4, 20], [2, 10], [1, 5], [10, 50], [2, 10], [0.1, 0.5]]))
+check('every entry is for a provider this app can call, and the first four are Anthropic\'s and the last three OpenAI\'s', Object.values(by).every((m, i) => m.provider === (i < 4 ? 'anthropic' : 'openai')))
 check('the file on disk and the schema constant agree on the version', fileJson.schemaVersion === REGISTRY_SCHEMA_VERSION && REGISTRY_SCHEMA_VERSION === '0.3')
 check('every supported provider has a display name', SUPPORTED_PROVIDERS.every((p) => typeof PROVIDER_NAMES[p] === 'string' && PROVIDER_NAMES[p] !== ''))
 
@@ -111,7 +111,7 @@ skipped('a misspelt field (effrot)', { effrot: 'medium' }, /unknown field "effro
   const z = parseRegistry(root)
   check('top level: a renamed defaultModelId is reported as both missing and unknown', !z.ok && /field "defaultModelId" missing; unknown field "defaultModel"/.test(z.error), errOf(z))
 }
-skipped('provider "openai" (no code for it yet)', { provider: 'openai' }, /provider "openai" is not one this version of the app can call/)
+skipped('provider "gemini" (no code for it yet)', { provider: 'gemini' }, /provider "gemini" is not one this version of the app can call/)
 skipped('provider is not text', { provider: 5 }, /provider "5" is not one/)
 for (const [name, v] of [['upper case', 'Claude-Opus'], ['a space', 'claude opus'], ['a slash', 'a/b'], ['65 characters', 'a'.repeat(65)], ['empty', ''], ['a number', 5], ['a leading hyphen', '-opus'], ['non-ASCII', 'cläude'], ['a line break', 'a\nb']]) {
   skipped(`id is ${name}`, { id: v }, /id must be lower-case letters/)
@@ -154,7 +154,7 @@ check('problems name the entry by position and id', (() => { const x = parseRegi
 // ============ 4. hostile shapes ============
 const hostile = JSON.parse(raw.replace('"provider": "anthropic",', '"provider": "anthropic", "__proto__": {"polluted": true},'))
 const polluted = parseRegistry(hostile)
-check('a "__proto__" key in an entry is just an unknown field', polluted.ok && polluted.problems.some((p) => /unknown field "__proto__"/.test(p)) && polluted.registry.models.length === 3, polluted.ok ? probs(polluted) : errOf(polluted))
+check('a "__proto__" key in an entry is just an unknown field', polluted.ok && polluted.problems.some((p) => /unknown field "__proto__"/.test(p)) && polluted.registry.models.length === 6, polluted.ok ? probs(polluted) : errOf(polluted))
 check('...and nothing was polluted', ({}).polluted === undefined && Object.prototype.polluted === undefined)
 const rootHostile = parseRegistry(JSON.parse('{"__proto__": {"x": 1}, "schemaVersion": "0.3"}'))
 check('a "__proto__" key at the top level is refused', !rootHostile.ok)

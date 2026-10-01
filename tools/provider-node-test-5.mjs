@@ -170,7 +170,7 @@ for (const [name, messages] of [
 async function sendOne(_name, messages) { return sentBody(messages) }
 
 // ---- 2. every model in the registry: accepted by the strict mock, with exactly its own settings -----------
-for (const model of parsedRegistry.registry.models) {
+for (const model of parsedRegistry.registry.models.filter((m) => m.provider === 'anthropic')) { // OpenAI's models are checked by provider-openai-test-5.mjs
   const { res, request } = await sentBody([{ role: 'user', content: 'hello ' + model.id }], model)
   const body = request?.body ?? {}
   check(`${model.id}: the (model-aware, strict) mock finds nothing wrong, and the reply streams`, res.end?.kind === 'done' && res.text === 'Echo: hello ' + model.id && request.problems.length === 0, `${res.error ?? ''} ${request?.problems?.join(' | ')}`)

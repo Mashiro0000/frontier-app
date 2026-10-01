@@ -591,3 +591,53 @@ chat (D-015), and now the provider can too, so each reply now says which one wro
 
 Status: accepted (Stage 5.4). Revisit: storing the usage with each reply; a bulk upgrade of old files, if ever wanted (it
 would have to be written with D-016's care); searching or filtering history by model.
+
+## D-022 - OpenAI is the second provider: the Responses API through OpenAI's own SDK, nothing kept on their side
+
+Stage 5.5. The provider layer (D-018) and the per-provider keys (D-020) were built so that a second provider is one new adapter,
+one entry in each table, and rows in the registry. OpenAI was chosen as the second provider (Gemini would be the third).
+
+- **What was added.** `src/main/providers/openai.ts` (the adapter), `openai` in `SUPPORTED_PROVIDERS` (the type of the adapter table, of
+  the provider names and of the key help is what makes the list and the code agree: a provider added to the list without them does not
+  compile), the three models of OpenAI's current GPT-6 family in `registry/models.json` (gpt-6-astra, gpt-6.1-sol, gpt-6-luna: 1,050,000
+  tokens of context and 128,000 of output each, prices of USD 10/50, 2/10 and 0.10/0.50 per million tokens in/out; effort levels low to max,
+  and Luna also none; read from OpenAI's model pages on 2026-10-01), and one new kind of failure, `quota`. The default model is still
+  Claude Opus 5.5, so nothing changes for a person who adds no OpenAI key.
+- **The Responses API, not Chat Completions.** OpenAI recommends it for new work and the model pages list both. It takes the
+  conversation as `input`, the system prompt as `instructions`, and `reasoning.effort`. The SDK (`openai`, Apache-2.0, no runtime
+  dependencies, `npm audit` clean) does the streaming, the retries and the error classes, as the Anthropic SDK does (D-012). Reasoning is
+  on for every model in the family and is billed as output, so the reply ceiling (16,000 tokens, D-012) covers it too.
+- **`store: false` on every request.** Responses are kept on OpenAI's side by default. This app sends the whole conversation each time and
+  uses none of that, so it asks for nothing to be kept. A mock that refuses a request without it checks this.
+- **The key goes where this file says, and nowhere else.** The SDK fills anything it is not given from the environment
+  (`OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_ORG_ID`, `OPENAI_PROJECT_ID`, `OPENAI_CUSTOM_HEADERS`, ...). The adapter gives every option
+  explicitly, so none is read from there, and removes `OPENAI_CUSTOM_HEADERS` (the one thing with no option to override it) for the
+  moment the client is built. Pinning `adminAPIKey` and `webhookSecret` has no effect on the two calls this app makes; it is kept as a
+  precaution and is not something a test can see.
+- **Usage.** OpenAI's `input_tokens` already contains the cached and cache-written tokens (they are subsets of it), so the adapter
+  subtracts them to give the four separate counts of D-018. Reasoning tokens are inside `output_tokens` and need no handling.
+- **Failures in the app's words.** The same sentences as for Anthropic (D-018), naming OpenAI. OpenAI answers 429 both for "too many
+  requests" and for "no credit left" (told apart by the error's own code), so there is a new kind, `quota`, with its own sentence: your
+  account has no credit left or has reached its spending limit; check your billing. A reply that ends `incomplete` for `max_output_tokens`
+  is "cut off"; for `content_filter`, and a refusal written as the reply's text, it is "declined".
+- **What the assistant is called.** The system prompt does not name a product for OpenAI ("You are an AI assistant, ..."): a model told
+  it is someone else answers oddly, and the app does not know what OpenAI's models call themselves.
+- **One conversation, either provider.** The conversation is plain text turns (D-018), so a chat started with Claude can be continued with
+  a GPT model and back, and each reply records which one wrote it (D-021). Each request carries only its own provider's key.
+- **What was checked, and what was not.** Against local mocks only, as every stage so far. The OpenAI mock is _my reading of OpenAI's
+  documentation and of the SDK's own types_: it refuses a request shape the documentation says is refused (a missing \`store: false\`, an
+  effort the model does not take, an unknown field, an \`x-api-key\` header), and misbehaves on demand. Under plain Node
+  (\`provider-openai-test-5.mjs\`, 107 checks): the request each model gets, the stream, usage with cached tokens, refusals, incomplete and
+  failed replies, a connection dropped half way, every error class and status, the key scrubbed from an error, a hostile environment
+  (\`OPENAI_BASE_URL\`, \`OPENAI_CUSTOM_HEADERS\`, ...), and a runaway listing; 13 sabotages of the adapter were each caught. In the real
+  window (\`verify-5-5.mjs\`, 53 checks, against both mocks at once): a key saved for each provider through Settings, Test key for OpenAI,
+  each of the three models answering, a conversation that moves from GPT models to Claude and carries all of it, the errors in the app's
+  words, a missing key named for the right provider, the two keys never crossing, and the usage in the log; 8 sabotages of the app were
+  each caught. **Not checked: a real call to OpenAI.** No key was ever saved, and a real key cannot be typed for you. Where the mock and
+  the real API could disagree: the exact spelling of the model ids and of the stream's events, what a real 429 for a spent budget carries,
+  and whether a real key is allowed to list models (a restricted key may not be, which Test key would report as a 403). The first real call
+  is yours: Settings (Save key, Test key, send a message), or \`node tools/real-call.mjs\`.
+
+Status: accepted (Stage 5.5). Revisit: the first real call (the model ids, the default effort of gpt-6-astra, which the documentation does
+not state, and which is set to "medium" like the other two); Chat Completions as a fallback if the Responses API misbehaves; image input and
+tools (the registry already records which models take them); showing a model's retirement date (D-014); Gemini as the third provider.

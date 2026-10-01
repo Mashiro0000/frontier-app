@@ -1,0 +1,14 @@
+{
+  "label": "listing-not-capped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "if (models.length >= MAX_LISTED_MODELS) break",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/provider-openai-test-5.mjs"
+  ],
+  "env": {}
+}

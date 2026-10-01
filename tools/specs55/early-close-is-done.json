@@ -1,0 +1,14 @@
+{
+  "label": "early-close-is-done",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "if (response.status !== 'completed' && response.status !== 'incomplete')",
+      "to": "if (false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/provider-openai-test-5.mjs"
+  ],
+  "env": {}
+}

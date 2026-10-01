@@ -1,0 +1,14 @@
+{
+  "label": "reply-ceiling-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "Math.min(MAX_REPLY_TOKENS, model.maxOutputTokens)",
+      "to": "model.maxOutputTokens"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/provider-openai-test-5.mjs"
+  ],
+  "env": {}
+}

@@ -216,7 +216,9 @@ export function createOpenAIMock({ json, readBody, requests, expectedKey, models
     if (wanted !== null && key !== wanted) return send(res, err(401, `Incorrect API key provided: ${key.slice(0, 4)}***${key.slice(-4)}.`, 'invalid_api_key'))
     const fail = modelsControl().fail
     if (fail) return send(res, err(fail, 'listing failed on purpose', fail === 429 ? 'rate_limit_exceeded' : 'server_error', 'server_error', null, { 'x-should-retry': 'false' }))
-    return json(res, 200, { object: 'list', data: LISTED.map((id, i) => ({ id, object: 'model', created: 1790000000 + i, owned_by: 'system' })) }, { 'x-request-id': 'req_mock_oai_list' })
+    const many = modelsControl().many // a runaway listing: this many made-up models (the adapter must cut it short)
+    const ids = many ? Array.from({ length: many }, (_, i) => `made-up-model-${i}`) : LISTED
+    return json(res, 200, { object: 'list', data: ids.map((id, i) => ({ id, object: 'model', created: 1790000000 + i, owned_by: 'system' })) }, { 'x-request-id': 'req_mock_oai_list' })
   }
 
   return { handleResponses, listModels }

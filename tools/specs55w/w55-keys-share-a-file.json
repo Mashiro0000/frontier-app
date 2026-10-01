@@ -1,0 +1,14 @@
+{
+  "label": "w55-keys-share-a-file",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/credentialStore.ts",
+      "from": "const fileOf = (provider: ProviderId): string => join(dir, credentialFileName(provider))",
+      "to": "const fileOf = (provider: ProviderId): string => join(dir, credentialFileName('anthropic' as ProviderId))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run55.mjs"
+  ],
+  "env": {}
+}

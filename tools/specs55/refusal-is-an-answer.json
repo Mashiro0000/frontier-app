@@ -1,0 +1,14 @@
+{
+  "label": "refusal-is-an-answer",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "      refused = true",
+      "to": "      refused = false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/provider-openai-test-5.mjs"
+  ],
+  "env": {}
+}

@@ -1,11 +1,11 @@
 // Slice 5.5: the OpenAI adapter (src/main/providers/openai.ts) against the OpenAI mock, under plain Node: no window, no Electron.
 // The mock is my reading of OpenAI's documentation, so this proves the adapter does what that reading says; the real API is a
 // separate check (the real-call script, run by the person who has a key).
-import { REPO_URL } from '../paths.mjs'
-import '../ts-resolve.mjs'
-import { checker } from '../cdp.mjs'
+import { REPO_URL } from './paths.mjs'
+import './ts-resolve.mjs'
+import { checker } from './cdp.mjs'
 import { readFileSync } from 'node:fs'
-import { startMock } from '../mock-providers.mjs'
+import { startMock } from './mock-providers.mjs'
 import { randomBytes } from 'node:crypto'
 
 const check = checker()
@@ -17,7 +17,7 @@ const { describeFailure } = await import(base + 'errors.ts')
 const { parseRegistry, SUPPORTED_PROVIDERS, PROVIDER_NAMES } = await import(`${REPO_URL}/src/shared/registry.ts`)
 const OpenAI = (await import(`${REPO_URL}/node_modules/openai/index.mjs`)).default
 
-const registry = parseRegistry(JSON.parse(readFileSync(new URL('../registry-good.json', import.meta.url), 'utf8')))
+const registry = parseRegistry(JSON.parse(readFileSync(new URL('./registry-good.json', import.meta.url), 'utf8')))
 if (!registry.ok) throw new Error('registry unusable: ' + registry.error)
 const models = Object.fromEntries(registry.registry.models.map((m) => [m.id, m]))
 const openaiModels = registry.registry.models.filter((m) => m.provider === 'openai')
@@ -214,6 +214,11 @@ for (const m of openaiModels) {
   check('...a GET /v1/models with the key as a Bearer token and no x-api-key', rec?.listing === true && rec.headers['authorization'] === `Bearer ${KEY}` && rec.headers['x-api-key'] === undefined)
   check('...every OpenAI registry model is in this (mock) listing', openaiModels.every((m) => listed.some((x) => x.id === m.id)))
   check('...and it cost nothing: one GET, no responses request', (await get()).length === 1)
+  await reset()
+  await post('/__models', { many: 2500 })
+  const runaway = await openaiAdapter.listModels(creds)
+  check('a listing of 2500 models is cut at 1000 (nobody has that many, and a runaway listing must not run on)', runaway.length === 1000 && runaway[0].id === 'made-up-model-0' && runaway.at(-1).id === 'made-up-model-999', String(runaway.length))
+  await reset()
   await post('/__expect-key', { provider: 'openai', key: 'another-key-that-is-long-enough-1234' })
   let e401 = null
   try { await openaiAdapter.listModels(creds) } catch (e) { e401 = e }

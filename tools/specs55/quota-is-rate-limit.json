@@ -1,0 +1,14 @@
+{
+  "label": "quota-is-rate-limit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "QUOTA_CODES.has(String(api?.code)) || api?.type === 'insufficient_quota'",
+      "to": "false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/provider-openai-test-5.mjs"
+  ],
+  "env": {}
+}

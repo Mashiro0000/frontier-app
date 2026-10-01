@@ -51,9 +51,9 @@ check('window.api.settings is exactly getStatus / setApiKey / clearApiKey / test
 const status0 = await H.status()
 check('getStatus: exactly providers, canStoreKey, models, selectedModelId, modelsError, modelsCheckedOn', Object.keys(status0).join() === 'providers,canStoreKey,models,selectedModelId,modelsError,modelsCheckedOn', Object.keys(status0).join())
 check('getStatus: default selected, no registry error, checked on 2026-10-01', status0.selectedModelId === OPUS && status0.modelsError === null && status0.modelsCheckedOn === '2026-10-01')
-check('getStatus: each model has exactly id, label, provider, description, contextWindow, pricing', status0.models.length === 4 && status0.models.every((m) => Object.keys(m).join() === 'id,label,provider,description,contextWindow,pricing'))
+check('getStatus: each model has exactly id, label, provider, description, contextWindow, pricing', status0.models.length === models.length && status0.models.every((m) => Object.keys(m).join() === 'id,label,provider,description,contextWindow,pricing'))
 check('the page is told nothing about how a model is called: no "effort", no output limit anywhere in the status', !/effort|maxOutputTokens/i.test(JSON.stringify(status0)))
-check('the status carries the registry\'s facts (provider "anthropic", named "Anthropic" in providers, prices, context)', status0.providers[0].name === 'Anthropic' && status0.models.every((m, i) => m.provider === 'anthropic' && m.contextWindow === models[i].contextWindow && m.pricing.inputPerMTok === models[i].pricing.inputPerMTok && m.pricing.outputPerMTok === models[i].pricing.outputPerMTok))
+check('the status carries the registry\'s facts (each model\'s provider, the providers named "Anthropic" and "OpenAI", prices, context)', status0.providers.map((p) => p.name).join() === 'Anthropic,OpenAI' && status0.models.every((m, i) => m.provider === models[i].provider && m.contextWindow === models[i].contextWindow && m.pricing.inputPerMTok === models[i].pricing.inputPerMTok && m.pricing.outputPerMTok === models[i].pricing.outputPerMTok))
 
 // the Settings dialog describes the selected model
 let text = await H.settingsText()
@@ -125,6 +125,11 @@ for (let round = 0; round < ROUNDS; round++) {
 }
 check(`rapid changes: ${ROUNDS} bursts of 6 changes each: the menu, main and the saved file all end on the last choice, with no error`, rapidOk === ROUNDS, JSON.stringify(rapidFail))
 
+// The seeded random bursts end wherever they end (it used to be Opus by chance; with more models it is not): section C needs Opus selected,
+// and an Anthropic model, because the key saved below is Anthropic's.
+await H.chooseInPage(OPUS)
+await H.settle(OPUS)
+
 // ===================== C. saving a key, then real chats through the mock =====================
 const key = 'test-' + randomBytes(24).toString('hex')
 const resetMock = async () => { await fetch(`${mockUrl}/__reset`, { method: 'POST' }); await fetch(`${mockUrl}/__expect-key`, { method: 'POST', body: JSON.stringify({ key }) }) }
@@ -139,11 +144,12 @@ await page.press('Escape')
 await sleep(300)
 badges = await H.badges()
 check('with a key: no badge at all, just the model menu and the Settings button', badges.length === 0 && (await H.menu()) !== null, JSON.stringify(badges))
-check('saving the key did not disturb the saved model choice', H.prefs() === `{"version":1,"modelId":"${OPUS}"}`)
+check('saving the key did not disturb the saved model choice', H.prefs() === `{"version":1,"modelId":"${OPUS}"}`, H.prefs())
 await page.screenshot(`${shots}/3-4-header-key.png`)
 
-// every model: chosen in the menu, then one chat message; the mock sees exactly that model's request
-for (const id of ids) {
+// every Anthropic model (the key saved here is Anthropic's; verify-5-5 does the OpenAI ones): chosen in the menu, then one chat message;
+// the mock sees exactly that model's request
+for (const id of ids.filter((x) => models.find((m) => m.id === x).provider === 'anthropic')) {
   const m = models.find((x) => x.id === id)
   await resetMock()
   await H.chooseInPage(id)

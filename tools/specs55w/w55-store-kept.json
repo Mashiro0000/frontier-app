@@ -1,0 +1,14 @@
+{
+  "label": "w55-store-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "      store: false",
+      "to": "      store: true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run55.mjs"
+  ],
+  "env": {}
+}

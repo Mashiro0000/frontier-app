@@ -1,7 +1,7 @@
 {
   "schemaVersion": "0.3",
   "updatedAt": "2026-10-01",
-  "source": "Anthropic's Claude API documentation (the models overview, the Models API's capability fields, and the effort and prompt-caching pages), read on 2026-10-01. Prices are list prices in US dollars per million tokens.",
+  "source": "Anthropic's Claude API documentation (the models overview, the Models API's capability fields, and the effort and prompt-caching pages), read on 2026-10-01. OpenAI's model pages and pricing page (the GPT-6 family), read on 2026-10-01. Prices are list prices in US dollars per million tokens.",
   "defaultModelId": "claude-opus-5-5",
   "models": [
     {
@@ -11,7 +11,10 @@
       "description": "The most capable, and the slowest and priciest. For demanding reasoning and long, multi-step work.",
       "contextWindow": 1000000,
       "maxOutputTokens": 128000,
-      "pricing": { "inputPerMTok": 10, "outputPerMTok": 50 },
+      "pricing": {
+        "inputPerMTok": 10,
+        "outputPerMTok": 50
+      },
       "capabilities": {
         "imageInput": true,
         "toolUse": true,
@@ -28,7 +31,10 @@
       "description": "A strong all-rounder for coding and knowledge work.",
       "contextWindow": 1000000,
       "maxOutputTokens": 128000,
-      "pricing": { "inputPerMTok": 4, "outputPerMTok": 20 },
+      "pricing": {
+        "inputPerMTok": 4,
+        "outputPerMTok": 20
+      },
       "capabilities": {
         "imageInput": true,
         "toolUse": true,
@@ -45,7 +51,10 @@
       "description": "Fast, with a good balance of speed and capability for everyday use.",
       "contextWindow": 1000000,
       "maxOutputTokens": 128000,
-      "pricing": { "inputPerMTok": 2, "outputPerMTok": 10 },
+      "pricing": {
+        "inputPerMTok": 2,
+        "outputPerMTok": 10
+      },
       "capabilities": {
         "imageInput": true,
         "toolUse": true,
@@ -62,7 +71,10 @@
       "description": "The fastest and cheapest. This app uses it without extended thinking.",
       "contextWindow": 200000,
       "maxOutputTokens": 64000,
-      "pricing": { "inputPerMTok": 1, "outputPerMTok": 5 },
+      "pricing": {
+        "inputPerMTok": 1,
+        "outputPerMTok": 5
+      },
       "capabilities": {
         "imageInput": true,
         "toolUse": true,
@@ -71,6 +83,66 @@
         "effortLevels": []
       },
       "effort": null
+    },
+    {
+      "provider": "openai",
+      "id": "gpt-6-astra",
+      "label": "GPT-6 Astra",
+      "description": "OpenAI's most capable model, and the priciest. For demanding reasoning and long, multi-step work.",
+      "contextWindow": 1050000,
+      "maxOutputTokens": 128000,
+      "pricing": {
+        "inputPerMTok": 10,
+        "outputPerMTok": 50
+      },
+      "capabilities": {
+        "imageInput": true,
+        "toolUse": true,
+        "reasoning": true,
+        "promptCaching": true,
+        "effortLevels": ["low", "medium", "high", "xhigh", "max"]
+      },
+      "effort": "medium"
+    },
+    {
+      "provider": "openai",
+      "id": "gpt-6.1-sol",
+      "label": "GPT-6.1 Sol",
+      "description": "OpenAI's balanced model: a good all-rounder for everyday and professional work.",
+      "contextWindow": 1050000,
+      "maxOutputTokens": 128000,
+      "pricing": {
+        "inputPerMTok": 2,
+        "outputPerMTok": 10
+      },
+      "capabilities": {
+        "imageInput": true,
+        "toolUse": true,
+        "reasoning": true,
+        "promptCaching": true,
+        "effortLevels": ["low", "medium", "high", "xhigh", "max"]
+      },
+      "effort": "medium"
+    },
+    {
+      "provider": "openai",
+      "id": "gpt-6-luna",
+      "label": "GPT-6 Luna",
+      "description": "OpenAI's fastest and cheapest model, for quick answers and high volume.",
+      "contextWindow": 1050000,
+      "maxOutputTokens": 128000,
+      "pricing": {
+        "inputPerMTok": 0.1,
+        "outputPerMTok": 0.5
+      },
+      "capabilities": {
+        "imageInput": true,
+        "toolUse": true,
+        "reasoning": true,
+        "promptCaching": true,
+        "effortLevels": ["none", "low", "medium", "high", "xhigh", "max"]
+      },
+      "effort": "medium"
     }
   ]
 }

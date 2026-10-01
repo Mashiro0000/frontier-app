@@ -1,0 +1,14 @@
+{
+  "label": "w55-test-key-asks-anthropic",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "const adapter = adapterFor(provider)",
+      "to": "const adapter = adapterFor('anthropic')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run55.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "effort-never-sent",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "...(model.effort ? { reasoning: { effort: model.effort } } : {}),",
+      "to": "...{},"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/provider-openai-test-5.mjs"
+  ],
+  "env": {}
+}

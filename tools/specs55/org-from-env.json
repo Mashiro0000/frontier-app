@@ -1,0 +1,14 @@
+{
+  "label": "org-from-env",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "        organization: null,\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/provider-openai-test-5.mjs"
+  ],
+  "env": {}
+}

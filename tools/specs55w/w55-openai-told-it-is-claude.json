@@ -1,0 +1,14 @@
+{
+  "label": "w55-openai-told-it-is-claude",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "openai: 'an AI assistant'",
+      "to": "openai: 'Claude'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run55.mjs"
+  ],
+  "env": {}
+}

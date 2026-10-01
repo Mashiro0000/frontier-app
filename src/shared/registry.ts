@@ -14,11 +14,14 @@ import type { ModelOption } from './ipc'
 export const REGISTRY_SCHEMA_VERSION = '0.3'
 
 /** The providers this version of the app can call. An entry for any other provider is left out. */
-export const SUPPORTED_PROVIDERS = ['anthropic'] as const
+export const SUPPORTED_PROVIDERS = ['anthropic', 'openai'] as const
 export type ProviderId = (typeof SUPPORTED_PROVIDERS)[number]
 
 /** How each provider is named to the person. */
-export const PROVIDER_NAMES: Record<ProviderId, string> = { anthropic: 'Anthropic' }
+export const PROVIDER_NAMES: Record<ProviderId, string> = {
+  anthropic: 'Anthropic',
+  openai: 'OpenAI'
+}
 
 /**
  * Every effort level the registry may name. Which of them a model accepts differs from model to model, and from
@@ -30,7 +33,8 @@ export type Effort = (typeof EFFORT_LEVELS)[number]
 
 /** The effort words each provider's API knows. */
 export const PROVIDER_EFFORTS: Record<ProviderId, readonly Effort[]> = {
-  anthropic: ['low', 'medium', 'high', 'xhigh', 'max']
+  anthropic: ['low', 'medium', 'high', 'xhigh', 'max'],
+  openai: ['none', 'low', 'medium', 'high', 'xhigh', 'max']
 }
 
 /**

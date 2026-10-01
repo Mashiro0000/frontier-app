@@ -1,0 +1,14 @@
+{
+  "label": "content-filter-is-cut-off",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "response.incomplete_details?.reason === 'content_filter'",
+      "to": "false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/provider-openai-test-5.mjs"
+  ],
+  "env": {}
+}

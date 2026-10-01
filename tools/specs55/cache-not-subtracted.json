@@ -1,0 +1,14 @@
+{
+  "label": "cache-not-subtracted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "inputTokens: input - cacheRead - cacheWrite,",
+      "to": "inputTokens: input,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/provider-openai-test-5.mjs"
+  ],
+  "env": {}
+}

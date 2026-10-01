@@ -48,7 +48,7 @@ for (const provider of SUPPORTED_PROVIDERS) {
   check(`...and has all four methods of the interface`, ['listModels', 'stream', 'usage', 'normalizeError'].every((m) => typeof adapter?.[m] === 'function'))
   check(`...and the provider has a display name`, typeof PROVIDER_NAMES[provider] === 'string' && PROVIDER_NAMES[provider] !== '')
 }
-check('Anthropic is the one provider for now', SUPPORTED_PROVIDERS.length === 1 && SUPPORTED_PROVIDERS[0] === 'anthropic')
+check('Anthropic is the first provider and OpenAI the second (D-022)', JSON.stringify(SUPPORTED_PROVIDERS) === '["anthropic","openai"]')
 check('API_BASE_URL is the real address', API_BASE_URL === 'https://api.anthropic.com')
 
 // ---- request building (the app's own rules, applied once) ---------------------------------------------
@@ -155,7 +155,7 @@ check('API_BASE_URL is the real address', API_BASE_URL === 'https://api.anthropi
   check('listModels returns every model the provider lists, with its display name', listed.length === 6 && listed[0].id === 'claude-fable-5-1' && listed[0].label === 'Claude Fable 5.1', JSON.stringify(listed.slice(0, 2)))
   check('...asks GET /v1/models with the key in x-api-key and no Authorization header', record?.listing === true && record.headers['x-api-key'] === KEY && record.headers['authorization'] === undefined, JSON.stringify(record?.headers))
   check('...a listing costs nothing: it is one GET, no messages request', (await get()).length === 1 && (await get())[0].url.startsWith('/v1/models'))
-  check('...every registry model is in this (mock) listing', Object.keys(models).every((id) => listed.some((m) => m.id === id)))
+  check('...every Anthropic model of the registry is in this (mock) listing', Object.values(models).filter((m) => m.provider === 'anthropic').every((m) => listed.some((l) => l.id === m.id)))
   await reset()
   await post('/__models', { pageSize: 2 })
   const paged = await anthropicAdapter.listModels(creds)
