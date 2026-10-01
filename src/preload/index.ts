@@ -27,6 +27,12 @@ const api: FrontierApi = {
         ipcRenderer.removeListener(CHANNELS.chatEvent, handler)
       }
     }
+  },
+  history: {
+    list: () => ipcRenderer.invoke(CHANNELS.historyList),
+    load: (id) => ipcRenderer.invoke(CHANNELS.historyLoad, id),
+    save: (conversation) => ipcRenderer.invoke(CHANNELS.historySave, conversation),
+    remove: (id) => ipcRenderer.invoke(CHANNELS.historyRemove, id)
   }
 }
 

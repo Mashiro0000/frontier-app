@@ -59,6 +59,70 @@ export type ChatStreamEvent =
   | { streamId: string; type: 'done' }
   | { streamId: string; type: 'error'; message: string }
 
+/** How a saved message ended. A reply that was still arriving when it was saved counts as stopped. */
+export type SavedStatus = 'done' | 'stopped' | 'error'
+
+/** A message as it is saved on disk and handed back to the page. */
+export interface SavedMessage {
+  role: WireRole
+  content: string
+  status: SavedStatus
+  /** Why the reply failed. Only present when the status is 'error'. */
+  error?: string
+}
+
+/** A message as the page hands it over to be saved. Main turns 'streaming' into 'stopped'. */
+export interface MessageToSave {
+  role: WireRole
+  content: string
+  status: SavedStatus | 'streaming'
+  error?: string
+}
+
+/**
+ * The whole conversation on screen, to be saved (a snapshot, not a change). The title and the dates are not
+ * the page's to choose: main works them out, so the page cannot forge them.
+ */
+export interface ConversationToSave {
+  /** Chosen by the page, and checked by main: a UUID in lower case, because it becomes a file name. */
+  id: string
+  messages: MessageToSave[]
+}
+
+/** A saved conversation, as main hands it back to be put on screen. */
+export interface SavedConversation {
+  id: string
+  /** The first thing the person wrote, on one line and cut short. */
+  title: string
+  /** Milliseconds since 1970. */
+  createdAt: number
+  updatedAt: number
+  messages: SavedMessage[]
+}
+
+/** One line in the list of saved conversations. */
+export interface ConversationSummary {
+  id: string
+  title: string
+  updatedAt: number
+  messageCount: number
+}
+
+export interface HistoryList {
+  /** Newest first. */
+  conversations: ConversationSummary[]
+  /** Files in the folder that look like conversations but could not be read. They are left alone. */
+  unreadable: number
+  /** Where the files are kept, for the person to see. */
+  folder: string
+}
+
+export type HistoryLoadResult =
+  { ok: true; conversation: SavedConversation } | { ok: false; error: string }
+export type HistorySaveResult =
+  { ok: true; summary: ConversationSummary } | { ok: false; error: string }
+export type HistoryRemoveResult = { ok: true } | { ok: false; error: string }
+
 /** Everything the preload hands to the page as `window.api`. Nothing else is reachable. */
 export interface FrontierApi {
   settings: {
@@ -77,6 +141,16 @@ export interface FrontierApi {
     /** Listens for reply events. Returns a function that stops listening. */
     onEvent(listener: (event: ChatStreamEvent) => void): () => void
   }
+  history: {
+    /** The saved conversations, newest first. */
+    list(): Promise<HistoryList>
+    /** One saved conversation, to put on screen. Main only answers for an id that is a saved conversation. */
+    load(id: string): Promise<HistoryLoadResult>
+    /** Saves the whole conversation. Main checks it and writes it; the page cannot choose the title or dates. */
+    save(conversation: ConversationToSave): Promise<HistorySaveResult>
+    /** Deletes a saved conversation's file. */
+    remove(id: string): Promise<HistoryRemoveResult>
+  }
 }
 
 export const CHANNELS = {
@@ -86,7 +160,11 @@ export const CHANNELS = {
   settingsSetModel: 'settings:set-model',
   chatStart: 'chat:start',
   chatCancel: 'chat:cancel',
-  chatEvent: 'chat:event'
+  chatEvent: 'chat:event',
+  historyList: 'history:list',
+  historyLoad: 'history:load',
+  historySave: 'history:save',
+  historyRemove: 'history:remove'
 } as const
 
 /**
@@ -97,4 +175,21 @@ export const CHAT_LIMITS = {
   maxMessages: 500,
   maxMessageChars: 200_000,
   maxTotalChars: 600_000
+} as const
+
+/**
+ * Upper bounds on what is saved (D-016). They are well above CHAT_LIMITS on purpose: a reply can push a
+ * conversation past what chat will send, and the person must still be able to save what they were shown.
+ * Messages with no text (a failed reply) do not count towards the chat limit but are saved, which is the
+ * other reason. Whatever is written must also be readable again, hence the limit on a file.
+ */
+export const HISTORY_LIMITS = {
+  maxConversations: 1000,
+  maxMessages: 2000,
+  maxMessageChars: 400_000,
+  maxTotalChars: 1_500_000,
+  maxErrorChars: 2_000,
+  maxTitleChars: 200,
+  /** The worst case of maxTotalChars (every character escaped to 6 bytes in JSON) is about 9 MB. */
+  maxFileBytes: 10 * 1024 * 1024
 } as const

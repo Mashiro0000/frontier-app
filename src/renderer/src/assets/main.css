@@ -86,11 +86,34 @@ body {
   cursor: pointer;
 }
 
-.header-button:hover {
+.header-button:hover:not(:disabled) {
   background: var(--ev-c-gray-3);
 }
 
 .header-button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Off while a reply arrives, or while there is nothing to start over from. */
+.header-button:disabled {
+  color: var(--ev-c-text-3);
+  cursor: default;
+}
+
+/* The "Not saved" badge is a button: pressing it tries the save again. */
+.app-badge-button {
+  font: inherit;
+  font-size: 12px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.app-badge-button:hover {
+  background: var(--ev-c-gray-3);
+}
+
+.app-badge-button:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
@@ -389,7 +412,8 @@ body {
 
 /* ---------- settings dialog ---------- */
 
-.settings {
+.settings,
+.history {
   /* The global reset removes the dialog's automatic centring margin, so put it back. */
   margin: auto;
   width: min(480px, calc(100vw - 32px));
@@ -402,17 +426,20 @@ body {
   border-radius: 14px;
 }
 
-.settings::backdrop {
+.settings::backdrop,
+.history::backdrop {
   background: rgba(0, 0, 0, 0.6);
 }
 
-.settings-title {
+.settings-title,
+.history-heading {
   margin-bottom: 14px;
   font-size: 18px;
   font-weight: 600;
 }
 
-.settings-section {
+.settings-section,
+.history-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -430,7 +457,9 @@ body {
 }
 
 .settings-hint,
-.settings-status {
+.settings-status,
+.history-hint,
+.history-status {
   font-size: 13px;
   color: var(--color-text-muted);
 }
@@ -455,22 +484,175 @@ body {
   outline-offset: 1px;
 }
 
-.settings-actions {
+.settings-actions,
+.history-actions {
   display: flex;
   gap: 8px;
   margin-top: 4px;
 }
 
-.settings-notice {
+.settings-notice,
+.history-notice {
   font-size: 13px;
 }
 
-.settings-notice-error {
+.settings-notice-error,
+.history-notice-error {
   color: var(--color-danger);
 }
 
-.settings-footer {
+.settings-footer,
+.history-footer {
   display: flex;
   justify-content: flex-end;
   margin-top: 18px;
+}
+
+/* ---------- history dialog ---------- */
+
+/* Wider than Settings: a title, its date and its message count sit side by side with the Delete button. */
+.history {
+  width: min(560px, calc(100vw - 32px));
+}
+
+/*
+ * With many saved chats the LIST scrolls and the heading and the Close button stay in view. (A dialog that
+ * scrolls as a whole puts Close below the fold once there are a dozen chats.) Only while open: display on the
+ * dialog itself would show it when closed. If even a short list does not fit (a very small window), the dialog
+ * itself scrolls, as Settings does.
+ */
+.history[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  gap: 2px;
+  min-height: 96px; /* at least two rows stay visible */
+  padding: 0;
+  overflow-y: auto;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The whole left part of a row opens the chat. */
+.history-open {
+  flex: 1;
+  min-width: 0; /* lets the title shrink and show an ellipsis instead of widening the dialog */
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 10px;
+  font: inherit;
+  text-align: left;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.history-open:hover:not(:disabled) {
+  background: var(--ev-c-gray-3);
+}
+
+.history-open[aria-current='true'] {
+  border-color: var(--color-input-border);
+}
+
+.history-open:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.history-open:disabled {
+  cursor: default;
+}
+
+.history-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-meta {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.history-button {
+  flex: none;
+  padding: 2px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-input-border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.history-button:hover:not(:disabled) {
+  background: var(--ev-c-gray-3);
+}
+
+.history-button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.history-button:disabled {
+  color: var(--ev-c-text-3);
+  cursor: default;
+}
+
+.history-button-danger {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+/* "Delete? [Delete] [Keep]" takes the place of the row's Delete button. */
+.history-ask {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.history-ask-text {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.history-where {
+  margin-top: 12px;
+}
+
+.history-folder {
+  overflow-wrap: anywhere; /* a long folder path wraps instead of widening the dialog */
+  color: var(--color-text);
+}
+
+/* In a narrow window the row's buttons drop under the title instead of squeezing it. */
+@media (max-width: 460px) {
+  .history-row {
+    flex-wrap: wrap;
+    padding-bottom: 6px;
+  }
+
+  .history-open {
+    flex-basis: 100%;
+  }
+
+  .history-row > .history-button,
+  .history-ask {
+    margin-left: 10px;
+  }
 }

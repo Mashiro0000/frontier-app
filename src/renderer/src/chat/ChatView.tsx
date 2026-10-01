@@ -9,9 +9,16 @@ interface ChatViewProps {
   /** The conversation. It is held in App, because the header needs to know when a reply is arriving. */
   chat: UseChat
   onOpenSettings: () => void
+  /** Changes when another conversation is put on screen, so the input box can take the focus. */
+  conversationId: string
 }
 
-function ChatView({ status, chat, onOpenSettings }: ChatViewProps): React.JSX.Element {
+function ChatView({
+  status,
+  chat,
+  onOpenSettings,
+  conversationId
+}: ChatViewProps): React.JSX.Element {
   const { messages, isReplying, send, stop } = chat
 
   // Nothing is said until the main process has answered, so the hint never flashes the wrong thing.
@@ -34,7 +41,7 @@ function ChatView({ status, chat, onOpenSettings }: ChatViewProps): React.JSX.El
   return (
     <main className="chat">
       <MessageList messages={messages} isReplying={isReplying} emptyHint={emptyHint} />
-      <Composer isReplying={isReplying} onSend={send} onStop={stop} />
+      <Composer focusKey={conversationId} isReplying={isReplying} onSend={send} onStop={stop} />
     </main>
   )
 }

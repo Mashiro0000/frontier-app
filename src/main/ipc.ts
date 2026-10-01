@@ -1,13 +1,24 @@
-import { ipcMain, type IpcMainInvokeEvent } from 'electron'
+import { app, ipcMain, type IpcMainInvokeEvent } from 'electron'
+import { join } from 'path'
 import {
   CHANNELS,
+  type HistoryList,
+  type HistoryLoadResult,
+  type HistoryRemoveResult,
+  type HistorySaveResult,
   type SetKeyResult,
   type SetModelResult,
   type SettingsStatus
 } from '../shared/ipc'
 import { toModelOption } from '../shared/registry'
-import { checkApiKey, checkModelChoice } from '../shared/validate'
+import {
+  checkApiKey,
+  checkConversationId,
+  checkConversationSave,
+  checkModelChoice
+} from '../shared/validate'
 import { registerChatIpc } from './chat'
+import { createConversationStore } from './conversationStore'
 import { canStoreKey, clearApiKey, readApiKey, saveApiKey } from './keyStore'
 import { chooseModel, currentModel, inOrder } from './models'
 import { getRegistry, reportRegistryProblems } from './registry'
@@ -26,8 +37,12 @@ async function currentStatus(): Promise<SettingsStatus> {
   }
 }
 
-/** Registers every message the page may send to main. Call once, after the app is ready. */
-export function registerIpc(appUrl: string): void {
+/**
+ * Registers every message the page may send to main. Call once, after the app is ready. Returns a function
+ * that resolves when every save and deletion of a conversation asked for so far has finished: quitting
+ * waits for it, so closing the window cannot cut a file off halfway.
+ */
+export function registerIpc(appUrl: string): () => Promise<void> {
   reportRegistryProblems() // at startup, once: whatever is wrong with registry/models.json goes in the log
 
   // A thrown error rejects the promise the page is waiting on.
@@ -88,5 +103,67 @@ export function registerIpc(appUrl: string): void {
     )
   )
 
+  // Saved conversations (D-016, D-017). The store owns the files; these handlers only check who is asking and
+  // what they ask. A failure is logged here with its real reason (which could name a path) and the page gets
+  // a plain sentence.
+  const folder = join(app.getPath('userData'), 'conversations')
+  const history = createConversationStore(folder)
+  const reason = (error: unknown): unknown => (error instanceof Error ? error.message : error)
+
+  ipcMain.handle(
+    CHANNELS.historyList,
+    guarded(async (): Promise<HistoryList> => {
+      try {
+        return { ...(await history.list()), folder }
+      } catch (error) {
+        console.error('Listing the saved conversations failed:', reason(error))
+        throw new Error('The saved conversations could not be listed.')
+      }
+    })
+  )
+
+  ipcMain.handle(
+    CHANNELS.historyLoad,
+    guarded(async (input: unknown): Promise<HistoryLoadResult> => {
+      const check = checkConversationId(input) // never trust what the page sends: it becomes part of a file name
+      if (!check.ok) return check
+      try {
+        return await history.load(check.id)
+      } catch (error) {
+        console.error('Reading a saved conversation failed:', reason(error))
+        return { ok: false, error: 'That conversation could not be read.' }
+      }
+    })
+  )
+
+  ipcMain.handle(
+    CHANNELS.historySave,
+    guarded(async (input: unknown): Promise<HistorySaveResult> => {
+      const check = checkConversationSave(input) // the title and dates are not the page's to choose
+      if (!check.ok) return check
+      try {
+        return await history.save(check.conversation)
+      } catch (error) {
+        console.error('Saving a conversation failed:', reason(error))
+        return { ok: false, error: 'The conversation could not be saved on this computer.' }
+      }
+    })
+  )
+
+  ipcMain.handle(
+    CHANNELS.historyRemove,
+    guarded(async (input: unknown): Promise<HistoryRemoveResult> => {
+      const check = checkConversationId(input)
+      if (!check.ok) return check
+      try {
+        return await history.remove(check.id)
+      } catch (error) {
+        console.error('Deleting a saved conversation failed:', reason(error))
+        return { ok: false, error: 'The conversation could not be deleted.' }
+      }
+    })
+  )
+
   registerChatIpc(appUrl)
+  return () => history.whenIdle()
 }

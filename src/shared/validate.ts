@@ -1,7 +1,13 @@
 // Checks that run on both sides: the page uses them to give quick feedback, and the main process runs
 // them again, because it must never trust what the page sends. Plain functions, no Electron.
 
-import { CHAT_LIMITS, type ChatRequest, type WireMessage } from './ipc'
+import {
+  CHAT_LIMITS,
+  HISTORY_LIMITS,
+  type ChatRequest,
+  type SavedMessage,
+  type WireMessage
+} from './ipc'
 
 export const API_KEY_MIN_LENGTH = 20
 export const API_KEY_MAX_LENGTH = 300
@@ -95,11 +101,101 @@ export function checkChatRequest(input: unknown): ChatCheck {
   }
   if (totalChars > CHAT_LIMITS.maxTotalChars) {
     return refuse(
-      'This conversation is too long to send: the whole conversation is sent again with every message. Close and reopen the window to start a new one.'
+      'This conversation is too long to send: the whole conversation is sent again with every message. Start a new chat.'
     )
   }
   if (clean[0].role !== 'user' || clean[clean.length - 1].role !== 'user') {
     return refuse('The request was not understood.')
   }
   return { ok: true, request: { streamId, messages: clean } }
+}
+
+// A conversation's id becomes part of a file name, so it is checked against the one spelling the app itself
+// makes (crypto.randomUUID(): lower-case hexadecimal groups). Upper case is refused because Windows treats
+// upper and lower case as one file: two spellings of one id would be one conversation.
+const CONVERSATION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+
+export function isConversationId(value: unknown): value is string {
+  return typeof value === 'string' && CONVERSATION_ID.test(value)
+}
+
+export type ConversationIdCheck = { ok: true; id: string } | { ok: false; error: string }
+
+/** Checks an id from the page, for loading or deleting a saved conversation. */
+export function checkConversationId(input: unknown): ConversationIdCheck {
+  return isConversationId(input)
+    ? { ok: true, id: input }
+    : { ok: false, error: 'The conversation was not understood.' }
+}
+
+export type MessagesCheck = { ok: true; messages: SavedMessage[] } | { ok: false; error: string }
+
+/**
+ * Checks the messages of a conversation to be saved, whether they come from the page or are read back from a
+ * file, and returns a clean copy (only the fields we know about). A message that is still "streaming" is
+ * kept as "stopped": a reply that is cut off by closing the window never finishes. The first message must
+ * be the person's, as it is in every conversation the app makes.
+ */
+export function checkSavedMessages(input: unknown): MessagesCheck {
+  const refuse = (error: string): MessagesCheck => ({ ok: false, error })
+  if (!Array.isArray(input) || input.length === 0) return refuse('There is nothing to save.')
+  // The count is looked at before the items, so a huge list costs nothing to refuse.
+  if (input.length > HISTORY_LIMITS.maxMessages) {
+    return refuse(
+      `This conversation has more than ${HISTORY_LIMITS.maxMessages} messages, which is too many to save.`
+    )
+  }
+  const messages: SavedMessage[] = []
+  let totalChars = 0
+  for (const item of input) {
+    if (typeof item !== 'object' || item === null)
+      return refuse('The conversation was not understood.')
+    const { role, content, status, error } = item as Record<string, unknown>
+    if (
+      (role !== 'user' && role !== 'assistant') ||
+      typeof content !== 'string' ||
+      (status !== 'done' && status !== 'stopped' && status !== 'error' && status !== 'streaming') ||
+      (role === 'user' && content.trim() === '')
+    ) {
+      return refuse('The conversation was not understood.')
+    }
+    if (content.length > HISTORY_LIMITS.maxMessageChars)
+      return refuse('A message is too long to save.')
+    totalChars += content.length
+    if (totalChars > HISTORY_LIMITS.maxTotalChars)
+      return refuse('This conversation is too long to save.')
+    const message: SavedMessage = {
+      role,
+      content,
+      status: status === 'streaming' ? 'stopped' : status
+    }
+    if (status === 'error' && error !== undefined) {
+      if (typeof error !== 'string' || error.length > HISTORY_LIMITS.maxErrorChars) {
+        return refuse('The conversation was not understood.')
+      }
+      message.error = error
+    }
+    messages.push(message)
+  }
+  if (messages[0].role !== 'user') return refuse('The conversation was not understood.')
+  return { ok: true, messages }
+}
+
+export type SaveCheck =
+  | { ok: true; conversation: { id: string; messages: SavedMessage[] } }
+  | { ok: false; error: string }
+
+/**
+ * Checks a conversation the page wants saved. Only the id and the messages are taken: the title and the
+ * dates are worked out by the main process, never by the page.
+ */
+export function checkConversationSave(input: unknown): SaveCheck {
+  if (typeof input !== 'object' || input === null) {
+    return { ok: false, error: 'The conversation was not understood.' }
+  }
+  const { id, messages } = input as Record<string, unknown>
+  if (!isConversationId(id)) return { ok: false, error: 'The conversation was not understood.' }
+  const checked = checkSavedMessages(messages)
+  if (!checked.ok) return checked
+  return { ok: true, conversation: { id, messages: checked.messages } }
 }

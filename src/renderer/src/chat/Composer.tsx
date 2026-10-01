@@ -1,14 +1,22 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface ComposerProps {
+  /** When this changes (a new conversation, or another one), the input box asks for the keyboard focus. */
+  focusKey?: string
   isReplying: boolean
   onSend: (text: string) => void
   onStop: () => void
 }
 
-function Composer({ isReplying, onSend, onStop }: ComposerProps): React.JSX.Element {
+function Composer({ focusKey, isReplying, onSend, onStop }: ComposerProps): React.JSX.Element {
   const [text, setText] = useState('')
   const inputRef = useRef<HTMLTextAreaElement>(null)
+
+  // Starting a new chat leaves the cursor in the input box. (Opening a saved chat from the History dialog does
+  // not get here: a dialog that closes gives the focus back to the button that opened it.)
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [focusKey])
   // You can type the next message while a reply streams in, but not send it until the reply ends.
   const canSend = text.trim() !== '' && !isReplying
 

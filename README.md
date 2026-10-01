@@ -29,6 +29,10 @@ the header chooses another (Claude Fable 5.1, Sonnet 5.5 or Haiku 4.5), and Sett
 The list of models is `registry/models.json`: edit it, then restart `npm run dev` (or run `npm run dev -- --watch`
 so it restarts by itself). See docs/DECISIONS.md D-012, D-014 and D-015.
 
+Chats are saved on your computer as you go, one plain file each, in a `conversations` folder next to the app's
+other data (the History dialog shows the path). They are not encrypted, unlike the API key. **New chat** starts an
+empty chat; **History** opens a saved one or deletes it. See docs/DECISIONS.md D-016 and D-017.
+
 ### Build
 
 ```bash

@@ -79,7 +79,7 @@ were enough. Each dependency is something to audit, and this app will hold API k
 accepted. Revisit: when state is shared across several screens (Stage 2 settings), when Markdown is
 needed, or when automated UI tests are wanted (none exist; Stages 1 and 2 were checked by driving the
 real app). Stage 2's settings did not need shared state: one `useState` in `App` and a small hook. Stage 2
-did add one runtime package, Anthropic's SDK, in the main process only (D-012). Stage 3 added none.
+did add one runtime package, Anthropic's SDK, in the main process only (D-012). Stages 3 and 4 added none.
 
 ## D-008 - Replies come from a `ReplyFn` (the echo in Stage 1, IPC to the main process since Stage 2.4)
 
@@ -119,8 +119,9 @@ EFS-encrypted, and every rename inside it fails with EXDEV (a direct write and a
 test in a normal temp folder could not have shown this. Status: accepted (Stage 2.3).
 Revisit: when any other feature writes files in the data folder (conversation history is the next
 one), write in place or copy-then-delete, read back, and test in an EFS-encrypted folder. Stage 3's
-`preferences.json` (D-015) follows that rule. A "master password" or a check that the key works (a real
-request) are possible later additions.
+`preferences.json` (D-015) follows that rule, and so do Stage 4's conversation files, with a recovery rule for
+a crash in the middle of a write (D-016). A "master password" or a check that the key works (a real request)
+are possible later additions.
 
 ## D-011 - One shared contract for everything that crosses page, preload and main
 
@@ -132,7 +133,8 @@ window's top frame, on the app's own page. This is needed because the preload AP
 `about:blank` calls, in dev and in the built app. The input is validated again in main: the checks in
 the page are only for quick feedback. Status: accepted (Stage 2.3).
 Revisit: each new message needs the same guard and its own validation; add them in `ipc.ts`, and
-only through the contract. Stage 3 added `settings:set-model` that way (D-015).
+only through the contract. Stage 3 added `settings:set-model` that way (D-015), and Stage 4 added
+`history:list`, `history:load`, `history:save` and `history:remove` (D-016, D-017).
 
 ## D-012 - The first provider: Anthropic's Claude, called from the main process with Anthropic's SDK
 
@@ -194,10 +196,10 @@ failure is sent twice.
 
 The whole conversation is sent again with every message, so its size is its price. Limits
 (`CHAT_LIMITS`): 500 messages, 200 000 characters per message, 600 000 in total (about 150 000 tokens).
-Beyond that the request is refused with an explanation. There is no "New chat" button yet; closing and
-reopening the window starts one. Status: accepted (Stage 2.4). Revisit: a New chat button, saved
-conversations, a Retry button (then a failed message need not be retyped), and trimming or summarising old
-turns.
+Beyond that the request is refused with an explanation. Since Stage 4 there is a "New chat" button and
+conversations are saved (D-016, D-017), so a conversation that has grown too long stays as it is and the
+person starts another. Status: accepted (Stage 2.4). Revisit: a Retry button (then a failed message need not
+be retyped), and trimming or summarising old turns.
 
 ## D-014 - The registry: plain JSON, embedded in the app, read strictly, and never trusted with an address
 
@@ -274,5 +276,110 @@ limits; more providers (an entry plus a provider module); `rankings.json`, still
   description, how much it can read, its list prices and the date they were checked, and that the bill goes
   to the Anthropic account. The "No API key" badge stays; the model badge is gone.
 
-Status: accepted (Stage 3.3 and 3.4). Revisit: showing which model wrote each reply; switching automatically
-when a model is not found; letting the person choose the effort level; a cost display (D-012).
+Status: accepted (Stage 3.3 and 3.4). Revisit: showing which model wrote each reply (history saved from Stage 4
+on does not record it, D-017); switching automatically when a model is not found; letting the person choose the
+effort level; a cost display (D-012).
+
+## D-016 - Conversation history: one plain JSON file per conversation, saved copy-then-delete, not encrypted
+
+Stage 4 saves conversations on disk. This decides the file format and how it is written; D-017 decides who
+saves, when, and what the person sees.
+
+- **One file per conversation, no index.** `conversations/<id>.json` in the per-user data folder, one line of
+  JSON: `{"version":1,"id","title","createdAt","updatedAt","messages":[{"role","content","status","error"?}]}`.
+  There is no second file to keep in step with the first, and a damaged file loses only itself. The list is
+  built by reading every file once, the first time anything asks, then kept in memory (1000 conversations of
+  about 22 KB each, first look: 0.2 s in a normal temp folder, 0.9 s in this PC's EFS-encrypted `%APPDATA%`).
+  `status` is `done`, `stopped` or `error`; a reply that was still arriving when it was saved is saved as
+  `stopped`, because a reply cut off by closing the window never finishes. Messages carry no id (the page
+  makes fresh ones on opening) and no model: see D-017 on the model.
+- **The id is a lower-case UUID that the page makes and main checks.** It becomes part of a file name, so the
+  check (`isConversationId`, and again inside the store) accepts exactly the spelling `crypto.randomUUID()`
+  produces. Upper case is refused because Windows treats upper and lower case as one file, so two spellings of
+  one id would be one conversation. The title (the first thing the person wrote, on one line, cut at 60
+  characters) and both dates are worked out by main; the page cannot choose them.
+- **Written copy-then-delete (D-010's revisit), with a recovery rule.** A key or a model choice that is torn by
+  a crash only has to be entered again. A conversation is something a person would be sorry to lose half of,
+  so a save is three steps: (1) write the whole text to `<id>.json.tmp` and read it back; (2) copy it over
+  `<id>.json` and read that back; (3) delete the `.tmp`. A `.tmp` is written first and deleted last, so a
+  `.tmp` that parses is always at least as new as the real file, and a cut-off JSON object never parses. So
+  reading follows one rule: **a `.tmp` that parses wins; one that does not was cut off in step 1, and the real
+  file is still the untouched old copy.** Checked with every crash state built by hand, and with faults
+  injected into each step (a failing copy, a write cut off halfway, a read-back that differs, a `.tmp` that
+  cannot be deleted), in a normal folder and in the EFS one (where `rename` fails with EXDEV, as D-010 found).
+  Nothing renames, so that quirk never matters.
+- **Reading never writes.** A file that cannot be read (torn, empty, 5 MB of random bytes, another version, an
+  id that does not match its name) is counted, named in the log by its id (never a path), and left exactly as
+  it is: nothing deletes a file except the person's own Delete. A file's size is looked at before it is read,
+  so no file can fill the memory. A byte-order mark (some editors add one) is tolerated, because the file is
+  the person's own data and refusing it would strand a conversation. Files that are not conversations
+  (`notes.txt`, an upper-case id) are ignored without being counted.
+- **Limits** (`HISTORY_LIMITS`): 1000 conversations, 2000 messages each, 400 000 characters per message,
+  1 500 000 in total, an error text of 2000 characters, 10 MB per file. They are deliberately above what chat
+  will send (`CHAT_LIMITS`, D-013): a reply can push a conversation past what can be sent, and messages with no
+  text (a failed reply) are saved though they are not sent; the person must still be able to save what they
+  were shown. Whatever is written must be readable again, so the 10 MB limit applies to writing as well (the
+  worst case of the text limit, every character escaped to six bytes, is about 9 MB). A refusal is explained.
+- **Not encrypted, and the person is told.** Unlike the API key (D-010), conversations are plain text on disk.
+  Encrypting them with the operating system's secure storage would make every conversation unreadable after a
+  Windows profile change or a keyring reset, and on a Linux desktop with no keyring it would be refused; plain
+  JSON keeps them portable, searchable, and deletable with a file manager, which is how D-005 treats the other
+  data files. What it costs: anyone who can read this account's files can read the conversations. On this PC
+  the data folder is EFS-encrypted by Windows, which covers that case; elsewhere it depends on the disk. The
+  History dialog says so, and names the folder. Deleting a conversation deletes its file; copies the operating
+  system or an SSD keep are out of the app's hands.
+- **Quitting waits for saves.** The main process holds `before-quit` until every save it has accepted has
+  finished, for at most 5 seconds (so a stuck disk can never keep the app open), then quits. With 60 saves of a
+  1.4 MB conversation queued, the file ended as the last save, whole, with no `.tmp` (the quit took 6 s).
+
+Status: accepted (Stage 4.1 and 4.2). Revisit: encrypting history (an option, with the recovery problem it
+brings); an index file if reading every file at start ever becomes too slow (about a thousand conversations is
+the tested size); a size or age limit with a clear-out; a "Delete all"; file names a person can recognise.
+
+## D-017 - Who saves, when, and what the person sees
+
+- **The page sends the whole conversation, main checks and writes it.** The conversation lives in the page
+  while it is being written (`useChat`, D-008), so the page hands over a snapshot after each change that
+  matters, and main validates it as it validates everything (D-011: the same guard, the input checked again, a
+  call from `about:blank` refused, the title and dates not the page's). The alternative, main assembling the
+  conversation from the reply events it already sees, would change the chat protocol that D-008 and D-013 keep
+  stable, and could not save a failed reply that left no text. Snapshots are handled one at a time, in order,
+  so the last one asked for is what is on disk (60 saves fired at once: the 60th was kept).
+- **When.** Nothing is saved until there is a message: opening the app, listing and closing it again leave no
+  file and no folder. The person's message is saved at once; a reply that streams in is saved at most once a
+  second; a finished, stopped or failed reply is saved at once; a conversation just opened from disk is not
+  saved again (that would only move its date). The page also sends what is waiting when the window is closed
+  or reloaded (`pagehide`). Measured: closing the window in the middle of a reply left the file with exactly
+  the text that was on screen (186 of 186 characters); without that last send the loss would be up to a
+  second of text, and a crash can still lose that much.
+- **The app opens on a new, empty chat.** The last conversation is one click away in History, not restored by
+  itself: nothing is written until the first message, and an app that reopens on yesterday's chat is
+  surprising when the chat is a day old. A deliberate choice that costs one click.
+- **The header has New chat and History.** New chat is off while the chat is empty (there is nothing to start
+  over from) and while a reply arrives; History is off while a reply arrives. That is the model menu's rule
+  (D-015), for the same reason: what is on screen is being written. Opening the conversation that is already
+  on screen does nothing, because reloading it from disk could only lose a message that is not saved yet.
+- **History is a dialog, not a sidebar.** It is the Settings dialog's pattern: a modal `<dialog>` (focus
+  trapped, Escape closes, the page behind it inert), which keeps the header and the narrow-window layout
+  (checked at 420 and 320 pixels) as simple as in Stage 3. A sidebar is a larger redesign for later. Each row
+  shows the title, when it was last saved and how many messages it holds; the open one is marked. Delete asks
+  first ("Delete? Delete / Keep", with Keep focused) because it is the one action here that cannot be undone;
+  deleting the chat that is open starts a new one. The list scrolls inside the dialog, so the heading and Close
+  stay in view with 150 chats (a first version scrolled the whole dialog and Close ended up 9000 pixels down). The
+  dialog has its own class names rather than reusing Settings' (a first version did, and a selector for the
+  Settings dialog then matched the History one).
+- **A save that fails is shown, not hidden.** The header gets a "Not saved" button (its tooltip says why;
+  pressing it tries again), and the next change tries again by itself; the page is only ever told a plain
+  sentence, never the disk's own error or a path (those go to the log). The History dialog warns that opening or
+  starting another chat would lose the one on screen. Nothing blocks the person, who may be able to free some
+  space and press the button. A failure belongs to the chat that had it: starting another chat clears the badge,
+  and deleting a chat whose last save failed does not save it again (a first version did). Checked by injecting a
+  disk fault into the running app.
+- **Left out on purpose** (all in `docs/IDEAS.md`): which model wrote each reply. History saved in Stage 4 does
+  not record it, and that cannot be reconstructed later; the page does not know it (the model is fixed in main
+  when a reply starts, D-015), and telling it would change the reply events. Also left out: renaming,
+  searching, exporting, and a sidebar.
+
+Status: accepted (Stage 4.3 and 4.4). Revisit: recording the model per reply (it needs an event from main to
+the page and a field in the file, and old files would lack it); a Retry button for failed replies (D-013); rename
+and search once a person has more than a screenful.

@@ -1,6 +1,6 @@
 # Architecture (v0.1)
 
-> Stub. Describes what exists at the end of Stage 3 and what is planned. Update as the app grows.
+> Stub. Describes what exists at the end of Stage 4 and what is planned. Update as the app grows.
 
 ## What this is
 
@@ -9,7 +9,7 @@ It is a working chat window: you save your own Anthropic API key in Settings, an
 Claude (D-012). The page never sees the key or the network. The main process holds the key, makes the
 only network call (to the Anthropic API) and streams the reply back to the page. Which Claude model answers
 is a choice from a registry of models (`registry/models.json`, D-014); the main process holds the choice and
-saves it (D-015).
+saves it (D-015). Conversations are saved on disk as they go, one file each, and can be reopened (D-016, D-017).
 
 ## Process model
 
@@ -25,25 +25,27 @@ Electron runs three kinds of code. Each has its own folder under `src/`.
 The renderer should never touch Node.js or the network for model calls directly. It asks main
 through the preload bridge (IPC).
 
-Stage 1 changed only `src/renderer`. Stage 2 added the files below (see Security notes), and Stage 3 added
-or changed the ones marked (3):
+Stage 1 changed only `src/renderer`. Stage 2 added the files below (see Security notes), Stage 3 added or
+changed the ones marked (3), and Stage 4 the ones marked (4):
 
-| File                         | Job                                                                                                                                |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `src/main/index.ts`          | Creates the sandboxed window, wires the navigation lock, registers the message handlers                                            |
-| `src/main/security.ts`       | Plain functions: is this URL the app's own page? may it be opened in the browser?                                                  |
-| `src/main/ipc.ts`            | The message handlers. Each one first checks that the app's own page is calling                                                     |
-| `src/main/keyStore.ts`       | Saves, reads and deletes the API key, encrypted by the operating system                                                            |
-| `src/main/chat.ts`           | Runs each reply: reads the key, calls the provider, sends text to the page as events                                               |
-| `src/main/provider.ts`       | (3) The one provider: Anthropic's Claude through the official SDK. Builds each request from a registry entry. No Electron imports  |
-| `src/main/registry.ts`       | (3) The registry file, embedded in the build and checked once at startup                                                           |
-| `src/main/models.ts`         | (3) Which model answers: the saved choice (`preferences.json`) or the registry's default; changes run one at a time                |
-| `src/preload/index.ts`       | Builds `window.api`, the only thing the page can ask main for                                                                      |
-| `src/preload/index.d.ts`     | Tells the renderer's TypeScript what `window.api` looks like                                                                       |
-| `src/shared/ipc.ts`          | Every message that crosses the boundary: types, channel names                                                                      |
-| `src/shared/validate.ts`     | `checkApiKey`, `checkChatRequest`, `checkModelChoice`: the page may use them for feedback, main runs them again                    |
-| `src/shared/registry.ts`     | (3) The shape of the registry file, `parseRegistry` (the strict check), and `toModelOption` (what the page may know about a model) |
-| `src/renderer/src/settings/` | (3) The Settings dialog, the model menu in the header, and the hook that asks main for the settings status                         |
+| File                            | Job                                                                                                                                                                                       |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/main/index.ts`             | Creates the sandboxed window, wires the navigation lock, registers the message handlers. (4) Holds the quit until saves finish                                                            |
+| `src/main/security.ts`          | Plain functions: is this URL the app's own page? may it be opened in the browser?                                                                                                         |
+| `src/main/ipc.ts`               | The message handlers. Each one first checks that the app's own page is calling. (4) The four `history:` handlers                                                                          |
+| `src/main/keyStore.ts`          | Saves, reads and deletes the API key, encrypted by the operating system                                                                                                                   |
+| `src/main/chat.ts`              | Runs each reply: reads the key, calls the provider, sends text to the page as events                                                                                                      |
+| `src/main/provider.ts`          | (3) The one provider: Anthropic's Claude through the official SDK. Builds each request from a registry entry. No Electron imports                                                         |
+| `src/main/registry.ts`          | (3) The registry file, embedded in the build and checked once at startup                                                                                                                  |
+| `src/main/models.ts`            | (3) Which model answers: the saved choice (`preferences.json`) or the registry's default; changes run one at a time                                                                       |
+| `src/preload/index.ts`          | Builds `window.api`, the only thing the page can ask main for. (4) Gained `history`                                                                                                       |
+| `src/preload/index.d.ts`        | Tells the renderer's TypeScript what `window.api` looks like                                                                                                                              |
+| `src/shared/ipc.ts`             | Every message that crosses the boundary: types, channel names. (4) The history types and `HISTORY_LIMITS`                                                                                 |
+| `src/shared/validate.ts`        | `checkApiKey`, `checkChatRequest`, `checkModelChoice`: the page may use them for feedback, main runs them again. (4) `checkConversationId`, `checkConversationSave`, `checkSavedMessages` |
+| `src/shared/registry.ts`        | (3) The shape of the registry file, `parseRegistry` (the strict check), and `toModelOption` (what the page may know about a model)                                                        |
+| `src/renderer/src/settings/`    | (3) The Settings dialog, the model menu in the header, and the hook that asks main for the settings status                                                                                |
+| `src/main/conversationStore.ts` | (4) The saved conversations: one JSON file each, saved copy-then-delete, read with a recovery rule, listed from memory. No Electron imports                                               |
+| `src/renderer/src/history/`     | (4) `useHistory` (autosave and the list), `HistoryDialog` (open and delete), and the conversions between the chat and what is saved                                                       |
 
 ### Settings and the API key
 
@@ -70,6 +72,25 @@ is none, or if the saved one is no longer offered). `getStatus` hands the page t
 sizes, prices, never how a model is called) and the current choice. The model is fixed when a reply starts
 (`chat.ts`), and the menu is disabled while a reply is arriving. See DECISIONS.md D-014 and D-015.
 
+### Saving conversations
+
+```
+page: useChat.messages --useHistory (on every change; a streaming reply at most once a second)--> window.api.history.save({ id, messages })
+        |                                                                              preload --> ipc.ts guard --> checkConversationSave
+        |                                                                                  (the title and dates are not the page's)
+        |                                                                                              |
+        |                                             conversationStore: one at a time, in order. <id>.json.tmp written + read back,
+        |                                             copied over <id>.json + read back, .tmp deleted   --> conversations/<id>.json
+        +-- History dialog --list / load / remove--> the same guard and validation, the same store
+```
+
+The page holds the conversation while it is being written and hands over a snapshot after each change that
+matters; main checks it and writes it (D-017). Nothing is saved until there is a message. A file is written
+as `<id>.json.tmp` first, then copied over `<id>.json`, so a crash in the middle leaves either a whole
+`.tmp` (which wins when the folder is read) or a cut-off one (which is ignored): see D-016. The quit is held
+until the saves in progress have finished (`before-quit`, at most 5 s). The files are plain JSON in the
+per-user data folder, in `conversations/`, and the History dialog shows where.
+
 ### Sending a message
 
 ```
@@ -92,7 +113,7 @@ earlier turns is D-013.
 | File                | Job                                                                                                                                  |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `ChatView.tsx`      | Puts the message list and the input box together. The conversation itself is held in `App`, which also feeds the header's model menu |
-| `useChat.ts`        | Conversation state, and the cycle: send, reply streams in, then done / stopped / error                                               |
+| `useChat.ts`        | Conversation state, and the cycle: send, reply streams in, then done / stopped / error. (4) `load` replaces the conversation         |
 | `ipcReply.ts`       | The reply function: sends the conversation to main over the bridge and streams the answer                                            |
 | `history.ts`        | Decides what the model is told about earlier turns (D-013)                                                                           |
 | `types.ts`          | `ChatMessage`, `MessageStatus` and `ReplyFn`                                                                                         |
@@ -100,7 +121,7 @@ earlier turns is D-013.
 | `MessageBubble.tsx` | One message: typing dots while waiting, a "Stopped" or error line when needed                                                        |
 | `Composer.tsx`      | Input box. Enter sends, Shift+Enter adds a line. Shows Send, or Stop while a reply streams                                           |
 
-`App.tsx` adds the header. All styling is one stylesheet, `assets/main.css`, with colours as CSS
+`App.tsx` adds the header (New chat, History, the model menu, Settings). All styling is one stylesheet, `assets/main.css`, with colours as CSS
 variables at the top. The UI is dark only.
 
 ```
@@ -182,6 +203,11 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
   require `electron`, `events`, `timers` and `url`: no npm packages, no other files at run time (the
   build tool bundles files the preload imports). If it breaks that rule the preload fails to load and
   the page silently gets no `window.api`; check the console for "Unable to load preload script".
+- Saved conversations are plain text on disk, not encrypted like the key (D-016): the History dialog says so and
+  names the folder. The id of a conversation becomes part of a file name, so it is checked twice (in
+  `ipc.ts` and inside the store) against the one spelling the app makes; the title and dates are never the
+  page's; a file's size is looked at before it is read; and nothing deletes a file but the person's own Delete.
+  The four `history:` handlers run through the same sender guard as the rest.
 - The page gets only what `src/preload/index.ts` lists under `window.api`. Never expose Electron's
   whole `ipcRenderer`: any script in the page could then call any channel.
 - The window cannot navigate away from the app's own page, and only http(s) links reach the operating
@@ -192,7 +218,7 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
 
 ## Not built yet
 
-Conversation history on disk (closing the window loses the chat, and there is no New chat button),
-Markdown rendering (replies are plain text; the system prompt asks for that), a cost display, a check against
-the real API (Stages 2 and 3 were tested against a mock, which now covers four models), `registry/rankings.json`
-(an empty template), other providers. See ROADMAP.md.
+Markdown rendering (replies are plain text; the system prompt asks for that), a cost display, naming the model
+that wrote each reply, renaming or searching saved chats, a check against the real API (Stages 2 to 4 were tested
+against a mock, which covers four models), `registry/rankings.json` (an empty template), other providers. See
+ROADMAP.md.

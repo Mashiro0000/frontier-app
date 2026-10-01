@@ -8,6 +8,8 @@ export interface UseChat {
   send: (text: string) => void
   /** Stops the reply that is arriving. Whatever has arrived so far is kept. */
   stop: () => void
+  /** Replaces the conversation with another one: a saved one, or an empty list for a new chat. */
+  load: (messages: ChatMessage[]) => void
 }
 
 /**
@@ -78,7 +80,12 @@ export function useChat(reply: ReplyFn): UseChat {
     activeReply.current?.abort()
   }
 
+  function load(next: ChatMessage[]): void {
+    activeReply.current?.abort() // the buttons that call this are off while a reply arrives; belt and braces
+    setMessages(next)
+  }
+
   const isReplying = messages.at(-1)?.status === 'streaming'
 
-  return { messages, isReplying, send, stop }
+  return { messages, isReplying, send, stop, load }
 }

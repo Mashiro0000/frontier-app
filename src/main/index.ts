@@ -12,6 +12,11 @@ const devUrl = is.dev ? process.env['ELECTRON_RENDERER_URL'] : undefined
 const pageFile = join(__dirname, '../renderer/index.html')
 const appUrl = devUrl ?? pathToFileURL(pageFile).href
 
+// Set when the message handlers are registered: resolves once every conversation save in progress is on disk.
+let savesDone: () => Promise<void> = async () => undefined
+// Quitting does not wait longer than this for them, so a stuck disk can never keep the app from closing.
+const SAVE_GRACE_MS = 5000
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -70,7 +75,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  registerIpc(appUrl)
+  savesDone = registerIpc(appUrl)
   createWindow()
 
   app.on('activate', function () {
@@ -87,6 +92,17 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+// Closing the window ends the app, and a conversation being written at that moment must not be cut off
+// halfway (D-016): hold the quit until the saves in progress have finished, then quit for real.
+let savesFlushed = false
+app.on('before-quit', (event) => {
+  if (savesFlushed) return
+  event.preventDefault()
+  savesFlushed = true
+  const grace = new Promise<void>((resolve) => setTimeout(resolve, SAVE_GRACE_MS))
+  void Promise.race([savesDone(), grace]).finally(() => app.quit())
 })
 
 // In this file you can include the rest of your app's specific main process
