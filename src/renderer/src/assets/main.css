@@ -487,6 +487,7 @@ body {
 .settings-actions,
 .history-actions {
   display: flex;
+  flex-wrap: wrap; /* Save, Test and Remove together are wider than a 320 px window */
   gap: 8px;
   margin-top: 4px;
 }

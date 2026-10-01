@@ -2,6 +2,8 @@
 // cross that boundary is described here, so all three sides agree. Types, channel names and limits
 // only: this file is bundled into the preload, which runs sandboxed (see D-004).
 
+import type { ProviderId } from './registry'
+
 /**
  * A model the person can choose, as the page sees it: what to show about it, and nothing about how
  * the main process calls it. The list comes from registry/models.json (D-014).
@@ -11,8 +13,8 @@ export interface ModelOption {
   id: string
   /** For example "Claude Opus 5.5". */
   label: string
-  /** Who runs it, for example "Anthropic". */
-  provider: string
+  /** Who runs it: one of the providers in `SettingsStatus.providers`, which says how to show it. */
+  provider: ProviderId
   description: string
   /** Tokens: how much conversation it can read at once. */
   contextWindow: number
@@ -20,10 +22,19 @@ export interface ModelOption {
   pricing: { inputPerMTok: number; outputPerMTok: number }
 }
 
-/** What the page may learn about settings. The API key itself is never part of it. */
-export interface SettingsStatus {
-  /** True if an API key is saved and the app can read it back. */
+/** One provider the app can call, as the page sees it: its name, and whether an API key for it is saved (D-020). */
+export interface ProviderStatus {
+  id: ProviderId
+  /** How the person knows it, for example "Anthropic". */
+  name: string
+  /** True if an API key for it is saved and the app can read it back. */
   hasKey: boolean
+}
+
+/** What the page may learn about settings. The API keys themselves are never part of it. */
+export interface SettingsStatus {
+  /** Every provider this version of the app can call, in the order to show them. */
+  providers: ProviderStatus[]
   /** False if this computer has no secure place to keep a key. Saving is then refused. */
   canStoreKey: boolean
   /** The models on offer, in the order to show them. Empty if the registry could not be loaded. */
@@ -37,6 +48,8 @@ export interface SettingsStatus {
 }
 
 export type SetKeyResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
+/** What "Test key" found out: how many models the provider lists for the key (a free call), or what went wrong. */
+export type TestKeyResult = { ok: true; modelCount: number } | { ok: false; error: string }
 export type SetModelResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
 
 /** A message as the model is told about it: who wrote it, and the plain text. */
@@ -127,9 +140,14 @@ export type HistoryRemoveResult = { ok: true } | { ok: false; error: string }
 export interface FrontierApi {
   settings: {
     getStatus(): Promise<SettingsStatus>
-    /** Hands the key to the main process, which stores it encrypted. It is never sent back. */
-    setApiKey(key: string): Promise<SetKeyResult>
-    clearApiKey(): Promise<SettingsStatus>
+    /** Hands the key for one provider to the main process, which stores it encrypted. It is never sent back. */
+    setApiKey(provider: ProviderId, key: string): Promise<SetKeyResult>
+    clearApiKey(provider: ProviderId): Promise<SettingsStatus>
+    /**
+     * Asks the provider for its list of models with the key that is SAVED for it (it costs nothing), to learn whether
+     * the provider accepts the key. The page never supplies a key to test, and learns only a count or a sentence.
+     */
+    testApiKey(provider: ProviderId): Promise<TestKeyResult>
     /** Chooses which model answers. Main only accepts an id that is in the registry, and remembers it. */
     setModel(modelId: string): Promise<SetModelResult>
   }
@@ -157,6 +175,7 @@ export const CHANNELS = {
   settingsStatus: 'settings:status',
   settingsSetApiKey: 'settings:set-api-key',
   settingsClearApiKey: 'settings:clear-api-key',
+  settingsTestApiKey: 'settings:test-api-key',
   settingsSetModel: 'settings:set-model',
   chatStart: 'chat:start',
   chatCancel: 'chat:cancel',

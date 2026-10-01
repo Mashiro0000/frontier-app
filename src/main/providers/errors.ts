@@ -89,6 +89,13 @@ export function normalizedError(
   }
 }
 
+/** For a call that gave up waiting (Settings' "Test key" does, after 20 seconds), as if the provider's SDK had said so. */
+export const timeoutError = (providerName: string): NormalizedError =>
+  normalizedError(
+    { kind: 'timeout', status: null, detail: null, requestId: null, raw: '' },
+    { providerName, modelId: '' }
+  )
+
 /** For a failure that is no provider's: it happened before a provider was chosen, or is not an HTTP error at all. */
 export const unknownError = (error: unknown): NormalizedError =>
   normalizedError(

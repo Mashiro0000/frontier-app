@@ -12,8 +12,9 @@ import { CHANNELS, type ChatStreamEvent, type FrontierApi } from '../shared/ipc'
 const api: FrontierApi = {
   settings: {
     getStatus: () => ipcRenderer.invoke(CHANNELS.settingsStatus),
-    setApiKey: (key) => ipcRenderer.invoke(CHANNELS.settingsSetApiKey, key),
-    clearApiKey: () => ipcRenderer.invoke(CHANNELS.settingsClearApiKey),
+    setApiKey: (provider, key) => ipcRenderer.invoke(CHANNELS.settingsSetApiKey, { provider, key }),
+    clearApiKey: (provider) => ipcRenderer.invoke(CHANNELS.settingsClearApiKey, provider),
+    testApiKey: (provider) => ipcRenderer.invoke(CHANNELS.settingsTestApiKey, provider),
     setModel: (modelId) => ipcRenderer.invoke(CHANNELS.settingsSetModel, modelId)
   },
   chat: {

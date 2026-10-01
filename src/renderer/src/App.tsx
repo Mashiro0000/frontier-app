@@ -4,6 +4,7 @@ import { ipcReply } from './chat/ipcReply'
 import { useChat } from './chat/useChat'
 import HistoryDialog from './history/HistoryDialog'
 import { useHistory } from './history/useHistory'
+import { providerMissingKey } from './settings/format'
 import ModelPicker from './settings/ModelPicker'
 import SettingsDialog from './settings/SettingsDialog'
 import { useSettingsStatus } from './settings/useSettingsStatus'
@@ -17,6 +18,8 @@ function App(): React.JSX.Element {
   const chat = useChat(ipcReply)
   // Saves the conversation on screen as it goes, and keeps the list of saved ones (D-016, D-017).
   const history = useHistory(chat)
+  // The key that matters is the one of the provider that will answer (D-020).
+  const missingKey = providerMissingKey(status)
 
   return (
     <div className="app">
@@ -64,10 +67,10 @@ function App(): React.JSX.Element {
               Not saved
             </button>
           )}
-          {status?.hasKey === false && (
+          {missingKey !== null && (
             <span
               className="app-badge app-badge-warn"
-              title="Open Settings to add your Anthropic API key."
+              title={`Open Settings to add your ${missingKey.name} API key.`}
             >
               No API key
             </span>

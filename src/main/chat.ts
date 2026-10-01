@@ -1,7 +1,8 @@
-import { app, ipcMain, type WebContents } from 'electron'
+import { ipcMain, type WebContents } from 'electron'
 import { CHANNELS, type ChatRequest, type ChatStreamEvent } from '../shared/ipc'
 import { PROVIDER_NAMES, type ProviderId } from '../shared/registry'
 import { checkChatRequest } from '../shared/validate'
+import { baseUrlOverride } from './baseUrl'
 import { readApiKey } from './keyStore'
 import { currentModel } from './models'
 import { adapterFor } from './providers'
@@ -16,35 +17,6 @@ const noKeyMessage = (provider: ProviderId): string =>
 /** Replies in progress, by "<window id>:<stream id>", so each one can be stopped on its own. */
 const running = new Map<string, AbortController>()
 const watched = new WeakSet<WebContents>()
-
-/**
- * For testing the whole path without the real service: FRONTIER_API_BASE_URL points the app at a
- * fake server on this computer. It works only when running from source, never in an installed app,
- * so nothing outside could redirect where a real key is sent.
- */
-let warnedAboutOverride = false
-
-function baseUrlOverride(provider: ProviderId): string | undefined {
-  const value = process.env['FRONTIER_API_BASE_URL']
-  if (!value || app.isPackaged) return undefined
-  try {
-    const { protocol } = new URL(value)
-    if (protocol === 'http:' || protocol === 'https:') {
-      // Said once, loudly: requests (and the saved key) are going somewhere other than the provider.
-      if (!warnedAboutOverride) {
-        warnedAboutOverride = true
-        console.warn(
-          `FRONTIER_API_BASE_URL is set: requests go to ${value}, NOT to ${PROVIDER_NAMES[provider]}.`
-        )
-      }
-      return value
-    }
-  } catch {
-    // fall through to the warning
-  }
-  console.warn('Ignoring FRONTIER_API_BASE_URL: it is not an http(s) address.')
-  return undefined
-}
 
 function stopAllFor(windowId: number): void {
   for (const [key, controller] of running) {
@@ -115,8 +87,8 @@ async function runReply(
     const { entry } = model
     adapter = adapterFor(entry.provider)
     modelId = entry.id
-    // Until each provider has a key of its own (D-020), there is the one key, and the one provider it belongs to.
-    const saved = await readApiKey()
+    // Each provider has a key of its own (D-020): the one that goes with this model's provider, and no other.
+    const saved = await readApiKey(entry.provider)
     if (saved === null) {
       send({ streamId, type: 'error', message: noKeyMessage(entry.provider) })
       return

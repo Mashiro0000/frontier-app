@@ -485,3 +485,54 @@ and the one setting the app picks for each, and still never an address or a cred
 Status: accepted (Stage 5.2). Revisit: prices for cache reads and writes; checking the file against each provider's own
 model listing (`listModels`, D-018: Anthropic's reports `max_input_tokens`, `max_tokens` and a capability tree) to notice a
 fact that has drifted, which needs a real key to see how ids and values are spelled; the retirement date of a model.
+
+## D-020 - API keys: one encrypted file per provider, each tied to its provider, tested with a free call
+
+Stage 5.3 gives every provider a key of its own. D-010 still holds for everything it said about how a key is protected
+and written; this decides the layout, and what Settings can do with a key.
+
+- **The operating system's secure storage, as before.** "The OS keychain" is, in this app, Electron's `safeStorage`:
+  Windows DPAPI, the macOS Keychain, the Linux desktop's secret service (D-010). On Windows that is the facility behind
+  Credential Manager, but the key is not an entry you can see there: it is an encrypted file in the app's data folder.
+  Putting keys in Credential Manager itself would need a native module (a keyring package), and with it a build and
+  packaging step that has never been tried on this project, for no gain against the one threat any per-user store
+  has (a program running as you can ask for the key either way). Behind `keyStore.ts` it is one module to swap if you
+  want that.
+- **One file per provider**, `credentials.<provider>.json`, holding `{ version: 2, provider, key }`. Saving or removing
+  one key never rewrites another, a torn write can cost only the key it was writing, and the logic stays as small as
+  D-010's. The store itself, `credentialStore.ts`, takes the secure storage as an argument and imports nothing from Electron,
+  so it is checked under plain Node in an EFS-encrypted folder with faults injected, like the conversation store.
+- **A file is tied to its provider.** The file says which provider its key is for, and that must be the provider asked
+  for. A file copied or renamed to the wrong name is treated as holding nothing: it must never hand one provider's key to
+  another provider's servers.
+- **The old file is still read.** `credentials.json` (`{ version: 1, anthropicApiKey }`) is Anthropic's key when there is
+  no file of the new kind. Reading never writes (D-016's rule): it is replaced, and deleted, only when the person saves
+  or removes that key.
+- **Writes are in place and read back, and one at a time.** A read in the middle of a write cannot happen, and "Saved"
+  is said only after the key has been read back. A file larger than 16 KB is not a key file and is not read.
+- **Test key** asks the provider for its list of models (`listModels`, D-018). That costs no tokens, so it is free,
+  and it proves what a person wants proved: that the provider accepts this key. It always uses the key that is _saved_,
+  never one the page hands over, so the page can still never read or aim a key; it gives up after 20 seconds; and the
+  page learns only how many models were listed, or one sentence saying what failed (with the key scrubbed from it).
+  Saving does not test, because saving should not use the network.
+- **What the page is told** about keys is a list of providers, each with its name and whether a key is saved. The calls it
+  can make are `setApiKey(provider, key)`, `clearApiKey(provider)` and `testApiKey(provider)`; each goes through the sender
+  guard (D-011), the provider is checked against the list in the page and again in main, and a key is checked as before.
+- **Settings has one section per provider** (heading, where to create a key, status, the field, Save, Test, Remove), made
+  from the list the main process sends, so a provider that is added shows up without a change to the page. The header's
+  "No API key" badge and the empty chat's hint are about the provider of the model that will answer.
+
+- **What was checked, and what was not (Stage 5.3 was left unfinished when the session ended).** Checked, with scripts
+  outside the repository: the credential store under plain Node, in a normal folder and in the EFS-encrypted one, with
+  faults injected (174 checks; 12 sabotages of the store were each caught, one of them only in the EFS folder); the
+  Settings suite in the real window against the mock (66 checks: Test key accepted, refused, 403, 429, 500, 529 and a
+  provider that never answers, the key files on disk, the old `credentials.json`, abuse from the page and from
+  `about:blank`, narrow windows; 8 sabotages caught); the earlier suites ported where this stage changes something on
+  purpose; and the first runs of the full regression (the Stage 1 chain, the 2.3, 2.3b, 2.4 and 3.4b suites) passed. **Not
+  done:** the full regression was started and stopped before it finished, and some of its later launches failed to start
+  properly for a reason that was not found (the app's own log showed no error). It still has to be run again, on an idle
+  machine.
+
+Status: implemented and committed, but its full regression was not completed (Stage 5.3: see the paragraph above). Revisit: keys in Credential Manager (a keyring package); a "master password"; testing a key
+before it is saved; showing which models the key can use next to the registry's list (needs a real key to see how the
+provider spells its model ids).

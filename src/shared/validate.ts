@@ -8,6 +8,7 @@ import {
   type SavedMessage,
   type WireMessage
 } from './ipc'
+import { SUPPORTED_PROVIDERS, type ProviderId } from './registry'
 
 export const API_KEY_MIN_LENGTH = 20
 export const API_KEY_MAX_LENGTH = 300
@@ -36,6 +37,36 @@ export function checkApiKey(input: unknown): KeyCheck {
     }
   }
   return { ok: true, key }
+}
+
+export type ProviderCheck = { ok: true; provider: ProviderId } | { ok: false; error: string }
+
+/**
+ * Checks a provider named by the page: it must be exactly one the app can call. The id handed back is the app's own
+ * string, never the page's, so nothing the page invents (an object that prints as a provider, a path) is used. A provider
+ * becomes part of a key file's name (D-020), which is why this is checked here and again where the file is named.
+ */
+export function checkProvider(input: unknown): ProviderCheck {
+  const match = SUPPORTED_PROVIDERS.find((provider) => provider === input)
+  return match
+    ? { ok: true, provider: match }
+    : { ok: false, error: 'That provider is not available.' }
+}
+
+export type KeySubmissionCheck =
+  { ok: true; provider: ProviderId; key: string } | { ok: false; error: string }
+
+/** Checks "save this key for this provider" from the page: a known provider, and a key that has the shape of one. */
+export function checkKeySubmission(input: unknown): KeySubmissionCheck {
+  if (typeof input !== 'object' || input === null) {
+    return { ok: false, error: 'The key was not understood.' }
+  }
+  const { provider, key } = input as Record<string, unknown>
+  const checkedProvider = checkProvider(provider)
+  if (!checkedProvider.ok) return checkedProvider
+  const checkedKey = checkApiKey(key)
+  if (!checkedKey.ok) return checkedKey
+  return { ok: true, provider: checkedProvider.provider, key: checkedKey.key }
 }
 
 export type ModelChoiceCheck = { ok: true; modelId: string } | { ok: false; error: string }

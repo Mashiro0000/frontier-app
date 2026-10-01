@@ -8,27 +8,41 @@ import {
   type HistorySaveResult,
   type SetKeyResult,
   type SetModelResult,
-  type SettingsStatus
+  type SettingsStatus,
+  type TestKeyResult
 } from '../shared/ipc'
-import { toModelOption } from '../shared/registry'
+import { PROVIDER_NAMES, SUPPORTED_PROVIDERS, toModelOption } from '../shared/registry'
 import {
-  checkApiKey,
   checkConversationId,
   checkConversationSave,
-  checkModelChoice
+  checkKeySubmission,
+  checkModelChoice,
+  checkProvider
 } from '../shared/validate'
+import { baseUrlOverride } from './baseUrl'
 import { registerChatIpc } from './chat'
 import { createConversationStore } from './conversationStore'
 import { canStoreKey, clearApiKey, readApiKey, saveApiKey } from './keyStore'
 import { chooseModel, currentModel, inOrder } from './models'
+import { adapterFor } from './providers'
+import { describeFailure, timeoutError } from './providers/errors'
 import { getRegistry, reportRegistryProblems } from './registry'
 import { isTrustedSender } from './security'
+
+/** "Test key" gives up after this long, so a provider that never answers cannot leave the button spinning for ever. */
+const TEST_KEY_TIMEOUT_MS = 20_000
 
 async function currentStatus(): Promise<SettingsStatus> {
   const registry = getRegistry()
   const choice = await currentModel()
   return {
-    hasKey: (await readApiKey()) !== null,
+    providers: await Promise.all(
+      SUPPORTED_PROVIDERS.map(async (id) => ({
+        id,
+        name: PROVIDER_NAMES[id],
+        hasKey: (await readApiKey(id)) !== null
+      }))
+    ),
     canStoreKey: canStoreKey(),
     models: registry.ok ? registry.registry.models.map(toModelOption) : [],
     selectedModelId: choice.ok ? choice.entry.id : null,
@@ -60,10 +74,10 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   ipcMain.handle(
     CHANNELS.settingsSetApiKey,
     guarded(async (input: unknown): Promise<SetKeyResult> => {
-      const check = checkApiKey(input) // never trust what the page sends
+      const check = checkKeySubmission(input) // never trust what the page sends: which provider, and what key
       if (!check.ok) return check
       try {
-        await saveApiKey(check.key)
+        await saveApiKey(check.provider, check.key)
       } catch (error) {
         // The message is logged here only; it could name a file path, and never contains the key.
         console.error('Saving the API key failed:', error instanceof Error ? error.message : error)
@@ -75,9 +89,43 @@ export function registerIpc(appUrl: string): () => Promise<void> {
 
   ipcMain.handle(
     CHANNELS.settingsClearApiKey,
-    guarded(async () => {
-      await clearApiKey()
+    guarded(async (input: unknown): Promise<SettingsStatus> => {
+      const check = checkProvider(input)
+      if (!check.ok) throw new Error(check.error) // refused: nothing is deleted for a provider that is not on the list
+      await clearApiKey(check.provider)
       return currentStatus()
+    })
+  )
+
+  // "Test key": ask the provider for its list of models, which costs nothing, with the key that is SAVED (never one the
+  // page hands over). The page learns a count, or a sentence in which the key has been scrubbed out (D-020).
+  ipcMain.handle(
+    CHANNELS.settingsTestApiKey,
+    guarded(async (input: unknown): Promise<TestKeyResult> => {
+      const check = checkProvider(input)
+      if (!check.ok) return check
+      const { provider } = check
+      const apiKey = await readApiKey(provider)
+      if (apiKey === null) {
+        return { ok: false, error: `No ${PROVIDER_NAMES[provider]} API key is saved yet.` }
+      }
+      const adapter = adapterFor(provider)
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), TEST_KEY_TIMEOUT_MS)
+      try {
+        const models = await adapter.listModels(
+          { apiKey, baseURL: baseUrlOverride(provider) },
+          controller.signal
+        )
+        return { ok: true, modelCount: models.length }
+      } catch (error) {
+        const failure = controller.signal.aborted
+          ? timeoutError(PROVIDER_NAMES[provider]) // our own timer cancelled it
+          : adapter.normalizeError(error, { modelId: '' })
+        return { ok: false, error: describeFailure(failure, apiKey) }
+      } finally {
+        clearTimeout(timer)
+      }
     })
   )
 

@@ -1,4 +1,5 @@
 import type { SettingsStatus } from '../../../shared/ipc'
+import { providerMissingKey } from '../settings/format'
 import Composer from './Composer'
 import MessageList from './MessageList'
 import type { UseChat } from './useChat'
@@ -23,14 +24,15 @@ function ChatView({
 
   // Nothing is said until the main process has answered, so the hint never flashes the wrong thing.
   let emptyHint: React.ReactNode = null
+  const missingKey = providerMissingKey(status)
   if (status?.modelsError) {
     emptyHint = `The list of models could not be loaded (${status.modelsError}), so replies are unavailable. Check registry/models.json.`
-  } else if (status?.hasKey === true) {
+  } else if (status !== null && missingKey === null) {
     emptyHint = 'Type a message to start.'
-  } else if (status?.hasKey === false) {
+  } else if (missingKey !== null) {
     emptyHint = (
       <>
-        Add your Anthropic API key to start chatting.{' '}
+        Add your {missingKey.name} API key to start chatting.{' '}
         <button type="button" className="link-button" onClick={onOpenSettings}>
           Open Settings
         </button>

@@ -33,7 +33,9 @@ changed the ones marked (3), Stage 4 the ones marked (4), and Stage 5 the ones m
 | `src/main/index.ts`               | Creates the sandboxed window, wires the navigation lock, registers the message handlers. (4) Holds the quit until saves finish                                                            |
 | `src/main/security.ts`            | Plain functions: is this URL the app's own page? may it be opened in the browser?                                                                                                         |
 | `src/main/ipc.ts`                 | The message handlers. Each one first checks that the app's own page is calling. (4) The four `history:` handlers                                                                          |
-| `src/main/keyStore.ts`            | Saves, reads and deletes the API key, encrypted by the operating system                                                                                                                   |
+| `src/main/keyStore.ts`            | Saves, reads and deletes the API keys: the Electron side (the secure storage and the data folder) of the credential store. (5) One key per provider                                       |
+| `src/main/credentialStore.ts`     | (5) One encrypted file per provider (`credentials.<provider>.json`), tied to its provider; reads the old `credentials.json` as Anthropic's key. No Electron imports                       |
+| `src/main/baseUrl.ts`             | (5) The test-only address override (`FRONTIER_API_BASE_URL`), for replies and for Test key; never in an installed app                                                                     |
 | `src/main/chat.ts`                | Runs each reply: reads the key, asks the model's provider adapter, sends text to the page as events. (5) Provider-neutral                                                                 |
 | `src/main/providers/types.ts`     | (5) The provider layer's vocabulary: `ProviderAdapter` (`listModels`, `stream`, `usage`, `normalizeError`), the neutral message and request, usage and errors. No Electron imports        |
 | `src/main/providers/anthropic.ts` | (5) The Anthropic adapter: the one place that calls Anthropic's API, through the official SDK. It was `provider.ts`                                                                       |
@@ -48,21 +50,30 @@ changed the ones marked (3), Stage 4 the ones marked (4), and Stage 5 the ones m
 | `src/shared/ipc.ts`               | Every message that crosses the boundary: types, channel names. (4) The history types and `HISTORY_LIMITS`                                                                                 |
 | `src/shared/validate.ts`          | `checkApiKey`, `checkChatRequest`, `checkModelChoice`: the page may use them for feedback, main runs them again. (4) `checkConversationId`, `checkConversationSave`, `checkSavedMessages` |
 | `src/shared/registry.ts`          | (3) The shape of the registry file, `parseRegistry` (the strict check), and `toModelOption` (what the page may know about a model)                                                        |
-| `src/renderer/src/settings/`      | (3) The Settings dialog, the model menu in the header, and the hook that asks main for the settings status                                                                                |
+| `src/renderer/src/settings/`      | (3) The Settings dialog, the model menu in the header, and the hook that asks main for the settings status. (5) One key section per provider (`ProviderKeySection`: add, test, remove)    |
 | `src/main/conversationStore.ts`   | (4) The saved conversations: one JSON file each, saved copy-then-delete, read with a recovery rule, listed from memory. No Electron imports                                               |
 | `src/renderer/src/history/`       | (4) `useHistory` (autosave and the list), `HistoryDialog` (open and delete), and the conversions between the chat and what is saved                                                       |
 
-### Settings and the API key
+### Settings and the API keys
 
 ```
-Settings dialog --window.api.settings.setApiKey(key)--> preload --> ipc.ts guard --> keyStore --> credentials.json
-   (page)             one named function, no ipcRenderer           is the caller the app's       encrypted by the OS
-                                                                   own page? checkApiKey again
+Settings dialog --window.api.settings.setApiKey(provider, key)--> preload --> ipc.ts guard --> keyStore --> credentialStore
+ (one section        one named function, no ipcRenderer                       is the caller the app's      (Electron glue)  credentials.<provider>.json
+  per provider)                                                               own page? checkKeySubmission                  encrypted by the OS
+                                                                              again
+   ... testApiKey(provider) --> ipc.ts: the SAVED key --> adapterFor(provider).listModels()  (free: no tokens) --> a count, or a sentence
 ```
 
-The page can ask "is a key saved?" and hand over a new key. It can never read one back: the key is
-not part of any reply. The saved key lives in `credentials.json` in the per-user data folder
-(`app.getPath('userData')`), encrypted by Electron's `safeStorage`. See DECISIONS.md D-010 and D-011.
+There is one key per provider, each in its own small file in the per-user data folder
+(`app.getPath('userData')`): `credentials.anthropic.json`, `credentials.openai.json`, ... Each holds
+`{ version: 2, provider, key }` with the key encrypted by Electron's `safeStorage`, and a file is only ever
+used for the provider it says it is for. The old single `credentials.json` is still read, as Anthropic's key, until
+that key is saved or removed again. `credentialStore.ts` does the keeping and imports nothing from Electron, so it is
+checked under plain Node; `keyStore.ts` hands it Electron's secure storage and the data folder.
+
+The page can ask "which providers have a key?", hand over a new key for one, remove one, and ask for one to be
+tested. It can never read a key back: no key is part of any reply, and "Test key" always uses the key that is saved,
+never one the page supplies. See DECISIONS.md D-010, D-011 and D-020.
 
 ### Choosing a model
 

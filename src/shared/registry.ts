@@ -356,7 +356,7 @@ export function toModelOption(entry: ModelEntry): ModelOption {
   return {
     id: entry.id,
     label: entry.label,
-    provider: PROVIDER_NAMES[entry.provider],
+    provider: entry.provider,
     description: entry.description,
     contextWindow: entry.contextWindow,
     pricing: { ...entry.pricing }
