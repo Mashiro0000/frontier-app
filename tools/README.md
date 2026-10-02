@@ -91,3 +91,7 @@ window on purpose, to show both cases.
   that copy. If a killed run left a broken variant behind: `git checkout registry/models.json`.
 - Windows locks a file while the app copies over it: helpers that read the app's files retry on `EBUSY`.
 - Never edit `src/` while a regression runs, and never run two launches at once (they share ports 9222 and 9230).
+- The launchers in `regress.mjs` (`run71.mjs`, `run72.mjs`, ...) have a 15-minute limit; `run71.mjs` alone makes a dozen launches and can take
+  7 minutes or more. A launcher killed by its limit leaves its app running on port 9222, and then every later launch ends with "port 9222 still
+  busy" (the summary shows `no summary`). Kill that app tree (the one with a scratch `--user-data-dir`, never anything else) and re-run.
+- A negative control whose run ends with "no summary line" is not a detection: look at its FAIL lines, and run it once more on its own.

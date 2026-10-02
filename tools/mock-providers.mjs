@@ -219,6 +219,10 @@ export function startMock(port = 8787) {
         return finish(res, index, 'model_context_window_exceeded')
       case 'empty':
         return finish(res, index, 'end_turn')
+      case 'count':
+        // 7.3: "Reply N", N = how many requests the mock has received, so a reply asked for again is visibly a NEW one.
+        await echoPieces(res, index, `Reply ${requests.length}`, () => alive)
+        return alive ? finish(res, index, 'end_turn') : undefined
       case 'say':
       case 'say-chars': {
         // 7.2 (Markdown): the reply is the rest of the message, word for word (no "Echo: "), so a test can send the app Markdown.

@@ -1746,7 +1746,7 @@ Running `npm run dev` shows one more menu in the header, **Task**, next to the m
 4. **The GitHub push.** When it was checked (1 October 2026) the repository had no `origin` remote, so nothing had been pushed from this folder.
 5. **Everything in the earlier stages' "Things to know" still applies.**
 
-## Stage 7 - What was built (so far: slices 7.1 and 7.2)
+## Stage 7 - What was built (so far: slices 7.1, 7.2 and 7.3)
 
 Stage 7 is built in five slices, one commit each: 7.1 Effort, 7.2 Markdown, 7.3 Copy / Regenerate / Edit and resend, 7.4 Instructions per
 chat, 7.5 the docs, the threat note and the full regression. This part describes what exists now.
@@ -1781,6 +1781,18 @@ chat, 7.5 the docs, the threat note and the full regression. This part describes
   (`parse.ts`, `Markdown.tsx`, `CodeBlock.tsx`, `LinkConfirm.tsx`, `linkContext.ts`), plus small changes to the message bubble, the chat view,
   the style sheet, `src/main/security.ts` and the model's instruction (`src/main/providers/request.ts`).
 
+**7.3 Copy, Regenerate, Edit (D-026).** Under each message there are now small buttons (shown when the pointer is over the message or the
+keyboard is in it, and always under the last one):
+
+- **Copy** on any finished message: the text as it was written (your message as typed, a reply as its Markdown), put on the clipboard when you
+  click. One function now does all the copying in the app, the code blocks' Copy included.
+- **Regenerate** on the last reply (**Try again** if it failed): the reply is replaced by a new one, asked for with the model and effort chosen
+  now, so changing the model and pressing it is how you compare two models.
+- **Edit** on your own messages: the message turns into a text box in place; **Send** replaces it and everything after it and asks again. If that
+  would remove more than the reply right after it, it asks first and says how many messages go (they are gone from the saved chat too).
+- Regenerate and Edit wait while a reply is arriving, and each one sends the whole conversation again, **billed again** (the tooltips say so).
+  **A reply that is replaced is gone: there are no versions.** No new package, no change in the main process; one new decision, **D-026**.
+
 ## Stage 7 - Step by step
 
 1. **Plan approved ("Go", 1 October 2026).** Own Markdown renderer with no package, Copy writes to the clipboard on a click, links open the
@@ -1803,3 +1815,11 @@ chat, 7.5 the docs, the threat note and the full regression. This part describes
 6. **The older suites were re-run** (`node tools/regress.mjs t72 node window scenarios`): 28 of 32 clean the first time. Four checks had gone stale
    because of this slice and were updated (they now read what a person sees in a reply, and the Stage 2 golden request compares everything but
    the system prompt); all pass again. The requests (42) were compared with the Stage 7.1 commit's: only the system prompt differs.
+7. **Slice 7.3 built and checked** (2 October 2026). The three functions that decide what is sent again (`chat/rewrite.ts`) were written and
+   checked first under Node (`verify-7-3.mjs`, 27 checks, frozen inputs and hostile ids included), then the buttons and the edit box, then the
+   window suite (`verify-7-3w.mjs` through `run73.mjs`, 53 checks). The mock got a `count` directive ("Reply N", N = requests received) so that a
+   reply asked for again is visibly a new one. Faults the checks found in the checks themselves: an assignment that handed a DOM node over the
+   debug protocol, a clipboard read before the write had finished, one check that could not fail, and checks that crashed instead of failing.
+8. **Negative controls:** 12 breakages under Node (all caught) and 13 in the real window (12 caught; the one that was not is a layer that
+   overlaps by design, see D-026), `tools/specs73*`, each file proved restored by hash.
+9. **The older suites were re-run** (`node tools/regress.mjs t73 node window scenarios`). The Node suites all passed. The window and scenario parts passed 23 of 23 on the second run; the first had stopped early because a launcher outran `regress.mjs`'s 400-second limit and left its app on the debug port (the limit is now 15 minutes). No older check had to be changed for this slice. No file under `src/main`, `src/shared` or `src/preload` changed in this slice, so nothing about a request or about what the main process accepts is different.

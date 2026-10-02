@@ -1,0 +1,14 @@
+{
+  "label": "edit-not-trimmed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/rewrite.ts",
+      "from": "{ ...messages[at], content: edited }",
+      "to": "{ ...messages[at], content: text }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-3.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "later-counts-the-message-itself",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/rewrite.ts",
+      "from": "return messages.length - 1 - at",
+      "to": "return messages.length - at"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-3.mjs"
+  ],
+  "env": {}
+}

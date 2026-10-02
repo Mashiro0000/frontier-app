@@ -1,0 +1,14 @@
+{
+  "label": "edit-keeps-the-later-messages",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/rewrite.ts",
+      "from": "return [...messages.slice(0, at), { ...messages[at], content: edited }]",
+      "to": "return [...messages.slice(0, at), { ...messages[at], content: edited }, ...messages.slice(at + 1)]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-3.mjs"
+  ],
+  "env": {}
+}

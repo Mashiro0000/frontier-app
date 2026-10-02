@@ -1,0 +1,25 @@
+{
+  "label": "w73-regenerate-sends-the-reply-too",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/useChat.ts",
+      "from": "const history = withoutLastReply(latest.current.messages)\n    if (history !== null) latest.current.begin(history)",
+      "to": "const history = withoutLastReply(latest.current.messages)\n    if (history !== null) latest.current.begin(latest.current.messages)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "verify-7-3w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s73nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "INSPECT_PORT": "9230",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w73-regenerate-sends-the-reply-too"
+  }
+}

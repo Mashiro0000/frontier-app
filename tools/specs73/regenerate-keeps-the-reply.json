@@ -1,0 +1,14 @@
+{
+  "label": "regenerate-keeps-the-reply",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/rewrite.ts",
+      "from": "const rest = messages.slice(0, -1)",
+      "to": "const rest = [...messages]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-3.mjs"
+  ],
+  "env": {}
+}

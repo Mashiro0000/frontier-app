@@ -854,3 +854,65 @@ exist). (4) The real `shell.openExternal` (replaced by a recorder; the mechanism
 Status: accepted (Stage 7.2). Revisit: the first real replies (what the reader gets wrong); syntax colours; the parts of Markdown left out; a
 deny-by-default permission handler; whether a line break inside a paragraph should be a space as in CommonMark (it is kept, which is right
 for old replies and wrong for a model that wraps its lines).
+
+## D-026 - Copy, Regenerate and Edit-and-send-again: asking again replaces what was there, and every way of asking again waits for a reply that is arriving
+
+Stage 7.3 puts small buttons under the messages of a chat. They are shown when the pointer is over a message or the keyboard is in it, always
+under the last message, and always where there is no pointer to hover with.
+
+- **Copy**, on any message that has finished arriving: puts the text on the clipboard as it is stored, that is, what the person typed, or a
+  reply as the Markdown the model wrote (not the drawn text), and says "Copied". One function (`useCopy`) is now the only place in the app that
+  writes the clipboard; the Copy button of a code block (D-025) uses it too. It is written on a click and at no other time, and nothing reads
+  the clipboard.
+- **Regenerate**, on the last reply only ("Try again" when it failed, which is the retry button IDEAS asked for): the last reply is replaced by a
+  new one. The conversation up to the person's last message is sent again, with the model and the effort chosen now (so changing either and
+  pressing Regenerate is how two models are compared; the new reply says who wrote it, D-021).
+- **Edit**, on the person's own messages: the message becomes a text box in its place. **Send** replaces the message with the new text, drops
+  everything after it, and asks the model again. Enter sends, Shift+Enter makes a new line, Escape cancels, as in the box at the bottom. Send is
+  off until the text is changed and is not empty, and the text is trimmed as it is in the box. **When more than the last exchange would go** (that
+  is, more than the one reply right after the message), it asks first: "Sending this replaces the 5 messages after it, here and in the saved
+  chat. They cannot be brought back." and the button says "Send anyway"; changing the text takes the question back.
+- **Replaces, and keeps no versions.** That was the simplest choice and the one the plan named. What it costs: the replaced reply, or the
+  messages after an edited one, are gone, from the screen and from the saved chat (the file is rewritten with the shorter conversation: still
+  one chat, one file, and the title follows the first message). **Left:** there is no undo, and no "keep both"; Regenerate does not ask, because
+  it replaces one reply.
+- **Billed again.** Each of Regenerate and Edit-and-send makes a new request that carries the whole conversation. The buttons' tooltips and the
+  edit box say so. Nothing here repeats by itself: every request comes from a click, so there is no loop. **Left:** no limit stops a person who
+  clicks Regenerate twenty times; Stage 8's spending limit has to count these requests too.
+- **Off while a reply is arriving.** Regenerate and Edit are disabled, with a tooltip that says when they come back, and `useChat` also refuses
+  a second request while one is running (so a double click cannot start two). **One difference from the plan** ("all off while replying"):
+  Copy stays on for messages that have finished, because it asks nothing of the model; the message that is still arriving has none.
+- **What is sent, and what is not new.** The conversation to send is worked out by three plain functions (`chat/rewrite.ts`: the conversation
+  without its last reply, the conversation up to an edited message, how many messages follow one), which change nothing they are given. The
+  main process is unchanged: the request is the same `chat:start` as a message typed in the box, checked the same way, and no new message
+  crosses the bridge. A script in the page can do nothing here that it could not do before.
+- **Small things.** The page keeps older messages from drawing again while a reply streams in (the callbacks that reach them are the same
+  function from one render to the next). After asking again the keyboard goes back to the box at the bottom. A chat that gets shorter (an
+  earlier message edited) scrolls to its end, where the new reply is.
+
+**Threat note (what could go wrong, what stops it, what is left).**
+
+- _Losing something by a click._ Regenerate replaces the last reply at once; Edit asks first only when more than the last exchange goes.
+  **Left:** a reply that was good and was regenerated cannot be brought back. The saved copy is overwritten too.
+- _Money._ Each click bills again, and the tooltips say so. **Left:** no limit until Stage 8; nothing repeats without a click.
+- _A second request while one runs._ Refused in the buttons (disabled, checked in the window) and again in `useChat`. **Not tested:** that
+  second guard is not reachable from outside the page (a second click lands on a button that is no longer there), so a sabotage of it would
+  go unnoticed; it is there as a belt to the braces.
+- _The clipboard._ Copy writes only on a click, only the text of a message already on screen. **Left:** what is copied may hold anything the
+  model wrote, and whatever the person pastes it into is theirs to watch.
+- _Text typed into the edit box_ is shown in a plain text box and goes out through the same checks as any message; it is never drawn as
+  Markdown (D-025).
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only. Under plain Node (`verify-7-3.mjs`, 27 checks): the
+three functions with every shape of conversation, frozen inputs, hostile ids and texts. In the real window (`run73.mjs`, 53 checks):
+what is offered under each message; Copy of a reply, of a message, of a Markdown reply (the source) and while another reply arrives; every
+button waiting for a reply that is arriving; Regenerate (what is sent, that the reply is replaced and not added, that the saved chat follows,
+that another model answers and says so); Try again after a failure and the way out by editing; Edit of the first, a middle and the last
+question (what is asked, what is sent, what is gone from the screen and from the file); Escape, Cancel, Enter and Shift+Enter; a chat opened
+from History; the keyboard returning to the box; 420 and 320 px wide. Negative controls: all 12 breakages of the three functions were caught under Node. Of 13 breakages of the real window, 12 were caught (the one that sends the old reply along with the question ended its first launch without a summary, which is not a detection, so it was run again on its own and failed three checks), and one was not: taking the trimming out of the edit box changes nothing, because the function that works out the conversation trims as well (two layers, as in D-015). Every file was put back and proved identical by hash. The older suites were re-run on this tree (`node tools/regress.mjs t73 node window scenarios`, 2 October 2026): the Node suites all passed, and the window and scenario parts passed 23 of 23 on the second run. The first run had ended early, and the reason was the test harness, not the app: a launcher (`run71.mjs`, a dozen launches) outran `regress.mjs`'s 400-second limit, was killed, and left its app on the debug port, which stopped the launches after it. The limit is now 15 minutes and tools/README says what to do if it happens. No older check had to be changed for this slice. The Stage 4 history suites, the seeded launches and the built-app (`preview`) runs were not re-run.
+**Not checked:** (1) a real model asked again (only the mock); (2) a screen reader, and the layout where there is no pointer (`hover: none`);
+(3) a very long chat edited near its start (the shortening is the only direction a save has to handle, and it was tried with six messages);
+(4) Stage 4's history suites and the built app, which run at the end of Stage 7; (5) Windows only.
+
+Status: accepted (Stage 7.3). Revisit: versions of a reply (keep the old one, flip between them) if replacing proves too blunt; asking before
+Regenerate; counting the requests against Stage 8's limit.

@@ -12,6 +12,10 @@ interface MessageListProps {
   emptyHint: React.ReactNode
   /** What to call a model: its name from the registry, or its id if the registry no longer lists it. */
   modelName: (modelId: string) => string
+  /** Asks again for the last reply (D-026). */
+  onRegenerate: () => void
+  /** Replaces one of the person's messages and asks again (D-026). */
+  onResend: (id: string, text: string) => void
 }
 
 /**
@@ -36,7 +40,9 @@ function MessageList({
   messages,
   isReplying,
   emptyHint,
-  modelName
+  modelName,
+  onRegenerate,
+  onResend
 }: MessageListProps): React.JSX.Element {
   const listRef = useRef<HTMLDivElement>(null)
   // True while the user is reading the newest message; false once they scroll up to read older ones.
@@ -54,8 +60,9 @@ function MessageList({
   useLayoutEffect(() => {
     const list = listRef.current
     if (!list) return
-    // A new message means the user just sent something, so jump to it even if they had scrolled up.
-    if (messages.length > previousCount.current) stickToBottom.current = true
+    // A new message means the user just sent something, so jump to it even if they had scrolled up. A conversation that got shorter is
+    // one where an earlier message was edited and sent again (D-026): the new reply is at the end, and that is where to look.
+    if (messages.length !== previousCount.current) stickToBottom.current = true
     previousCount.current = messages.length
     if (stickToBottom.current) list.scrollTop = list.scrollHeight
   }, [messages])
@@ -76,7 +83,16 @@ function MessageList({
       ) : (
         <div className="message-list-inner">
           {messages.map((message, index) => (
-            <MessageBubble key={message.id} message={message} answeredBy={captions[index]} />
+            <MessageBubble
+              key={message.id}
+              message={message}
+              answeredBy={captions[index]}
+              replying={isReplying}
+              isLast={index === messages.length - 1}
+              later={messages.length - 1 - index}
+              onRegenerate={onRegenerate}
+              onResend={onResend}
+            />
           ))}
         </div>
       )}

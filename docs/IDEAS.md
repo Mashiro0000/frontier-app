@@ -11,8 +11,8 @@
 - Syntax colours in code blocks (a package, or a small tokenizer of our own for a few languages; D-025)
 - The parts of Markdown the reader leaves out: task lists, footnotes, setext headings, reference links, entities (D-025)
 - A deny-by-default permission handler for the window, so the page can ask for nothing it does not use (it uses the clipboard write); Electron grants every request when none is set (D-025)
-- Copy button on each message
-- Retry / regenerate the last reply
+- Keep the old reply when one is regenerated, and the later messages when one is edited (versions of a reply or of a chat; D-026 replaces them)
+- Ask before Regenerate replaces a reply (D-026 does not)
 - Automated tests for `useChat` (needs a test runner; none is set up, see D-007)
 - Show what each reply cost (the API reports token counts with every reply)
 - Server-side refusal fallbacks for the provider, once there is a real key to try them with (D-012)
@@ -31,7 +31,6 @@
 - Export or copy a saved conversation as Markdown (the idea above, now with something to export from)
 - "Delete all", and an option to clear conversations older than some age
 - Encrypt saved conversations with the operating system's secure storage (D-016 says what it would cost)
-- A Retry button on a failed reply (D-013); a saved conversation makes it more useful
 - Run `tools/regress.mjs` automatically (a pre-release script or CI); today it is run by hand, about 40 minutes
 - Gemini as the third provider (an adapter and a registry entry; the provider tables will not compile without them, D-018)
 - Windows Credential Manager instead of safeStorage files for the keys (needs a native keyring package; D-020)

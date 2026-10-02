@@ -36,6 +36,9 @@ model that takes none (Haiku 4.5). A higher level is slower and billed as more o
 Replies are shown as Markdown (headings, lists, tables, quotes, code blocks with a **Copy** button) by a small reader of the app's
 own; raw HTML and images in a reply are shown as text and nothing is loaded. A link in a reply asks first: you see the whole address,
 and only **Open** sends it to your browser (D-025). What you type is shown as typed.
+Under each message: **Copy** (the text as written); under the last reply **Regenerate** (**Try again** after a failure), which replaces it;
+under your own messages **Edit**, which replaces the message and everything after it and asks again, asking first if more than the last
+exchange would go. Asking again sends the whole conversation again and is billed again (D-026).
 The list of models is `registry/models.json`: edit it, then restart `npm run dev` (or run `npm run dev -- --watch`
 so it restarts by itself). See docs/DECISIONS.md D-012, D-014, D-015, D-020 and D-022.
 

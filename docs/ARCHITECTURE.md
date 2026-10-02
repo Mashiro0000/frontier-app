@@ -146,16 +146,21 @@ earlier turns is D-013.
 
 ## Chat UI (`src/renderer/src/chat/`)
 
-| File                | Job                                                                                                                                  |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `ChatView.tsx`      | Puts the message list and the input box together. The conversation itself is held in `App`, which also feeds the header's model menu |
-| `useChat.ts`        | Conversation state, and the cycle: send, reply streams in, then done / stopped / error. (4) `load` replaces the conversation         |
-| `ipcReply.ts`       | The reply function: sends the conversation to main over the bridge and streams the answer                                            |
-| `history.ts`        | Decides what the model is told about earlier turns (D-013)                                                                           |
-| `types.ts`          | `ChatMessage`, `MessageStatus` and `ReplyFn`                                                                                         |
-| `MessageList.tsx`   | Scrolling list. Stays on the newest text unless the reader scrolled up                                                               |
-| `MessageBubble.tsx` | One message: typing dots while waiting, a "Stopped" or error line when needed                                                        |
-| `Composer.tsx`      | Input box. Enter sends, Shift+Enter adds a line. Shows Send, or Stop while a reply streams                                           |
+| File                 | Job                                                                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `ChatView.tsx`       | Puts the message list and the input box together. The conversation itself is held in `App`, which also feeds the header's model menu |
+| `useChat.ts`         | Conversation state, and the cycle: send, reply streams in, then done / stopped / error. (4) `load` replaces the conversation         |
+| `ipcReply.ts`        | The reply function: sends the conversation to main over the bridge and streams the answer                                            |
+| `history.ts`         | Decides what the model is told about earlier turns (D-013)                                                                           |
+| `types.ts`           | `ChatMessage`, `MessageStatus` and `ReplyFn`                                                                                         |
+| `MessageList.tsx`    | Scrolling list. Stays on the newest text unless the reader scrolled up                                                               |
+| `MessageBubble.tsx`  | One message: typing dots while waiting, a "Stopped" or error line when needed. (7) A reply is Markdown (D-025)                       |
+| `MessageActions.tsx` | (7) Copy, Regenerate (Try again) and Edit under a message; the last two wait for a reply that is arriving (D-026)                    |
+| `MessageEdit.tsx`    | (7) A message of the person's open for editing in place; asks first when more than the last exchange would go (D-026)                |
+| `rewrite.ts`         | (7) What is sent again: the conversation without its last reply, or up to an edited message (plain functions)                        |
+| `Composer.tsx`       | Input box. Enter sends, Shift+Enter adds a line. Shows Send, or Stop while a reply streams                                           |
+
+`src/renderer/src/useCopy.ts` is the one place that writes the clipboard (on a click, D-025, D-026).
 
 `App.tsx` adds the header (New chat, History, the model menu, Settings). All styling is one stylesheet, `assets/main.css`, with colours as CSS
 variables at the top. The UI is dark only.

@@ -1,0 +1,14 @@
+{
+  "label": "edit-changes-the-original",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/rewrite.ts",
+      "from": "{ ...messages[at], content: edited }",
+      "to": "Object.assign(messages[at], { content: edited })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-3.mjs"
+  ],
+  "env": {}
+}
