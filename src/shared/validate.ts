@@ -8,7 +8,7 @@ import {
   type SavedMessage,
   type WireMessage
 } from './ipc'
-import { SUPPORTED_PROVIDERS, type ProviderId } from './registry'
+import { SUPPORTED_PROVIDERS, type Effort, type ProviderId } from './registry'
 
 export const API_KEY_MIN_LENGTH = 20
 export const API_KEY_MAX_LENGTH = 300
@@ -83,6 +83,32 @@ export function checkModelChoice(
   const match = models.find((model) => model.id === input)
   if (!match) return { ok: false, error: 'That model is not available.' }
   return { ok: true, modelId: match.id }
+}
+
+export type EffortChoiceCheck =
+  { ok: true; modelId: string; level: Effort } | { ok: false; error: string }
+
+/**
+ * Checks an effort choice from the page (D-024): the id of a model on offer, and a level that model's own entry lists. Both must
+ * match exactly (no other letter case, no padding), and the strings handed back are the registry's, never the page's, so nothing
+ * the page invents is saved or used. A level another model takes, and this one does not, is refused.
+ */
+export function checkEffortChoice(
+  input: unknown,
+  models: readonly { id: string; capabilities: { effortLevels: readonly Effort[] } }[]
+): EffortChoiceCheck {
+  if (typeof input !== 'object' || input === null) {
+    return { ok: false, error: 'The effort choice was not understood.' }
+  }
+  const { modelId, level } = input as Record<string, unknown>
+  if (typeof modelId !== 'string' || typeof level !== 'string') {
+    return { ok: false, error: 'The effort choice was not understood.' }
+  }
+  const model = models.find((candidate) => candidate.id === modelId)
+  if (!model) return { ok: false, error: 'That model is not available.' }
+  const match = model.capabilities.effortLevels.find((candidate) => candidate === level)
+  if (!match) return { ok: false, error: 'That model does not take that effort level.' }
+  return { ok: true, modelId: model.id, level: match }
 }
 
 const STREAM_ID = /^[A-Za-z0-9_-]{8,64}$/

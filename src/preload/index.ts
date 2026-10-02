@@ -15,7 +15,9 @@ const api: FrontierApi = {
     setApiKey: (provider, key) => ipcRenderer.invoke(CHANNELS.settingsSetApiKey, { provider, key }),
     clearApiKey: (provider) => ipcRenderer.invoke(CHANNELS.settingsClearApiKey, provider),
     testApiKey: (provider) => ipcRenderer.invoke(CHANNELS.settingsTestApiKey, provider),
-    setModel: (modelId) => ipcRenderer.invoke(CHANNELS.settingsSetModel, modelId)
+    setModel: (modelId) => ipcRenderer.invoke(CHANNELS.settingsSetModel, modelId),
+    setEffort: (modelId, level) =>
+      ipcRenderer.invoke(CHANNELS.settingsSetEffort, { modelId, level })
   },
   chat: {
     start: (request) => ipcRenderer.send(CHANNELS.chatStart, request),

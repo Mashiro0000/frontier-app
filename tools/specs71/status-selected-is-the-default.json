@@ -1,0 +1,14 @@
+{
+  "label": "status-selected-is-the-default",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/effort.ts",
+      "from": "    selected: effort,",
+      "to": "    selected: entry.effort,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

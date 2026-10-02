@@ -1,0 +1,31 @@
+{
+  "label": "w71c-warns-every-time",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/models.ts",
+      "from": "if (unusable !== null && !warnedEfforts.has(`${entry.id}/${unusable}`)) {",
+      "to": "if (unusable !== null) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "verify-7-1c.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s71seednc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "A:\\frontier-app\\tools\\.out\\seeds71\\eff-level-not-offered.json",
+    "SEED_NAME": "eff-level-not-offered",
+    "SEED_SHA": "f1d22a37a68795c3",
+    "EXPECT_MODEL": "claude-opus-5-5",
+    "EXPECT_EFFORT": "medium",
+    "WARN_LEVEL": "none",
+    "SAVED_MODEL": "claude-opus-5-5",
+    "KEYS_AFTER": "[\"claude-opus-5-5\"]",
+    "LOG_LABEL": "nc-eff-level-not-offered"
+  }
+}

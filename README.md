@@ -30,7 +30,9 @@ provider. The default model is Claude Opus 5.5; the menu in the header chooses a
 Haiku 4.5, or OpenAI's GPT-6 Astra, GPT-6.1 Sol and GPT-6 Luna), and Settings shows what each one costs. A chat can move
 between providers: the whole conversation is sent to whichever model answers next. The **Task** menu next to the model
 menu (chat, coding, writing, quick answer) marks the models the providers' own pages name for a task with "(suggested)";
-it chooses nothing, and the list is `registry/rankings.json` (D-023).
+it chooses nothing, and the list is `registry/rankings.json` (D-023). The **Effort** menu (Faster to Smarter) says how hard the chosen model
+thinks before it answers: it offers the levels the registry lists for that model, remembers your choice per model, and is not shown for a
+model that takes none (Haiku 4.5). A higher level is slower and billed as more output (D-024).
 The list of models is `registry/models.json`: edit it, then restart `npm run dev` (or run `npm run dev -- --watch`
 so it restarts by itself). See docs/DECISIONS.md D-012, D-014, D-015, D-020 and D-022.
 

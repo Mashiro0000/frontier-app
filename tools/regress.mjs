@@ -31,7 +31,7 @@ const launcher = (script, mode, label, what) => {
 }
 
 if (parts.includes('node')) {
-  for (const [label, script] of [['provider', process.env.PROVIDER_TEST ?? 'provider-node-test-5.mjs'], ['registry', process.env.REGISTRY_TEST ?? 'verify-5-2.mjs'], ['store', 'verify-4-1.mjs'], ['adapter', 'provider-adapter-test-5.mjs'], ['credstore', 'verify-5-3-store.mjs'], ['store54', 'verify-5-4-store.mjs'], ['openai', 'provider-openai-test-5.mjs'], ['rankings', 'verify-6-1.mjs'], ...(process.env.EXTRA_NODE_TESTS ? process.env.EXTRA_NODE_TESTS.split(',').map((t, i) => ['extra' + i, t]) : [])]) {
+  for (const [label, script] of [['provider', process.env.PROVIDER_TEST ?? 'provider-node-test-5.mjs'], ['registry', process.env.REGISTRY_TEST ?? 'verify-5-2.mjs'], ['store', 'verify-4-1.mjs'], ['adapter', 'provider-adapter-test-5.mjs'], ['credstore', 'verify-5-3-store.mjs'], ['store54', 'verify-5-4-store.mjs'], ['openai', 'provider-openai-test-5.mjs'], ['rankings', 'verify-6-1.mjs'], ['effort', 'verify-7-1.mjs'], ...(process.env.EXTRA_NODE_TESTS ? process.env.EXTRA_NODE_TESTS.split(',').map((t, i) => ['extra' + i, t]) : [])]) {
     const r = runNode({ label: pfx(label), script })
     note(r.ok, `${r.ok ? 'OK  ' : 'BAD '} ${pfx(label).padEnd(26)} ${script}`)
   }
@@ -48,6 +48,7 @@ if (parts.includes('window')) {
   launcher('run54.mjs', 'dev', 'w54', 'verify-5-4 (who answered, file v2)')
   launcher('run55.mjs', 'dev', 'w55', 'verify-5-5 (two providers)')
   launcher('run62.mjs', 'dev', 'w62', 'verify-6-2/3 (task menu, rankings damaged)')
+  launcher('run71.mjs', 'dev', 'w71', 'verify-7-1 (effort menu, restart, damaged efforts)')
   const mtime = statSync(join(P, 'preferences.json')).mtimeMs
   rec(seeded('34b', 'dev', 'verify-3-4b.mjs', { USER_DATA_DIR: P, MOCK_PORT: MOCK, EXPECT_MODEL: 'claude-haiku-4-5-20251001', PREFS_MTIME_MS: String(mtime) }), pfx('34b'), 'verify-3-4b (restart)')
 }
@@ -93,6 +94,7 @@ if (parts.includes('preview')) {
   launcher('run54.mjs', 'preview', 'prev-w54', 'built: verify-5-4')
   launcher('run55.mjs', 'preview', 'prev-w55', 'built: verify-5-5')
   launcher('run62.mjs', 'preview', 'prev-w62', 'built: verify-6-2 (menu, marks)')
+  launcher('run71.mjs', 'preview', 'prev-w71', 'built: verify-7-1 (effort menu, restart, seeds)')
   stage4('preview')
 }
 

@@ -122,8 +122,9 @@ async function* stream(request: StreamRequest): AsyncGenerator<StreamEvent> {
       input: request.messages.map(({ role, content }) => ({ role, content })),
       max_output_tokens: request.maxOutputTokens,
       // `effort` is how much the model thinks before it answers (its thinking is billed as output and counts against
-      // max_output_tokens). Written out for every model that takes it, because the defaults differ between models (D-014).
-      ...(model.effort ? { reasoning: { effort: model.effort } } : {}),
+      // max_output_tokens). Written out for every model that takes it, because the defaults differ between models (D-014);
+      // the level is the person's choice for this model, or else the registry's pick (D-024).
+      ...(request.effort ? { reasoning: { effort: request.effort } } : {}),
       // Responses are kept on the provider's side by default. This app sends the whole conversation every time and uses none of
       // that, so nothing is kept (D-022).
       store: false

@@ -84,7 +84,7 @@ async function runReply(
       send({ streamId, type: 'error', message: model.error })
       return
     }
-    const { entry } = model
+    const { entry, effort } = model // fixed with the model, for this whole reply (D-024)
     adapter = adapterFor(entry.provider)
     modelId = entry.id
     // Before anything else is looked up or sent, say who answers (D-021): the page records it on the reply, so even a reply
@@ -103,6 +103,7 @@ async function runReply(
       buildStreamRequest({
         credentials: { apiKey, baseURL: baseUrlOverride(entry.provider) },
         model: entry,
+        effort,
         messages: request.messages,
         signal: controller.signal
       })

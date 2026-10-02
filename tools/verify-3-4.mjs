@@ -47,12 +47,12 @@ let badges = await H.badges()
 check('no key: exactly one badge, the warning "No API key" (the model is no longer a badge)', badges.length === 1 && badges[0].text === 'No API key' && badges[0].warn, JSON.stringify(badges))
 
 const apiKeys = await ev(`JSON.stringify(Object.keys(window.api.settings))`)
-check('window.api.settings is exactly getStatus / setApiKey / clearApiKey / testApiKey / setModel', apiKeys === '["getStatus","setApiKey","clearApiKey","testApiKey","setModel"]', apiKeys)
+check('window.api.settings is exactly getStatus / setApiKey / clearApiKey / testApiKey / setModel / setEffort', apiKeys === '["getStatus","setApiKey","clearApiKey","testApiKey","setModel","setEffort"]', apiKeys)
 const status0 = await H.status()
-check('getStatus: exactly providers, canStoreKey, models, selectedModelId, modelsError, modelsCheckedOn, tasks, suggestions', Object.keys(status0).join() === 'providers,canStoreKey,models,selectedModelId,modelsError,modelsCheckedOn,tasks,suggestions', Object.keys(status0).join())
+check('getStatus: exactly providers, canStoreKey, models, selectedModelId, modelsError, modelsCheckedOn, tasks, suggestions, effort', Object.keys(status0).join() === 'providers,canStoreKey,models,selectedModelId,modelsError,modelsCheckedOn,tasks,suggestions,effort', Object.keys(status0).join())
 check('getStatus: default selected, no registry error, checked on 2026-10-01', status0.selectedModelId === OPUS && status0.modelsError === null && status0.modelsCheckedOn === '2026-10-01')
 check('getStatus: each model has exactly id, label, provider, description, contextWindow, pricing', status0.models.length === models.length && status0.models.every((m) => Object.keys(m).join() === 'id,label,provider,description,contextWindow,pricing'))
-check('the page is told nothing about how a model is called: no "effort", no output limit anywhere in the status', !/effort|maxOutputTokens/i.test(JSON.stringify(status0)))
+check('the page is told nothing about how a model is called: no output limit anywhere in the status, nothing about effort on any model, and (since Stage 7, D-024) the effort of the chosen model only as a menu: levels, selected, default', !/maxOutputTokens/i.test(JSON.stringify(status0)) && status0.models.every((m) => !/effort/i.test(JSON.stringify(m))) && Object.keys(status0.effort).join() === 'levels,selected,default')
 check('the status carries the registry\'s facts (each model\'s provider, the providers named "Anthropic" and "OpenAI", prices, context)', status0.providers.map((p) => p.name).join() === 'Anthropic,OpenAI' && status0.models.every((m, i) => m.provider === models[i].provider && m.contextWindow === models[i].contextWindow && m.pricing.inputPerMTok === models[i].pricing.inputPerMTok && m.pricing.outputPerMTok === models[i].pricing.outputPerMTok))
 
 // the Settings dialog describes the selected model
@@ -78,10 +78,12 @@ for (const width of [420, 320]) {
 await page.send('Emulation.clearDeviceMetricsOverride')
 await sleep(200)
 
-// keyboard: Tab goes menu -> Settings
+// keyboard: Tab goes model menu -> Effort menu (7.1, D-024: Opus, the default, takes an effort setting) -> Settings
 await ev(`document.querySelector('.header-select').focus()`)
 await page.press('Tab')
-check('keyboard: Tab from the menu lands on the Settings button', (await ev(`document.activeElement.textContent`)) === 'Settings', await ev(`document.activeElement.textContent`))
+check('keyboard: Tab from the model menu lands on the Effort menu (7.1)', (await ev(`document.activeElement.getAttribute('aria-label')`)) === 'Effort', await ev(`document.activeElement.getAttribute('aria-label')`))
+await page.press('Tab')
+check('keyboard: the next Tab lands on the Settings button', (await ev(`document.activeElement.textContent`)) === 'Settings', await ev(`document.activeElement.textContent`))
 
 // ===================== B. choosing a model =====================
 await H.chooseInPage(SONNET)

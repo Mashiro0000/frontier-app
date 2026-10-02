@@ -20,7 +20,7 @@ tree), and keep the machine idle: `verify-4-3c` (quit with 60 queued saves) fail
 | Part        | What it runs                                                                        | About   |
 | ----------- | ----------------------------------------------------------------------------------- | ------- |
 | `node`      | Plain-Node suites: provider, registry, rankings, store, adapters, credential store  | 1.5 min |
-| `window`    | The window suites of Stages 1-3, 5 and 6, each on its own scratch profile           | 4 min   |
+| `window`    | The window suites of Stages 1-3, 5, 6 and 7.1, each on its own scratch profile      | 7 min   |
 | `seeds`     | One launch per damaged `preferences.json` (`make-seeds.mjs` makes them)             | 4.5 min |
 | `scenarios` | The registry file deliberately broken in ten ways, restored after each (`run-scenario.mjs`) | 3 min   |
 | `stage4`    | The history suites (`final-new.mjs`): crashes, damaged folders, injected disk faults | long    |
@@ -33,6 +33,7 @@ Single pieces:
 
 ```
 node tools/run53.mjs                      one launch of the key / Settings suite
+node tools/run71.mjs [dev|preview]        the Effort menu (7.1): a fresh profile, a restart, and ten seeded preferences files
 node tools/run-scenario.mjs <scenario>    one registry scenario
 node tools/nc-all.mjs specs guard-off     one negative control (spec folders: specs, specs4, specs4w)
 node tools/with-load.mjs 8 tools/regress.mjs <tag> window      the same, with 8 busy CPU loops competing

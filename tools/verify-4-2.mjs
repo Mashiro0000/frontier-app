@@ -32,7 +32,7 @@ check('the header has New chat, History and Settings, in that order', JSON.strin
 check('New chat is disabled while the chat is empty, and says why', buttons[0].disabled && /empty/i.test(buttons[0].title), buttons[0].title)
 check('History and Settings are enabled', !buttons[1].disabled && !buttons[2].disabled)
 const api = await ev(`({ top: Object.keys(window.api).sort(), history: Object.keys(window.api.history ?? {}).sort(), settings: Object.keys(window.api.settings).sort(), chat: Object.keys(window.api.chat).sort() })`)
-check('window.api gained exactly `history` { list, load, remove, save }; nothing else changed', JSON.stringify(api) === JSON.stringify({ top: ['chat', 'history', 'settings'], history: ['list', 'load', 'remove', 'save'], settings: ['clearApiKey', 'getStatus', 'setApiKey', 'setModel', 'testApiKey'], chat: ['cancel', 'onEvent', 'start'] }), JSON.stringify(api))
+check('window.api gained exactly `history` { list, load, remove, save }; nothing else changed', JSON.stringify(api) === JSON.stringify({ top: ['chat', 'history', 'settings'], history: ['list', 'load', 'remove', 'save'], settings: ['clearApiKey', 'getStatus', 'setApiKey', 'setEffort', 'setModel', 'testApiKey'], chat: ['cancel', 'onEvent', 'start'] }), JSON.stringify(api))
 const list0 = await ev(`window.api.history.list()`)
 check('list() on a fresh profile: no conversations, none unreadable, and it names the folder', list0.conversations.length === 0 && list0.unreadable === 0 && samePath(list0.folder, folder), JSON.stringify(list0))
 check('...and asking did not create the folder', H.files() === null)

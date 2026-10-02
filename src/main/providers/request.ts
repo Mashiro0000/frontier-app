@@ -1,4 +1,4 @@
-import type { ModelEntry, ProviderId } from '../../shared/registry'
+import type { Effort, ModelEntry, ProviderId } from '../../shared/registry'
 import type { Credentials, NeutralMessage, StreamRequest } from './types'
 
 // The app's own rules for a reply (D-012, D-013), applied here, once, whichever provider answers. An adapter
@@ -45,10 +45,15 @@ export function mergeAdjacent(messages: readonly NeutralMessage[]): NeutralMessa
   return merged
 }
 
-/** Turns what the chat knows into what an adapter is given. */
+/**
+ * Turns what the chat knows into what an adapter is given. `effort` is what chat.ts decided for this reply (the person's saved
+ * choice, D-024); left out, it is the registry's own pick for the model, which is what every reply asked for before there was a
+ * choice. `null` is a decision too: this model takes none.
+ */
 export function buildStreamRequest(input: {
   credentials: Credentials
   model: ModelEntry
+  effort?: Effort | null
   messages: readonly NeutralMessage[]
   signal: AbortSignal
 }): StreamRequest {
@@ -56,6 +61,7 @@ export function buildStreamRequest(input: {
   return {
     credentials,
     model,
+    effort: input.effort === undefined ? model.effort : input.effort,
     system: systemPromptFor(model.provider),
     messages: mergeAdjacent(messages),
     maxOutputTokens: Math.min(MAX_REPLY_TOKENS, model.maxOutputTokens),

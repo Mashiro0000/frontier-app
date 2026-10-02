@@ -684,3 +684,71 @@ written here anyway would look like a fact. So the file does not hold scores.
 Status: accepted (Stage 6). Revisit: real benchmark rows once there is a source that compares these models on one scale (then a schema 0.3
 with an optional score, and an order); a row for chat; deleting the Haiku row if it is retired; whether people want a single suggestion
 after all (the cheapest of those named is the obvious rule, and would be a decision about their money).
+
+## D-024 - The person chooses how hard each model thinks (Effort); main keeps the choice per model and checks it against the registry every time
+
+Until now every reply asked for the one level that `registry/models.json` names for the model (D-014, D-019), and the person could not change
+it. The Claude desktop app has an Effort control and the roadmap asked for one (Stage 7). Higher effort means the model thinks longer before it
+answers: slower, and the thinking is billed as output.
+
+- **What the person sees.** A menu next to the model menu: "Effort: Low (faster)", "Effort: Medium (default)", ..., "Effort: Max (smarter)". It
+  lists only the levels the registry gives the chosen model (`capabilities.effortLevels`), from the one that thinks least to the one that
+  thinks most (sorted by the app, not trusted to the registry's order). It is not in the page at all for a model that takes none (Haiku 4.5).
+  The level the registry picks stays in force until the person chooses, and is marked "(default)". The menu is disabled while a reply is
+  arriving: the effort is fixed when a reply starts, like the model. Its tooltip says what a higher level costs (slower, billed as output) and
+  that the thinking counts against the reply's length limit.
+- **Kept per model.** `preferences.json` stays version 1 and gains `efforts`: `{ "<model id>": "<level>" }`. Choosing a level for Opus does not
+  touch Sonnet's. One function writes the whole file (`writePreferences`), so choosing a model never drops the efforts and choosing an effort
+  never drops the model; it is written in place and read back (D-010, D-015), and both kinds of change share one queue (`inOrder`), so two
+  calls cannot cross.
+- **Checked three times, never the page's word.** (1) The handler: `checkEffortChoice` accepts only a model that is on offer and a level that
+  model's own entry lists, matched exactly (no other letter case, no padding), and hands back the registry's strings, never the page's.
+  (2) `chooseEffort` checks again where it saves. (3) Every time a reply starts, `resolveEffort` checks the saved level against the model's
+  list: the registry can change under a saved choice. A level the model no longer lists is not used (the registry's pick is), once in the log,
+  and the file is left alone so the choice comes back if the level does (as a saved model does, D-015).
+- **Reading is forgiving, so a damaged `efforts` never costs the model choice.** `parseSavedEfforts` keeps the usable entries and drops the
+  rest (a key that is not shaped like a model id, a value that is not a known level), takes at most 200, and builds a Map, so no key (`__proto__`
+  included) is special.
+- **The page decides nothing about a reply.** The chat request carries no effort. `chat.ts` takes it from `currentModel()`, fixed with the model
+  for the whole reply, and `StreamRequest.effort` is what an adapter sends (never `model.effort`, which is only the registry's default). The page
+  is told `{ levels, selected, default }` for the chosen model and nothing about how a model is called (`toModelOption` still says nothing about
+  effort).
+- **Nothing chosen, nothing changed.** With no level chosen, the requests are byte-identical to Stage 6's (compared on a copy of `main`,
+  42 requests, see "What was checked").
+- **The ceiling is unchanged.** A reply is still limited to 16,000 tokens and the thinking counts against it, so at the highest levels a reply
+  may stop early and show the existing "cut off" notice. Raising the ceiling would be a decision about spending, which is Stage 8's.
+
+**Threat note (what could go wrong, what stops it, what is left).**
+
+- _The page, or a script in it, sends an invented model or level_ (`max` for Haiku, `none` to Anthropic, `__proto__`, padding, another case, a
+  non-string): refused by the handler, and again where it is saved; 19 kinds of bad input were refused with plain sentences that do not echo
+  the input, and nothing was written. A call from an `about:blank` page is rejected by the sender guard. **Left:** a script in the app's own
+  page can still choose any level a model takes. That is what the menu does, so it is no new power.
+- _A hand-edited or damaged `preferences.json`_: read forgivingly (above), capped, no special keys; nine stale or damaged seeds were each read and gave the expected model and level. **Left:** whoever can write to your profile can set a level the model takes, the same as the menu; that is the same
+  limit as D-010 and D-015.
+- _A saved level the registry stops offering_: not used, once in the log, the registry's pick applies.
+- _Cost_: a higher level is billed as more output. The tooltip says so; there is no limit yet. **Left:** one click sets a level for every later
+  reply of that model until it is changed, and nothing counts or caps the extra thinking beyond the 16,000-token ceiling per reply. Stage 8's
+  spending limit has to count it.
+- _A reply cut short by the thinking_: the existing notice for a cut-off reply. Not a safety matter; it can surprise.
+- _Two copies of the app at once_ can overwrite each other's `preferences.json` (as for the model, D-015). Not handled.
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only. Under plain Node (`verify-7-1.mjs`, 90 checks): the
+check, the saved-file reader and the resolver with every kind of damage, hostile and frozen input. In the real window (`run71.mjs`, 198
+checks): the menu for each of the seven models (Haiku has none), the request each reply sends (the strict mock refuses what the real API
+documentation says is refused), per-model memory, a restart, the menu locked during a reply while a reply already running keeps its level,
+19 kinds of bad input, a call from `about:blank`, bursts of rapid changes ending on the last choice, the keyboard, two narrow widths (420 and 320 px:
+nothing overflows), no key or warning in the log, and ten seeded `preferences.json` files (one good, nine with a stale, damaged or hostile
+`efforts`). Negative controls: the Node suite caught 17 of 17
+sabotages; the window suite had 15 sabotages: 13 were caught clearly, and two need a note: switching off the handler's check alone is caught only by
+the refusal sentence, and switching off the save-time check alone changes nothing **by design** (two layers, either alone suffices, as in
+D-015); the seeds caught 6 of 6. The request bytes of a reply with nothing chosen are identical to Stage 6's. The older suites were then re-run on the new tree (`node tools/regress.mjs t71 node window seeds scenarios`, 2 October 2026): 46 runs, 44 clean the first time. The two that were not were checks this slice made stale, not faults: the adapter suite's list of the fields of a request (which now holds `effort`) and `verify-3-4`'s Tab order (the Effort menu now sits between the model menu and Settings). Both were updated and pass on their own re-run (94 of 94, 78 of 78). The Stage 4 history suites and the built-app (`preview`) runs were not re-run for this slice.
+**Not checked:** (1) **a real call to either provider.** How a real API answers at each level, whether it accepts every level the registry
+lists for each model, how much more it thinks and costs, and where the 16,000 ceiling cuts a reply at the highest levels are all unknown; the
+mock is my reading of the documentation. The first real use is yours: Settings, then a message at two levels. (2) The OS-drawn list of the
+menu (it cannot be seen or clicked through the debug protocol): levels were chosen with the keyboard and by calling the same function the
+menu calls; a mouse pick of an entry was not exercised. (3) A screen reader. (4) The built app (`preview`) for this slice; it runs at the
+end of Stage 7. (5) Any system other than Windows.
+
+Status: accepted (Stage 7.1). Revisit: the first real call (the levels each model really accepts, and what each costs); Stage 8's spending
+limit counting the thinking; a per-chat level, if one level per model proves too coarse; raising the 16,000 ceiling for the highest levels.

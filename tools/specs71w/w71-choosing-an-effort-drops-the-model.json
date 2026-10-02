@@ -1,0 +1,24 @@
+{
+  "label": "w71-choosing-an-effort-drops-the-model",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/models.ts",
+      "from": "  await writePreferences(savedModelId, next)",
+      "to": "  await writePreferences(null, next)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "verify-7-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s71nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w71-choosing-an-effort-drops-the-model"
+  }
+}

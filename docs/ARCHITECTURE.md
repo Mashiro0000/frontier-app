@@ -46,7 +46,8 @@ changed the ones marked (3), Stage 4 the ones marked (4), Stage 5 the ones marke
 | `src/main/providers/index.ts`     | (5) The adapter for each provider: a table that must be complete, or it does not compile                                                                                                                                                                  |
 | `src/main/registry.ts`            | (3) The registry file, embedded in the build and checked once at startup                                                                                                                                                                                  |
 | `src/main/rankings.ts`            | (6) The rankings file, embedded in the build and checked once at startup; optional: if it is broken the app only loses its suggestions                                                                                                                    |
-| `src/main/models.ts`              | (3) Which model answers: the saved choice (`preferences.json`) or the registry's default; changes run one at a time                                                                                                                                       |
+| `src/main/models.ts`              | (3) Which model answers: the saved choice (`preferences.json`) or the registry's default; changes run one at a time. (7) Also the effort kept per model, written with the model in one file                                                               |
+| `src/shared/effort.ts`            | (7) The effort levels: sorting a model's levels, reading the saved `efforts` forgivingly, resolving the level a reply asks for (the saved one if the model still lists it), and what the page is told (D-024)                                             |
 | `src/preload/index.ts`            | Builds `window.api`, the only thing the page can ask main for. (4) Gained `history`                                                                                                                                                                       |
 | `src/preload/index.d.ts`          | Tells the renderer's TypeScript what `window.api` looks like                                                                                                                                                                                              |
 | `src/shared/ipc.ts`               | Every message that crosses the boundary: types, channel names. (4) The history types and `HISTORY_LIMITS`                                                                                                                                                 |
@@ -90,6 +91,14 @@ The registry says which models exist; `models.ts` keeps the person's choice (or 
 is none, or if the saved one is no longer offered). `getStatus` hands the page the list (names, descriptions,
 sizes, prices, never how a model is called) and the current choice. The model is fixed when a reply starts
 (`chat.ts`), and the menu is disabled while a reply is arriving. See DECISIONS.md D-014 and D-015.
+
+### Choosing the effort
+
+The **Effort** menu (`EffortPicker.tsx`) calls `window.api.settings.setEffort(modelId, level)`; it goes through the same guard, the same one-at-a-time
+queue and the same file as the model choice. Main checks the model and the level against that model's own registry entry (`checkEffortChoice`),
+checks again where it saves (`chooseEffort`), and every reply checks the saved level against the model's list once more (`resolveEffort`). The
+chat request carries no effort: `chat.ts` takes it from main, fixed for the whole reply, and the adapters send `StreamRequest.effort`. The page is
+told only the levels, the selected one and the registry's pick for the chosen model. See DECISIONS.md D-024.
 
 ### Saving conversations
 
@@ -224,7 +233,8 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
 - The registry cannot redirect the key: it holds no address or credential, only facts about models and one
   request setting per model, and a provider the code cannot call is left out (D-014). The model choice is saved in
   `preferences.json`, apart from the key file, written in place like it (D-010, D-015). The page can only choose a
-  model that is on offer, and main checks that twice.
+  model that is on offer, and main checks that twice. The effort level is kept there too, per model, and is checked against the registry
+  three times (D-024).
 - The key is sent only to `https://api.anthropic.com`, and only by `src/main/providers/anthropic.ts`. The SDK's
   environment fallbacks (`ANTHROPIC_AUTH_TOKEN`, `ANTHROPIC_BASE_URL`) are switched off on purpose (D-012).
   `FRONTIER_API_BASE_URL` redirects it for testing, but only when running from source.

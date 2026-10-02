@@ -1,0 +1,14 @@
+{
+  "label": "openai-sends-the-registry-effort",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "...(request.effort ? { reasoning: { effort: request.effort } } : {}),",
+      "to": "...(model.effort ? { reasoning: { effort: model.effort } } : {}),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

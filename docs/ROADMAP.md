@@ -1,6 +1,6 @@
 # Roadmap (v0.1)
 
-> Stages 0 to 6 are done (v0.1, below). **The plan for Stages 7 to 18 is at the end of this file (v0.2)**; it is a plan the owner approves stage by
+> Stages 0 to 6 are done (v0.1, below); Stage 7 is in progress. **The plan for Stages 7 to 18 is at the end of this file (v0.2)**; it is a plan the owner approves stage by
 > stage, not a commitment. Stage 4 was
 > not written down in advance: the roadmap's "Later" list began with conversation history, and D-010, D-013 and
 > the architecture notes all named it as the next piece of work, so that is what Stage 4 became.
@@ -119,16 +119,20 @@ contract: each stage starts with a short written plan that the owner approves (a
 12. **I stop and ask before:** adding a new kind of power (file write, command run, network from a tool, microphone), adding a dependency with
     install scripts, publishing or pushing anything, or touching your real profile or accounts.
 
-## Stage 7 - Chat polish (not started)
+## Stage 7 - Chat polish (in progress: 7.1 Effort is done)
 
-- Markdown with code blocks, tables, lists; **copy** buttons; **regenerate**; **edit and resend**; a system prompt of your own per chat.
-- An **Effort** control (a Faster to Smarter slider or menu, like the Claude desktop app's) next to the model menu. It offers only the levels
-  the registry lists for the chosen model (`capabilities.effortLevels`), and is hidden for a model that takes none (Haiku 4.5). The choice is
-  kept per model by the main process, which checks it against the registry again (as it does the model choice), and the default stays what
-  `registry/models.json` says until the owner changes it.
-- Safety: a sanitising renderer (D-009), no raw HTML, links are shown as text and open in the browser only after a click on an https address, no
-  image or resource loads by itself, nothing can navigate or script the app window. Higher effort is billed as extra output (thinking), so the
-  control says so, and Stage 8's spending limit must count it.
+Five slices, one commit each: 7.1 Effort, 7.2 Markdown, 7.3 Copy / Regenerate / Edit and resend, 7.4 Instructions per chat, 7.5 docs, threat
+note and the full regression.
+
+- [ ] Markdown with code blocks, tables, lists (7.2); **copy** buttons, **regenerate**, **edit and resend** (7.3); a system prompt of your own
+      per chat (7.4).
+- [x] (7.1, D-024) An **Effort** control (a Faster to Smarter slider or menu, like the Claude desktop app's) next to the model menu. It offers only the levels
+      the registry lists for the chosen model (`capabilities.effortLevels`), and is hidden for a model that takes none (Haiku 4.5). The choice is
+      kept per model by the main process, which checks it against the registry again (as it does the model choice), and the default stays what
+      `registry/models.json` says until the owner changes it.
+- [ ] Safety: a sanitising renderer (D-009), no raw HTML, links are shown as text and open in the browser only after a click on an https address, no
+      image or resource loads by itself, nothing can navigate or script the app window. Higher effort is billed as extra output (thinking), so the
+      control says so, and Stage 8's spending limit must count it.
 
 ## Stage 8 - Usage, cost and spending limits, optional encrypted history (not started)
 

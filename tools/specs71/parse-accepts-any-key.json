@@ -1,0 +1,14 @@
+{
+  "label": "parse-accepts-any-key",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/effort.ts",
+      "from": "if (MODEL_ID.test(modelId) && isEffort(level)) saved.set(modelId, level)",
+      "to": "if (isEffort(level)) saved.set(modelId, level)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "anthropic-sends-none",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "  if (effort === 'none') throw new Error('Anthropic has no effort level \"none\"')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

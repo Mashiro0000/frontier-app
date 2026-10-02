@@ -1,9 +1,9 @@
 // How numbers from the registry are written for the person. Kept apart from the components, which may
 // export nothing but components (the dev server's hot reload relies on that).
 
-import type { ProviderStatus, SettingsStatus } from '../../../shared/ipc'
+import type { EffortStatus, ProviderStatus, SettingsStatus } from '../../../shared/ipc'
 import type { Suggestion, TaskId } from '../../../shared/rankings'
-import type { ProviderId } from '../../../shared/registry'
+import type { Effort, ProviderId } from '../../../shared/registry'
 
 /**
  * What the providers' documentation names for `task`, among the models on offer now (D-023). Empty while no task is
@@ -44,6 +44,30 @@ export function providerMissingKey(status: SettingsStatus | null): ProviderStatu
   return status.providers.every((provider) => !provider.hasKey)
     ? (status.providers[0] ?? null)
     : null
+}
+
+const EFFORT_NAMES: Record<Effort, string> = {
+  none: 'None',
+  low: 'Low',
+  medium: 'Medium',
+  high: 'High',
+  xhigh: 'Extra high',
+  max: 'Max'
+}
+
+/**
+ * What an entry of the Effort menu says (D-024): "Effort: Low (faster)", "Effort: Medium (default)", "Effort: Max (smarter)". The
+ * first level of the list is the faster end and the last the smarter one; the level the registry picks is marked, so the person
+ * can find their way back to it.
+ */
+export function effortOptionText(level: Effort, effort: EffortStatus): string {
+  const notes: string[] = []
+  if (effort.levels.length > 1) {
+    if (level === effort.levels[0]) notes.push('faster')
+    if (level === effort.levels.at(-1)) notes.push('smarter')
+  }
+  if (level === effort.default) notes.push('default')
+  return `Effort: ${EFFORT_NAMES[level]}${notes.length > 0 ? ` (${notes.join(', ')})` : ''}`
 }
 
 const oneDecimal = (n: number): string => String(Math.round(n * 10) / 10)

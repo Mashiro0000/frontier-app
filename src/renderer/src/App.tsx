@@ -5,6 +5,7 @@ import { ipcReply } from './chat/ipcReply'
 import { useChat } from './chat/useChat'
 import HistoryDialog from './history/HistoryDialog'
 import { useHistory } from './history/useHistory'
+import EffortPicker from './settings/EffortPicker'
 import { providerMissingKey } from './settings/format'
 import ModelPicker from './settings/ModelPicker'
 import SettingsDialog from './settings/SettingsDialog'
@@ -68,6 +69,7 @@ function App(): React.JSX.Element {
             disabled={chat.isReplying}
             onStatusChange={setStatus}
           />
+          <EffortPicker status={status} disabled={chat.isReplying} onStatusChange={setStatus} />
           {history.saveError !== null && (
             <button
               type="button"

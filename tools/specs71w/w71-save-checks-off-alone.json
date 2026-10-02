@@ -1,0 +1,29 @@
+{
+  "label": "w71-save-checks-off-alone",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/models.ts",
+      "from": "  if (!entry) throw new Error('that model is not on offer')",
+      "to": ""
+    },
+    {
+      "file": "{{REPO}}/src/main/models.ts",
+      "from": "  if (!entry.capabilities.effortLevels.includes(level)) {",
+      "to": "  if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "verify-7-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s71nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w71-save-checks-off-alone"
+  }
+}

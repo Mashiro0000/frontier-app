@@ -1745,3 +1745,32 @@ Running `npm run dev` shows one more menu in the header, **Task**, next to the m
    row in `registry/rankings.json`; nothing breaks if you leave the row.
 4. **The GitHub push.** When it was checked (1 October 2026) the repository had no `origin` remote, so nothing had been pushed from this folder.
 5. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 7 - What was built (so far: slice 7.1)
+
+Stage 7 is built in five slices, one commit each: 7.1 Effort, 7.2 Markdown, 7.3 Copy / Regenerate / Edit and resend, 7.4 Instructions per
+chat, 7.5 the docs, the threat note and the full regression. This part describes what exists now.
+
+**7.1 Effort (D-024).** Running `npm run dev` shows one more menu in the header, **Effort**, right after the model menu:
+
+- It lists only the levels the registry gives the chosen model, from "faster" to "smarter", and marks the registry's own pick "(default)".
+  Claude Haiku 4.5 takes no effort setting, so for it the menu is not shown at all.
+- Your choice is kept **per model** in `preferences.json` (next to the model choice, which it never overwrites). The next reply asks the provider
+  for exactly that level; until you choose, replies are byte-for-byte what they were in Stage 6.
+- A higher level is slower and billed as more output (the thinking). The menu's tooltip says so, and says that the thinking counts against the
+  16,000-token limit of a reply, so at the highest levels a reply can be cut off.
+- The menu is locked while a reply is arriving: the level is fixed when a reply starts.
+- The page cannot choose anything the registry does not list for that model. Main checks the model and the level when they arrive, again when
+  it saves, and every time a reply starts.
+- No new package. One new decision, **D-024** (with its threat note and what was not checked); new files `src/shared/effort.ts` and
+  `src/renderer/src/settings/EffortPicker.tsx`.
+
+## Stage 7 - Step by step
+
+1. **Plan approved ("Go", 1 October 2026).** Own Markdown renderer with no package, Copy writes to the clipboard on a click, links open the
+   browser only after a click and a confirmation, https only, Effort as a menu, Regenerate replaces the reply, the instructions of a chat go
+   after the app's own rules.
+2. **Slice 7.1 built and checked** on the branch `stage-7-chat-polish` (about 36 minutes): the plain-Node suite `verify-7-1.mjs`, the window
+   suites `verify-7-1w/b/c.mjs` through `run71.mjs` (a fresh profile, a restart, ten seeded `preferences.json` files), 17 + 21 deliberate
+   breakages (negative controls, `tools/specs71*`), and a byte comparison of the requests with a copy of `main`.
+3. **The older suites were re-run on the new tree** (`node tools/regress.mjs t71 node window seeds scenarios`, 2 October 2026). 46 runs, 44 clean the first time. Two checks had gone stale because of this very slice and were updated, not the code: the adapter suite listed the fields of a request (now with `effort`), and `verify-3-4` expected Tab from the model menu to reach Settings (it now reaches the Effort menu first). Both pass on their own re-run (94/94 and 78/78). The Stage 4 history suites and the built-app (`preview`) runs are left for the end of Stage 7 (7.5).

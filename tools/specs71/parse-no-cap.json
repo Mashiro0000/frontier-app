@@ -1,0 +1,14 @@
+{
+  "label": "parse-no-cap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/effort.ts",
+      "from": "if (saved.size >= MAX_SAVED_EFFORTS) break",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "parse-accepts-any-level",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/effort.ts",
+      "from": "if (MODEL_ID.test(modelId) && isEffort(level)) saved.set(modelId, level)",
+      "to": "if (MODEL_ID.test(modelId)) saved.set(modelId, level as Effort)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

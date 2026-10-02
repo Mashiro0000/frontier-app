@@ -19,7 +19,8 @@
 - Check `registry/models.json` before every build with the same validator the app uses (`src/shared/registry.ts`),
   so a typo cannot ship (D-014)
 - Update the registry without a new release: a checked copy in the data folder, written in place (D-010, D-014)
-- Let the person choose the effort level per model (the registry already holds one level per model)
+- Remember an effort level per chat instead of per model, or let a message ask for one (D-024 keeps one level per model)
+- Show what the extra thinking of a high effort level cost, once there is a cost display (D-024)
 - When a model answers "not found" (for example once Haiku 4.5 is retired), offer to switch to another
 - Show the retirement date of a model in Settings (needs a field in the registry)
 - Rename a saved conversation (the title is the first message; editing the file by hand already works)

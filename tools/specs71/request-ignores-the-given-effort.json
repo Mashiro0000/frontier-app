@@ -1,0 +1,14 @@
+{
+  "label": "request-ignores-the-given-effort",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "effort: input.effort === undefined ? model.effort : input.effort,",
+      "to": "effort: model.effort,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

@@ -63,6 +63,33 @@ export function helpers(page, { userData, mockUrl } = {}) {
       await h.send(text)
       await sleep(100)
       await page.waitFor(`!!document.querySelector('.composer-button[type=submit]')`, { timeoutMs })
+    },
+    /**
+     * Sends a message and returns the request the mock received for it (or null). sendAndWait only waits for the Send button to be
+     * back, which is also true BEFORE the reply has started: a check that reads the mock straight after it can find nothing (this
+     * ended three sabotage runs of the Stage 7.1 suite at an unrelated line). This waits until the mock has really RECEIVED a new
+     * request, and then until the reply is over. If none arrives within 8 s the message is sent once more and the retry is
+     * reported loudly ("!!", which the drivers count), so the rate stays visible instead of hiding in the retry.
+     */
+    askMock: async (text, { timeoutMs = 15000 } = {}) => {
+      const before = (await h.mockReqs()).length
+      const arrived = async () => {
+        const t0 = Date.now()
+        while (Date.now() - t0 < 8000) {
+          if ((await h.mockReqs()).length > before) return true
+          await sleep(50)
+        }
+        return false
+      }
+      await h.send(text)
+      if (!(await arrived())) {
+        console.log(`!! retry: no request reached the mock within 8 s of sending ${JSON.stringify(text.slice(0, 40))}; page: ${await ev(`JSON.stringify({ visibility: document.visibilityState, focus: document.hasFocus(), active: document.activeElement?.className, input: document.querySelector('.composer-input')?.value?.slice(0, 40), replying: !document.querySelector('.composer-button[type=submit]') })`)}; sending once more`)
+        await h.send(text)
+        if (!(await arrived())) return null
+      }
+      await page.waitFor(`!!document.querySelector('.composer-button[type=submit]')`, { timeoutMs })
+      const reqs = await h.mockReqs()
+      return reqs.length > before ? reqs.at(-1) : null
     }
   }
   h.bubbleText = () => h.lastAssistant(`a.querySelector('.bubble')?.textContent ?? null`)
