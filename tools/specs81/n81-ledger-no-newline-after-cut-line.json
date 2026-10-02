@@ -1,0 +1,14 @@
+{
+  "label": "n81-ledger-no-newline-after-cut-line",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/usageLedger.ts",
+      "from": "needsNewline = last !== 0x0a",
+      "to": "needsNewline = false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

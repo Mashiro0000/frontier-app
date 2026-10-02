@@ -19,7 +19,7 @@ tree), and keep the machine idle: `verify-4-3c` (quit with 60 queued saves) fail
 
 | Part        | What it runs                                                                        | About   |
 | ----------- | ----------------------------------------------------------------------------------- | ------- |
-| `node`      | Plain-Node suites: provider, registry, rankings, store, adapters, credential store  | 1.5 min |
+| `node`      | Plain-Node suites: provider, registry, rankings, store, adapters, credential store, usage ledger | 1.5 min |
 | `window`    | The window suites of Stages 1-3, 5, 6 and 7.1 to 7.4 and 7.6, each on its own scratch profile | 18 min |
 | `seeds`     | One launch per damaged `preferences.json` (`make-seeds.mjs` makes them; 16 of them) | 7 min   |
 | `scenarios` | The registry file deliberately broken in ten ways, restored after each (`run-scenario.mjs`) | 5 min   |
@@ -36,6 +36,9 @@ node tools/run53.mjs                      one launch of the key / Settings suite
 node tools/run71.mjs [dev|preview]        the Effort menu (7.1): a fresh profile, a restart, and ten seeded preferences files
 node tools/run74.mjs [dev|preview]        Instructions per chat (7.4): seeds conversation files of versions 1, 2, 3 and a damaged 3, then the window suite
 node tools/run-one.mjs w76 dev setup-key.mjs,verify-7-6w.mjs USER_DATA_DIR=s76 MOCK_PORT=8790      the header-one-row and chat-bar suite (7.6)
+node tools/run81.mjs [dev|preview]        the usage ledger (8.1): a fresh profile (verify-8-1w.mjs), a crash imitated in the ledger file, then a restart (verify-8-1b.mjs)
+node tools/verify-8-1.mjs                 the usage ledger under plain Node (cost, the guess, the reader, the sums, the file, the registry's four prices)
+node tools/run-one.mjs w81 dev setup-key.mjs,verify-8-1w.mjs USER_DATA_DIR=s81 MOCK_PORT=8790      just the first launch of the usage suite
 node tools/run-scenario.mjs <scenario>    one registry scenario
 node tools/nc-all.mjs specs guard-off     one negative control (spec folders: specs, specs4, specs4w)
 node tools/with-load.mjs 8 tools/regress.mjs <tag> window      the same, with 8 busy CPU loops competing
@@ -98,6 +101,17 @@ logged three moments of keyboard or mouse input and the window was in front; the
 press or a click in the test window can close the dialog a suite is waiting on, so **do not touch the keyboard or the mouse while a run goes**
 (the log lines `INPUT` show when someone did). Also not proven.
 
+## The test client brings a hidden window to the front (added in 8.1)
+
+`cdp.mjs` now checks `document.visibilityState` before every click, key press and typing. If the page says "hidden" it calls `Page.bringToFront`,
+waits up to 3 s for "visible" and prints `!! the window was hidden before an input (#n); Page.bringToFront made it visible after N ms` (or "did NOT
+make it visible"), which the drivers count like the other `!!` lines. It does nothing when the page is visible. It was added on 2 October 2026
+after three runs of the 8.1 window suite in which the test window sat behind the Claude desktop app and reported "hidden", every click took 5 s and a
+Settings click was dropped (the watcher, `watch-windows.ps1`, showed the test window in the stacking order behind the Claude window, and input events
+about every 2 s the whole time). A fourth run, with the window visible, passed 79 of 79 and did not need the guard, so **it is not proven to fix the
+stall**; if a `!!` line of this kind appears, the line says whether it worked. (A `probe` run showed that `Page.bringToFront` does give a visible
+window focus; it was not tried on a hidden one.)
+
 ## Rules learned the hard way
 
 - **Scratch profile:** every launch passes `--user-data-dir=<dir>` after a second `--`. `ELECTRON_CLI_ARGS` does NOT
@@ -112,6 +126,9 @@ press or a click in the test window can close the dialog a suite is waiting on, 
   file (`tools/.out/registry-saved.json`) and **aborts instead of overwriting** if the project's file differs from
   that copy. If a killed run left a broken variant behind: `git checkout registry/models.json`.
 - Windows locks a file while the app copies over it: helpers that read the app's files retry on `EBUSY`.
+- **Read the app's data folder with Node, not with this PC's Python** (the `python` in the WindowsApps folder): it answered
+  "file not found" for a file in a scratch profile's folder that `ls` and Node read fine (met on 2 October 2026, reading the usage ledger). It is
+  probably that Python's virtualised view of %APPDATA%; that is not proven.
 - Never edit `src/` while a regression runs, and never run two launches at once (they share ports 9222 and 9230).
 - The launchers in `regress.mjs` (`run71.mjs`, `run72.mjs`, ...) have a 15-minute limit; `run71.mjs` alone makes a dozen launches and can take
   7 minutes or more. A launcher killed by its limit leaves its app running on port 9222, and then every later launch ends with "port 9222 still

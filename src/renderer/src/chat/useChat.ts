@@ -18,6 +18,11 @@ export interface UseChat {
    * none.
    */
   load: (messages: ChatMessage[], instructions?: string) => void
+  /**
+   * Says which saved conversation is on screen (D-030), so that what a reply costs can be shown under it. Called by the history, which
+   * owns the id; it changes nothing on screen, and is the same function from one render to the next.
+   */
+  setConversationId: (id: string) => void
   /** Asks again for the last reply: it is replaced by a new one (D-026). Does nothing while a reply is arriving. */
   regenerate: () => void
   /**
@@ -37,6 +42,11 @@ export function useChat(reply: ReplyFn): UseChat {
   // The person's own instructions for this chat (D-027). They belong to the conversation, like its messages, and are read when a request
   // is made: a reply that is asked for again (Regenerate, an edited message) uses the instructions the chat has THEN.
   const [instructions, setInstructionsState] = useState('')
+  // The id the conversation on screen is saved under. A ref, not state: nothing is drawn from it, and a request reads it when it is made.
+  const conversationId = useRef<string | null>(null)
+  const setConversationId = useCallback((id: string): void => {
+    conversationId.current = id
+  }, [])
   // Set while a reply is streaming. Used to stop it, and to refuse a second send meanwhile.
   const activeReply = useRef<AbortController | null>(null)
 
@@ -63,7 +73,9 @@ export function useChat(reply: ReplyFn): UseChat {
             provider: answerer.provider,
             model: answerer.model
           })),
-        instructions
+        instructions,
+        conversationId.current,
+        (usage) => updateMessage(replyId, (m) => ({ ...m, usage }))
       )
       for await (const piece of answered) {
         if (controller.signal.aborted) break // ignore a piece that was already on its way
@@ -158,6 +170,7 @@ export function useChat(reply: ReplyFn): UseChat {
     instructions,
     setInstructions,
     load,
+    setConversationId,
     regenerate,
     resend
   }

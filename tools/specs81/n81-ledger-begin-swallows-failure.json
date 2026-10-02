@@ -1,0 +1,14 @@
+{
+  "label": "n81-ledger-begin-swallows-failure",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/usageLedger.ts",
+      "from": "        await append(record)\n        records.set(record.id, record)",
+      "to": "        await append(record).catch(() => undefined)\n        records.set(record.id, record)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

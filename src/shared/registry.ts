@@ -11,7 +11,7 @@
 import type { ModelOption } from './ipc'
 
 /** The shape of registry/models.json that this version of the app reads. */
-export const REGISTRY_SCHEMA_VERSION = '0.3'
+export const REGISTRY_SCHEMA_VERSION = '0.4'
 
 /** The providers this version of the app can call. An entry for any other provider is left out. */
 export const SUPPORTED_PROVIDERS = ['anthropic', 'openai'] as const
@@ -57,6 +57,18 @@ export interface ModelCapabilities {
   effortLevels: Effort[]
 }
 
+/**
+ * What a model costs, as list prices in US dollars per million tokens (D-030). Four, because a reply's tokens are billed in four
+ * buckets (`Usage`, D-018): ordinary input, input read back from the provider's prompt cache, input written to it, and output
+ * (which includes the thinking).
+ */
+export interface ModelPricing {
+  inputPerMTok: number
+  cacheReadPerMTok: number
+  cacheWritePerMTok: number
+  outputPerMTok: number
+}
+
 /** One model as the main process uses it: facts about the model, and the one setting the app picks for it. */
 export interface ModelEntry {
   provider: ProviderId
@@ -69,8 +81,8 @@ export interface ModelEntry {
   contextWindow: number
   /** Tokens: the longest reply it can write. */
   maxOutputTokens: number
-  /** List price in US dollars per million tokens. */
-  pricing: { inputPerMTok: number; outputPerMTok: number }
+  /** List prices in US dollars per million tokens. */
+  pricing: ModelPricing
   capabilities: ModelCapabilities
   /**
    * The effort level to ask for: one of `capabilities.effortLevels`, written out because the default differs
@@ -170,7 +182,12 @@ const ENTRY_FIELDS = [
   'capabilities',
   'effort'
 ] as const
-const PRICING_FIELDS = ['inputPerMTok', 'outputPerMTok'] as const
+const PRICING_FIELDS = [
+  'inputPerMTok',
+  'cacheReadPerMTok',
+  'cacheWritePerMTok',
+  'outputPerMTok'
+] as const
 const CAPABILITY_FLAGS = ['imageInput', 'toolUse', 'reasoning', 'promptCaching'] as const
 const CAPABILITY_FIELDS = [...CAPABILITY_FLAGS, 'effortLevels'] as const
 
@@ -253,11 +270,21 @@ function parseEntry(item: unknown): EntryResult {
     )
   }
   if (!isFields(pricing) || fieldProblem(pricing, PRICING_FIELDS) !== null) {
-    return bad('pricing must have exactly inputPerMTok and outputPerMTok')
+    return bad(`pricing must have exactly ${quoted(PRICING_FIELDS)}`)
   }
-  const { inputPerMTok, outputPerMTok } = pricing
-  if (!isPrice(inputPerMTok) || !isPrice(outputPerMTok)) {
+  const { inputPerMTok, cacheReadPerMTok, cacheWritePerMTok, outputPerMTok } = pricing
+  if (
+    !isPrice(inputPerMTok) ||
+    !isPrice(cacheReadPerMTok) ||
+    !isPrice(cacheWritePerMTok) ||
+    !isPrice(outputPerMTok)
+  ) {
     return bad('the prices must be numbers from 0 to 10000 (US dollars per million tokens)')
+  }
+  // Reading a token back from the cache is never dearer than reading it fresh; a price that says so is a typo, and it would be
+  // counted into every reply's cost (D-030).
+  if (cacheReadPerMTok > inputPerMTok) {
+    return bad('pricing.cacheReadPerMTok is more than pricing.inputPerMTok')
   }
   const parsed = parseCapabilities(capabilities, provider)
   if (!parsed.ok) return bad(parsed.problem)
@@ -294,7 +321,7 @@ function parseEntry(item: unknown): EntryResult {
       description,
       contextWindow,
       maxOutputTokens,
-      pricing: { inputPerMTok, outputPerMTok },
+      pricing: { inputPerMTok, cacheReadPerMTok, cacheWritePerMTok, outputPerMTok },
       capabilities: parsed.capabilities,
       effort
     }

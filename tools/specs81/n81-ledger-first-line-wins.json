@@ -1,0 +1,14 @@
+{
+  "label": "n81-ledger-first-line-wins",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/usageLedger.ts",
+      "from": "else records.set(record.id, record) // a later line",
+      "to": "else if (!records.has(record.id)) records.set(record.id, record) // a later line"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

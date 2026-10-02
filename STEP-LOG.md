@@ -1939,3 +1939,82 @@ shared checks changed. One new decision, **D-029**; new files `src/renderer/src/
    and `origin/main` is still c85242e. `main` now holds the merge commit, which carries the tag `stage-7-done`; the branch `stage-7-chat-polish` is
    kept. Pushing `main` and the tag is yours to do.
 9. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 8 - Slice 8.1: usage and cost, counted (3 October 2026 session; D-030)
+
+**Your decisions that shaped it.** No preset limit numbers (you set them; 8.2 asks on first run, with a deliberate "No limit" in Settings and a
+one-line warning); encrypted history becomes its own later stage, 8b, after 8.1 to 8.3 and 8.5, with a tested backup and export before any
+encryption; a guess marked "about" is counted when a reply is stopped or fails with no usage report, and replaced if a real report arrives.
+
+**What was built.**
+
+- **The ledger** (`src/main/usageLedger.ts`, `src/shared/usage.ts`): a plain file, `usage/ledger.jsonl` in the app's data folder, one line of JSON per
+  request, written when the request is about to be sent and again when it ends; the later line replaces the earlier one with the same id. A request that
+  cannot be written down is not sent. Tokens in four buckets, each priced at its own list price.
+- **The registry gained two prices per model** (`cacheReadPerMTok`, `cacheWritePerMTok`; schema 0.4). I read both providers' pricing pages for them
+  (Anthropic's, and OpenAI's table); the input and output prices already in the file matched.
+- **What you see:** a small line under each finished reply ("25 in, 12 out, $0.0003", "about $..." for a guess), and Settings > Usage with this
+  chat, today and this month. A reply you stop, or that fails after the provider may have worked on it, is counted as a guess marked "about"; a request
+  the provider turns away at once (a key, a credit, a rate, a model) costs nothing and is not counted.
+- **The main process does the counting** (`src/main/chat.ts`); the page can ask for sums (`usage.summary`) and tell main which chat is on screen
+  (`conversationId`), and nothing else.
+
+**Step by step.**
+
+1. **Where the plan stood.** I read the roadmap, D-028 (the list of what a limit must count) and the code that sends a request, and found that the
+   registry had no price for cached tokens (D-019 had left them out on purpose), although the app asks for prompt caching on every Claude request. So
+   8.1 needed those prices first.
+2. **The prices.** I fetched Anthropic's pricing page and OpenAI's pricing table (a first fetch of OpenAI's page was refused with a 403, a second
+   address worked). Anthropic's page also says that a cache hit costs 0.05 of the input price on Opus 5.5 and 0.025 on Fable 5.1 (not 0.1), and that the
+   5-minute cache write, which is what the app asks for, is 1.25 times the input price. All seven models now have four prices, and a test compares them
+   with what the pages said.
+3. **The ledger and the sums were written and checked under plain Node first** (`verify-8-1.mjs`, 194 checks, each file check in a normal folder and in
+   the EFS-encrypted %APPDATA%): the cost arithmetic, the guess, a strict reader of one line, the sums with the edges of a day and a month, and the file
+   (a cut-off line, damaged lines, 25 requests at once, a request that cannot be written, a disk that refuses the end, the size cap). It found nothing
+   wrong; two of my own checks were wrong (the registry's default model cannot be the one a test drops, and the registry's message for a bad price list is
+   one sentence naming all four fields, not "missing"/"unknown").
+4. **The earlier plain-Node suites** were run again on the new tree (`regress.mjs t81n node`): 11 of 12 clean; the registry suite had old fixtures (two
+   prices, schema 0.3) and was updated (232 checks now).
+5. **The window suite** (`verify-8-1w.mjs`, 81 checks) against the fake Anthropic API, which now also reports cache tokens (`[[mock:cached]]`) and nothing
+   at all (`[[mock:no-usage]]`). The first run found a mistake of mine in the test (Edit asks first when more than the last exchange would go, and the
+   test did not click "Send anyway"). A run that followed was lost to the hidden-window stall (below).
+6. **The hidden-window stall met again.** Three runs in a row ended with the test window reporting "hidden", every click taking 5 s and a Settings click
+   dropped. The window watcher (`watch-windows.ps1`) showed the test window behind the Claude desktop app and input events about every 2 s for the whole
+   run. The next run, with the window visible, passed. I added a guard to the test client (`cdp.mjs`): before an input, if the page says hidden, call
+   `Page.bringToFront` and say so. **It did not need to fire, so it is not proven to work.** I also cut the number of Settings clicks in the suite (the
+   sums are asked of main directly where the dialog itself is not the point).
+7. **Negative controls.** **36 breakages, all caught** (`tools/specs81`: 21 under Node; `tools/specs81w`: 15 in the real window), each file proved restored by hash, and `src/` and `registry/` proved identical by one hash after the window batch. The window batch took about an hour (each launch builds and runs the whole suite). Two controls I added late were for a claim D-030 makes (the ledger holds no message text and no key): a line with an extra field, and a line carrying text that was sent. The window check for that claim (the file contains none of the 174 texts and no system prompt, and not the key) was added after the first batch and is caught by the second of them.
+8. **The restart suite** (`verify-8-1b.mjs`, `run81.mjs`): 12 checks on the same profile after the ledger was given what a crash leaves behind (a request that began and never ended, and a last line cut off in the middle): the new process reads the file itself and its sums equal a second count made from it, reading does not change the file (by hash), the unfinished request counts as a guess ("about"), the cut-off line is said in Settings and costs nothing, a chat opened from History has its own sum from the file, and the next request is written whole on a line of its own. Passed the first time, with the window suite (81) before it: **93 of 93**, with no retry and no stall.
+9. **Older negative-control spec made stale by this slice** (`tools/specs/wrong-model-in-chat.json`, the indentation of one line in `chat.ts`), found by
+   the dry check (`check-specs.mjs`) and updated.
+10. **What was run, and what was not.** Run: the plain-Node part of the regression, lint, prettier, `npm run build`, the dry spec check (274 specs, 0 stale), the two window suites on the dev app. **Not run, waiting for your go-ahead: the full regression (about 54 minutes: the older window suites, the seeds, the scenarios, Stage 4, and the built app) and the new suites against the built app.** The older window suites were not re-run on this tree, so a check that the new line under a reply, the new Settings section or the changed chat request broke is not ruled out until that run; `regress.mjs` has the new suites in it.
+
+## Stage 8.1 - Choices I made where things were unclear ("pick the simplest option")
+
+- **One ledger file**, not one per month: the sums are worked out from the records in memory, and a request that ends in another month would need to
+  update a record in another file.
+- **The guess is bytes divided by 3**, on the high side for English, and knows no tokenizer. It leaves out thinking that was not shown.
+- **Which failures count** was decided by what a provider is likely to bill, with the safe error being to count something that was not billed.
+- **The ledger fails closed when a request begins** (nothing is sent that cannot be written down) **and open when it ends** (logged; the sums in
+  memory stay right).
+- **The sums are in Settings**, not in the header (one row since 7.6) or the chat bar.
+- **A reply's line is not saved with the message**, so a chat file stays at version 3 and a chat from History shows no line under its replies (its sum
+  in Settings is still there). Saving it would be a file version 4.
+- **Prices are stored in each record**, so an old record keeps the prices it was counted at.
+
+## Stage 8.1 - Things to know (not problems, but worth your attention)
+
+1. **Nothing limits spending yet.** 8.1 only counts. The limits are 8.2, and the numbers will be yours: the app will ask for a daily and a monthly
+   limit before the first send, and Settings will have a deliberate "No limit".
+2. **No real call has been made by me.** So no real usage report has been read by this app. Compare the first real replies' numbers with your
+   provider's own usage page; I would like to hear if they differ (the cache numbers in particular, and whether the thinking is in the output count).
+3. **The cost is list prices; your provider's invoice is what counts.** Fast mode, the Batch API, data residency, web search, discounts and tax are not
+   applied (the app uses none of them now).
+4. **A guess leaves out thinking that was never shown.** A stopped reply from a model that thinks can have cost more than the guess says.
+5. **The ledger is a plain file you can open** (`usage/ledger.jsonl` in the data folder, next to the `conversations` folder that History shows). It holds model
+   names, token counts, times and chat ids, no message text and no key. Deleting it resets the counts; 8.2's limit stops the app, not a person who
+   changes the file.
+6. **The registry changed shape** (schema 0.4: four prices per model). A build from before this slice cannot read this registry file; the file is part
+   of the build, so this only matters if you copy `registry/models.json` between versions.
+7. **Nothing is pushed.** Stage 7 is merged into `main` locally (tag `stage-7-done`), and this slice is on the branch `stage-8-usage-limits`.
+8. **Everything in the earlier stages' "Things to know" still applies.**

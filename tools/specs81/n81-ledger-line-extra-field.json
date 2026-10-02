@@ -1,0 +1,14 @@
+{
+  "label": "n81-ledger-line-extra-field",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "JSON.stringify({ ...record, costUsd: costOfRecord(record) })",
+      "to": "JSON.stringify({ ...record, costUsd: costOfRecord(record), note: record.model })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n81-registry-cache-read-dearer-allowed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/registry.ts",
+      "from": "if (cacheReadPerMTok > inputPerMTok) {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

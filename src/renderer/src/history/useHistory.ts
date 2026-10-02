@@ -66,6 +66,10 @@ export function useHistory(chat: UseChat): UseHistory {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [activeId, setActiveId] = useState<string>(() => crypto.randomUUID())
 
+  // The chat is told which conversation is on screen, so that the cost of a reply can be shown under it (D-030).
+  const { setConversationId } = chat
+  useEffect(() => setConversationId(activeId), [activeId, setConversationId])
+
   const latest = useRef({
     id: activeId,
     messages: chat.messages,

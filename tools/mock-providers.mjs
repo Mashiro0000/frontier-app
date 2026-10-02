@@ -111,9 +111,14 @@ export function startMock(port = 8787) {
     return typeof m?.content === 'string' ? m.content : Array.isArray(m?.content) ? m.content.map((b) => b.text ?? '').join('') : ''
   }
 
-  function beginStream(res, { thinking = true, model } = {}) {
+  // What a reply reports it used (8.1). Anthropic gives the input side in message_start (cache tokens beside input_tokens, not inside it) and the
+  // output so far in message_delta. [[mock:cached]] reports cache tokens as well; [[mock:no-usage]] reports nothing (an empty usage object),
+  // so the app has to guess; every other directive keeps the numbers the earlier stages knew (25 in, 12 out).
+  const USAGE_START = { 'cached': { input_tokens: 25, cache_read_input_tokens: 800, cache_creation_input_tokens: 40, output_tokens: 1 }, 'no-usage': {} }
+  const USAGE_END = { 'cached': { output_tokens: 300 }, 'no-usage': {} }
+  function beginStream(res, { thinking = true, model, directive } = {}) {
     res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', 'request-id': 'req_mock_ok' })
-    sse(res, 'message_start', { type: 'message_start', message: { id: 'msg_mock', type: 'message', role: 'assistant', model, content: [], stop_reason: null, stop_sequence: null, usage: { input_tokens: 25, output_tokens: 1 } } })
+    sse(res, 'message_start', { type: 'message_start', message: { id: 'msg_mock', type: 'message', role: 'assistant', model, content: [], stop_reason: null, stop_sequence: null, usage: USAGE_START[directive] ?? { input_tokens: 25, output_tokens: 1 } } })
     let index = 0
     if (thinking) {
       // The models that think by themselves (not Haiku 4.5 here) stream a thinking block first; with display "omitted" it has empty text and a signature.
@@ -127,11 +132,11 @@ export function startMock(port = 8787) {
     return index
   }
   const text = (res, index, piece) => sse(res, 'content_block_delta', { type: 'content_block_delta', index, delta: { type: 'text_delta', text: piece } })
-  function finish(res, index, stopReason, stopDetails) {
+  function finish(res, index, stopReason, stopDetails, directive) {
     sse(res, 'content_block_stop', { type: 'content_block_stop', index })
     const delta = { stop_reason: stopReason, stop_sequence: null }
     if (stopDetails) delta.stop_details = stopDetails
-    sse(res, 'message_delta', { type: 'message_delta', delta, usage: { output_tokens: 12 } })
+    sse(res, 'message_delta', { type: 'message_delta', delta, usage: USAGE_END[directive] ?? { output_tokens: 12 } })
     sse(res, 'message_stop', { type: 'message_stop' })
     res.end()
   }
@@ -197,7 +202,7 @@ export function startMock(port = 8787) {
       default:
     }
 
-    const index = beginStream(res, { thinking: MODELS[body.model].thinks && directive !== 'no-thinking', model: body.model })
+    const index = beginStream(res, { thinking: MODELS[body.model].thinks && directive !== 'no-thinking', model: body.model, directive })
     const reply = `Echo: ${lastUserText(body).replace(/\[\[mock:[a-z0-9-]+\]\]\s*/g, '')}`
     switch (directive) {
       case 'midstream-error':
@@ -241,7 +246,7 @@ export function startMock(port = 8787) {
         return alive ? finish(res, index, 'end_turn') : undefined
       default: {
         await echoPieces(res, index, reply, () => alive)
-        if (alive) finish(res, index, 'end_turn')
+        if (alive) finish(res, index, 'end_turn', undefined, directive)
       }
     }
   })

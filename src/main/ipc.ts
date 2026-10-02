@@ -12,6 +12,7 @@ import {
   type SettingsStatus,
   type TestKeyResult
 } from '../shared/ipc'
+import type { UsageSummary } from '../shared/usage'
 import { effortStatusOf } from '../shared/effort'
 import { suggestionsFor, TASKS } from '../shared/rankings'
 import {
@@ -21,6 +22,7 @@ import {
   type ProviderId
 } from '../shared/registry'
 import {
+  chatForUsage,
   checkConversationId,
   checkConversationSave,
   checkEffortChoice,
@@ -38,6 +40,7 @@ import { describeFailure, timeoutError } from './providers/errors'
 import { getRankings, reportRankingsProblems } from './rankings'
 import { getRegistry, reportRegistryProblems } from './registry'
 import { isTrustedSender } from './security'
+import { createUsageLedger } from './usageLedger'
 
 /** "Test key" gives up after this long, so a provider that never answers cannot leave the button spinning for ever. */
 const TEST_KEY_TIMEOUT_MS = 20_000
@@ -257,6 +260,21 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
-  registerChatIpc(appUrl)
-  return () => history.whenIdle()
+  // What was used and what it cost (D-030): one plain file, written by main alone. The page can ask for sums and nothing else.
+  const ledger = createUsageLedger(join(app.getPath('userData'), 'usage', 'ledger.jsonl'))
+
+  ipcMain.handle(
+    CHANNELS.usageSummary,
+    guarded(async (input: unknown): Promise<UsageSummary> => {
+      try {
+        return await ledger.summary(chatForUsage(input)) // an id that is not one is read as none
+      } catch (error) {
+        console.error('Reading the usage ledger failed:', reason(error))
+        throw new Error('The usage could not be read.')
+      }
+    })
+  )
+
+  registerChatIpc(appUrl, ledger)
+  return () => Promise.all([history.whenIdle(), ledger.whenIdle()]).then(() => undefined)
 }

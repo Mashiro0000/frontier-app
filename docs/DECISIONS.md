@@ -1160,3 +1160,113 @@ made on the page).
 
 Status: accepted (Stage 7.6). Revisit: page zoom; asking before New chat discards a chat that could not be saved; a sidebar for these buttons and
 History in wide windows.
+
+## D-030 - Stage 8.1: every request is counted in a plain ledger the main process writes, priced at four list prices, and shown per reply, per chat, today and this month
+
+Stage 8 is the money stage (safety rule 6: usage and cost are shown, and a limit stops requests; nothing that can loop is built before it). The
+owner approved its plan on 2 October 2026 with three decisions: (1) **the limits are the owner's own, with no preset numbers** (I had proposed $5 a
+day and $50 a month, and was told to leave the numbers to the owner: on first run the app asks for a daily and a monthly limit before the first send,
+and Settings has a deliberate "No limit" with a one-line warning; that is 8.2); (2) **encrypted history is its own later stage, 8b**, with a tested
+backup and export before any encryption (ROADMAP); (3) **a guess marked "about" is counted** when a reply is stopped or fails with no usage report,
+and it is replaced if a real report arrives. This is slice 8.1, the counting. It adds no limit, and it counts what D-028 listed: the output
+including the thinking (at whatever Effort), every request that Regenerate and Edit make, the instructions inside each request, and the whole
+conversation that goes out again each time (they are all in the request, so they are all in the provider's report).
+
+- **The ledger.** One plain file, `usage/ledger.jsonl` in the app's data folder, written by the main process alone (`src/main/usageLedger.ts`).
+  One line of JSON per request, written twice under one id: when the request is about to be sent (state "sent", its input as a guess, marked
+  an estimate) and when it ends (state "done", "stopped", "failed" or "rejected", with the provider's report or a guess). When the file is read,
+  the later line replaces the earlier one with the same id. Why twice: a request that never ends (the app is killed while a reply is arriving) is
+  still on the books for what it had cost by then, and 8.2 needs the requests that are in flight. Why appended and never rewritten: a crash can
+  only cut off the last line, which is skipped when the file is read and counted (and the next write starts on a new line, so it cannot join the
+  cut one); no rename is used (D-010: renames fail with EXDEV in this project's own %APPDATA%). A line has the model, the effort, the chat, the time
+  the request began, the four token counts, the **four prices it was counted at** (the registry may change later; an old record keeps its prices) and,
+  beside them for a person who reads the file, the cost, which is not read back: the cost is always worked out again from the numbers. The file
+  holds no message text and no key. It is read whole at the first request or the first question, up to 64 MiB (the newest part, with a note in
+  the log, beyond that: about 100,000 requests).
+- **`begin` is awaited before the request goes out, and a request that cannot be written down is not sent.** The reply says "Nothing was sent: what
+  this request would use could not be recorded on this computer." This is the one place where the ledger fails closed, because it is what makes a
+  limit mean something. The end of a request (`finish`) never throws: the reply has happened, so a failed write is logged, the sums in memory are
+  right for as long as the app runs, and the file keeps the "sent" line (a guess of the input), which is what a later run counts.
+- **Four buckets, four prices (registry schema 0.4).** A reply's tokens are billed in four buckets that never overlap (D-018): ordinary input, input
+  read back from the provider's cache, input written to it, and output (which includes the thinking). D-019 left the cache prices out of the registry
+  because I could not confirm them; I read both providers' pricing pages on 2 October 2026 (Anthropic's `about-claude/pricing` page, and OpenAI's
+  pricing table), which also show that the input and output prices already in the file are right. Each model in `registry/models.json` now has
+  `cacheReadPerMTok` and `cacheWritePerMTok` beside `inputPerMTok` and `outputPerMTok`, all required (the file is hand-edited and checked as strictly as
+  input from the page): Fable 5.1 10 / 0.25 / 12.50 / 50; Opus 5.5 4 / 0.20 / 5 / 20; Sonnet 5.5 2 / 0.20 / 2.50 / 10; Haiku 4.5 1 / 0.10 / 1.25 / 5;
+  GPT-6 Astra 10 / 1 / 12.50 / 50; GPT-6.1 Sol 2 / 0.10 / 2.50 / 10; GPT-6 Luna 0.10 / 0.01 / 0.125 / 0.50 (in / cache read / cache write / out, dollars
+  per million tokens). Two things the pages say that a rule of thumb would get wrong: a cache hit costs 0.1 of the input price for most Claude models,
+  but 0.05 for Opus 5.5 and 0.025 for Fable 5.1; and the Claude cache write that the app's own request asks for (`cache_control` "ephemeral", the
+  5-minute cache) is 1.25 times the input price (the 1-hour write, 2 times, is not asked for). A cache read dearer than ordinary input is refused as a
+  typo. `updatedAt` stays "2026-10-01" (the other facts were not re-read); the `source` line says the prices were read on 2026-10-02.
+- **When a provider gives no report, a guess marked "about" is counted (the owner's decision 3).** The rule: input = the system prompt and every
+  message that was sent, in UTF-8 bytes divided by 3, rounded up, plus 4 for each message; output = the bytes of the text that arrived, divided by 3.
+  Three bytes to a token is on the high side for English (about four characters) and about right for Chinese, Japanese and Korean (about one token a
+  character); it knows no tokenizer. It **leaves out thinking that was never shown**, which cannot be seen, so a stopped reply from a model that thinks
+  can have cost more than its guess; the line under a reply and Settings say that. When it applies: a reply the person stopped, a request that failed
+  after the provider may have worked on it (a connection dropped in the middle, a timeout, a server error, an error that is none of the known kinds,
+  and any failure after some text had arrived), and a reply that ended normally but whose usage report was empty (all four numbers zero is read as "no
+  report"). A real report replaces a guess for the same request: the ledger takes the later line. In the running app that can happen when Stop is
+  pressed after the report has already arrived (the report is counted, as "stopped", not as a guess); a report that comes after the app has
+  stopped listening cannot, because there is nobody left to read it. **Nothing owed** ("rejected", zero tokens, not counted): the provider turned the
+  request away before doing any work, which is what these failures mean: the key, the permission, a model it does not have, the rate, the credit, a
+  request it could not take, a connection that never reached it, or a provider too busy to start, when no text had arrived.
+- **What the page sees.** One new event, `usage` (`{ tokens, costUsd, estimate }`), sent just before a reply's last event and only when something is owed;
+  one small line under a finished reply, "865 in, 300 out, $0.0065" (the whole input side added up; "about $..." for a guess; the four buckets, "the
+  thinking counts as writing" and "your provider's invoice decides" when hovered); and **Settings > Usage**, three rows (this chat, today, this month)
+  with their requests, tokens and cost, asked of main each time Settings opens. One new bridge function, `usage.summary(conversationId | null)`, and one
+  new optional field on the chat request, `conversationId`, which the page sets to the id the chat is saved under and which only decides which chat a
+  cost is shown under. The line under a reply is kept on the screen only: it is not saved with the message (the ledger is the record), so a chat opened
+  from History shows no line under its replies, and its sum in Settings is read from the ledger and is still there. Saving it would make the chat file
+  version 4, one more step a build cannot take back (IDEAS). A replaced reply (Regenerate, Edit) stays counted: it was billed.
+- **Where the sums are shown.** In Settings, not in the header (7.6 made it one row) or the chat bar (which has rules of its own). Today and this month
+  follow this computer's clock (midnight, the first of the month); a changed time zone or clock moves the edges.
+
+**Choices I made where things were unclear.** One file, not one per month (the sums are worked out from the records in memory, and a file per month
+would need records to cross files when a request ends in another month). Prices are stored in the record, not looked up later. The guess uses bytes,
+not characters, because that is what a token follows more closely. The failures that count were chosen by what a provider is likely to bill: the
+safe error is to count something that was not billed. "Rejected" records are written (not skipped) so the file shows every request. The ledger fails
+closed on `begin` and open on `finish`. A model name that is not in the registry any more still counts (the record carries its prices). The page's
+`conversationId` is refused when it is not an id, not quietly dropped (a page that sends one is ours and is wrong, or is not ours).
+
+**Threat note.** What could go wrong, what stops it, what is left.
+
+- _A hostile or broken page._ It has no function that writes the ledger; it cannot name a record's id, price, token count or state (main makes all of
+  them; fields a page adds to a request are not read, and a window check sends some); it can say which chat a cost is shown under, which changes only
+  the "This chat" row and not today's or the month's sums, and which is refused unless it is an id; `usage.summary` answers with sums, the count of
+  unreadable lines and a time, and no path, record or id. The summary of anything that is not a chat id is the summary with no chat.
+- _Spending that is not counted._ (1) Thinking that was never shown, in a guess (above). (2) A request the provider billed although it turned it away
+  (we assume it did not). (3) A request that was begun and whose line could not be written is refused, not counted. (4) A damaged line in the file is skipped
+  and its cost is missing from the sums; Settings says how many lines could not be read. (5) The ledger edited or deleted by the person: it is their file and
+  plain on purpose (safety rule 9); the limit of 8.2 stops the app, not a person who changes the file. (6) Two copies of the app at once: each reads the
+  file once, so each misses the other's lines until it is restarted; a line is written whole and the check after a write allows the file to have grown.
+  (7) Costs that are not tokens and not list prices: Fast mode, the Batch API, data residency (1.1 times), web search, an invoice's discounts or tax.
+  The app uses none of these now; the figure is **list prices, and the provider's invoice is what counts** (the Settings text says so).
+- _Prices that are wrong._ They are hand-edited facts with a date (Settings shows when they were checked); a price that has changed since is a wrong
+  cost. The registry file is checked at startup, a cache read dearer than input is refused, and `verify-8-1.mjs` compares each of the seven models'
+  four prices with what the pages said.
+- _The clock._ A clock set back or forward, or a changed time zone, moves "today" and "this month". A record dated in the future counts in both.
+- _Growth._ The file grows by two lines (about 600 bytes) a request for ever; nothing compacts it (IDEAS).
+- _Rule 1 (nothing leaves the PC unseen)._ Nothing new leaves it: the ledger is local, and nothing in a request changed (the golden requests are the
+  same bytes).
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only. A plain-Node suite, `verify-8-1.mjs` (194 checks, every file
+check in a normal folder and in the EFS-encrypted %APPDATA%): the cost of each bucket alone and together; the guess; the strict reader (a table of 40
+refused lines); the sums, with the edges of a day and a month (the last millisecond of yesterday, the first instant of the month, the turn of the year);
+the file (a second line replacing the first, a guess replaced by a real report, also after a restart, a cut-off last line, damaged and odd lines, 25
+requests at once, a request that cannot be written, a disk that refuses the end, the size cap); the registry's four prices for all seven models
+against the pages; and the request's new field. A window suite, `verify-8-1w.mjs` (81 checks, `run81.mjs`), against the fake Anthropic API, which now
+reports cache tokens ("cached") and nothing at all ("no-usage") on request: the file, the line under a reply, the sums in Settings against a second
+count made from the file, a guess after Stop, every kind of failure (eleven), Regenerate and Edit, chats kept apart and a chat's sum back after History, what
+a page cannot do, and a request refused when the ledger is read-only. A restart suite, `verify-8-1b.mjs`, on the same profile after a crash has been
+imitated in the file (a request that never ended, a cut-off line). **Negative controls** (`tools/specs81`, `specs81w`): 21 breakages under Node and 15 in the real window, **all caught**, each file proved restored by hash (and one hash over `src/` and `registry/` identical before and after the window batch). They cover: each bucket priced at the wrong price, a wrong guess rule, a reader that accepts a negative count or an unknown state, sums that count a refused request, start "today" a day early or leave out the first instant of the month, a file where the first line of an id wins or a cut-off line is joined by the next write or the size cap is off or `begin` swallows a failure, a registry that accepts a cache read dearer than input or does not require a price or has a wrong price, a chat id that is not checked (in the request, and in the summary), the refused and the failed counted the wrong way round, the report ignored, a guess not marked, a stopped reply not settled, no usage event, a request sent although it could not be recorded, the chat id dropped by main or not sent by the page or not told to the chat, the summary taking the page's id, "about" not said, and a line that carries an extra field or text that was sent. Three were caught by one check each (the unwritable ledger, the stopped reply, the summary of a non-id) and the rest by two or more (up to 18).
+**Not checked:** (1) **a real call to either provider**: no real usage report has been read by this app, so what a real Anthropic or OpenAI stream
+reports (the cache numbers, whether the thinking is in `output_tokens`, what a stopped reply is billed) is my reading of the documentation; the cost
+for a real reply is for you to compare with the provider's own usage page. (2) The OpenAI path through the window (its usage conversion is checked
+under Node, D-022, and the cost is the same function). (3) That `Page.bringToFront`, which the test client now calls when the test window reports
+"hidden", fixes the stall: it did not need to fire in the runs of this slice. (4) Daylight-saving changes and other time zones. (5) Two copies of the
+app. (6) A ledger near the 64 MiB cap in the real app (only with a small cap under Node). (7) A screen reader and the layout at 280 px for the new
+section. (8) The built app: `npm run build` passes, but the suites were not run against the built app (the `preview` part of the regression waits for your go-ahead), and neither was the full regression: what was run is the plain-Node part (all 13 suites), the new suites on the dev app, and the controls above.
+
+Status: accepted (Stage 8.1). Revisit: the first real replies (do the numbers match the provider's usage page?); 8.2's limits, which will read
+`summary` and the in-flight records, and must say in Settings that deleting the file resets the count; thinking that is not shown, in a guess; a ledger
+that is compacted; the per-reply line on a chat from History (a file version 4).

@@ -1,0 +1,14 @@
+{
+  "label": "n81-cache-write-at-input-price",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "tokens.cacheWrite * prices.cacheWritePerMTok",
+      "to": "tokens.cacheWrite * prices.inputPerMTok"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,24 @@
+{
+  "label": "w81-guess-input-without-system-prompt",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "inputTokens: estimateInputTokens(streamRequest.system, streamRequest.messages)",
+      "to": "inputTokens: estimateInputTokens('', streamRequest.messages)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-8-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s81nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8798",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w81-guess-input-without-system-prompt"
+  }
+}

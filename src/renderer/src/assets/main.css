@@ -542,6 +542,14 @@ body {
   color: var(--color-danger);
 }
 
+/* What a reply used and cost, under it (D-030) */
+.message-usage {
+  margin-top: 2px;
+  padding: 0 4px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
 /* ---------- what can be done with a message (D-026) ---------- */
 
 /* Shown when the pointer is over the message or the keyboard is in it, and always under the last message. */
@@ -890,6 +898,36 @@ body {
 .history-status {
   font-size: 13px;
   color: var(--color-text-muted);
+}
+
+/* Usage (D-030): what this chat, today and this month have used and cost */
+.settings-usage {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.settings-usage th,
+.settings-usage td {
+  padding: 4px 0;
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.settings-usage th {
+  padding-right: 12px;
+  font-weight: 500;
+}
+
+.settings-usage td {
+  color: var(--color-text-muted);
+}
+
+.settings-usage .settings-usage-cost {
+  padding-left: 12px;
+  color: var(--color-text);
+  text-align: right;
+  white-space: nowrap;
 }
 
 .settings-label {

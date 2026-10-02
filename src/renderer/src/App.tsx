@@ -95,6 +95,7 @@ function App(): React.JSX.Element {
         loadError={loadError}
         onStatusChange={setStatus}
         onClose={() => setSettingsOpen(false)}
+        conversationId={history.activeId}
       />
     </div>
   )

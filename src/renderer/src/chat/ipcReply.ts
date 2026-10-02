@@ -1,4 +1,5 @@
 import type { ChatStreamEvent } from '../../../shared/ipc'
+import type { ReplyUsage } from '../../../shared/usage'
 import { toWireMessages } from './history'
 import type { Answerer, ChatMessage } from './types'
 
@@ -7,13 +8,16 @@ import type { Answerer, ChatMessage } from './types'
  * reach the network or the API key: it sends the conversation over the bridge, and the reply comes
  * back as events, which this turns into a stream of text pieces for `useChat`. The first event says which
  * model is answering; that goes to `onAnswerer`, not into the text. The person's instructions (D-027) go
- * along only when there are some, so a chat without them sends exactly what it always sent.
+ * along only when there are some, so a chat without them sends exactly what it always sent. The id of the chat goes along so that
+ * the cost can be shown under it (D-030), and the cost of the reply comes back as one event, just before the end.
  */
 export async function* ipcReply(
   history: ChatMessage[],
   signal: AbortSignal,
   onAnswerer: (answerer: Answerer) => void,
-  instructions: string
+  instructions: string,
+  conversationId: string | null,
+  onUsage: (usage: ReplyUsage) => void
 ): AsyncGenerator<string> {
   if (!window.api) {
     throw new Error('The window could not connect to the app (the preload did not load).')
@@ -41,7 +45,8 @@ export async function* ipcReply(
     window.api.chat.start({
       streamId,
       messages: toWireMessages(history),
-      ...(instructions === '' ? {} : { instructions })
+      ...(instructions === '' ? {} : { instructions }),
+      ...(conversationId === null ? {} : { conversationId })
     })
     while (!signal.aborted) {
       const event = arrived.shift()
@@ -53,6 +58,7 @@ export async function* ipcReply(
       }
       if (event.type === 'start') onAnswerer({ provider: event.provider, model: event.model })
       else if (event.type === 'text') yield event.text
+      else if (event.type === 'usage') onUsage(event.usage)
       else if (event.type === 'done') return
       else throw new Error(event.message)
     }

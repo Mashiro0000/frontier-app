@@ -1,0 +1,14 @@
+{
+  "label": "n81-usage-chat-id-not-checked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "isConversationId(input) ? input : null",
+      "to": "typeof input === \"string\" ? input : null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

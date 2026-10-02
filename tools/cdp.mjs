@@ -87,8 +87,22 @@ export async function connect(port, { timeoutMs = 45000 } = {}) {
     return r.result.value
   }
 
+  // A window that the system hides or covers makes the page report visibilityState "hidden", and then input is acknowledged only after about
+  // 5 s and sometimes dropped (tools/README.md, "Hidden windows"). Before any input: if the page says hidden, ask for the window to be brought
+  // to the front and wait (up to 3 s) for "visible", and SAY so (the "!!" line is counted by the drivers, so the rate stays visible).
+  // Added 2 October 2026 (8.1) after runs in which the Claude desktop app covered the test window; it does nothing when the page is visible.
+  let hiddenTimes = 0
+  const ensureVisible = async () => {
+    if ((await evaluate(`document.visibilityState`)) !== 'hidden') return
+    const t0 = Date.now()
+    await send('Page.bringToFront').catch(() => undefined)
+    while (Date.now() - t0 < 3000 && (await evaluate(`document.visibilityState`)) === 'hidden') await sleep(100)
+    hiddenTimes += 1
+    console.log(`!! the window was hidden before an input (#${hiddenTimes}); Page.bringToFront ${(await evaluate(`document.visibilityState`)) === 'hidden' ? 'did NOT make it visible' : 'made it visible'} after ${Date.now() - t0} ms`)
+  }
+
   // Type text as if pasted/committed into the focused element.
-  const type = (text) => send('Input.insertText', { text })
+  const type = async (text) => { await ensureVisible(); return send('Input.insertText', { text }) }
 
   const KEYS = {
     Enter: { key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13, text: '\r' },
@@ -98,6 +112,7 @@ export async function connect(port, { timeoutMs = 45000 } = {}) {
     ArrowUp: { key: 'ArrowUp', code: 'ArrowUp', windowsVirtualKeyCode: 38, nativeVirtualKeyCode: 38 }
   }
   const press = async (name, { shift = false } = {}) => {
+    await ensureVisible()
     const k = KEYS[name]
     const modifiers = shift ? 8 : 0
     await send('Input.dispatchKeyEvent', { type: 'keyDown', modifiers, ...k })
@@ -111,6 +126,7 @@ export async function connect(port, { timeoutMs = 45000 } = {}) {
     const [css, text] = selector.split('@')
     const box = await evaluate(`(() => { const el = [...document.querySelectorAll(${JSON.stringify(css)})].find((e) => ${text === undefined ? 'true' : `e.textContent.trim() === ${JSON.stringify(text)}`}); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 } })()`)
     if (!box) throw new Error('click: no element for ' + selector)
+    await ensureVisible()
     const tMouse = Date.now()
     await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: box.x, y: box.y })
     await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: box.x, y: box.y, button: 'left', clickCount: 1 })
@@ -123,6 +139,7 @@ export async function connect(port, { timeoutMs = 45000 } = {}) {
     if (text === 'Settings') {
       try { await waitFor(`!!document.querySelector('dialog.settings')?.open`, { timeoutMs: 2500 }) } catch {
         console.log('!! retry: a click on Settings did not open the dialog within 2.5 s; clicking again. Page: ' + await evaluate(`JSON.stringify({ readyState: document.readyState, visibility: document.visibilityState, hasFocus: document.hasFocus(), dialogs: [...document.querySelectorAll('dialog')].map((d) => d.className + ':' + d.open), active: document.activeElement?.tagName + '.' + document.activeElement?.className, disabled: [...document.querySelectorAll('.header-button')].map((b) => b.textContent + (b.disabled ? '(disabled)' : '')), under: (() => { const b = [...document.querySelectorAll('.header-button')].find((e) => e.textContent === 'Settings'); const r = b.getBoundingClientRect(); const el = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return el ? el.tagName + '.' + el.className : null })() })`) + ' | the three mouse events took ' + mouseAckMs + ' ms to be acknowledged | slowest page answers in the last 15 s (ms): ' + JSON.stringify(latencies.filter(([t]) => Date.now() - t < 15000).map(([, ms]) => ms).sort((a, b) => b - a).slice(0, 4)) + ' | navigations since start (ms ago): ' + JSON.stringify(navs.map((n) => Date.now() - n.t)) + ' | clicks (ms ago): ' + JSON.stringify(clicks.map((c) => Date.now() - c.t)))
+        await ensureVisible()
         await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: box.x, y: box.y })
         await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: box.x, y: box.y, button: 'left', clickCount: 1 })
         await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: box.x, y: box.y, button: 'left', clickCount: 1 })

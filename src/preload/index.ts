@@ -31,6 +31,9 @@ const api: FrontierApi = {
       }
     }
   },
+  usage: {
+    summary: (conversationId) => ipcRenderer.invoke(CHANNELS.usageSummary, conversationId)
+  },
   history: {
     list: () => ipcRenderer.invoke(CHANNELS.historyList),
     load: (id) => ipcRenderer.invoke(CHANNELS.historyLoad, id),

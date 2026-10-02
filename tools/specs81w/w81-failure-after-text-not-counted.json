@@ -1,0 +1,24 @@
+{
+  "label": "w81-failure-after-text-not-counted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "REFUSED_BEFORE_WORK.has(failure.kind) && arrivedBytes === 0 ? 'rejected' : 'failed'",
+      "to": "'rejected'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-8-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s81nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8798",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w81-failure-after-text-not-counted"
+  }
+}

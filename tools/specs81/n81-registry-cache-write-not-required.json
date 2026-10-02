@@ -1,0 +1,14 @@
+{
+  "label": "n81-registry-cache-write-not-required",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/registry.ts",
+      "from": "  'cacheWritePerMTok',\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

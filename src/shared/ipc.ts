@@ -3,7 +3,8 @@
 // only: this file is bundled into the preload, which runs sandboxed (see D-004).
 
 import type { Suggestion, TaskOption } from './rankings'
-import type { Effort, ProviderId } from './registry'
+import type { Effort, ModelPricing, ProviderId } from './registry'
+import type { ReplyUsage, UsageSummary } from './usage'
 
 /**
  * A model the person can choose, as the page sees it: what to show about it, and nothing about how
@@ -19,8 +20,8 @@ export interface ModelOption {
   description: string
   /** Tokens: how much conversation it can read at once. */
   contextWindow: number
-  /** List price in US dollars per million tokens. */
-  pricing: { inputPerMTok: number; outputPerMTok: number }
+  /** List prices in US dollars per million tokens (D-030). */
+  pricing: ModelPricing
 }
 
 /** One provider the app can call, as the page sees it: its name, and whether an API key for it is saved (D-020). */
@@ -95,6 +96,12 @@ export interface ChatRequest {
    * (`checkInstructions`): text, trimmed, at most `CHAT_LIMITS.maxInstructionsChars`, and left out when blank.
    */
   instructions?: string
+  /**
+   * The conversation this request belongs to (a lower-case uuid, the id the chat is saved under), so that what it costs can be shown under
+   * that chat (D-030). It decides nothing else: the day's and the month's sums, and the limit of Stage 8.2, count the request whatever it says.
+   * Absent for a request that does not belong to a saved chat.
+   */
+  conversationId?: string
 }
 
 /** What the main process reports while a reply is being produced. */
@@ -102,6 +109,8 @@ export type ChatStreamEvent =
   /** Always first, before the key is looked up: which model is answering (D-021). Not sent if no model could be chosen. */
   | { streamId: string; type: 'start'; provider: ProviderId; model: string }
   | { streamId: string; type: 'text'; text: string }
+  /** What the reply used and cost (D-030). Sent just before 'done' or 'error', and only when something is owed. */
+  | { streamId: string; type: 'usage'; usage: ReplyUsage }
   | { streamId: string; type: 'done' }
   | { streamId: string; type: 'error'; message: string }
 
@@ -210,6 +219,13 @@ export interface FrontierApi {
     /** Listens for reply events. Returns a function that stops listening. */
     onEvent(listener: (event: ChatStreamEvent) => void): () => void
   }
+  usage: {
+    /**
+     * What has been used and spent (D-030): this chat's sum (when an id is given), today's and this month's. Main works them out from its
+     * own ledger; the page only asks. An id that is not a conversation id is treated as none.
+     */
+    summary(conversationId: string | null): Promise<UsageSummary>
+  }
   history: {
     /** The saved conversations, newest first. */
     list(): Promise<HistoryList>
@@ -232,6 +248,7 @@ export const CHANNELS = {
   chatStart: 'chat:start',
   chatCancel: 'chat:cancel',
   chatEvent: 'chat:event',
+  usageSummary: 'usage:summary',
   historyList: 'history:list',
   historyLoad: 'history:load',
   historySave: 'history:save',

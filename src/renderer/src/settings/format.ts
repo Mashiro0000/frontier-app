@@ -4,6 +4,7 @@
 import type { EffortStatus, ProviderStatus, SettingsStatus } from '../../../shared/ipc'
 import type { Suggestion, TaskId } from '../../../shared/rankings'
 import type { Effort, ProviderId } from '../../../shared/registry'
+import type { ReplyUsage, TokenCounts } from '../../../shared/usage'
 
 /**
  * What the providers' documentation names for `task`, among the models on offer now (D-023). Empty while no task is
@@ -82,4 +83,38 @@ export function formatTokens(count: number): string {
 /** 4 -> "$4", 0.25 -> "$0.25", 0.5 -> "$0.50". */
 export function formatPrice(dollars: number): string {
   return Number.isInteger(dollars) ? `$${dollars}` : `$${dollars.toFixed(2)}`
+}
+
+/** What something cost (D-030): "$0.00", "$0.0041" (a fraction of a cent keeps four places), "$0.12", "$12.34". */
+export function formatCost(dollars: number): string {
+  if (dollars === 0) return '$0.00'
+  if (dollars < 0.0001) return 'less than $0.0001'
+  if (dollars < 0.01) return `$${dollars.toFixed(4)}`
+  return `$${dollars.toFixed(2)}`
+}
+
+/** A cost, with "about" in front when any of it is the app's own guess (D-030): "about $0.12". */
+export const formatSpend = (dollars: number, about: boolean): string =>
+  `${about ? 'about ' : ''}${formatCost(dollars)}`
+
+/** 1234 -> "1,234". */
+export const formatCount = (count: number): string => count.toLocaleString('en-US')
+
+/** Every token that was read: the ordinary input, and what came from the provider's cache or went into it. */
+export const inputSide = (tokens: TokenCounts): number =>
+  tokens.input + tokens.cacheRead + tokens.cacheWrite
+
+/** The small line under a reply (D-030): "1,204 in, 312 out, $0.0041". */
+export function replyUsageText(usage: ReplyUsage): string {
+  return `${formatCount(inputSide(usage.tokens))} in, ${formatCount(usage.tokens.output)} out, ${formatSpend(usage.costUsd, usage.estimate)}`
+}
+
+/** What the line says when it is hovered: the four buckets, and what the number is and is not (D-030). */
+export function replyUsageTitle(usage: ReplyUsage): string {
+  const { tokens } = usage
+  return (
+    `Read ${formatCount(tokens.input)} tokens, ${formatCount(tokens.cacheRead)} from the provider's cache, and put ${formatCount(tokens.cacheWrite)} into it. ` +
+    `Wrote ${formatCount(tokens.output)} tokens (the thinking counts as writing). At list prices; your provider's invoice decides.` +
+    (usage.estimate ? " This is the app's own guess: the provider gave no report." : '')
+  )
 }

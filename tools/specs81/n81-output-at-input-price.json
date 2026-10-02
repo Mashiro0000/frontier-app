@@ -1,0 +1,14 @@
+{
+  "label": "n81-output-at-input-price",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "tokens.output * prices.outputPerMTok",
+      "to": "tokens.output * prices.inputPerMTok"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

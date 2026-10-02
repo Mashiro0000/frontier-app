@@ -43,6 +43,11 @@ The **Instructions** button under the message box (next to **New chat** and **Hi
 write, what to leave out). They are added to the app's own rules and sent with every message of that chat, to the company that runs the model
 that answers, so they are billed and, like the chat, saved as plain text on your computer; do not put passwords in them. The button says "on"
 while they are set, a new chat starts without them, and a chat opened from History brings its own back (D-027).
+Every request is counted (Stage 8.1, D-030): under each finished reply a small line says what it used and cost ("25 in, 12 out, $0.0003"), and
+**Settings > Usage** shows the sums for the chat you are in, for today and for this month. The numbers are the provider's own report, priced at list
+prices (cached input at its own, lower price); when there is no report (a reply you stopped, a connection that dropped) the app guesses from the
+text and marks it **about**. The record is a plain file, `usage/ledger.jsonl`, in the app's data folder, written by the app alone. Your provider's
+invoice is what counts. Nothing limits spending yet: that is the next slice (8.2), and the limits will be yours to set.
 The list of models is `registry/models.json`: edit it, then restart `npm run dev` (or run `npm run dev -- --watch`
 so it restarts by itself). See docs/DECISIONS.md D-012, D-014, D-015, D-020 and D-022.
 

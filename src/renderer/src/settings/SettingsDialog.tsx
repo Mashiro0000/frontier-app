@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { SettingsStatus } from '../../../shared/ipc'
 import { formatPrice, formatTokens, providerName } from './format'
 import ProviderKeySection from './ProviderKeySection'
+import UsageSection from './UsageSection'
 
 interface SettingsDialogProps {
   open: boolean
@@ -10,6 +11,8 @@ interface SettingsDialogProps {
   loadError: string | null
   onStatusChange: (status: SettingsStatus) => void
   onClose: () => void
+  /** The conversation on screen, so that Usage can say what it has cost (D-030). */
+  conversationId: string
 }
 
 function SettingsDialog({
@@ -17,7 +20,8 @@ function SettingsDialog({
   status,
   loadError,
   onStatusChange,
-  onClose
+  onClose,
+  conversationId
 }: SettingsDialogProps): React.JSX.Element {
   const dialogRef = useRef<HTMLDialogElement>(null)
   // Each key section holds what the person is typing and what it last said. Closing the dialog gives them new keys, so
@@ -98,6 +102,8 @@ function SettingsDialog({
           </>
         )}
       </section>
+
+      <UsageSection open={open} conversationId={conversationId} />
 
       <div className="settings-footer">
         <button
