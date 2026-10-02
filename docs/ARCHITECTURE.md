@@ -155,7 +155,7 @@ earlier turns is D-013.
 ### Instructions for a chat
 
 ```
-header: Instructions (on) --InstructionsDialog (a draft until Save)--> useChat.instructions  (one text per conversation, '' for none)
+chat bar: Instructions (on) --InstructionsDialog (a draft until Save)--> useChat.instructions  (one text per conversation, '' for none)
                                                                           |                \
    every request: ipcReply --chat.start({ streamId, messages, instructions? })           useHistory: saved with the chat (version 3)
         main: checkChatRequest (text, trimmed, at most 8,000 characters, left out when blank)
@@ -167,14 +167,15 @@ The instructions are the person's, set only by pressing Save in the dialog, kept
 whichever provider answers (the dialog says so). They are added AFTER the app's own rules and never replace them: the page has no field that
 sets the system prompt, and a field called `system` in a request is dropped by `checkChatRequest`. A chat without instructions sends exactly the
 prompt it sent before Stage 7.4 (checked byte for byte against the recorded requests). A new chat starts without instructions; a chat opened
-from History brings its own back. The header button says "on" while they are set, and is off while a reply arrives, like the model and the
-effort. Asking again (Regenerate, an edited message) uses the instructions the chat has at that moment. See DECISIONS.md D-027.
+from History brings its own back. The Instructions button (in the chat bar under the message box since 7.6) says "on" while they are set, and is
+off while a reply arrives, like the model and the effort. Asking again (Regenerate, an edited message) uses the instructions the chat has at that moment. See DECISIONS.md D-027.
 
 ## Chat UI (`src/renderer/src/chat/`)
 
 | File                 | Job                                                                                                                                  |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `ChatView.tsx`       | Puts the message list and the input box together. The conversation itself is held in `App`, which also feeds the header's model menu |
+| `ChatBar.tsx`        | (7) The slim row under the message box: New chat, History and Instructions, with the rules they had in the header (D-029)            |
 | `useChat.ts`         | Conversation state and the cycle: send, reply streams in, then done / stopped / error. (4) `load`. (7) Instructions (D-027)          |
 | `ipcReply.ts`        | The reply function: sends the conversation (and the instructions, if any) to main over the bridge and streams the answer             |
 | `history.ts`         | Decides what the model is told about earlier turns (D-013)                                                                           |
@@ -188,7 +189,8 @@ effort. Asking again (Regenerate, an edited message) uses the instructions the c
 
 `src/renderer/src/useCopy.ts` is the one place that writes the clipboard (on a click, D-025, D-026).
 
-`App.tsx` adds the header (New chat, History, Instructions, the Task, model and Effort menus, Settings). All styling is one stylesheet,
+`App.tsx` adds the header (the Task, model and Effort menus, the badges, Settings: one row from 720 px up, whatever is showing, D-029) and the chat bar
+under the message box (New chat, History, Instructions). All styling is one stylesheet,
 `assets/main.css`, with colours as CSS variables at the top. The UI is dark only.
 
 ```
@@ -298,7 +300,7 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
   read for them, and the page cannot send a system prompt (a `system` field is dropped; only `instructions` is read, and main checks it
   again). They are added after the app's own rules, never in place of them. They are sent with every request to whichever provider answers and
   saved as plain text in the chat's file, and the dialog says both. A chat file opened from History brings its instructions with it, and the
-  "on" mark on the header button shows that they are there; a file whose instructions are not usable is left alone.
+  "on" mark on the Instructions button shows that they are there; a file whose instructions are not usable is left alone.
 
 ## Not built yet
 

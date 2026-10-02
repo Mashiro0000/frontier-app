@@ -8,7 +8,7 @@ interface HistoryDialogProps {
   onClose: () => void
 }
 
-/** The list of saved chats: open one, or delete one. Starting a new chat is a button in the header. */
+/** The list of saved chats: open one, or delete one. Starting a new chat is a button in the chat bar under the message box. */
 function HistoryDialog({ open, history, onClose }: HistoryDialogProps): React.JSX.Element {
   const dialogRef = useRef<HTMLDialogElement>(null)
   // True while a chat is being opened or deleted: the other buttons wait, so two requests cannot cross.

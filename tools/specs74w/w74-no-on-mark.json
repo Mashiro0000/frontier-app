@@ -2,9 +2,9 @@
   "label": "w74-no-on-mark",
   "edits": [
     {
-      "file": "{{REPO}}/src/renderer/src/App.tsx",
-      "from": "{chat.instructions !== '' && (\n              <>",
-      "to": "{false && (\n              <>"
+      "file": "{{REPO}}/src/renderer/src/chat/ChatBar.tsx",
+      "from": "{instructions !== '' && (\n          <>",
+      "to": "{false && (\n          <>"
     }
   ],
   "argv": [

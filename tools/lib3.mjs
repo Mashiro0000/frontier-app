@@ -83,7 +83,7 @@ export function helpers(page, { userData, mockUrl } = {}) {
       }
       await h.send(text)
       if (!(await arrived())) {
-        console.log(`!! retry: no request reached the mock within 8 s of sending ${JSON.stringify(text.slice(0, 40))}; page: ${await ev(`JSON.stringify({ visibility: document.visibilityState, focus: document.hasFocus(), active: document.activeElement?.className, input: document.querySelector('.composer-input')?.value?.slice(0, 40), replying: !document.querySelector('.composer-button[type=submit]') })`)}; sending once more`)
+        console.log(`!! retry: no request reached the mock within 8 s of sending ${JSON.stringify(text.slice(0, 40))}; page: ${await ev(`JSON.stringify({ visibility: document.visibilityState, focus: document.hasFocus(), active: document.activeElement?.className, input: document.querySelector('.composer-input')?.value?.slice(0, 40), replying: !document.querySelector('.composer-button[type=submit]'), dialogs: [...document.querySelectorAll('dialog')].filter((d) => d.open).map((d) => d.className), messages: [...document.querySelectorAll('.message')].map((m) => m.innerText.slice(0, 60).split(String.fromCharCode(10)).join(' ')) })`)}; model: ${await ev(`window.api.settings.getStatus().then((s) => s.selectedModelId)`).catch(() => '?')}; sending once more`)
         await h.send(text)
         if (!(await arrived())) return null
       }

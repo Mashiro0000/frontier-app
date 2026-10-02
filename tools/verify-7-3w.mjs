@@ -60,7 +60,7 @@ const act = async (index, label) => { await intoView(index); return page.click(`
 const titleOf = (index, label) => ev(`[...document.querySelectorAll('${MSG}:nth-child(${index + 1}) .message-action')].find((b) => b.textContent === ${JSON.stringify(label)})?.title ?? null`)
 const editor = () => ev(`(() => { const f = document.querySelector('.message-edit'); if (!f) return null; const t = f.querySelector('textarea'); const b = [...f.querySelectorAll('button')]; return { value: t.value, focused: document.activeElement === t, caret: [t.selectionStart, t.selectionEnd], note: f.querySelector('.message-edit-note')?.textContent ?? null, warning: f.querySelector('.message-edit-warning')?.textContent ?? null, send: b.find((x) => x.type === 'submit')?.textContent, sendDisabled: b.find((x) => x.type === 'submit')?.disabled, buttons: b.map((x) => x.textContent) } })()`)
 const setEditor = (text) => ev(`(() => { const t = document.querySelector('.message-edit textarea'); const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set; set.call(t, ${JSON.stringify(text)}); t.dispatchEvent(new Event('input', { bubbles: true })); return t.value })()`)
-const newChat = async () => { await page.click('.header-button@New chat'); await page.waitFor(`document.querySelectorAll('${MSG}').length === 0`, { timeoutMs: 6000 }); await sleep(150) }
+const newChat = async () => { await page.click('.chat-button@New chat'); await page.waitFor(`document.querySelectorAll('${MSG}').length === 0`, { timeoutMs: 6000 }); await sleep(150) }
 /** Sends text from the box and waits for the reply to be over; returns the request the mock received. */
 const say = async (text) => H.askMock(text)
 /** After a click that asks again: waits for the mock to receive a request, then for the reply to be over. */
@@ -313,7 +313,7 @@ check('...and Enter again confirms: the conversation up to that question goes, w
 await page.send('Page.reload')
 await sleep(600)
 await page.waitFor(READY, { timeoutMs: 20000 })
-await page.click('.header-button@History')
+await page.click('.chat-button@History')
 await page.waitFor(`!!document.querySelector('dialog.history')?.open && document.querySelectorAll('.history-open').length > 0`, { timeoutMs: 8000 })
 await page.click('.history-open')
 await page.waitFor(`document.querySelectorAll('${MSG}').length > 0 && !document.querySelector('dialog.history')?.open`, { timeoutMs: 8000 })

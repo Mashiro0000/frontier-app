@@ -75,7 +75,9 @@ body {
   gap: 8px 10px;
 }
 
-.header-button {
+/* The pill buttons: Settings in the header, and New chat, History and Instructions under the message box (D-029). */
+.header-button,
+.chat-button {
   padding: 2px 12px;
   font: inherit;
   font-size: 13px;
@@ -86,17 +88,20 @@ body {
   cursor: pointer;
 }
 
-.header-button:hover:not(:disabled) {
+.header-button:hover:not(:disabled),
+.chat-button:hover:not(:disabled) {
   background: var(--ev-c-gray-3);
 }
 
-.header-button:focus-visible {
+.header-button:focus-visible,
+.chat-button:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
 /* Off while a reply arrives, or while there is nothing to start over from. */
-.header-button:disabled {
+.header-button:disabled,
+.chat-button:disabled {
   color: var(--ev-c-text-3);
   cursor: default;
 }
@@ -151,6 +156,40 @@ body {
 .effort-select:disabled {
   color: var(--ev-c-text-3);
   cursor: default;
+}
+
+/*
+ * From the default window width up (900 px, 886 of page) the header is ONE row, whatever is showing in it (D-029): with both badges at
+ * once and a task chosen it would need about 870 px, so the three menus give way (their text is cut with an ellipsis, never below 96 px
+ * each) before anything wraps. The title, the badges and Settings never shrink. In a narrower window the controls drop under the title
+ * as before.
+ */
+@media (min-width: 720px) {
+  .app-header,
+  .app-header-actions {
+    flex-wrap: nowrap;
+  }
+
+  .app-header-actions {
+    min-width: 0;
+  }
+
+  .app-title,
+  .app-badge,
+  .header-button {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .header-select,
+  .task-select,
+  .effort-select {
+    flex: 0 1 auto;
+    min-width: 96px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 /* ---------- chat area ---------- */
@@ -650,7 +689,7 @@ body {
 
 .composer {
   flex: none;
-  padding: 12px 20px 20px;
+  padding: 12px 20px 6px; /* the chat bar sits right under the box (D-029) */
 }
 
 .composer-inner {
@@ -725,6 +764,32 @@ body {
 /* Needs the same specificity as the Send hover rule above to win over it. */
 .composer-button-stop:hover:not(:disabled) {
   background: var(--ev-c-gray-1);
+}
+
+/* ---------- the chat's own buttons, under the message box (D-029) ---------- */
+
+/* As wide as the message box above it (its edges line up with the box's), and wrapping instead of overflowing in a narrow window. */
+.chat-bar {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  width: 100%;
+  max-width: calc(var(--chat-width) + 40px);
+  margin: 0 auto;
+  padding: 0 20px 10px;
+}
+
+/* The Instructions button says "on" while the chat has instructions: they are sent with every message (D-027). */
+.chat-mark {
+  margin-left: 2px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border-radius: 999px;
 }
 
 /* ---------- buttons (settings dialog) ---------- */
@@ -1101,15 +1166,4 @@ body {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 14px;
-}
-
-/* The header's Instructions button says "on" while the chat has instructions: they are sent with every message. */
-.header-mark {
-  margin-left: 2px;
-  padding: 0 6px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-on-accent);
-  background: var(--color-accent);
-  border-radius: 999px;
 }

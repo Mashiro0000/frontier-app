@@ -119,10 +119,10 @@ contract: each stage starts with a short written plan that the owner approves (a
 12. **I stop and ask before:** adding a new kind of power (file write, command run, network from a tool, microphone), adding a dependency with
     install scripts, publishing or pushing anything, or touching your real profile or accounts.
 
-## Stage 7 - Chat polish (done: 7.1 Effort, 7.2 Markdown, 7.3 Copy, Regenerate and Edit, 7.4 Instructions, 7.5 the stage's threat note and the full regression)
+## Stage 7 - Chat polish (done: 7.1 Effort, 7.2 Markdown, 7.3 Copy, Regenerate and Edit, 7.4 Instructions, 7.5 the stage's threat note and the full regression, 7.6 the header)
 
 Five slices, one commit each: 7.1 Effort, 7.2 Markdown, 7.3 Copy / Regenerate / Edit and resend, 7.4 Instructions per chat, 7.5 docs, threat
-note and the full regression (D-028).
+note and the full regression (D-028); and a sixth after them, at the owner's request: 7.6, New chat, History and Instructions move out of the header (D-029).
 
 - [x] (7.2, D-025) Markdown with code blocks (language label and a Copy button), tables, lists, quotes, headings, links that ask first.
 - [x] (7.3, D-026) **Copy** on each message, **regenerate** the last reply (Try again after a failure), **edit and resend** one of your own messages.
@@ -136,8 +136,9 @@ note and the full regression (D-028).
       image or resource loads by itself, nothing can navigate or script the app window. Higher effort is billed as extra output (thinking), so the
       control says so, and Stage 8's spending limit must count it (the list of what it must count is in D-028).
 - [x] (7.5, D-028) The stage's threat note across the four slices, the full regression (the Node, window, seeded, registry-scenario and Stage 4
-      suites, and the built app), and the list of what was not checked. **Open for the owner:** the header wraps to two rows at the default
-      window width (D-027; options in IDEAS).
+      suites, and the built app), and the list of what was not checked.
+- [x] (7.6, D-029) The header stays ONE row at the default window width, whatever is showing: **New chat**, **History** and **Instructions** moved out of it
+      into a slim row under the message box (the owner's decision of 2 October 2026, after D-027 had reported that the header wrapped).
 
 ## Stage 8 - Usage, cost and spending limits, optional encrypted history (not started)
 

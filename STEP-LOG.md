@@ -1817,6 +1817,14 @@ package), the risks that only exist where they meet (above all money: a higher E
 tokens, and nothing limits them until Stage 8, which now has a list of what it must count), and what was not checked. And the full regression,
 which had been left for this slice: the Stage 4 history suites and the built app had not been run since Stage 7 began.
 
+**7.6 The header (D-029), at your request.** New chat, History and Instructions are no longer in the header. They are in a slim row under the message
+box (a group named "This chat"), with exactly the labels, rules and sentences they had. The header is now ONE row at the default window width (47
+px) whatever is showing: each of the seven models, each task, and the widest state (a task chosen and both badges), where the three menus give
+way a little (their text is cut with an ellipsis, none below 96 px) instead of the header wrapping; below 720 px of page the controls drop under the
+title as before. At the default window the chat gets 480 px of messages (468 before with a key saved, 434 with a badge). The Tab order changed: the
+header first, then the messages, the box, Send, and last the three buttons. No new package, and nothing in the main process, the preload or the
+shared checks changed. One new decision, **D-029**; new files `src/renderer/src/chat/ChatBar.tsx` and `tools/verify-7-6w.mjs`.
+
 ## Stage 7 - Step by step
 
 1. **Plan approved ("Go", 1 October 2026).** Own Markdown renderer with no package, Copy writes to the clipboard on a click, links open the
@@ -1870,6 +1878,30 @@ which had been left for this slice: the Stage 4 history suites and the built app
     proved identical by hash. No file under `src/` or `registry/` changed in this slice (`git diff` against the 7.4 commit is empty for both).
 18. **Documents:** the stage's threat note and the list of what was not checked are D-028 in `docs/DECISIONS.md`; the roadmap marks Stage 7 done;
     this log; `tools/README.md` (measured durations, the hidden-window note, the rule about reading a reply).
+19. **Slice 7.6 ("move New chat, History and Instructions out of the header", 2 October 2026).** I measured the header first, in the real window at
+    the default size: what each control needs (title 92 px, Task menu 114, model menu 142, or 200 with a task chosen, Effort 175, Settings 72, the
+    badges 75 and 80; the three buttons 79, 66 and 92), and the header's height: 80 px with a key saved, 47 px for Haiku (no Effort menu), 115 px with
+    "No API key". Then I built `ChatBar`, the header rule (one row from 720 px up, the menus giving way) and the stylesheet, and looked at the
+    screenshots of the default state and of the widest one.
+20. **Suites ported.** Stage 1's layout checks (the box "sits at the very bottom": now the bar does, with the box right above it), Stage 4's helpers
+    (`H.chatButtons`, `chatButton`, `clickChat`) and `verify-4-2` (the header keeps only Settings, the bar has the three), the other suites that
+    clicked New chat or History, and 7.4's Instructions suite. A quick run of the affected suites (the Stage 1 chain, all of Stage 4, 7.2, 7.3, 7.4)
+    passed before the new suite was written. The two negative-control specs that named the Instructions button's code were pointed at its new file
+    (found by the dry check, `tools/check-specs.mjs`).
+21. **A new suite**, `verify-7-6w.mjs` (46 checks), and one check in `verify-4-5` with the real "Not saved" badge showing. **12 negative controls**
+    (`tools/specs76w`): 11 were caught the first time. The one that was not, a bar that cannot wrap, showed that my check only looked for overflow: at
+    280 px the buttons just broke their labels over two lines and nothing overflowed. The check now also requires every label on one line, and that
+    control is caught too. After the batch `src/` and `registry/` were proved identical to before by hash (64 files).
+22. **An intermittent retry** was reported once by the harness in the new suite ("no request reached the mock within 8 s" for the first message, in 1
+    of 7 launches). It is unexplained: the other launches were clean, and a look at the page after sending showed nothing wrong. The retry message in
+    `tools/lib3.mjs` now also lists the open dialogs, the messages on screen and the selected model, so that the next time it says more.
+23. **The full regression** (`node tools/regress.mjs t76`, all six parts, 80 runs, about an hour): **79 clean the first time.** The one that was not
+    was the built-app launch of `verify-5-3`: it waited for the 20 s Test-key timeout notice and the notice did not come. The watcher had logged three
+    moments of keyboard or mouse input at that time; the same launch passed on its own re-run (66 of 66, no input logged). The cause is not proven;
+    `tools/README.md` now says not to touch the machine during a run. The new suite and all of Stage 4 passed on the dev app and on the built app,
+    and the hidden-window stall of 7.5 did not recur.
+24. **Merge and tag.** After the commit of this slice, with a clean working tree, the branch was merged into `main` with a merge commit (not a
+    fast-forward, so that there is a commit to tag), and that commit was tagged `stage-7-done`. Both are local: nothing was pushed.
 
 ## Stage 7 - Choices I made where things were unclear ("pick the simplest option")
 
@@ -1880,7 +1912,9 @@ which had been left for this slice: the Stage 4 history suites and the built app
 - **The field is `instructions`, not `system`**, so that nothing suggests the page controls the system prompt (D-027).
 - **The saved chat is version 3 with no conversion of old files.** Old files are read as they are and rewritten only when the chat is next saved;
   the price is that a build from before 7.4 cannot read a version 3 chat (D-027).
-- **The header was not redesigned** when the new button made it wrap at the default window width. It is reported, with options, for you to decide.
+- **The header (you decided, 2 October): the three buttons move out.** I put them in a slim row under the message box (not above it, not inside it,
+  not in a sidebar: that costs the least height and leaves the box alone), and made the header one row by construction, with the menus giving way from
+  720 px up, because taking the buttons out alone would still have left a rare wrap (a task chosen and both badges showing need about 870 px).
 - **The test harness was not changed for the hidden window.** The three launches were run again on their own, which is the documented way, and
   what was seen is written down with the watcher to catch it next time.
 
@@ -1894,13 +1928,14 @@ which had been left for this slice: the Stage 4 history suites and the built app
    request. D-028 lists what Stage 8's limit has to count.
 3. **A replaced reply is gone** (no versions, no undo), and **a chat saved by this version cannot be read by a build from before 7.4** (that build
    leaves it alone; it does not damage it). Old chats still open here.
-4. **The header wraps to two rows at the default window width** (900 px): it goes from 47 px to 80 px high (115 px with a "No API key" badge), which
-   takes that much room from the chat. Options are in IDEAS (move New chat, History and Instructions out of the header, or make two rows on
-   purpose). **Waiting for your decision.**
+4. **The header is one row at the default window width** (D-029). Below 720 px of page it wraps as before, and so does it at a page zoom of about
+   125 % or more (the 900 px window then has fewer than 720 CSS px). The Tab order is different now: the three chat buttons come last.
 5. **Typing a very long message (21 KB) stalls the page for about 2.5 s.** The box, not looked into.
-6. **A test window now and then goes "hidden"** (2 of 78 launches here): the suite times out and the run shows BAD. Run that launch again on its
-   own (`tools/README.md` has the commands). The cause is unproven.
+6. **A test window now and then goes "hidden"** (2 of 78 launches in 7.5, none of the 80 in 7.6), and a key press or a click during a run can close a
+   dialog a suite is waiting on (one launch in 7.6): the suite times out and the run shows BAD. Leave the machine alone during a run, and run that
+   launch again on its own (`tools/README.md` has the commands). The causes are unproven.
 7. **Haiku 4.5 may be retired from 15 October 2026** at the earliest (unchanged since Stage 6).
-8. **Nothing was pushed.** The repository has an `origin` (github.com/Mashiro0000/frontier-app); `main` equals `origin/main` (c85242e). The five
-   commits of Stage 7 are on the local branch `stage-7-chat-polish` only; merging it and pushing are yours to say.
+8. **Stage 7 is merged into `main` and tagged, locally; nothing was pushed.** The repository has an `origin` (github.com/Mashiro0000/frontier-app),
+   and `origin/main` is still c85242e. `main` now holds the merge commit, which carries the tag `stage-7-done`; the branch `stage-7-chat-polish` is
+   kept. Pushing `main` and the tag is yours to do.
 9. **Everything in the earlier stages' "Things to know" still applies.**

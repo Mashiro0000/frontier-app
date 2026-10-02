@@ -261,7 +261,7 @@ check('the saved chat holds the Markdown as the model wrote it (the characters *
 await page.send('Page.reload')
 await sleep(600)
 await page.waitFor(READY, { timeoutMs: 20000 })
-await page.click('.header-button@History')
+await page.click('.chat-button@History')
 await page.waitFor(`!!document.querySelector('dialog.history')?.open && document.querySelectorAll('.history-open').length > 0`, { timeoutMs: 8000 })
 await page.click('.history-open')
 await page.waitFor(`document.querySelectorAll('.message-assistant').length > 0 && !document.querySelector('dialog.history')?.open`, { timeoutMs: 8000 })

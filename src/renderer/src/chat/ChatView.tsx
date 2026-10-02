@@ -9,7 +9,7 @@ import type { UseChat } from './useChat'
 interface ChatViewProps {
   /** What the main process says about settings; null until it has answered. */
   status: SettingsStatus | null
-  /** The conversation. It is held in App, because the header needs to know when a reply is arriving. */
+  /** The conversation. It is held in App, because the header and the chat bar need to know when a reply is arriving. */
   chat: UseChat
   onOpenSettings: () => void
   /** Changes when another conversation is put on screen, so the input box can take the focus. */

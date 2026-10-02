@@ -20,7 +20,7 @@ tree), and keep the machine idle: `verify-4-3c` (quit with 60 queued saves) fail
 | Part        | What it runs                                                                        | About   |
 | ----------- | ----------------------------------------------------------------------------------- | ------- |
 | `node`      | Plain-Node suites: provider, registry, rankings, store, adapters, credential store  | 1.5 min |
-| `window`    | The window suites of Stages 1-3, 5, 6 and 7.1 to 7.4, each on its own scratch profile | 17 min |
+| `window`    | The window suites of Stages 1-3, 5, 6 and 7.1 to 7.4 and 7.6, each on its own scratch profile | 18 min |
 | `seeds`     | One launch per damaged `preferences.json` (`make-seeds.mjs` makes them; 16 of them) | 7 min   |
 | `scenarios` | The registry file deliberately broken in ten ways, restored after each (`run-scenario.mjs`) | 5 min   |
 | `stage4`    | The history suites (`final-new.mjs`): crashes, damaged folders, injected disk faults | 5 min   |
@@ -35,6 +35,7 @@ Single pieces:
 node tools/run53.mjs                      one launch of the key / Settings suite
 node tools/run71.mjs [dev|preview]        the Effort menu (7.1): a fresh profile, a restart, and ten seeded preferences files
 node tools/run74.mjs [dev|preview]        Instructions per chat (7.4): seeds conversation files of versions 1, 2, 3 and a damaged 3, then the window suite
+node tools/run-one.mjs w76 dev setup-key.mjs,verify-7-6w.mjs USER_DATA_DIR=s76 MOCK_PORT=8790      the header-one-row and chat-bar suite (7.6)
 node tools/run-scenario.mjs <scenario>    one registry scenario
 node tools/nc-all.mjs specs guard-off     one negative control (spec folders: specs, specs4, specs4w)
 node tools/with-load.mjs 8 tools/regress.mjs <tag> window      the same, with 8 busy CPU loops competing
@@ -91,6 +92,11 @@ them). **The cause is not proven.** What was seen: the person was using the PC a
 `watch-windows.ps1`, started afterwards, then saw 30 moments of input and 3 times the test window behind the Claude window (maximized on a
 1280 x 720 screen) with no stall in any of them. To get proof next time: start `powershell -NoProfile -File tools\watch-windows.ps1 -Tag <tag>`
 before `node tools/regress.mjs <tag>` and read `tools/.out/watch-<tag>.log` around the stall (it names the windows that cover the test window).
+
+A related case (`t76`, 2 October 2026): the built-app launch of `verify-5-3` died waiting for the 20 s Test-key timeout notice, while the watcher
+logged three moments of keyboard or mouse input and the window was in front; the same launch passed on its own re-run, with no input logged. A key
+press or a click in the test window can close the dialog a suite is waiting on, so **do not touch the keyboard or the mouse while a run goes**
+(the log lines `INPUT` show when someone did). Also not proven.
 
 ## Rules learned the hard way
 

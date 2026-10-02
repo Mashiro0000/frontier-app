@@ -55,7 +55,7 @@ check('on screen the new reply names its model above it, and the old replies sti
 check('one file, no temporary leftovers', JSON.stringify(H.files()) === JSON.stringify([`${seed.id}.json`]), JSON.stringify(H.files()))
 
 // ============ B. a new conversation: the model per reply, and the names on screen ============
-await H.clickHeader('New chat')
+await H.clickChat('New chat')
 await sleep(300)
 await H.sendAndWait('one: first, with Opus')
 successes++

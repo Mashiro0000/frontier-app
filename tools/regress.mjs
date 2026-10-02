@@ -52,6 +52,7 @@ if (parts.includes('window')) {
   launcher('run72.mjs', 'dev', 'w72', 'verify-7-2 (Markdown replies, links, Copy)')
   launcher('run73.mjs', 'dev', 'w73', 'verify-7-3 (Copy, Regenerate, Edit and send again)')
   launcher('run74.mjs', 'dev', 'w74', 'verify-7-4 (instructions per chat; seeded v1, v2, v3 files)')
+  rec(seeded('w76', 'dev', 'setup-key.mjs,verify-7-6w.mjs', { USER_DATA_DIR: scratch('s76'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('w76'), 'verify-7-6 (header one row, chat bar under the box)')
   const mtime = statSync(join(P, 'preferences.json')).mtimeMs
   rec(seeded('34b', 'dev', 'verify-3-4b.mjs', { USER_DATA_DIR: P, MOCK_PORT: MOCK, EXPECT_MODEL: 'claude-haiku-4-5-20251001', PREFS_MTIME_MS: String(mtime) }), pfx('34b'), 'verify-3-4b (restart)')
 }
@@ -101,6 +102,7 @@ if (parts.includes('preview')) {
   launcher('run72.mjs', 'preview', 'prev-w72', 'built: verify-7-2 (Markdown replies, links, Copy)')
   launcher('run73.mjs', 'preview', 'prev-w73', 'built: verify-7-3 (Copy, Regenerate, Edit and send again)')
   launcher('run74.mjs', 'preview', 'prev-w74', 'built: verify-7-4 (instructions per chat)')
+  rec(seeded('prev-w76', 'preview', 'setup-key.mjs,verify-7-6w.mjs', { USER_DATA_DIR: scratch('s76p'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('prev-w76'), 'built: verify-7-6 (header one row, chat bar)')
   stage4('preview')
 }
 

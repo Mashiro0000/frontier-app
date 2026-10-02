@@ -960,7 +960,7 @@ every message of that chat: who to be, how long to write, what to leave out. It 
   works at 320 px wide. At the default window width the header's controls now wrap under the title (the header's own rule for a narrow window;
   the new button made them wider than the window): measured at 886 px of page, with a key saved, the header goes from one row of 47 px to two
   rows of 80 px, which takes 33 px of height from the chat (115 px when a badge such as "No API key" is also shown). **Left:** Escape discards a draft without
-  asking.
+  asking. (**Since D-029** the three buttons are under the message box and the header is one row again.)
 
 **Threat note (what could go wrong, what stops it, what is left).**
 
@@ -1090,4 +1090,73 @@ program made by `electron-builder` (Stage 18); `app.isPackaged` is false in them
 
 Status: accepted (Stage 7 closed). Revisit: Stage 8's counting of everything in the money paragraph; the first real replies (what the reader
 gets wrong, what each effort level really costs); versions of a replaced reply; a deny-by-default permission handler; a header that does not
-wrap at the default window width (the owner's decision is open, see IDEAS).
+wrap at the default window width (decided afterwards and done in 7.6, D-029).
+
+## D-029 - New chat, History and Instructions move from the header to a slim row under the message box, so that the header is one row at the default window width
+
+D-027 reported, and D-028 left open for the owner, that the Instructions button made the header wider than the default window (900 px, 886 of
+page): its controls wrapped under the title, 47 px became 80 px (115 px with a "No API key" badge), and the chat lost 33 to 68 px of height. The
+owner decided (2 October 2026): move New chat, History and Instructions out of the header, so that it never wraps to two rows at the default
+width. This is slice 7.6, made after 7.5 at the owner's request.
+
+- **Where they went.** A new component, `ChatBar` (`src/renderer/src/chat/ChatBar.tsx`), draws the three buttons in a slim row directly under the
+  message box: as wide as the box (at most 760 px, centred, so that the first button lines up with the box's left edge), a group named "This
+  chat", the last thing on the page. What was weighed: a row above the box (it reads as a second header row and sits between the messages and the
+  box), buttons inside the message box (that changes the box's layout and the place of Send, which Stage 1's checks pin down), and a sidebar (a
+  much larger change). Under the box costs the least height.
+- **Nothing about the buttons changed.** The same labels, tooltips and rules: all three wait for a reply that is arriving; New chat is off in an
+  empty chat and warns when the chat could not be saved; Instructions says "on" and how long they are. The same dialogs, which still return the
+  keyboard to the button that opened them. The state stays in `App` (the dialogs, the chat, the history). Only the class names changed
+  (`chat-bar`, `chat-button`, `chat-instructions`, `chat-mark`), because the header no longer holds them. The header keeps the Task, model and
+  Effort menus, the badges ("Not saved", "No API key") and Settings.
+- **The header is one row by construction, not by luck.** After the move the widest state a person can reach (a task chosen, which makes the model
+  menu say "(suggested)" and widen to 200 px, with both badges showing) still needs about 870 px against the 846 the header has, so taking the
+  three buttons out alone would have left a rare wrap. From 720 px of page up the header therefore does not wrap, and the three menus give way
+  instead: their text is cut with an ellipsis, and none goes below 96 px. The title, the badges and Settings never shrink. Below 720 px the
+  controls drop under the title as before. Measured in the real window at 886 px: 47 px in every state, for each of the seven models (the OpenAI
+  ones with "No API key" showing, Haiku with no Effort menu), each of the five task choices, and the widest state, which also holds at 800 and
+  720 px.
+- **What the chat area gets.** At the default window: 47 px of header, 480 px of messages, 71 px of message box and 36 px of bar. Against 7.4
+  that is 12 px more height with a key saved (468 before) and 46 px more with a badge showing (434); against 7.3, before there was a bar, it is
+  22 px less (502).
+- **The keyboard order changed.** Tab used to reach New chat, History and Instructions first. Now the header's menus and Settings come first, then
+  the messages, the box and Send, and last the three buttons: the page's order is the order on the screen, and the group is named for a screen
+  reader. Shift+Tab goes back the same way.
+- **Narrow windows.** The bar wraps instead of overflowing (checked at 420, 320 and 280 px, with the "on" mark, which makes Instructions wider).
+
+**Threat note.** No new power, and nothing in the main process, the preload or `src/shared` changed (the change is in `src/renderer` only), so the
+page can do exactly what it could before. What could go wrong: (1) a button out of reach in a narrow window: the bar wraps; (2) the header
+wrapping again with a long label (a long model name in the registry): the menus give way, down to 96 px, with an ellipsis; (3) New chat clicked by
+mistake, now that it is nearer the box: it only starts a new chat, which stays saved in History, and it is off in an empty chat and while a reply
+arrives; the one loss is a chat that could not be saved (the "Not saved" badge and the button's own sentence say so, as before). **Left:** nothing
+asks before New chat discards a chat that could not be saved (D-017 chose the sentence).
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only. A new window suite, `verify-7-6w.mjs` (46 checks): where
+the buttons are and that the header holds only Settings; one row for each model, each task, and the widest state at 886, 800 and 720 px, and the
+page just under 720 px; the bar's place, its alignment with the box and its size; the rules the buttons keep (an empty chat, a reply that is
+arriving, Stop, History and Instructions opening and giving the keyboard back, Save and the "on" mark); the order of the keyboard; 420, 320 and
+280 px. `verify-4-5` has one more check, with the real "Not saved" badge showing (20 checks).
+**Negative controls** (`tools/specs76w`): 12 breakages of the bar and the header (the header allowed to wrap; menus that cannot give way, or give
+way with no floor; a bar not lined up with the box; one that cannot wrap; one drawn above everything; one far too tall; History on while a reply
+arrives; New chat on in an empty chat; a bar that is not a named group; the buttons also in the header; the bar first in the page's order but
+drawn last). 11 were caught the first time. The twelfth was not: with `flex-wrap: nowrap` the buttons simply broke their labels over two lines and
+nothing overflowed, which my narrow-window check could not see. The check now also requires every label on one line, and that breakage is caught.
+After the batch `src/` and `registry/` were proved identical to before by hash (64 files). The suites that used the three buttons in the header
+were ported (Stage 1's layout checks; Stage 4's helpers, `verify-4-2`, 4-2b, 4-3a, 4-3d, 4-4, 4-5 and 5-4; the window suites of 7.2, 7.3 and 7.4),
+and the two control specs that named the Instructions button's code were pointed at its new file.
+**The full regression** (`node tools/regress.mjs t76`, 80 runs, 2 October 2026): 79 clean the first time. The one that was not was the built-app
+launch of `verify-5-3` (keys and Settings): it waited 30 s for the 20 s timeout of a Test-key call that never answers, and the notice did not
+come. The watcher logged keyboard or mouse input at that moment (a key press or a click can close the dialog the suite is waiting on), the
+window was in front, and the same launch passed on its own re-run (66 of 66, no input logged); the suite had passed in the dev app in the same
+regression. The cause is **not proven**. The new suite passed in the dev app and in the built one, and so did every Stage 4 suite (`verify-4-2`
+has 91 checks now, the injected-disk-fault suite 20). The hidden-window stall of 7.5 (`verify-2-3`, `verify-2-4`) did not happen this time. The
+harness's retry message in `tools/lib3.mjs` now also lists the open dialogs, the messages on screen and the selected model: the new suite's first
+message once needed its one retry in 7 launches, unexplained, and the next occurrence should say more.
+
+**Not checked:** (1) page zoom: at about 125 % or more the 900 px window has fewer than 720 CSS px, so the header drops its controls under the
+title, as in any narrow window; (2) a very long label in the registry (only the seven real labels were used); (3) a touch screen and a screen
+reader; (4) systems other than Windows; (5) the real "Not saved" badge was checked at the default width only (the other widths used a copy of it
+made on the page).
+
+Status: accepted (Stage 7.6). Revisit: page zoom; asking before New chat discards a chat that could not be saved; a sidebar for these buttons and
+History in wide windows.

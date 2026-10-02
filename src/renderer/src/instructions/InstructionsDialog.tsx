@@ -107,7 +107,7 @@ interface InstructionsDialogProps {
 }
 
 /**
- * The person's own instructions for this chat (D-027): a text box in a dialog, opened from the header. The instructions are added to
+ * The person's own instructions for this chat (D-027): a text box in a dialog, opened from the chat bar under the message box. The instructions are added to
  * the app's rules by the main process and sent with every request of this chat; this dialog says so, and says who gets them and where
  * they are kept. Nothing is changed until Save.
  */

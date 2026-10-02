@@ -39,7 +39,7 @@ and only **Open** sends it to your browser (D-025). What you type is shown as ty
 Under each message: **Copy** (the text as written); under the last reply **Regenerate** (**Try again** after a failure), which replaces it;
 under your own messages **Edit**, which replaces the message and everything after it and asks again, asking first if more than the last
 exchange would go. Asking again sends the whole conversation again and is billed again (D-026).
-The **Instructions** button in the header opens a box for instructions of your own for the chat you are in (who the model should be, how long to
+The **Instructions** button under the message box (next to **New chat** and **History**) opens a box for instructions of your own for the chat you are in (who the model should be, how long to
 write, what to leave out). They are added to the app's own rules and sent with every message of that chat, to the company that runs the model
 that answers, so they are billed and, like the chat, saved as plain text on your computer; do not put passwords in them. The button says "on"
 while they are set, a new chat starts without them, and a chat opened from History brings its own back (D-027).

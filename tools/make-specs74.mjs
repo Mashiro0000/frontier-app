@@ -15,7 +15,7 @@ const IPC = '{{REPO}}/src/main/ipc.ts'
 const AN = '{{REPO}}/src/main/providers/anthropic.ts'
 const OA = '{{REPO}}/src/main/providers/openai.ts'
 const P = '{{REPO}}/src/renderer/src/'
-const IR = P + 'chat/ipcReply.ts', UC = P + 'chat/useChat.ts', UH = P + 'history/useHistory.ts', APP = P + 'App.tsx', DLG = P + 'instructions/InstructionsDialog.tsx'
+const IR = P + 'chat/ipcReply.ts', UC = P + 'chat/useChat.ts', UH = P + 'history/useHistory.ts', CB = P + 'chat/ChatBar.tsx', DLG = P + 'instructions/InstructionsDialog.tsx'
 const UTIMES = "await fs.utimes(join(dir, `${id}.json`), new Date(), new Date())" // makes reading write: the modification time moves
 const PROMPT = '`${rules}\\n\\n${INSTRUCTIONS_LEAD}\\n\\n${own}`' // the line in request.ts that joins the rules and the instructions
 const VERSIONS = 'file.version !== 1 && file.version !== 2 && file.version !== 3'
@@ -67,8 +67,8 @@ const win = {
   'w74-change-not-saved': [[UH, 'a.messages === b.messages && a.instructions === b.instructions', 'a.messages === b.messages']],
   'w74-open-ignores-instructions': [[UH, 'chat.load(messages, instructions)', 'chat.load(messages)']],
   'w74-new-chat-keeps-instructions': [[UC, 'setInstructionsState(nextInstructions)', 'void nextInstructions']],
-  'w74-button-enabled-while-replying': [[APP, 'className="header-button header-instructions"\n            disabled={chat.isReplying}', 'className="header-button header-instructions"\n            disabled={false}']],
-  'w74-no-on-mark': [[APP, "{chat.instructions !== '' && (\n              <>", '{false && (\n              <>']],
+  'w74-button-enabled-while-replying': [[CB, 'className="chat-button chat-instructions"\n        disabled={isReplying}', 'className="chat-button chat-instructions"\n        disabled={false}']],
+  'w74-no-on-mark': [[CB, "{instructions !== '' && (\n          <>", '{false && (\n          <>']],
   'w74-save-enabled-when-too-long': [[DLG, 'const canSave = checked.ok && text !== initial', 'const canSave = text !== initial']],
   'w74-count-untrimmed': [[DLG, 'const text = checked.ok ? checked.instructions : draft.trim()', 'const text = draft']],
   'w74-draft-survives-close': [[DLG, '{open && (', '{(']],

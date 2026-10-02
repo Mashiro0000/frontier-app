@@ -81,7 +81,7 @@ const touched = Object.keys(before).filter((n) => afterAll[n] !== before[n])
 check('...and it is the ONLY seeded file that changed: the damaged ones, the other conversations and the foreign files are untouched', JSON.stringify(touched.sort()) === JSON.stringify([`${rec.id}.json`, `${rec.id}.json.tmp`].sort()), JSON.stringify(touched))
 // ===================== E. a file that goes bad or missing AFTER it was listed =====================
 import { truncateSync, unlinkSync, writeFileSync } from 'node:fs'
-await H.clickHeader('New chat')
+await H.clickChat('New chat')
 await sleep(300)
 const victimBad = manifest.seeds.find((s) => s.listed === 'good a')
 const victimGone = manifest.seeds.find((s) => s.listed === 'with bom')

@@ -1,4 +1,4 @@
-// Stage 7.4 (D-027), in the real window against the mock: the person's instructions for a chat. The header button and its "on" mark, the dialog (a
+// Stage 7.4 (D-027), in the real window against the mock: the person's instructions for a chat. The chat-bar button and its "on" mark, the dialog (a
 // draft that Escape and Cancel throw away, the count, the limit, trimming), what is sent (the app's rules first, then the instructions, with EVERY
 // message, to either provider, and the same bytes as Stage 7.3 when there are none), what is saved (version 3, at once, with the messages), what
 // comes back from History, what a script in the page cannot do (replace the app's rules, send too much), and four files seeded before the
@@ -50,11 +50,11 @@ const fakeKey = () => 'test-' + randomBytes(24).toString('hex')
 const reqs = () => H.mockReqs()
 const reset = () => fetch(`${mockUrl}/__reset`, { method: 'POST' })
 
-// ---- the header button and the dialog ----
-const hdr = () => ev(`(() => { const b = document.querySelector('.app-header .header-instructions'); if (!b) return null; return { text: b.textContent, disabled: b.disabled, title: b.title, mark: b.querySelector('.header-mark')?.textContent ?? null, before: b.previousElementSibling?.textContent ?? null, focused: document.activeElement === b } })()`)
+// ---- the chat-bar button (under the message box since 7.6, D-029) and the dialog ----
+const hdr = () => ev(`(() => { const b = document.querySelector('.chat-bar .chat-instructions'); if (!b) return null; return { text: b.textContent, disabled: b.disabled, title: b.title, mark: b.querySelector('.chat-mark')?.textContent ?? null, before: b.previousElementSibling?.textContent ?? null, focused: document.activeElement === b } })()`)
 const dlg = () => ev(`(() => { const d = document.querySelector('dialog.instructions'); if (!d) return null; const t = d.querySelector('textarea'); const b = [...d.querySelectorAll('button')]; const submit = b.find((x) => x.type === 'submit'); return { open: d.open, value: t ? t.value : null, focused: !!t && document.activeElement === t, caret: t ? [t.selectionStart, t.selectionEnd] : null, count: d.querySelector('.instructions-count')?.textContent ?? null, over: !!d.querySelector('.instructions-count-over'), alert: d.querySelector('[role=alert]')?.textContent ?? null, save: submit?.textContent ?? null, saveDisabled: submit ? submit.disabled : null, buttons: b.map((x) => x.textContent), text: d.innerText } })()`)
 const openDialog = async () => {
-  await page.click('.header-instructions')
+  await page.click('.chat-instructions')
   await page.waitFor(`document.querySelector('dialog.instructions')?.open === true && !!document.querySelector('dialog.instructions textarea')`, { timeoutMs: 6000, label: 'the instructions dialog to open' })
   await sleep(120)
 }
@@ -73,14 +73,14 @@ const setInstructions = async (text) => {
 
 // ---- the conversation ----
 const screen = () => ev(`[...document.querySelectorAll('${MSG}')].map((m) => ({ role: m.classList.contains('message-user') ? 'user' : 'assistant', text: m.querySelector('.bubble')?.innerText ?? null }))`)
-const newChat = async () => { await page.click('.header-button@New chat'); await page.waitFor(`document.querySelectorAll('${MSG}').length === 0`, { timeoutMs: 6000 }); await sleep(150) }
+const newChat = async () => { await page.click('.chat-button@New chat'); await page.waitFor(`document.querySelectorAll('${MSG}').length === 0`, { timeoutMs: 6000 }); await sleep(150) }
 const openFromHistory = async (title) => {
   await H.openHistory()
   await H.clickRow(title)
   await page.waitFor(`!document.querySelector('dialog.history')?.open && document.querySelectorAll('${MSG}').length > 0`, { timeoutMs: 8000, label: `"${title}" to open` })
   await sleep(300)
 }
-// The header is two rows high at the default window size, so an early message of a long chat may be scrolled out of sight: bring it in first.
+// An early message of a long chat may be scrolled out of sight: bring it in first.
 const act = async (index, label) => {
   await ev(`document.querySelector('${MSG}:nth-child(${index + 1})')?.scrollIntoView({ block: 'center' })`)
   await sleep(100)
@@ -163,7 +163,7 @@ check('the damaged file has been counted and left alone through all of this', se
 await newChat()
 await reset()
 let hb = await hdr()
-check('the header has an Instructions button right after History, with no "on" mark while the chat has none', hb !== null && hb.text === 'Instructions' && hb.mark === null && hb.before === 'History' && !hb.disabled && /Give the model instructions/.test(hb.title), JSON.stringify(hb))
+check('the chat bar has an Instructions button right after History, with no "on" mark while the chat has none', hb !== null && hb.text === 'Instructions' && hb.mark === null && hb.before === 'History' && !hb.disabled && /Give the model instructions/.test(hb.title), JSON.stringify(hb))
 await openDialog()
 d = await dlg()
 check('clicking it opens a modal dialog with a box: empty, with the keyboard in it, and Save is off because there is nothing to save', d.open && d.value === '' && d.focused && d.saveDisabled === true && d.save === 'Save' && d.buttons.join() === 'Cancel,Save', JSON.stringify(d))
@@ -299,7 +299,7 @@ for (let i = 0; i < 100 && (await reqs()).length === n; i++) await sleep(50)
 await page.waitFor(`!!document.querySelector('.composer-button-stop')`, { timeoutMs: 8000 })
 hb = await hdr()
 check('while a reply is arriving the button is off and says when it comes back; the mark stays', hb.disabled === true && /when the reply has finished/.test(hb.title) && hb.mark === 'on', JSON.stringify(hb))
-await page.click('.header-instructions').catch(() => {})
+await page.click('.chat-instructions').catch(() => {})
 await sleep(300)
 check('...clicking it opens nothing', (await dlg())?.open !== true)
 await page.click('.composer-button-stop')
@@ -398,8 +398,8 @@ await setInstructions(INSTR)
 for (const width of [420, 320]) {
   await page.send('Emulation.setDeviceMetricsOverride', { width, height: 700, deviceScaleFactor: 1, mobile: false })
   await sleep(250)
-  const header = await ev(`(() => { const bs = [...document.querySelectorAll('.app-header .header-button, .app-header .header-select, .app-header .task-select, .app-header .effort-select')]; const r = bs.map((b) => b.getBoundingClientRect()); return { overflowX: document.documentElement.scrollWidth > window.innerWidth, allInside: r.every((x) => x.left >= 0 && x.right <= window.innerWidth), count: bs.length } })()`)
-  check(`at ${width}px the header, with the "on" mark on its new button, still fits: no sideways scroll, every control inside`, header.overflowX === false && header.allInside === true, JSON.stringify(header))
+  const header = await ev(`(() => { const bs = [...document.querySelectorAll('.app-header .header-button, .app-header .header-select, .app-header .task-select, .app-header .effort-select, .chat-bar .chat-button')]; const r = bs.map((b) => b.getBoundingClientRect()); return { overflowX: document.documentElement.scrollWidth > window.innerWidth, allInside: r.every((x) => x.left >= 0 && x.right <= window.innerWidth), count: bs.length } })()`)
+  check(`at ${width}px the header and the chat bar, with the "on" mark on the Instructions button, still fit: no sideways scroll, every control inside`, header.overflowX === false && header.allInside === true, JSON.stringify(header))
   await openDialog()
   await setText('w'.repeat(MAX))
   const fit = await ev(`(() => { const dlg = document.querySelector('dialog.instructions').getBoundingClientRect(); const bs = [...document.querySelectorAll('dialog.instructions button')].map((b) => b.getBoundingClientRect()); return { page: document.documentElement.scrollWidth, inner: window.innerWidth, left: Math.round(dlg.left), right: Math.round(dlg.right), height: Math.round(dlg.height), innerHeight: window.innerHeight, buttonsInside: bs.every((b) => b.left >= dlg.left && b.right <= dlg.right + 1) } })()`)

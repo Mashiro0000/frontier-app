@@ -15,8 +15,6 @@
 - Ask before Regenerate replaces a reply (D-026 does not)
 - Default instructions for every new chat (a setting), or instructions per model (D-027 keeps one text per chat, and a new chat starts without)
 - Ask before Escape throws away a long unsaved draft in the Instructions box (D-027 does not), and a mark on a chat that came from outside the app
-- A header that does not wrap at the default window width (900 px): the chat-level buttons (New chat, History, Instructions) could move out of it,
-  for example next to the message box, or the header could be two rows by design (the Instructions button made it wrap, D-027)
 - Automated tests for `useChat` (needs a test runner; none is set up, see D-007)
 - Show what each reply cost (the API reports token counts with every reply)
 - Server-side refusal fallbacks for the provider, once there is a real key to try them with (D-012)

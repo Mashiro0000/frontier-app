@@ -2,9 +2,9 @@
   "label": "w74-button-enabled-while-replying",
   "edits": [
     {
-      "file": "{{REPO}}/src/renderer/src/App.tsx",
-      "from": "className=\"header-button header-instructions\"\n            disabled={chat.isReplying}",
-      "to": "className=\"header-button header-instructions\"\n            disabled={false}"
+      "file": "{{REPO}}/src/renderer/src/chat/ChatBar.tsx",
+      "from": "className=\"chat-button chat-instructions\"\n        disabled={isReplying}",
+      "to": "className=\"chat-button chat-instructions\"\n        disabled={false}"
     }
   ],
   "argv": [

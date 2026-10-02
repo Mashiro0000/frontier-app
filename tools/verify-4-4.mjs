@@ -45,7 +45,7 @@ for (const [width, height] of [[900, 670], [420, 700], [320, 700]]) {
   await page.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false })
   await sleep(300)
   const tOpen = Date.now()
-  await H.clickHeader('History')
+  await H.clickChat('History')
   await page.waitFor(`!!document.querySelector('dialog.history')?.open && document.querySelectorAll('dialog.history .history-row').length === ${N}`, { timeoutMs: 8000 })
   const openMs = Date.now() - tOpen
   await sleep(150)
