@@ -1,0 +1,14 @@
+{
+  "label": "n74-store-writes-version-2",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "JSON.stringify({ version: 3, ...conversation })",
+      "to": "JSON.stringify({ version: 2, ...conversation })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

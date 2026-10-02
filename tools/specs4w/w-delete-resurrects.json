@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/history/useHistory.ts",
-      "from": "        settled.current = latest.current.messages\n        startNew()",
+      "from": "        settled.current = {\n          messages: latest.current.messages,\n          instructions: latest.current.instructions\n        }\n        startNew()",
       "to": "        startNew()"
     }
   ],

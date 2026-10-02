@@ -1,0 +1,14 @@
+{
+  "label": "parse-array-is-a-map",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/effort.ts",
+      "from": "if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return saved",
+      "to": "if (typeof raw !== 'object' || raw === null) return saved"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

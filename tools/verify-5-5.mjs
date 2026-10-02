@@ -115,7 +115,7 @@ check('...with the Anthropic key in x-api-key and no Authorization header', clau
 check('...and the new reply is named, because the model changed back', (await captions()).at(-1) === 'Claude Opus 5.5' && (await H.bubbleText()) === 'Echo: and now Claude, who has read all of it', JSON.stringify(await captions()))
 const saved = await H.waitFirst('hello gpt-6-astra', (c) => c.messages.length === 8 && c.messages[7].status === 'done')
 check('the file records who wrote each reply: three OpenAI models, then Claude', JSON.stringify(saved.conv.messages.filter((m) => m.role === 'assistant').map((m) => `${m.provider}/${m.model}`)) === JSON.stringify([`openai/${ASTRA}`, `openai/${SOL}`, `openai/${LUNA}`, `anthropic/${OPUS}`]), JSON.stringify(saved.conv.messages.filter((m) => m.role === 'assistant').map((m) => `${m.provider}/${m.model}`)))
-check('...as version 2', saved.conv.version === 2)
+check('...as version 3', saved.conv.version === 3)
 
 // ============ E. OpenAI's errors, in this app's words ============
 await H.chooseInPage(SOL)

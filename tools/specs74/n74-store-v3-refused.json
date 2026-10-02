@@ -1,0 +1,14 @@
+{
+  "label": "n74-store-v3-refused",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "file.version !== 1 && file.version !== 2 && file.version !== 3",
+      "to": "file.version !== 1 && file.version !== 2"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

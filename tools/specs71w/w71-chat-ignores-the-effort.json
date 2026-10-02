@@ -1,0 +1,24 @@
+{
+  "label": "w71-chat-ignores-the-effort",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "    const { entry, effort } = model // fixed with the model, for this whole reply (D-024)",
+      "to": "    const { entry } = model\n    const effort = undefined"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "verify-7-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s71nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w71-chat-ignores-the-effort"
+  }
+}

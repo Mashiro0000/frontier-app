@@ -1,0 +1,14 @@
+{
+  "label": "tabs-in-code-expanded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "      if (closesFence(line, open)) open = null\n      return line",
+      "to": "      if (closesFence(line, open)) open = null\n      return expandIndent(line)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n74-trim-removed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "const instructions = input.trim()\n  if (instructions.length",
+      "to": "const instructions = input\n  if (instructions.length"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

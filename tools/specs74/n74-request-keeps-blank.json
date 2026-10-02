@@ -1,0 +1,14 @@
+{
+  "label": "n74-request-keeps-blank",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "...(checkedInstructions.instructions === ''\n        ? {}",
+      "to": "...(false\n        ? {}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

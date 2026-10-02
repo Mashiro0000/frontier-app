@@ -1,0 +1,25 @@
+{
+  "label": "w72-lines-not-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/assets/main.css",
+      "from": "  white-space: pre-line;\n}",
+      "to": "  white-space: normal;\n}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "verify-7-2w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s72nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "INSPECT_PORT": "9230",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w72-lines-not-kept"
+  }
+}

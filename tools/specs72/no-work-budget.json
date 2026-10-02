@@ -1,0 +1,14 @@
+{
+  "label": "no-work-budget",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "const budget: Budget = { left: LIMITS.stepsFloor + source.length * LIMITS.stepsPerChar }",
+      "to": "const budget: Budget = { left: Infinity }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

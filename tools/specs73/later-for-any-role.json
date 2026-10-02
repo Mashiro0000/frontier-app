@@ -1,0 +1,14 @@
+{
+  "label": "later-for-any-role",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/rewrite.ts",
+      "from": "if (at === -1 || messages[at].role !== 'user') return null\n  return messages.length - 1 - at",
+      "to": "if (at === -1) return null\n  return messages.length - 1 - at"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-3.mjs"
+  ],
+  "env": {}
+}

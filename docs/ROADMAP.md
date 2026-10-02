@@ -1,6 +1,6 @@
 # Roadmap (v0.1)
 
-> Stages 0 to 6 are done (v0.1, below). **The plan for Stages 7 to 18 is at the end of this file (v0.2)**; it is a plan the owner approves stage by
+> Stages 0 to 7 are done (v0.1, below; Stage 7 is in v0.2). **The plan for Stages 7 to 18 is at the end of this file (v0.2)**; it is a plan the owner approves stage by
 > stage, not a commitment. Stage 4 was
 > not written down in advance: the roadmap's "Later" list began with conversation history, and D-010, D-013 and
 > the architecture notes all named it as the next piece of work, so that is what Stage 4 became.
@@ -119,16 +119,26 @@ contract: each stage starts with a short written plan that the owner approves (a
 12. **I stop and ask before:** adding a new kind of power (file write, command run, network from a tool, microphone), adding a dependency with
     install scripts, publishing or pushing anything, or touching your real profile or accounts.
 
-## Stage 7 - Chat polish (not started)
+## Stage 7 - Chat polish (done: 7.1 Effort, 7.2 Markdown, 7.3 Copy, Regenerate and Edit, 7.4 Instructions, 7.5 the stage's threat note and the full regression, 7.6 the header)
 
-- Markdown with code blocks, tables, lists; **copy** buttons; **regenerate**; **edit and resend**; a system prompt of your own per chat.
-- An **Effort** control (a Faster to Smarter slider or menu, like the Claude desktop app's) next to the model menu. It offers only the levels
-  the registry lists for the chosen model (`capabilities.effortLevels`), and is hidden for a model that takes none (Haiku 4.5). The choice is
-  kept per model by the main process, which checks it against the registry again (as it does the model choice), and the default stays what
-  `registry/models.json` says until the owner changes it.
-- Safety: a sanitising renderer (D-009), no raw HTML, links are shown as text and open in the browser only after a click on an https address, no
-  image or resource loads by itself, nothing can navigate or script the app window. Higher effort is billed as extra output (thinking), so the
-  control says so, and Stage 8's spending limit must count it.
+Five slices, one commit each: 7.1 Effort, 7.2 Markdown, 7.3 Copy / Regenerate / Edit and resend, 7.4 Instructions per chat, 7.5 docs, threat
+note and the full regression (D-028); and a sixth after them, at the owner's request: 7.6, New chat, History and Instructions move out of the header (D-029).
+
+- [x] (7.2, D-025) Markdown with code blocks (language label and a Copy button), tables, lists, quotes, headings, links that ask first.
+- [x] (7.3, D-026) **Copy** on each message, **regenerate** the last reply (Try again after a failure), **edit and resend** one of your own messages.
+- [x] (7.4, D-027) **Instructions** of your own per chat: added after the app's rules, sent with every message of that chat, saved with it (the file is
+      now version 3), shown as "on" while set, at most 8,000 characters, and described in the box (who gets them, billed, plain text on disk).
+- [x] (7.1, D-024) An **Effort** control (a Faster to Smarter slider or menu, like the Claude desktop app's) next to the model menu. It offers only the levels
+      the registry lists for the chosen model (`capabilities.effortLevels`), and is hidden for a model that takes none (Haiku 4.5). The choice is
+      kept per model by the main process, which checks it against the registry again (as it does the model choice), and the default stays what
+      `registry/models.json` says until the owner changes it.
+- [x] (7.2, D-025; closed in 7.5, D-028) Safety: a renderer that cannot make HTML (D-009), no raw HTML, links are shown as text and open in the browser only after a click on an https address, no
+      image or resource loads by itself, nothing can navigate or script the app window. Higher effort is billed as extra output (thinking), so the
+      control says so, and Stage 8's spending limit must count it (the list of what it must count is in D-028).
+- [x] (7.5, D-028) The stage's threat note across the four slices, the full regression (the Node, window, seeded, registry-scenario and Stage 4
+      suites, and the built app), and the list of what was not checked.
+- [x] (7.6, D-029) The header stays ONE row at the default window width, whatever is showing: **New chat**, **History** and **Instructions** moved out of it
+      into a slim row under the message box (the owner's decision of 2 October 2026, after D-027 had reported that the header wrapped).
 
 ## Stage 8 - Usage, cost and spending limits, optional encrypted history (not started)
 

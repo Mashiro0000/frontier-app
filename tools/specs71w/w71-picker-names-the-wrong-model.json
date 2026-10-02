@@ -1,0 +1,24 @@
+{
+  "label": "w71-picker-names-the-wrong-model",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/EffortPicker.tsx",
+      "from": "window.api.settings.setEffort(modelId, level)",
+      "to": "window.api.settings.setEffort('claude-opus-5-5', level)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "verify-7-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s71nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w71-picker-names-the-wrong-model"
+  }
+}

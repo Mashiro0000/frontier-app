@@ -1,0 +1,14 @@
+{
+  "label": "prompt-says-plain-text",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "'The window renders Markdown, so you may use it where it helps:",
+      "to": "'The window shows plain text, so use it where it helps:"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/provider-node-test-5.mjs"
+  ],
+  "env": {}
+}

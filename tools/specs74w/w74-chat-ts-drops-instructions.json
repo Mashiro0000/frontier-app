@@ -1,0 +1,14 @@
+{
+  "label": "w74-chat-ts-drops-instructions",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "instructions: request.instructions,",
+      "to": "instructions: undefined,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run74.mjs"
+  ],
+  "env": {}
+}

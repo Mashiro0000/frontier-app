@@ -19,7 +19,8 @@ const mockReset = () => fetch(`${mockUrl}/__reset`, { method: 'POST' })
 const ev = (expr) => page.evaluate(expr)
 const SEND_READY = `!!document.querySelector('.composer-button[type=submit]')`
 const lastAssistant = (expr) => ev(`(() => { const a = [...document.querySelectorAll('.message-assistant')].at(-1); return a ? (${expr}) : null })()`)
-const bubbleText = () => lastAssistant(`a.querySelector('.bubble')?.textContent ?? null`)
+// 7.2: the text a person sees (Markdown: trailing spaces are not shown)
+const bubbleText = () => lastAssistant(`a.querySelector('.bubble')?.innerText ?? null`)
 const noteText = () => lastAssistant(`a.querySelector('.message-note')?.textContent ?? null`)
 const send = async (text) => {
   await ev(`(() => { const t = document.querySelector('.composer-input'); t.focus(); t.select() })()`)
@@ -75,7 +76,7 @@ check('the API found nothing wrong with the request', req.problems.length === 0,
 check('the key from Settings was sent as x-api-key, and no Authorization header', req.headers['x-api-key'] === key && req.headers['authorization'] === undefined)
 check('the body is what the provider module builds (model, stream, effort, caching, output cap)', req.body.model === 'claude-opus-5-5' && req.body.stream === true && req.body.output_config?.effort === 'medium' && req.body.cache_control?.type === 'ephemeral' && req.body.max_tokens === 16000)
 check('the conversation sent is just [user: "hello"]', JSON.stringify(req.body.messages) === JSON.stringify([{ role: 'user', content: 'hello' }]), JSON.stringify(req.body.messages))
-check('the system prompt asks for plain text', /plain text/.test(req.body.system))
+check('the system prompt says the window renders Markdown (D-025)', /renders Markdown/.test(req.body.system))
 await page.screenshot(`${shots}/2-4-reply.png`)
 
 // ---- history across turns ----
@@ -127,7 +128,7 @@ for (const [name, pattern, partial] of cases) {
   await sendAndWait(`[[mock:${name}]] hi`, 25000)
   const note = await noteText()
   check(`failure "${name}": shown as a red note, reading: ${String(note).slice(0, 70)}`, pattern.test(String(note)) && (await lastAssistant(`!!a.querySelector('.message-note-error')`)), JSON.stringify(note))
-  check(`   ...${partial ? 'the partial text is kept' : 'and there is no bubble'}`, partial ? (await bubbleText()) === partial : await lastAssistant(`!a.querySelector('.bubble')`), JSON.stringify(await bubbleText()))
+  check(`   ...${partial ? 'the partial text is kept' : 'and there is no bubble'}`, partial ? (await bubbleText()) === partial.trim() : await lastAssistant(`!a.querySelector('.bubble')`), JSON.stringify(await bubbleText()))
   check(`   ...and the input is ready again`, await ev(SEND_READY))
 }
 await sendAndWait('[[mock:empty]] hi')

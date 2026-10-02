@@ -8,7 +8,7 @@ import {
   type SavedMessage,
   type WireMessage
 } from './ipc'
-import { SUPPORTED_PROVIDERS, type ProviderId } from './registry'
+import { SUPPORTED_PROVIDERS, type Effort, type ProviderId } from './registry'
 
 export const API_KEY_MIN_LENGTH = 20
 export const API_KEY_MAX_LENGTH = 300
@@ -85,6 +85,54 @@ export function checkModelChoice(
   return { ok: true, modelId: match.id }
 }
 
+export type EffortChoiceCheck =
+  { ok: true; modelId: string; level: Effort } | { ok: false; error: string }
+
+/**
+ * Checks an effort choice from the page (D-024): the id of a model on offer, and a level that model's own entry lists. Both must
+ * match exactly (no other letter case, no padding), and the strings handed back are the registry's, never the page's, so nothing
+ * the page invents is saved or used. A level another model takes, and this one does not, is refused.
+ */
+export function checkEffortChoice(
+  input: unknown,
+  models: readonly { id: string; capabilities: { effortLevels: readonly Effort[] } }[]
+): EffortChoiceCheck {
+  if (typeof input !== 'object' || input === null) {
+    return { ok: false, error: 'The effort choice was not understood.' }
+  }
+  const { modelId, level } = input as Record<string, unknown>
+  if (typeof modelId !== 'string' || typeof level !== 'string') {
+    return { ok: false, error: 'The effort choice was not understood.' }
+  }
+  const model = models.find((candidate) => candidate.id === modelId)
+  if (!model) return { ok: false, error: 'That model is not available.' }
+  const match = model.capabilities.effortLevels.find((candidate) => candidate === level)
+  if (!match) return { ok: false, error: 'That model does not take that effort level.' }
+  return { ok: true, modelId: model.id, level: match }
+}
+
+export type InstructionsCheck = { ok: true; instructions: string } | { ok: false; error: string }
+
+/**
+ * Checks the person's instructions for a chat (D-027), from the page (a request, a save) or from a file: absent means none, anything
+ * else must be text. The text handed back is trimmed, and is '' when there is nothing but white space, so a blank box never becomes
+ * a line in the prompt. It may hold at most CHAT_LIMITS.maxInstructionsChars characters once trimmed. One function for every way in,
+ * so what is sent, what is saved and what is read back are held to the same rule.
+ */
+export function checkInstructions(input: unknown): InstructionsCheck {
+  if (input === undefined) return { ok: true, instructions: '' }
+  if (typeof input !== 'string')
+    return { ok: false, error: 'The instructions were not understood.' }
+  const instructions = input.trim()
+  if (instructions.length > CHAT_LIMITS.maxInstructionsChars) {
+    return {
+      ok: false,
+      error: `The instructions are too long: the most is ${CHAT_LIMITS.maxInstructionsChars.toLocaleString('en-US')} characters, because they are sent with every message.`
+    }
+  }
+  return { ok: true, instructions }
+}
+
 const STREAM_ID = /^[A-Za-z0-9_-]{8,64}$/
 
 export type ChatCheck =
@@ -95,17 +143,20 @@ export type ChatCheck =
 /**
  * Checks a reply request from the page and returns a clean copy (only the fields we know about).
  * The conversation must start and end with a message from the person: models no longer accept a
- * reply that begins by continuing the assistant's own text.
+ * reply that begins by continuing the assistant's own text. The person's instructions (D-027) are kept
+ * only when there is something in them.
  */
 export function checkChatRequest(input: unknown): ChatCheck {
   if (typeof input !== 'object' || input === null) {
     return { ok: false, error: 'The request was not understood.' }
   }
-  const { streamId, messages } = input as Record<string, unknown>
+  const { streamId, messages, instructions } = input as Record<string, unknown>
   if (typeof streamId !== 'string' || !STREAM_ID.test(streamId)) {
     return { ok: false, error: 'The request was not understood.' }
   }
   const refuse = (error: string): ChatCheck => ({ ok: false, error, streamId })
+  const checkedInstructions = checkInstructions(instructions)
+  if (!checkedInstructions.ok) return refuse(checkedInstructions.error)
 
   if (!Array.isArray(messages) || messages.length === 0) return refuse('There is nothing to send.')
   if (messages.length > CHAT_LIMITS.maxMessages) {
@@ -138,7 +189,16 @@ export function checkChatRequest(input: unknown): ChatCheck {
   if (clean[0].role !== 'user' || clean[clean.length - 1].role !== 'user') {
     return refuse('The request was not understood.')
   }
-  return { ok: true, request: { streamId, messages: clean } }
+  return {
+    ok: true,
+    request: {
+      streamId,
+      messages: clean,
+      ...(checkedInstructions.instructions === ''
+        ? {}
+        : { instructions: checkedInstructions.instructions })
+    }
+  }
 }
 
 // A conversation's id becomes part of a file name, so it is checked against the one spelling the app itself
@@ -263,20 +323,25 @@ export function checkSavedMessages(input: unknown, source: MessageSource = 'page
 }
 
 export type SaveCheck =
-  | { ok: true; conversation: { id: string; messages: SavedMessage[] } }
+  | { ok: true; conversation: { id: string; messages: SavedMessage[]; instructions: string } }
   | { ok: false; error: string }
 
 /**
- * Checks a conversation the page wants saved. Only the id and the messages are taken: the title and the
- * dates are worked out by the main process, never by the page.
+ * Checks a conversation the page wants saved. Only the id, the messages and the person's instructions (D-027) are taken: the title
+ * and the dates are worked out by the main process, never by the page. The instructions come back as text ('' for none).
  */
 export function checkConversationSave(input: unknown): SaveCheck {
   if (typeof input !== 'object' || input === null) {
     return { ok: false, error: 'The conversation was not understood.' }
   }
-  const { id, messages } = input as Record<string, unknown>
+  const { id, messages, instructions } = input as Record<string, unknown>
   if (!isConversationId(id)) return { ok: false, error: 'The conversation was not understood.' }
   const checked = checkSavedMessages(messages)
   if (!checked.ok) return checked
-  return { ok: true, conversation: { id, messages: checked.messages } }
+  const checkedInstructions = checkInstructions(instructions)
+  if (!checkedInstructions.ok) return checkedInstructions
+  return {
+    ok: true,
+    conversation: { id, messages: checked.messages, instructions: checkedInstructions.instructions }
+  }
 }

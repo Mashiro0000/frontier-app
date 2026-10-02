@@ -1,5 +1,5 @@
 import Anthropic, { type APIError } from '@anthropic-ai/sdk'
-import { PROVIDER_NAMES, type Effort, type ModelEntry } from '../../shared/registry'
+import { PROVIDER_NAMES, type Effort } from '../../shared/registry'
 import { isInterrupted, normalizedError, rawMessage, type ErrorFacts } from './errors'
 import type {
   Credentials,
@@ -46,12 +46,13 @@ async function listModels(
   return models
 }
 
-// The registry only lets an Anthropic entry name the levels Anthropic knows (PROVIDER_EFFORTS, D-019), so "none" cannot get
-// here. This is for the compiler, and for a registry that was edited around its validator: the request would be refused
-// by the API, or worse, quietly ask for something other than what the registry says, so it fails here instead.
-function effortOf(model: ModelEntry): Exclude<Effort, 'none'> | null {
-  if (model.effort === 'none') throw new Error('Anthropic has no effort level "none"')
-  return model.effort
+// The registry only lets an Anthropic entry name the levels Anthropic knows (PROVIDER_EFFORTS, D-019), and a saved choice is only
+// accepted from a model's own list (D-024), so "none" cannot get here. This is for the compiler, and for a registry that was
+// edited around its validator: the request would be refused by the API, or worse, quietly ask for something other than what was
+// chosen, so it fails here instead.
+function effortOf(effort: Effort | null): Exclude<Effort, 'none'> | null {
+  if (effort === 'none') throw new Error('Anthropic has no effort level "none"')
+  return effort
 }
 
 function endOf(message: Anthropic.Message): ReplyEnd {
@@ -81,7 +82,7 @@ function usage(report: unknown): Usage {
 
 async function* stream(request: StreamRequest): AsyncGenerator<StreamEvent> {
   const { model } = request
-  const effort = effortOf(model)
+  const effort = effortOf(request.effort)
   const reply = newClient(request.credentials).messages.stream(
     {
       model: model.id,
@@ -90,8 +91,8 @@ async function* stream(request: StreamRequest): AsyncGenerator<StreamEvent> {
       messages: request.messages,
       // `effort` is the dial for how much the model thinks and writes. Its default differs between models, so it is
       // written out for the ones that take it, and left out for the ones that reject it outright (Haiku 4.5). The
-      // registry says which (D-014). There is no `thinking` setting: the models that think always do, and the others
-      // are not asked to.
+      // registry says which (D-014), and the person's own choice may change the level (D-024). There is no `thinking`
+      // setting: the models that think always do, and the others are not asked to.
       ...(effort ? { output_config: { effort } } : {}),
       // The whole conversation is sent again with every message. This lets the server reuse the part it has already
       // seen (billed far lower) instead of charging full price for it each time. The registry says which models can

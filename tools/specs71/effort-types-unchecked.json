@@ -1,0 +1,14 @@
+{
+  "label": "effort-types-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "if (typeof modelId !== 'string' || typeof level !== 'string') {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

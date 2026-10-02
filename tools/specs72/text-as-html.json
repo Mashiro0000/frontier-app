@@ -1,0 +1,14 @@
+{
+  "label": "text-as-html",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/Markdown.tsx",
+      "from": "      return <>{node.text}</>",
+      "to": "      return <span dangerouslySetInnerHTML={{ __html: node.text }} />"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

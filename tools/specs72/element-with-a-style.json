@@ -1,0 +1,14 @@
+{
+  "label": "element-with-a-style",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/Markdown.tsx",
+      "from": "<button type=\"button\" className=\"md-link\" title={url} onClick={() => openLink(url)}>",
+      "to": "<button type=\"button\" className=\"md-link\" title={url} style={{ color: \"red\" }} onClick={() => openLink(url)}>"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

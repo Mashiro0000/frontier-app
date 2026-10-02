@@ -1,0 +1,19 @@
+{
+  "label": "link-scan-unbounded-alone",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "const limit = Math.min(s.length, at + LIMITS.maxLabelChars + 2)",
+      "to": "const limit = s.length"
+    },
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "const urlLimit = Math.min(s.length, from + LIMITS.maxLinkChars + 2)",
+      "to": "const urlLimit = s.length"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

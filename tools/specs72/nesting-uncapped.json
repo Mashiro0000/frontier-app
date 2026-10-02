@@ -1,0 +1,14 @@
+{
+  "label": "nesting-uncapped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "const nesting = depth < LIMITS.maxDepth",
+      "to": "const nesting = true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

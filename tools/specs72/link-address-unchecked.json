@@ -1,0 +1,14 @@
+{
+  "label": "link-address-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "const url = link ? safeHttpsUrl(link.address) : null",
+      "to": "const url = link ? link.address : null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

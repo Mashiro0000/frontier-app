@@ -1,0 +1,14 @@
+{
+  "label": "regenerate-needs-no-question",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/rewrite.ts",
+      "from": "return rest.at(-1)?.role === 'user' ? [...rest] : null",
+      "to": "return [...rest]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-3.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n74-limit-removed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "if (instructions.length > CHAT_LIMITS.maxInstructionsChars) {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

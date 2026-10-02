@@ -1,0 +1,14 @@
+{
+  "label": "n74-save-drops-instructions",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "conversation: { id, messages: checked.messages, instructions: checkedInstructions.instructions }",
+      "to": "conversation: { id, messages: checked.messages, instructions: '' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

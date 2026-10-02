@@ -1,0 +1,14 @@
+{
+  "label": "w74-prompt-replaces-rules",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": ": `${rules}\\n\\n${INSTRUCTIONS_LEAD}\\n\\n${own}`",
+      "to": ": own"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run74.mjs"
+  ],
+  "env": {}
+}

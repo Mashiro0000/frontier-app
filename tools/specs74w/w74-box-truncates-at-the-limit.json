@@ -1,0 +1,14 @@
+{
+  "label": "w74-box-truncates-at-the-limit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/instructions/InstructionsDialog.tsx",
+      "from": "rows={7}",
+      "to": "rows={7}\n          maxLength={8000}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run74.mjs"
+  ],
+  "env": {}
+}

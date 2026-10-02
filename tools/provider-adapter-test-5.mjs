@@ -54,10 +54,14 @@ check('API_BASE_URL is the real address', API_BASE_URL === 'https://api.anthropi
 // ---- request building (the app's own rules, applied once) ---------------------------------------------
 {
   const r = req('hi')
-  check('buildStreamRequest: the neutral request has exactly the documented fields', JSON.stringify(Object.keys(r).sort()) === JSON.stringify(['credentials', 'maxOutputTokens', 'messages', 'model', 'signal', 'system']), Object.keys(r).join(','))
+  check('buildStreamRequest: the neutral request has exactly the documented fields', JSON.stringify(Object.keys(r).sort()) === JSON.stringify(['credentials', 'effort', 'maxOutputTokens', 'messages', 'model', 'signal', 'system']), Object.keys(r).join(','))
+  // 7.1 (D-024): `effort` is what this reply asks for. Left out, it is the registry's pick; given, it is used; null (a model that takes none) stays null.
+  check('...effort is the registry\'s pick when chat.ts gives none', r.effort === opus.effort && r.effort !== null)
+  check('...a given effort is used, and the registry\'s pick is no longer what the request says', req('hi', { effort: opus.effort === 'low' ? 'high' : 'low' }).effort === (opus.effort === 'low' ? 'high' : 'low'))
+  check('...null stays null (a model that takes none), not the registry\'s pick', req('hi', { model: opus, effort: null }).effort === null)
   check('...max output is the app ceiling for a model that can write more', r.maxOutputTokens === MAX_REPLY_TOKENS && MAX_REPLY_TOKENS === 16000)
   check('...and the model\'s own limit when that is lower', buildStreamRequest({ credentials: creds, model: { ...opus, maxOutputTokens: 4000 }, messages: [{ role: 'user', content: 'x' }], signal: r.signal }).maxOutputTokens === 4000)
-  check('...the system prompt is the provider\'s (it names Claude, asks for plain text)', r.system === systemPromptFor('anthropic') && /^You are Claude, chatting with someone in Frontier App/.test(r.system) && /plain text/.test(r.system) && /Markdown/.test(r.system))
+  check('...the system prompt is the provider\'s (it names Claude, says the window renders Markdown: D-025)', r.system === systemPromptFor('anthropic') && /^You are Claude, chatting with someone in Frontier App/.test(r.system) && /renders Markdown/.test(r.system) && !/plain text/.test(r.system))
   check('...consecutive turns by one side are joined', buildStreamRequest({ credentials: creds, model: opus, messages: [{ role: 'user', content: 'a' }, { role: 'user', content: 'b' }], signal: r.signal }).messages.length === 1)
   const input = [{ role: 'user', content: 'a' }, { role: 'user', content: 'b' }]
   const frozen = Object.freeze(input.map((m) => Object.freeze({ ...m })))

@@ -1,0 +1,14 @@
+{
+  "label": "effort-model-case-insensitive",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "const model = models.find((candidate) => candidate.id === modelId)",
+      "to": "const model = models.find((candidate) => candidate.id.toLowerCase() === modelId.toLowerCase())"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

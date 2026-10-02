@@ -8,9 +8,13 @@
 - Show running cost per conversation
 - Keyboard-first command palette
 - Export a conversation to Markdown
-- Render Markdown in replies (code blocks, lists), with a sanitising renderer (see D-009)
-- Copy button on each message
-- Retry / regenerate the last reply
+- Syntax colours in code blocks (a package, or a small tokenizer of our own for a few languages; D-025)
+- The parts of Markdown the reader leaves out: task lists, footnotes, setext headings, reference links, entities (D-025)
+- A deny-by-default permission handler for the window, so the page can ask for nothing it does not use (it uses the clipboard write); Electron grants every request when none is set (D-025)
+- Keep the old reply when one is regenerated, and the later messages when one is edited (versions of a reply or of a chat; D-026 replaces them)
+- Ask before Regenerate replaces a reply (D-026 does not)
+- Default instructions for every new chat (a setting), or instructions per model (D-027 keeps one text per chat, and a new chat starts without)
+- Ask before Escape throws away a long unsaved draft in the Instructions box (D-027 does not), and a mark on a chat that came from outside the app
 - Automated tests for `useChat` (needs a test runner; none is set up, see D-007)
 - Show what each reply cost (the API reports token counts with every reply)
 - Server-side refusal fallbacks for the provider, once there is a real key to try them with (D-012)
@@ -19,7 +23,8 @@
 - Check `registry/models.json` before every build with the same validator the app uses (`src/shared/registry.ts`),
   so a typo cannot ship (D-014)
 - Update the registry without a new release: a checked copy in the data folder, written in place (D-010, D-014)
-- Let the person choose the effort level per model (the registry already holds one level per model)
+- Remember an effort level per chat instead of per model, or let a message ask for one (D-024 keeps one level per model)
+- Show what the extra thinking of a high effort level cost, once there is a cost display (D-024)
 - When a model answers "not found" (for example once Haiku 4.5 is retired), offer to switch to another
 - Show the retirement date of a model in Settings (needs a field in the registry)
 - Rename a saved conversation (the title is the first message; editing the file by hand already works)
@@ -28,8 +33,7 @@
 - Export or copy a saved conversation as Markdown (the idea above, now with something to export from)
 - "Delete all", and an option to clear conversations older than some age
 - Encrypt saved conversations with the operating system's secure storage (D-016 says what it would cost)
-- A Retry button on a failed reply (D-013); a saved conversation makes it more useful
-- Run `tools/regress.mjs` automatically (a pre-release script or CI); today it is run by hand, about 40 minutes
+- Run `tools/regress.mjs` automatically (a pre-release script or CI); today it is run by hand, about 55 minutes
 - Gemini as the third provider (an adapter and a registry entry; the provider tables will not compile without them, D-018)
 - Windows Credential Manager instead of safeStorage files for the keys (needs a native keyring package; D-020)
 - Chat Completions as a fallback for OpenAI if the Responses API misbehaves (D-022)

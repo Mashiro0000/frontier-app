@@ -1,0 +1,14 @@
+{
+  "label": "anthropic-sends-the-registry-effort",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "  const effort = effortOf(request.effort)",
+      "to": "  const effort = effortOf(model.effort)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

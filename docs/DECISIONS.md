@@ -97,8 +97,9 @@ is nothing left to default to. What history to send is D-013.
 React escapes text, so pasted HTML cannot run; checked with an `<img onerror>` message. Markdown or
 HTML from a model is a bigger risk. The window is now sandboxed (D-004), which limits what a mistake
 can reach but does not replace sanitising. Claude writes Markdown by default, so the system prompt
-(D-012) asks it for plain text; remove that once Markdown is rendered. Status: accepted. Revisit: before
-adding Markdown, use a sanitising renderer.
+(D-012) asks it for plain text; remove that once Markdown is rendered. Status: **superseded by D-025**
+(Stage 7.2): a reply is now drawn as Markdown by a reader of the app's own that can only make a fixed set of
+elements, and the system prompt says so. What the person types is still shown as plain text, as typed.
 
 ## D-010 - The API key is stored encrypted by the operating system and never leaves main
 
@@ -684,3 +685,478 @@ written here anyway would look like a fact. So the file does not hold scores.
 Status: accepted (Stage 6). Revisit: real benchmark rows once there is a source that compares these models on one scale (then a schema 0.3
 with an optional score, and an order); a row for chat; deleting the Haiku row if it is retired; whether people want a single suggestion
 after all (the cheapest of those named is the obvious rule, and would be a decision about their money).
+
+## D-024 - The person chooses how hard each model thinks (Effort); main keeps the choice per model and checks it against the registry every time
+
+Until now every reply asked for the one level that `registry/models.json` names for the model (D-014, D-019), and the person could not change
+it. The Claude desktop app has an Effort control and the roadmap asked for one (Stage 7). Higher effort means the model thinks longer before it
+answers: slower, and the thinking is billed as output.
+
+- **What the person sees.** A menu next to the model menu: "Effort: Low (faster)", "Effort: Medium (default)", ..., "Effort: Max (smarter)". It
+  lists only the levels the registry gives the chosen model (`capabilities.effortLevels`), from the one that thinks least to the one that
+  thinks most (sorted by the app, not trusted to the registry's order). It is not in the page at all for a model that takes none (Haiku 4.5).
+  The level the registry picks stays in force until the person chooses, and is marked "(default)". The menu is disabled while a reply is
+  arriving: the effort is fixed when a reply starts, like the model. Its tooltip says what a higher level costs (slower, billed as output) and
+  that the thinking counts against the reply's length limit.
+- **Kept per model.** `preferences.json` stays version 1 and gains `efforts`: `{ "<model id>": "<level>" }`. Choosing a level for Opus does not
+  touch Sonnet's. One function writes the whole file (`writePreferences`), so choosing a model never drops the efforts and choosing an effort
+  never drops the model; it is written in place and read back (D-010, D-015), and both kinds of change share one queue (`inOrder`), so two
+  calls cannot cross.
+- **Checked three times, never the page's word.** (1) The handler: `checkEffortChoice` accepts only a model that is on offer and a level that
+  model's own entry lists, matched exactly (no other letter case, no padding), and hands back the registry's strings, never the page's.
+  (2) `chooseEffort` checks again where it saves. (3) Every time a reply starts, `resolveEffort` checks the saved level against the model's
+  list: the registry can change under a saved choice. A level the model no longer lists is not used (the registry's pick is), once in the log,
+  and the file is left alone so the choice comes back if the level does (as a saved model does, D-015).
+- **Reading is forgiving, so a damaged `efforts` never costs the model choice.** `parseSavedEfforts` keeps the usable entries and drops the
+  rest (a key that is not shaped like a model id, a value that is not a known level), takes at most 200, and builds a Map, so no key (`__proto__`
+  included) is special.
+- **The page decides nothing about a reply.** The chat request carries no effort. `chat.ts` takes it from `currentModel()`, fixed with the model
+  for the whole reply, and `StreamRequest.effort` is what an adapter sends (never `model.effort`, which is only the registry's default). The page
+  is told `{ levels, selected, default }` for the chosen model and nothing about how a model is called (`toModelOption` still says nothing about
+  effort).
+- **Nothing chosen, nothing changed.** With no level chosen, the requests are byte-identical to Stage 6's (compared on a copy of `main`,
+  42 requests, see "What was checked").
+- **The ceiling is unchanged.** A reply is still limited to 16,000 tokens and the thinking counts against it, so at the highest levels a reply
+  may stop early and show the existing "cut off" notice. Raising the ceiling would be a decision about spending, which is Stage 8's.
+
+**Threat note (what could go wrong, what stops it, what is left).**
+
+- _The page, or a script in it, sends an invented model or level_ (`max` for Haiku, `none` to Anthropic, `__proto__`, padding, another case, a
+  non-string): refused by the handler, and again where it is saved; 19 kinds of bad input were refused with plain sentences that do not echo
+  the input, and nothing was written. A call from an `about:blank` page is rejected by the sender guard. **Left:** a script in the app's own
+  page can still choose any level a model takes. That is what the menu does, so it is no new power.
+- _A hand-edited or damaged `preferences.json`_: read forgivingly (above), capped, no special keys; nine stale or damaged seeds were each read and gave the expected model and level. **Left:** whoever can write to your profile can set a level the model takes, the same as the menu; that is the same
+  limit as D-010 and D-015.
+- _A saved level the registry stops offering_: not used, once in the log, the registry's pick applies.
+- _Cost_: a higher level is billed as more output. The tooltip says so; there is no limit yet. **Left:** one click sets a level for every later
+  reply of that model until it is changed, and nothing counts or caps the extra thinking beyond the 16,000-token ceiling per reply. Stage 8's
+  spending limit has to count it.
+- _A reply cut short by the thinking_: the existing notice for a cut-off reply. Not a safety matter; it can surprise.
+- _Two copies of the app at once_ can overwrite each other's `preferences.json` (as for the model, D-015). Not handled.
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only. Under plain Node (`verify-7-1.mjs`, 90 checks): the
+check, the saved-file reader and the resolver with every kind of damage, hostile and frozen input. In the real window (`run71.mjs`, 198
+checks): the menu for each of the seven models (Haiku has none), the request each reply sends (the strict mock refuses what the real API
+documentation says is refused), per-model memory, a restart, the menu locked during a reply while a reply already running keeps its level,
+19 kinds of bad input, a call from `about:blank`, bursts of rapid changes ending on the last choice, the keyboard, two narrow widths (420 and 320 px:
+nothing overflows), no key or warning in the log, and ten seeded `preferences.json` files (one good, nine with a stale, damaged or hostile
+`efforts`). Negative controls: the Node suite caught 17 of 17
+sabotages; the window suite had 15 sabotages: 13 were caught clearly, and two need a note: switching off the handler's check alone is caught only by
+the refusal sentence, and switching off the save-time check alone changes nothing **by design** (two layers, either alone suffices, as in
+D-015); the seeds caught 6 of 6. The request bytes of a reply with nothing chosen are identical to Stage 6's. The older suites were then re-run on the new tree (`node tools/regress.mjs t71 node window seeds scenarios`, 2 October 2026): 46 runs, 44 clean the first time. The two that were not were checks this slice made stale, not faults: the adapter suite's list of the fields of a request (which now holds `effort`) and `verify-3-4`'s Tab order (the Effort menu now sits between the model menu and Settings). Both were updated and pass on their own re-run (94 of 94, 78 of 78). The Stage 4 history suites and the built-app (`preview`) runs were not re-run for this slice.
+**Not checked:** (1) **a real call to either provider.** How a real API answers at each level, whether it accepts every level the registry
+lists for each model, how much more it thinks and costs, and where the 16,000 ceiling cuts a reply at the highest levels are all unknown; the
+mock is my reading of the documentation. The first real use is yours: Settings, then a message at two levels. (2) The OS-drawn list of the
+menu (it cannot be seen or clicked through the debug protocol): levels were chosen with the keyboard and by calling the same function the
+menu calls; a mouse pick of an entry was not exercised. (3) A screen reader. (4) The built app (`preview`) for this slice; it runs at the
+end of Stage 7. (5) Any system other than Windows.
+
+Status: accepted (Stage 7.1). Revisit: the first real call (the levels each model really accepts, and what each costs); Stage 8's spending
+limit counting the thinking; a per-chat level, if one level per model proves too coarse; raising the 16,000 ceiling for the highest levels.
+
+## D-025 - Replies are drawn as Markdown by a reader of the app's own that can only make a fixed set of elements; a link asks before it opens
+
+Until now a reply was shown as plain text, and the system prompt asked the model for plain text, because Markdown or HTML from a model needs a
+renderer that cannot be talked into running anything (D-009). Stage 7.2 draws replies as Markdown. D-009 is superseded.
+
+- **No package, no HTML.** The usual route (`marked` or `markdown-it` for HTML, then a sanitiser such as DOMPurify, then
+  `dangerouslySetInnerHTML`) puts a string of HTML between a model and the window, and the sanitiser is then the only thing in the way.
+  `react-markdown` avoids the string but pulls in dozens of packages (the `unified` tree). This app has no reader that ever makes HTML:
+  `parse.ts` turns text into a tree of fourteen known kinds (seven inline, seven block), and `Markdown.tsx` turns that tree into React
+  elements. The reader is about 740 lines and the rest about 310, all the app's own code, with no dependency and nothing to audit but
+  itself. The price is that it is not CommonMark, and it has the bugs of a new reader (see "not checked").
+- **What it reads:** paragraphs (a line break the model wrote is kept), headings, **bold**, _italic_, ~~strike-through~~, `inline code`, fenced
+  code (three backticks or three tildes, with a language label), code indented by four spaces (how replies were written under the old plain-text
+  rules, so old chats still show their code as code), block quotes, bulleted and numbered lists (nested), tables with alignment, rules, and
+  links. **What it does not read, and shows as the text it was:** raw HTML, images (`![alt](url)` appears as written and nothing is loaded),
+  reference links, bare web addresses (not clickable), footnotes, task lists, setext headings, entities (`&amp;` stays), maths.
+- **A closed set of elements.** The page makes only `p`, `h1` to `h6`, `strong`, `em`, `del`, `code`, `pre`, `blockquote`, `ul`, `ol`, `li`,
+  `table`, `thead`, `tbody`, `tr`, `th`, `td`, `hr`, `br`, `div`, `span` and `button`, with the attributes `class` (a fixed list), `title` (only an
+  https address), `type="button"` and `start` (digits). No `style`, no `href`, no `src`, no event handler of a reply's making, and no
+  `dangerouslySetInnerHTML` anywhere. What a reply says goes in as text, which React escapes.
+- **Links.** Only `[text](https://...)`. The address must be https, have no user name or password, no space, control character, backslash,
+  angle bracket or quote, be at most 2000 characters, and be accepted by `new URL`; what is shown and opened is the address as `new URL` writes
+  it (a host with accents appears in its `xn--` form). Anything else stays visible text. A link is a `button` with no `href`: a click opens a
+  dialog with the whole address, the host in words ("It goes to example.org") and **Cancel** (which has the focus; so has Escape) or **Open**.
+  Only Open calls `window.open`, which the main process passes to the operating system only for an https address without credentials (it
+  also passed plain http before; `isSafeExternalUrl` is narrower now). A middle click does nothing. The point of the dialog is a link whose
+  words say one address and whose target is another. **Left:** a script in the app's own page can still call `window.open('https://...')`
+  without the dialog; that is the app's own code, which the dialog was never meant to stand against.
+- **Limits, so that a hostile or broken text costs bounded work.** Quotes and lists nest to 6; emphasis and links to 6; a table has at most 20
+  columns and 200 rows (the rest stays text); a link's text is at most 1000 and its address 2000 characters; and each piece of text gets a work
+  budget of 40 steps per character (and 5000 over), after which the rest of that piece is plain text. The scan limits on links and the budget
+  overlap: either one alone is enough against a slow text, as the two layers in D-015.
+- **Streaming.** A reply is cut into pieces at a blank line that is followed by an unindented line, never inside a code fence. A finished piece
+  is read once (the page remembers it by its text); only the piece still growing is read again with each word. A list whose items are
+  separated by blank lines therefore becomes one list per item, each keeping its number; it looks the same.
+- **The person's own messages stay as typed.** They are not read as Markdown. What is sent to the model, and what is saved, is the Markdown
+  source as written, never HTML.
+- **The system prompt** now says the window renders Markdown, names what it draws, says that HTML, images and diagrams are not shown and that
+  only https links open, and asks short answers to stay plain. That is a request, not a safety measure: the reader above is what keeps a
+  model from doing anything. The requests are otherwise unchanged (see "what was checked").
+- **Copy on a code block** writes exactly the characters of the block to the clipboard when it is clicked (`navigator.clipboard.writeText`),
+  and says "Copied". Nothing in the app reads the clipboard, and nothing writes it except that click. It is a small new power, with no change
+  in the main process. A tab stays a tab inside a fenced block (Go, Makefiles). Windows itself turns line ends into CR LF on the clipboard.
+
+**Threat note (what could go wrong, what stops it, what is left).**
+
+- _A reply that tries to be HTML or script_ (`<script>`, `<img onerror>`, `<iframe>`, `<style>`, handlers, `javascript:` and `data:` links, an
+  attribute broken out of with a quote, text arriving in halves so that `<scr` and `ipt>` meet): there is no HTML reader to hand it to; the
+  markup is text. Checked in the real window with such texts (nothing ran, no forbidden element, nothing loaded, the page still showing), also
+  while streaming two characters at a time, and in Node by rendering 22 attack texts and 3000 random ones and reading everything React wrote
+  back against a list of tags, attributes and classes.
+- _A link that lies_ (words say one address, target is another; a user name in the address to hide the host; accents that imitate a host): the
+  dialog shows the real address and host, the user-name form is not offered, and the `xn--` form is shown honestly. **Left:** nothing stops a
+  person from pressing Open on a bad address. The app does not judge addresses, and does not stop https pages that are themselves harmful.
+- _Something loading by itself_ (an image, a font, a frame): nothing a reply makes has a `src` or an address of its own, and the page's
+  Content-Security-Policy (no remote sources) was left as it was. No request for anything outside the app was seen while the attack texts
+  were on screen.
+- _A text built to make the reader slow_ (a hundred thousand brackets, backticks or stars, quotes nested 50,000 deep, a 64 KB line, a table
+  of 5000 columns): 29 such texts, each read in under 1.5 s without an error, and 6000 random ones, none slower than 50 ms. **Left:** a text of
+  64 KB still takes some milliseconds, not none; the 16,000-token ceiling of a reply (D-024) is what keeps it from being larger.
+- _The clipboard._ **Left:** Electron grants every permission request when no handler is set, and this app sets none; the page asks for
+  nothing but the clipboard write, and the only code in the page is the app's own. A deny-by-default handler is in IDEAS.
+- _A model that ignores the system prompt and writes something the reader does not know:_ shown as text. Nothing breaks.
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only. Under plain Node (`verify-7-2.mjs`, 193 checks): the
+reader (inline, links with 23 kinds of refused address, blocks, tables, lists, the pieces of a growing text), 29 hostile texts and 6000
+random ones, `isSafeExternalUrl` (17 addresses), and the elements the page makes (22 attack texts, 3000 random texts, the allowed list). In
+the real window (`run72.mjs`, 53 checks): every kind of Markdown drawn; the person's own message untouched; what is sent back to the model
+being the source; attacks; a link asking first and only Open reaching a recorder in place of `shell.openExternal` (the real browser is never
+opened by the suite), by Cancel, Escape, Enter on Cancel, Open, a middle click, and a link whose words are another address; what
+`window.open` from the page can reach; Copy by mouse and by keyboard with exact characters; streaming by words and by two characters at a
+time (the finished page is the same DOM, and no snapshot on the way had a forbidden element); a 21 KB reply with 150 headings; old-style
+replies; the saved chat holding the source and being drawn again from History; empty and half-failed replies; 420 and 320 px wide. Negative controls: of 25 deliberate breakages of the reader, the elements, the link rule
+and the system prompt under Node, 22 were caught; the 3 that were not are layers that overlap by design, so removing one alone changes
+nothing (the depth cap, because the work budget stops a deep text first; the link-scan limits, because the budget bounds them too; the
+http spelling in the address check, because `new URL` refuses the scheme as well). All 8 breakages of the real window were caught (a link
+that opens without asking, Copy adding a character, the person's own text rendered, the bubble not capped, lines not kept, main letting http
+through, the old prompt, text written as HTML); every file was put back and proved identical by hash. The last of these also showed what the
+page's Content-Security-Policy does and does not add behind the reader: with text written as HTML, the policy refused the inline handler of an
+injected `<img>` (`script-src 'self'`, in the app's log, so nothing ran), but it did not stop an injected `<style>` from hiding the page
+(`style-src` allows inline styles, which the app's own React code needs). So the reader is the wall for markup, and the policy is only a
+second wall for scripts.
+The older suites were re-run on this tree (`node tools/regress.mjs t72 node window scenarios`, 2 October 2026): 32 runs, 28 clean the first
+time. The four that were not were checks this slice made stale, not faults: the Stage 2 golden request holds the old system prompt; the
+Stage 1 chain, `verify-2-4` and `verify-5-5` read an assistant bubble's text, where trailing spaces are no longer shown, paragraphs are
+elements and a run of spaces collapses (they now read what a person sees, `innerText`, and the person's own message is checked as typed).
+All four pass on their own re-run (96, 110, 71 and 53 checks). The requests of every model in every conversation shape (42 of them) were
+compared with those of the Stage 7.1 commit: they differ only in the system prompt (and the Content-Length it causes, by the same 107 bytes
+each), and the outcomes, the error sentences and the message merging are identical. The seeded launches, the Stage 4 history suites and the
+built-app (`preview`) runs were not re-run for this slice.
+**Not checked:** (1) **real model output.** Only the mock and my own samples. How real replies use Markdown (nested lists with odd
+indentation, tables with pipes in code, HTML inside code, maths, lines wrapped by the model) is unseen, and the reader is not run against the
+CommonMark test suite, so differences from CommonMark are expected beyond the ones listed. (2) A screen reader. (3) Syntax colours (none
+exist). (4) The real `shell.openExternal` (replaced by a recorder; the mechanism is Stage 2.2's and is unchanged). (5) The built app
+(`preview`) and the Stage 4 history suites; they run at the end of Stage 7. (6) Any system other than Windows. (7) Typing a very long message
+(21 KB) into the box stalls the page for about 2.5 s; that is the input box, not this slice, and was not looked into.
+
+Status: accepted (Stage 7.2). Revisit: the first real replies (what the reader gets wrong); syntax colours; the parts of Markdown left out; a
+deny-by-default permission handler; whether a line break inside a paragraph should be a space as in CommonMark (it is kept, which is right
+for old replies and wrong for a model that wraps its lines).
+
+## D-026 - Copy, Regenerate and Edit-and-send-again: asking again replaces what was there, and every way of asking again waits for a reply that is arriving
+
+Stage 7.3 puts small buttons under the messages of a chat. They are shown when the pointer is over a message or the keyboard is in it, always
+under the last message, and always where there is no pointer to hover with.
+
+- **Copy**, on any message that has finished arriving: puts the text on the clipboard as it is stored, that is, what the person typed, or a
+  reply as the Markdown the model wrote (not the drawn text), and says "Copied". One function (`useCopy`) is now the only place in the app that
+  writes the clipboard; the Copy button of a code block (D-025) uses it too. It is written on a click and at no other time, and nothing reads
+  the clipboard.
+- **Regenerate**, on the last reply only ("Try again" when it failed, which is the retry button IDEAS asked for): the last reply is replaced by a
+  new one. The conversation up to the person's last message is sent again, with the model and the effort chosen now (so changing either and
+  pressing Regenerate is how two models are compared; the new reply says who wrote it, D-021).
+- **Edit**, on the person's own messages: the message becomes a text box in its place. **Send** replaces the message with the new text, drops
+  everything after it, and asks the model again. Enter sends, Shift+Enter makes a new line, Escape cancels, as in the box at the bottom. Send is
+  off until the text is changed and is not empty, and the text is trimmed as it is in the box. **When more than the last exchange would go** (that
+  is, more than the one reply right after the message), it asks first: "Sending this replaces the 5 messages after it, here and in the saved
+  chat. They cannot be brought back." and the button says "Send anyway"; changing the text takes the question back.
+- **Replaces, and keeps no versions.** That was the simplest choice and the one the plan named. What it costs: the replaced reply, or the
+  messages after an edited one, are gone, from the screen and from the saved chat (the file is rewritten with the shorter conversation: still
+  one chat, one file, and the title follows the first message). **Left:** there is no undo, and no "keep both"; Regenerate does not ask, because
+  it replaces one reply.
+- **Billed again.** Each of Regenerate and Edit-and-send makes a new request that carries the whole conversation. The buttons' tooltips and the
+  edit box say so. Nothing here repeats by itself: every request comes from a click, so there is no loop. **Left:** no limit stops a person who
+  clicks Regenerate twenty times; Stage 8's spending limit has to count these requests too.
+- **Off while a reply is arriving.** Regenerate and Edit are disabled, with a tooltip that says when they come back, and `useChat` also refuses
+  a second request while one is running (so a double click cannot start two). **One difference from the plan** ("all off while replying"):
+  Copy stays on for messages that have finished, because it asks nothing of the model; the message that is still arriving has none.
+- **What is sent, and what is not new.** The conversation to send is worked out by three plain functions (`chat/rewrite.ts`: the conversation
+  without its last reply, the conversation up to an edited message, how many messages follow one), which change nothing they are given. The
+  main process is unchanged: the request is the same `chat:start` as a message typed in the box, checked the same way, and no new message
+  crosses the bridge. A script in the page can do nothing here that it could not do before.
+- **Small things.** The page keeps older messages from drawing again while a reply streams in (the callbacks that reach them are the same
+  function from one render to the next). After asking again the keyboard goes back to the box at the bottom. A chat that gets shorter (an
+  earlier message edited) scrolls to its end, where the new reply is.
+
+**Threat note (what could go wrong, what stops it, what is left).**
+
+- _Losing something by a click._ Regenerate replaces the last reply at once; Edit asks first only when more than the last exchange goes.
+  **Left:** a reply that was good and was regenerated cannot be brought back. The saved copy is overwritten too.
+- _Money._ Each click bills again, and the tooltips say so. **Left:** no limit until Stage 8; nothing repeats without a click.
+- _A second request while one runs._ Refused in the buttons (disabled, checked in the window) and again in `useChat`. **Not tested:** that
+  second guard is not reachable from outside the page (a second click lands on a button that is no longer there), so a sabotage of it would
+  go unnoticed; it is there as a belt to the braces.
+- _The clipboard._ Copy writes only on a click, only the text of a message already on screen. **Left:** what is copied may hold anything the
+  model wrote, and whatever the person pastes it into is theirs to watch.
+- _Text typed into the edit box_ is shown in a plain text box and goes out through the same checks as any message; it is never drawn as
+  Markdown (D-025).
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only. Under plain Node (`verify-7-3.mjs`, 27 checks): the
+three functions with every shape of conversation, frozen inputs, hostile ids and texts. In the real window (`run73.mjs`, 53 checks):
+what is offered under each message; Copy of a reply, of a message, of a Markdown reply (the source) and while another reply arrives; every
+button waiting for a reply that is arriving; Regenerate (what is sent, that the reply is replaced and not added, that the saved chat follows,
+that another model answers and says so); Try again after a failure and the way out by editing; Edit of the first, a middle and the last
+question (what is asked, what is sent, what is gone from the screen and from the file); Escape, Cancel, Enter and Shift+Enter; a chat opened
+from History; the keyboard returning to the box; 420 and 320 px wide. Negative controls: all 12 breakages of the three functions were caught under Node. Of 13 breakages of the real window, 12 were caught (the one that sends the old reply along with the question ended its first launch without a summary, which is not a detection, so it was run again on its own and failed three checks), and one was not: taking the trimming out of the edit box changes nothing, because the function that works out the conversation trims as well (two layers, as in D-015). Every file was put back and proved identical by hash. The older suites were re-run on this tree (`node tools/regress.mjs t73 node window scenarios`, 2 October 2026): the Node suites all passed, and the window and scenario parts passed 23 of 23 on the second run. The first run had ended early, and the reason was the test harness, not the app: a launcher (`run71.mjs`, a dozen launches) outran `regress.mjs`'s 400-second limit, was killed, and left its app on the debug port, which stopped the launches after it. The limit is now 15 minutes and tools/README says what to do if it happens. No older check had to be changed for this slice. The Stage 4 history suites, the seeded launches and the built-app (`preview`) runs were not re-run.
+**Not checked:** (1) a real model asked again (only the mock); (2) a screen reader, and the layout where there is no pointer (`hover: none`);
+(3) a very long chat edited near its start (the shortening is the only direction a save has to handle, and it was tried with six messages);
+(4) Stage 4's history suites and the built app, which run at the end of Stage 7; (5) Windows only.
+
+Status: accepted (Stage 7.3). Revisit: versions of a reply (keep the old one, flip between them) if replacing proves too blunt; asking before
+Regenerate; counting the requests against Stage 8's limit.
+
+## D-027 - The person can give a chat instructions of its own: they are added after the app's rules, sent with every request of that chat, and saved with it (file version 3)
+
+Stage 7.4 puts an **Instructions** button in the header. It opens a dialog with one text box, and what is written there is told to the model with
+every message of that chat: who to be, how long to write, what to leave out. It is the "system prompt of your own per chat" of the roadmap.
+
+- **One text per chat.** Not per model and not for the whole app: a new chat starts without instructions, and a chat opened from History brings its
+  own back. Empty means none. The text is trimmed, and may hold at most 8,000 characters once trimmed (about 2,000 tokens): they go out with
+  EVERY request, so the limit is also a price, and a page of instructions is what the box is for. One function, `checkInstructions` (in
+  `src/shared/validate.ts`), applies that rule to everything that carries them: the chat request, the save, the file when it is read and
+  the store when it writes, so what is written can always be read and what is sent is what the person saw. The page runs it for its count; main
+  runs it again.
+- **After the app's rules, never in their place.** The system prompt is the app's own rules (what the window can draw, D-025), then a blank
+  line, then one line, "The person has given these instructions for this chat:", a blank line, and the text. That line is the only text the app
+  adds. The instructions are last, so the person's words are the last word. The page cannot set the system prompt: the request has no such field
+  (`ChatRequest.instructions`; the plan's working name `system` was dropped because a field with that name suggests the page controls the prompt),
+  and `checkChatRequest` drops a `system` field if a script sends one. What this costs: an instruction such as "ignore the rules above" may be
+  followed, and the model may then write raw HTML, which the window shows as text (D-025). Nothing safety-relevant depends on the prompt: the
+  limits are in the app's code, never in what a model is asked.
+- **Nothing changes for a chat without instructions.** The prompt is then exactly what Stage 7.3 sent, and the request has no new field on the way
+  to main (the page leaves the key out when there are none). Checked byte for byte against the recorded requests (below).
+- **Seen first, and always visible (safety rule 1).** The dialog says, next to the box: the instructions are added to the app's own rules and
+  sent with every message of this chat, to the company that runs the model that answers (and to another company if the model is changed),
+  billed as part of the conversation, saved as plain text in this chat's file on this computer, not for passwords or keys, and a new chat starts
+  without them. While they are set the header button says "on" (and its tooltip says how long they are). Nothing is sent that was not written in
+  the box, and the box shows all of it; the app's own rules are described, not shown (showing them would need a new message from main).
+- **A draft until Save.** Typing changes nothing. Save (the button reads "Turn off" when the box has been emptied) sets the chat's instructions;
+  Escape and Cancel throw the draft away. The count is of the trimmed text and turns into a warning ("1 too many") with Save off; the box does
+  **not** use `maxLength`, because a long paste would be cut without a word. Saving sends nothing; the chat is saved at once if it has messages (a
+  chat with no message has no file, as before). The button is off while a reply arrives, like the model and the effort menus (D-015, D-024), and
+  `useChat.setInstructions` refuses then too. **Asking again** (Regenerate, an edited message) sends the instructions the chat has at that
+  moment, so changing them and pressing Regenerate shows the difference.
+- **Saved with the chat: file version 3.** The `instructions` field sits between the dates and the messages and is always there (`""` for none). A
+  version 1 or 2 file is read as a version 3 one with no instructions and stays exactly as it is on disk until that chat is next saved: reading
+  never writes, and nothing is converted in bulk, as in D-021. In a version 3 file the field must be there and be usable text: **strict**,
+  like the title and the dates, because a chat that opened without the instructions it was saved with would quietly answer differently. A file
+  whose instructions are not usable is counted as unreadable and left alone, like any damaged file. A version 4 file is another build's and is
+  left alone. (A version 2 file that carries an `instructions` field, which no build wrote, is read without it.) The store also refuses to write
+  instructions it could not read back. **What it costs:** a chat saved by this build is version 3, so a build from before Stage 7.4 would count it
+  as unreadable and leave it alone; there is no way back to the old format.
+- **Small things.** The dialog keeps its title and buttons in view and scrolls only its body, so it fits the default window (900 by 670) and
+  works at 320 px wide. At the default window width the header's controls now wrap under the title (the header's own rule for a narrow window;
+  the new button made them wider than the window): measured at 886 px of page, with a key saved, the header goes from one row of 47 px to two
+  rows of 80 px, which takes 33 px of height from the chat (115 px when a badge such as "No API key" is also shown). **Left:** Escape discards a draft without
+  asking. (**Since D-029** the three buttons are under the message box and the header is one row again.)
+
+**Threat note (what could go wrong, what stops it, what is left).**
+
+- _Something sent that the person did not write or see._ Nothing is added but the one line above and the app's own rules; the text is the
+  person's, shown in the box; the header says "on" while it is set. A chat file brought from somewhere else (put in the folder by another
+  program) carries instructions that go out with that chat's next message; the "on" mark and the box show them, and the messages of such a
+  file would be sent just the same. **Left:** nothing marks a chat as coming from outside.
+- _The page replacing the app's rules._ There is no way to: the request has no system field, a script's `system` is dropped, and `instructions`
+  is added after the rules. Tried from the page with raw calls (below).
+- _A model's output setting them._ Nothing reads a reply for instructions; only Save in the dialog sets them.
+- _Too much, or the wrong thing._ A text over the limit, or one that is not text, is refused by main with a sentence for the page, in a request
+  and in a save, and nothing is sent or written. A damaged saved file is left alone.
+- _Secrets._ The dialog says not to put them there. **Left:** the app cannot tell a password from a sentence, so this is a warning only; the
+  text is saved as plain text with the chat, like the messages (D-016).
+- _Money._ Up to about 2,000 more input tokens with every request, and the dialog says it is billed. **Left:** no limit before Stage 8, which
+  has to count them.
+- _Losing text._ Escape and Cancel discard a draft, and turning the instructions off deletes the text (it lived only in the chat's file, which
+  is rewritten). Instructions set on a chat that has no message yet are not saved anywhere (a chat with no message has no file), so opening
+  another chat from History before the first message replaces them. **Left:** no undo, and no warning in any of these cases.
+- _A real model._ The mock proves what is sent, in which field, in which order, to which provider. How a real model weighs the instructions
+  against the rules was not tried (no real API call has been made).
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only: no real API call has been made. **Under plain Node** (`verify-7-4.mjs`, 151 checks; the store ones in a normal folder and in the EFS-encrypted AppData): `checkInstructions` on text of every kind and on a dozen things that are not text (an object that prints as text, a symbol, a bigint, ...), and the limit exactly (8,000 pass, 8,001 do not, counted after trimming and in JavaScript's own characters); `checkChatRequest` (nothing added when there are none, a `system` field dropped, the instructions not counted towards the 600,000); the save check; the system prompt for both providers (exactly the Stage 7.3 text with none; the rules, then the one line, then the text, trimmed, also for instructions that try to cancel the rules or hold characters that a string replacement treats as special); what each adapter really sends to the strict mock (two request bodies that differ in the system field only); and the file (version 3 in the documented order and read back; versions 1 and 2 read with no instructions and left byte for byte, modification time included, by listing and loading them; the next save making them version 3; a damaged or version 4 file counted and left alone; a whole `.tmp` of version 3 winning and a cut-off one ignored). **In the real window** (`run74.mjs`, 84 checks; it seeds four conversation files before the launch): the seeded files open, or are left alone, and are never rewritten by reading; the button, the dialog (draft, Escape, Cancel, Enter, real typing, a real paste of 9,000 characters, the count, the limit, trimming, the focus going back); what is sent with each message and in what order, to an OpenAI model and back to Anthropic; what is saved; History bringing the instructions back, also after a reload; Regenerate and Edit using the instructions the chat has then; the button off while a reply arrives; raw calls from the page (a `system` field, 8,001 characters, something that is not text, a save that knows nothing of instructions); 420 and 320 px wide. **Requests:** the golden capture (42 requests, 21 outcomes, 33 errors times four, 6 merges: 163,796 bytes) is byte for byte what it was before the change; to show that this comparison can fail, three breakages of the prompt each changed it. **Negative controls** (`tools/specs74*`): 26 breakages under Node, all caught (three first ended with no summary line because a check threw; each section of the suite now turns a throw into a FAIL line, and those three were run again); 17 in the real window, all caught in the end. One was **not** caught the first time: the check that a long paste is not cut set the box's value from a script, which a `maxlength` never meets (it now pastes for real, and the control is caught). One ran out of time (the runner's limit) and was run again. One was caught only by a helper that wanted the form gone, not by the check meant for it (the helper was relaxed, and the intended check caught it). Four more stop the suite early (the chat is not saved; the dialog closes at the first keystroke), which counts as caught but does not reach the later checks. Every file was put back and proved identical by hash. **Older suites:** `node tools/regress.mjs t74 node window scenarios` (2 October 2026): 35 of 36 runs clean. The one that was not was 7.3's Copy, Regenerate and Edit suite (28 of 31): with the header two rows high at the default window size, an early message of a six-message chat scrolls out of view, and that suite's hover and click on it missed; it now scrolls the message into view first (53 of 53). Eight older checks that pinned the file at version 2, or version 3 as another build's, were moved up by one, and the Stage 4 header checks (the order and the count of the header's controls) learned of the new button. Nine negative-control specs that had gone stale were repaired (four by this slice, five before it), found by a new dry check, `tools/check-specs.mjs`. Two Stage 4 items were run once because they were edited: `run43a` (damaged folders, 32 of 32) and `verify-4-2` (88 of 90: the two that fail compare a reply's saved text with the text read from the page, which Markdown (7.2) changed; they are ported at 7.5).
+
+**Not checked:** (1) a real model given instructions, and how it weighs them against the rules; (2) a screen reader, and the layout where there is no pointer (`hover: none`); (3) window sizes other than the default (900 px wide), 420 and 320; (4) the Stage 4 history suites (all but the two above), the seeded `preferences.json` launches and the built app, which run at the end of Stage 7; (5) the guard in `useChat.setInstructions`, which the disabled button makes unreachable from outside; (6) Windows only.
+
+Status: accepted (Stage 7.4). Revisit: default instructions for every new chat (a setting); asking before Escape throws a long draft away; a header that does not wrap at the default window size; a mark on a chat that came from outside; counting the instructions against Stage 8's limit.
+
+## D-028 - Stage 7 as a whole: what it added to the app's surface, the threat note across its four slices, and what it hands to Stage 8
+
+Stage 7 (D-024 to D-027) made the chat nicer to use: an Effort menu, replies drawn as Markdown, Copy / Regenerate / Edit, and instructions of
+your own for each chat. Every slice has its own threat note. This is the stage's: the surface the four slices added taken together, the risks
+that only exist where they meet, what the full regression of 7.5 showed, and what is left for later stages. It changes no code.
+
+**What the stage added, in one list.**
+
+- **Across the bridge:** one new function, `settings.setEffort` (channel `settings:set-effort`), checked by main twice (D-024); and one optional
+  field, `instructions`, on two calls that already existed (`chat:start`, `history:save`), checked by main (D-027). Nothing else in the preload
+  changed and no other message exists.
+- **On disk:** `preferences.json` gained `efforts` (it is still version 1). A saved chat is now **version 3** (it holds the instructions);
+  versions 1 and 2 are still read and are not touched by reading. The step is one way: a build from before 7.4 cannot read a version 3 chat.
+- **Two small new powers of the page, both approved in the plan:** it writes the clipboard on a click (one function, `useCopy`), and it can ask
+  for an https address to be opened in the browser after a click and a confirmation. Main now lets through only https without a user name or
+  password (before, plain http too), which is narrower, not wider.
+- **Two new ways to ask the model again** (Regenerate, Edit), both from a click. They use the ordinary `chat:start`; there is no new message.
+- **One new thing the person writes that goes out with every request:** the chat's instructions, at most 8,000 characters.
+- **Not added:** no package (`package.json` and the lock file are unchanged), nothing in `registry/`, no access to files, commands, the network,
+  a camera or a microphone. The window's own guards (sandbox, context isolation, the navigation lock, the window-open handler, the
+  Content-Security-Policy) were not touched: `src/main/index.ts` and `index.html` are the same as at Stage 6, and the one change in
+  `security.ts` is the https-only rule above.
+
+**Threat note across the slices (what could go wrong where they meet, what stops it, what is left).**
+
+- _A model's words drawn as Markdown (7.2), and the person's instructions that may tell the model to drop the app's rules (7.4)._ Together they
+  allow a model that writes raw HTML or script. The reader has no way to turn text into HTML, so it appears as text (D-025: 22 attack texts and
+  3,000 random ones read back against a list of elements and attributes, and the same attacks in the real window). At the end of this stage a
+  search of `src` for `dangerouslySetInnerHTML`, `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, `eval`, `new Function` and
+  `srcdoc` found nothing but one comment that says there is none. Nothing safety-relevant depends on the prompt: the limits are in the code.
+- _Money, three ways at once (7.1, 7.3, 7.4)._ A higher Effort is billed as more output; Regenerate and Edit each send the whole chat again;
+  the instructions add up to about 2,000 input tokens to every request. A person at "Max", with long instructions, in a long chat, who presses
+  Regenerate again and again pays for all three each time. The tooltips and the dialog say that it is billed, and nothing repeats without a
+  click (safety rule 4). **Left: no limit exists until Stage 8**, and that stage has to count, per request: the output including the thinking
+  (which depends on the level), every request that Regenerate and Edit make, the instructions inside each request's input, and the whole
+  conversation that goes out again each time. The only bounds until then are the ceiling of 16,000 tokens a reply (D-024) and the limit of
+  600,000 characters of conversation in one request (the instructions come on top of that, up to 8,000).
+- _What leaves the PC (rule 1)._ Nothing new leaves it unseen. A request holds the chat that is on the screen (D-013 says how it is tidied),
+  the app's own rules, and the instructions as written in a box that shows all of them; changing the model sends the same chat to another
+  company, which the Instructions dialog says. There is no telemetry, and nothing loads by itself: a reply cannot make an `img`, `a` with an
+  address, `script`, `style` or a frame, and the Content-Security-Policy is unchanged.
+- _The saved files (rule 9)._ The instructions are plain text next to the messages (D-016: chats are not encrypted). A chat file brought in from
+  elsewhere carries instructions that go out with that chat's next message; the "on" mark shows them, and nothing marks a chat as coming from
+  outside. Version 3 cannot be taken back.
+- _Losing something._ Regenerate and Edit replace without an undo, turning the instructions off deletes the text, and Escape drops a draft.
+  Each is in its slice's note and in IDEAS. **Left:** no versions and no question before Escape.
+- _What the app's own page can still do._ Choose any effort level a model takes, call `window.open` with an https address without the dialog,
+  and write the clipboard. That is what its own code does: the checks stand against a hostile reply, a hostile file and a hostile caller of the
+  bridge, not against the app's own code. **Left:** Electron grants every permission request when no handler is set, and this app sets none; a
+  deny-by-default handler is in IDEAS and is worth having before any stage that asks for a real permission (the microphone, Stage 15).
+- _Rules 2 and 4 (untrusted content is data; no chaining)._ Nothing in this stage acts on what a model says. A reply is drawn and never read for
+  instructions; there are no tools, no loops, and no request that a click or a key press of the person did not start.
+
+**The roadmap's Stage 7 safety line, claim by claim.**
+
+- _A renderer that cannot make HTML, and no raw HTML._ A closed list of elements and attributes built from a tree of fourteen known kinds
+  (D-025); the Node attack suites; the window attack suites; the search of `src` above.
+- _Links are text and open in the browser only after a click on an https address._ `[text](https://...)` only; a button, not an address; a
+  dialog with the whole address and host; main passes only https without credentials (D-025; the window suite replaces `shell.openExternal`
+  with a recorder, so the real browser was never opened by a check).
+- _No image or resource loads by itself._ Nothing a reply makes has a `src` or an address; the policy is unchanged; no request for anything
+  outside the app was seen while the attack texts were on screen (D-025).
+- _Nothing can navigate or script the app window._ The navigation lock and the window-open handler were not touched; the 7.2 suite clicked
+  links and called `window.open` from the page and the window did not navigate; calls from an `about:blank` page are refused (re-run by the
+  older suites).
+- _Higher effort is billed as output, the control says so, and Stage 8's limit must count it._ The tooltip says it (D-024); what the limit has
+  to count is in the money paragraph above.
+
+**What the full regression of 7.5 showed (2 October 2026).** `node tools/regress.mjs t75`, all six parts, 54 minutes, on the tree of the 7.4
+commit with only the test tools changed (`src/` and `registry/` are identical to the commit, checked afterwards with `git diff`): 78 runs, 75
+clean the first time and the other three clean when run again on their own. Clean the first time: the 12 plain-Node suites; 11 of the 14 window
+launches (Stages 1, 3, 5, 6 and 7.1 to 7.4, with their restarts); the 16 seeded `preferences.json` launches; the 10 registry scenarios (each put
+`registry/models.json` back, proved by hash); all 7 Stage 4 history launches against the dev app (damaged folders, closing the window in the
+middle of a reply, 30 saves queued at quit, injected disk faults) and again all 7 against the built app; and the 11 window suites against the
+built app (`electron-vite build`, then the same suites on the compiled bundle). The three that failed were `verify-2-3`, its restart
+`verify-2-3b` and `verify-2-4`: in `verify-2-3` and `verify-2-4` the test window reported itself hidden (`visibilityState: "hidden"`) and the
+debug protocol's mouse input was acknowledged only after 5 s, so a click on Settings did not open its dialog in time; the restart failed only
+because the first never saved its key. They passed on their own re-run (64, 5 and 71 checks). This is the stall described in `tools/README.md`,
+a fault of the test window and not of the app, but **its cause is still not proven**: a read-only watcher of the operating system's windows
+(started after the incident; it is `tools/watch-windows.ps1`) saw 30 moments of input and three times the test window behind the Claude window,
+and no stall in any of them.
+**Stage 4 had gone stale, and was ported.** Its suites had not been run since Stage 7 began. Three checks failed at the 7.4 commit for the
+same reason, Markdown (7.2): they compared a reply as read from the page with the text saved in the file, and a reply's paragraphs are
+elements now and its trailing space is not drawn (two in `verify-4-2`, one in `verify-4-3d`; shown by running the old files again, which gave
+`verify-4-2` 88 of 90 and `verify-4-3d` 7 of 8). `tools/lib4.mjs` now reads a reply as a person sees it, and the saved side goes through one
+small function (`shown`); the same suites pass with it (`verify-4-2` 90 of 90, `verify-4-3d` 8 of 8, against the dev app and the built one). A
+fourth comparison (`verify-4-2b`, 17 of 17) was changed as a precaution and had passed before too. The app was not at fault in any of the three.
+
+**Not checked, for the stage as a whole.** (1) **A real call to either provider**: none has been made by me in any stage. How a real API
+answers at each effort level, how a real model draws on the Markdown rules and weighs the instructions against them, what real replies look
+like to the reader, and what a regenerated reply costs are all unknown; the mock is my reading of the documentation. The first real use is yours
+(Settings, then a message). (2) The OS-drawn list of a `<select>` (it cannot be seen or clicked through the debug protocol: levels were chosen
+by keyboard and by calling what the menu calls). (3) A screen reader, and the layout where there is no pointer (`hover: none`). (4) Window
+sizes other than the default 900 px, 420 and 320. (5) Any system other than Windows. (6) The reader against CommonMark's own test suite. (7)
+Typing a message of 21 KB stalls the page for about 2.5 s (the box, not investigated). (8) Two guards that the disabled buttons make unreachable
+from outside (`useChat.setInstructions` and the second-request refusal in `useChat`). (9) Two copies of the app at once overwriting each
+other's `preferences.json`. (10) The packaged installer: the built-app runs use `electron-vite preview` on the compiled bundle, not a
+program made by `electron-builder` (Stage 18); `app.isPackaged` is false in them, which is also why the mock's address is honoured there.
+
+Status: accepted (Stage 7 closed). Revisit: Stage 8's counting of everything in the money paragraph; the first real replies (what the reader
+gets wrong, what each effort level really costs); versions of a replaced reply; a deny-by-default permission handler; a header that does not
+wrap at the default window width (decided afterwards and done in 7.6, D-029).
+
+## D-029 - New chat, History and Instructions move from the header to a slim row under the message box, so that the header is one row at the default window width
+
+D-027 reported, and D-028 left open for the owner, that the Instructions button made the header wider than the default window (900 px, 886 of
+page): its controls wrapped under the title, 47 px became 80 px (115 px with a "No API key" badge), and the chat lost 33 to 68 px of height. The
+owner decided (2 October 2026): move New chat, History and Instructions out of the header, so that it never wraps to two rows at the default
+width. This is slice 7.6, made after 7.5 at the owner's request.
+
+- **Where they went.** A new component, `ChatBar` (`src/renderer/src/chat/ChatBar.tsx`), draws the three buttons in a slim row directly under the
+  message box: as wide as the box (at most 760 px, centred, so that the first button lines up with the box's left edge), a group named "This
+  chat", the last thing on the page. What was weighed: a row above the box (it reads as a second header row and sits between the messages and the
+  box), buttons inside the message box (that changes the box's layout and the place of Send, which Stage 1's checks pin down), and a sidebar (a
+  much larger change). Under the box costs the least height.
+- **Nothing about the buttons changed.** The same labels, tooltips and rules: all three wait for a reply that is arriving; New chat is off in an
+  empty chat and warns when the chat could not be saved; Instructions says "on" and how long they are. The same dialogs, which still return the
+  keyboard to the button that opened them. The state stays in `App` (the dialogs, the chat, the history). Only the class names changed
+  (`chat-bar`, `chat-button`, `chat-instructions`, `chat-mark`), because the header no longer holds them. The header keeps the Task, model and
+  Effort menus, the badges ("Not saved", "No API key") and Settings.
+- **The header is one row by construction, not by luck.** After the move the widest state a person can reach (a task chosen, which makes the model
+  menu say "(suggested)" and widen to 200 px, with both badges showing) still needs about 870 px against the 846 the header has, so taking the
+  three buttons out alone would have left a rare wrap. From 720 px of page up the header therefore does not wrap, and the three menus give way
+  instead: their text is cut with an ellipsis, and none goes below 96 px. The title, the badges and Settings never shrink. Below 720 px the
+  controls drop under the title as before. Measured in the real window at 886 px: 47 px in every state, for each of the seven models (the OpenAI
+  ones with "No API key" showing, Haiku with no Effort menu), each of the five task choices, and the widest state, which also holds at 800 and
+  720 px.
+- **What the chat area gets.** At the default window: 47 px of header, 480 px of messages, 71 px of message box and 36 px of bar. Against 7.4
+  that is 12 px more height with a key saved (468 before) and 46 px more with a badge showing (434); against 7.3, before there was a bar, it is
+  22 px less (502).
+- **The keyboard order changed.** Tab used to reach New chat, History and Instructions first. Now the header's menus and Settings come first, then
+  the messages, the box and Send, and last the three buttons: the page's order is the order on the screen, and the group is named for a screen
+  reader. Shift+Tab goes back the same way.
+- **Narrow windows.** The bar wraps instead of overflowing (checked at 420, 320 and 280 px, with the "on" mark, which makes Instructions wider).
+
+**Threat note.** No new power, and nothing in the main process, the preload or `src/shared` changed (the change is in `src/renderer` only), so the
+page can do exactly what it could before. What could go wrong: (1) a button out of reach in a narrow window: the bar wraps; (2) the header
+wrapping again with a long label (a long model name in the registry): the menus give way, down to 96 px, with an ellipsis; (3) New chat clicked by
+mistake, now that it is nearer the box: it only starts a new chat, which stays saved in History, and it is off in an empty chat and while a reply
+arrives; the one loss is a chat that could not be saved (the "Not saved" badge and the button's own sentence say so, as before). **Left:** nothing
+asks before New chat discards a chat that could not be saved (D-017 chose the sentence).
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only. A new window suite, `verify-7-6w.mjs` (46 checks): where
+the buttons are and that the header holds only Settings; one row for each model, each task, and the widest state at 886, 800 and 720 px, and the
+page just under 720 px; the bar's place, its alignment with the box and its size; the rules the buttons keep (an empty chat, a reply that is
+arriving, Stop, History and Instructions opening and giving the keyboard back, Save and the "on" mark); the order of the keyboard; 420, 320 and
+280 px. `verify-4-5` has one more check, with the real "Not saved" badge showing (20 checks).
+**Negative controls** (`tools/specs76w`): 12 breakages of the bar and the header (the header allowed to wrap; menus that cannot give way, or give
+way with no floor; a bar not lined up with the box; one that cannot wrap; one drawn above everything; one far too tall; History on while a reply
+arrives; New chat on in an empty chat; a bar that is not a named group; the buttons also in the header; the bar first in the page's order but
+drawn last). 11 were caught the first time. The twelfth was not: with `flex-wrap: nowrap` the buttons simply broke their labels over two lines and
+nothing overflowed, which my narrow-window check could not see. The check now also requires every label on one line, and that breakage is caught.
+After the batch `src/` and `registry/` were proved identical to before by hash (64 files). The suites that used the three buttons in the header
+were ported (Stage 1's layout checks; Stage 4's helpers, `verify-4-2`, 4-2b, 4-3a, 4-3d, 4-4, 4-5 and 5-4; the window suites of 7.2, 7.3 and 7.4),
+and the two control specs that named the Instructions button's code were pointed at its new file.
+**The full regression** (`node tools/regress.mjs t76`, 80 runs, 2 October 2026): 79 clean the first time. The one that was not was the built-app
+launch of `verify-5-3` (keys and Settings): it waited 30 s for the 20 s timeout of a Test-key call that never answers, and the notice did not
+come. The watcher logged keyboard or mouse input at that moment (a key press or a click can close the dialog the suite is waiting on), the
+window was in front, and the same launch passed on its own re-run (66 of 66, no input logged); the suite had passed in the dev app in the same
+regression. The cause is **not proven**. The new suite passed in the dev app and in the built one, and so did every Stage 4 suite (`verify-4-2`
+has 91 checks now, the injected-disk-fault suite 20). The hidden-window stall of 7.5 (`verify-2-3`, `verify-2-4`) did not happen this time. The
+harness's retry message in `tools/lib3.mjs` now also lists the open dialogs, the messages on screen and the selected model: the new suite's first
+message once needed its one retry in 7 launches, unexplained, and the next occurrence should say more.
+
+**Not checked:** (1) page zoom: at about 125 % or more the 900 px window has fewer than 720 CSS px, so the header drops its controls under the
+title, as in any narrow window; (2) a very long label in the registry (only the seven real labels were used); (3) a touch screen and a screen
+reader; (4) systems other than Windows; (5) the real "Not saved" badge was checked at the default width only (the other widths used a copy of it
+made on the page).
+
+Status: accepted (Stage 7.6). Revisit: page zoom; asking before New chat discards a chat that could not be saved; a sidebar for these buttons and
+History in wide windows.

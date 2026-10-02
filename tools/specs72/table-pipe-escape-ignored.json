@@ -1,0 +1,14 @@
+{
+  "label": "table-pipe-escape-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "if (c === '\\\\' && t[k + 1] === '|') {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

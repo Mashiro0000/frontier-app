@@ -1,0 +1,31 @@
+{
+  "label": "w71c-any-level",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/effort.ts",
+      "from": "if (MODEL_ID.test(modelId) && isEffort(level)) saved.set(modelId, level)",
+      "to": "if (MODEL_ID.test(modelId)) saved.set(modelId, level as Effort)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "verify-7-1c.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s71seednc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "A:\\frontier-app\\tools\\.out\\seeds71\\eff-bad-values-keep-model.json",
+    "SEED_NAME": "eff-bad-values-keep-model",
+    "SEED_SHA": "455f83000bc18ac9",
+    "EXPECT_MODEL": "claude-sonnet-5-5",
+    "EXPECT_EFFORT": "medium",
+    "WARN_LEVEL": "",
+    "SAVED_MODEL": "claude-sonnet-5-5",
+    "KEYS_AFTER": "[\"x\",\"claude-sonnet-5-5\"]",
+    "LOG_LABEL": "nc-eff-bad-values-keep-model"
+  }
+}

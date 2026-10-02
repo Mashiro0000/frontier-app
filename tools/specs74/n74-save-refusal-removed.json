@@ -1,0 +1,14 @@
+{
+  "label": "n74-save-refusal-removed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "if (!checkedInstructions.ok) return checkedInstructions\n",
+      "to": "void 0\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

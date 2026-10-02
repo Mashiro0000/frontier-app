@@ -1,0 +1,14 @@
+{
+  "label": "soft-break-lost",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "text = text.replace(/ +$/, '') + '\\n'",
+      "to": "text = text.replace(/ +$/, '') + ' '"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

@@ -5,7 +5,7 @@
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
-import { h4, UUID_FILE } from './lib4.mjs'
+import { h4, shown, UUID_FILE } from './lib4.mjs'
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -27,12 +27,14 @@ const samePath = (a, b) => String(a).replaceAll('\\', '/').toLowerCase() === Str
 
 // ===================== A. a fresh start writes nothing =====================
 check('a fresh profile has no conversations folder (starting up and looking wrote nothing)', H.files() === null, JSON.stringify(H.files()))
-const buttons = await H.headerButtons()
-check('the header has New chat, History and Settings, in that order', JSON.stringify(buttons.map((b) => b.text)) === JSON.stringify(['New chat', 'History', 'Settings']), JSON.stringify(buttons.map((b) => b.text)))
+const buttons = await H.chatButtons()
+const headerBtns = await H.headerButtons()
+check('under the message box the chat bar has New chat, History and Instructions (7.4), in that order (they left the header in 7.6, D-029)', JSON.stringify(buttons.map((b) => b.text)) === JSON.stringify(['New chat', 'History', 'Instructions']), JSON.stringify(buttons.map((b) => b.text)))
+check('...and the header keeps only Settings among its buttons', JSON.stringify(headerBtns.map((b) => b.text)) === JSON.stringify(['Settings']), JSON.stringify(headerBtns.map((b) => b.text)))
 check('New chat is disabled while the chat is empty, and says why', buttons[0].disabled && /empty/i.test(buttons[0].title), buttons[0].title)
-check('History and Settings are enabled', !buttons[1].disabled && !buttons[2].disabled)
+check('History, Instructions and Settings are enabled', !buttons[1].disabled && !buttons[2].disabled && !headerBtns[0].disabled)
 const api = await ev(`({ top: Object.keys(window.api).sort(), history: Object.keys(window.api.history ?? {}).sort(), settings: Object.keys(window.api.settings).sort(), chat: Object.keys(window.api.chat).sort() })`)
-check('window.api gained exactly `history` { list, load, remove, save }; nothing else changed', JSON.stringify(api) === JSON.stringify({ top: ['chat', 'history', 'settings'], history: ['list', 'load', 'remove', 'save'], settings: ['clearApiKey', 'getStatus', 'setApiKey', 'setModel', 'testApiKey'], chat: ['cancel', 'onEvent', 'start'] }), JSON.stringify(api))
+check('window.api gained exactly `history` { list, load, remove, save }; nothing else changed', JSON.stringify(api) === JSON.stringify({ top: ['chat', 'history', 'settings'], history: ['list', 'load', 'remove', 'save'], settings: ['clearApiKey', 'getStatus', 'setApiKey', 'setEffort', 'setModel', 'testApiKey'], chat: ['cancel', 'onEvent', 'start'] }), JSON.stringify(api))
 const list0 = await ev(`window.api.history.list()`)
 check('list() on a fresh profile: no conversations, none unreadable, and it names the folder', list0.conversations.length === 0 && list0.unreadable === 0 && samePath(list0.folder, folder), JSON.stringify(list0))
 check('...and asking did not create the folder', H.files() === null)
@@ -52,13 +54,13 @@ await H.sendAndWait('first question')
 const first = await H.waitFirst('first question', (c) => c.messages.length === 2 && c.messages[1].status === 'done')
 await sleep(500) // a save copies the file over and THEN deletes its .tmp: look after that, not between the two
 check('after the first reply there is exactly one file, <uuid>.json, and no leftover temp file', H.convFiles().length === 1 && H.strays().length === 0, JSON.stringify(H.files()))
-check('it is the documented shape: version 2, id equal to the file name, title, dates, messages', first.conv.version === 2 && first.conv.id === first.id && first.conv.title === 'first question' && Number.isSafeInteger(first.conv.createdAt) && first.conv.updatedAt >= first.conv.createdAt, JSON.stringify(Object.keys(first.conv)))
+check('it is the documented shape: version 3, id equal to the file name, title, dates, instructions (none), messages', first.conv.version === 3 && first.conv.instructions === '' && first.conv.id === first.id && first.conv.title === 'first question' && Number.isSafeInteger(first.conv.createdAt) && first.conv.updatedAt >= first.conv.createdAt, JSON.stringify(Object.keys(first.conv)))
 check('the messages are the ones on screen: the question and "Echo: first question", both done, the reply naming the model that answered (D-021)', JSON.stringify(first.conv.messages) === JSON.stringify([{ role: 'user', content: 'first question', status: 'done' }, { role: 'assistant', content: 'Echo: first question', status: 'done', provider: 'anthropic', model: 'claude-opus-5-5' }]), JSON.stringify(first.conv.messages))
-check('...and what is on screen equals what is saved', JSON.stringify((await H.screen()).map((m) => [m.role, m.text])) === JSON.stringify(first.conv.messages.map((m) => [m.role, m.content])))
+check('...and what is on screen equals what is saved', JSON.stringify((await H.screen()).map((m) => [m.role, m.text])) === JSON.stringify(first.conv.messages.map((m) => [m.role, shown(m.role, m.content)])))
 const FIRST = first.id
 const listB = await ev(`window.api.history.list()`)
 check('list(): one conversation with the same title and 2 messages', listB.conversations.length === 1 && listB.conversations[0].id === FIRST && listB.conversations[0].title === 'first question' && listB.conversations[0].messageCount === 2, JSON.stringify(listB.conversations))
-check('New chat is enabled now', !(await H.headerButton('New chat')).disabled)
+check('New chat is enabled now', !(await H.chatButton('New chat')).disabled)
 await H.openHistory()
 let rows = await H.rows()
 check('History shows that conversation: its title, "2 messages", marked as the one open now', rows.length === 1 && rows[0].title === 'first question' && /2 messages/.test(rows[0].meta) && /open now/.test(rows[0].meta) && rows[0].current, JSON.stringify(rows))
@@ -94,7 +96,7 @@ await sleep(300)
 const afterStop = await H.waitConv(FIRST, (c) => c.messages.length === 4 && c.messages[3].status === 'stopped')
 const lastScreen = (await H.screen()).at(-1)
 check('Stop: the file ends with the partial reply and the status "stopped"', afterStop.messages.length === 4 && afterStop.messages[3].status === 'stopped' && afterStop.messages[3].content.startsWith('tick0 '), JSON.stringify(afterStop.messages[3]).slice(0, 100))
-check('...exactly the text that is on screen, which says "Stopped"', afterStop.messages[3].content === lastScreen.text && lastScreen.note === 'Stopped', JSON.stringify(lastScreen).slice(0, 100))
+check('...exactly the text that is on screen (a reply is drawn without its trailing space), which says "Stopped"', shown('assistant', afterStop.messages[3].content) === lastScreen.text && lastScreen.note === 'Stopped', JSON.stringify(lastScreen).slice(0, 100))
 check('...and no temp file is left', H.strays().length === 0, JSON.stringify(H.files()))
 
 // ===================== D. what the person sent is saved even if the reply never comes =====================
@@ -122,10 +124,10 @@ check('a reply that broke off in the middle keeps its partial text and its error
 const beforeNew = { sha: H.sha(FIRST), count: conv.messages.length, mtime: H.mtime(FIRST) }
 
 // ===================== F. New chat =====================
-await H.clickHeader('New chat')
+await H.clickChat('New chat')
 await sleep(300)
 check('New chat clears the screen and shows the empty hint', (await H.screen()).length === 0 && /Type a message to start/.test(await H.emptyHint()), await H.emptyHint())
-check('...New chat is disabled again (nothing to start over)', (await H.headerButton('New chat')).disabled)
+check('...New chat is disabled again (nothing to start over)', (await H.chatButton('New chat')).disabled)
 check('...and keyboard focus is in the input box, so the person can just start typing', await ev(`document.activeElement?.classList.contains('composer-input')`), await ev(`document.activeElement?.className`))
 check('...the old conversation is still on disk, byte for byte, and no file was created by pressing it', H.sha(FIRST) === beforeNew.sha && H.convFiles().length === 1)
 await resetMock()
@@ -148,13 +150,13 @@ await page.waitFor(`!document.querySelector('dialog.history')?.open`)
 await sleep(300)
 const screenG = await H.screen()
 const wantG = H.readConv(FIRST).messages
-check('opening it closes the dialog and shows the whole conversation, in order', screenG.length === wantG.length && screenG.every((m, i) => m.role === wantG[i].role && m.text === wantG[i].content), JSON.stringify(screenG.map((m) => m.text.slice(0, 14))))
+check('opening it closes the dialog and shows the whole conversation, in order', screenG.length === wantG.length && screenG.every((m, i) => m.role === wantG[i].role && m.text === shown(m.role, wantG[i].content)), JSON.stringify(screenG.map((m) => m.text.slice(0, 14))))
 const wantNotes = wantG.map((m) => (m.status === 'stopped' ? 'Stopped' : m.status === 'error' ? m.error : m.status === 'done' && m.content === '' ? 'The reply was empty.' : null))
 check('...with exactly the notes the saved statuses call for ("Stopped" for stopped, the saved error text for failed ones)', JSON.stringify(screenG.map((m) => m.note)) === JSON.stringify(wantNotes) && wantNotes.filter((n) => n === 'Stopped').length >= 2 && wantNotes.filter((n) => n && n !== 'Stopped').length >= 2, JSON.stringify(wantNotes))
 check('...and opening wrote nothing (the file is identical, same modification time)', H.sha(FIRST) === beforeNew.sha && H.mtime(FIRST) === beforeNew.mtime && H.convFiles().length === 2)
 await sleep(1500)
 check('...not even a second later (an opened conversation is not saved again until something changes)', H.sha(FIRST) === beforeNew.sha && H.mtime(FIRST) === beforeNew.mtime)
-check('New chat is enabled (there is a conversation on screen)', !(await H.headerButton('New chat')).disabled)
+check('New chat is enabled (there is a conversation on screen)', !(await H.chatButton('New chat')).disabled)
 
 await resetMock()
 const savedBefore = H.readConv(FIRST).messages
@@ -203,7 +205,7 @@ await page.waitFor(`document.querySelectorAll('dialog.history .history-row').len
 check('deleting the conversation that is open: the file is gone, the screen is a new empty chat', H.convFiles().length === 0 && (await H.screen()).length === 0, JSON.stringify(H.files()))
 check('...and the dialog now says nothing is saved', /Nothing is saved yet/.test(await H.historyText()))
 await H.closeHistory()
-check('...New chat is disabled (an empty chat), and nothing re-created the deleted file', (await H.headerButton('New chat')).disabled && (await sleep(1500), H.convFiles().length === 0))
+check('...New chat is disabled (an empty chat), and nothing re-created the deleted file', (await H.chatButton('New chat')).disabled && (await sleep(1500), H.convFiles().length === 0))
 
 // ===================== H2. a message sent right after a reply is saved at once, not up to a second later =====================
 // The throttle (one save a second while a reply streams) must not delay the person's own message: a message sent
@@ -217,7 +219,7 @@ const quick = await H.waitFirst('quick one', (c) => c.messages.some((m) => m.con
 const quickDelay = Date.now() - quickT0
 check('a message sent right after a reply (within a second of the previous save) is on disk within 500 ms, not after the rest of the second', quickDelay < 500 && quick.conv.messages.at(-2).content === 'quick two', `${quickDelay} ms`)
 await H.waitReady()
-await H.clickHeader('New chat')
+await H.clickChat('New chat')
 await sleep(200)
 check('(cleanup) the quick conversation is removed through the API, leaving the others as they were', (await ev(`window.api.history.remove(${JSON.stringify(quick.id)})`)).ok && H.byFirst('quick one') === null)
 
@@ -226,15 +228,16 @@ await resetMock()
 await H.send('[[mock:slow]] busy')
 await page.waitFor(`!!document.querySelector('.message-assistant')`)
 await sleep(300)
-const busyBtns = await H.headerButtons()
+const busyBtns = await H.chatButtons()
 const menu = await H.menu()
 check('while a reply arrives, New chat and History are disabled and say why', busyBtns[0].disabled && busyBtns[1].disabled && /reply/.test(busyBtns[0].title) && /reply/.test(busyBtns[1].title), JSON.stringify(busyBtns))
-check('...Settings stays available, and so does the model menu rule (disabled)', !busyBtns[2].disabled && menu.disabled)
-check('...a click on History does nothing', (await H.clickHeader('History'), await sleep(300), !(await H.historyOpen())))
+check('...Settings stays available, and so does the model menu rule (disabled)', !(await H.headerButton('Settings')).disabled && menu.disabled)
+check('...and the Instructions button is off too, saying when it comes back (7.4)', busyBtns.find((b) => b.text.startsWith('Instructions')).disabled && /reply has finished/.test(busyBtns.find((b) => b.text.startsWith('Instructions')).title))
+check('...a click on History does nothing', (await H.clickChat('History'), await sleep(300), !(await H.historyOpen())))
 await page.click('.composer-button')
 await H.waitReady()
 await sleep(300)
-const afterBusy = await H.headerButtons()
+const afterBusy = await H.chatButtons()
 check('after Stop they are enabled again', !afterBusy[0].disabled && !afterBusy[1].disabled, JSON.stringify(afterBusy))
 check('the stopped chat was saved (stopped, with its partial text)', (await H.waitFirst('[[mock:slow]] busy', (c) => c.messages.at(-1).status === 'stopped')).conv.messages.at(-1).content.length > 0)
 
@@ -264,7 +267,7 @@ check('...and none of it created, changed or removed a file', JSON.stringify(H.f
 const forgedId = await ev(`crypto.randomUUID()`)
 const forged = await ev(`window.api.history.save({ id: ${JSON.stringify(forgedId)}, title: 'FORGED', createdAt: 5, updatedAt: 5, version: 99, messages: [{ role: 'user', content: 'a real question', status: 'done', id: 'm1', evil: 1 }, { role: 'assistant', content: 'half', status: 'streaming' }] })`)
 const forgedFile = H.readConv(forgedId)
-check('a valid save from the page works, and the page cannot forge the title, the dates or the version', forged.ok && forgedFile.title === 'a real question' && forgedFile.version === 2 && forgedFile.createdAt > 1_000_000_000_000 && JSON.stringify(Object.keys(forgedFile.messages[0])) === JSON.stringify(['role', 'content', 'status']), JSON.stringify(forgedFile).slice(0, 160))
+check('a valid save from the page works, and the page cannot forge the title, the dates or the version', forged.ok && forgedFile.title === 'a real question' && forgedFile.version === 3 && forgedFile.createdAt > 1_000_000_000_000 && JSON.stringify(Object.keys(forgedFile.messages[0])) === JSON.stringify(['role', 'content', 'status']), JSON.stringify(forgedFile).slice(0, 160))
 check('...and a message sent as "streaming" is stored as "stopped"', forgedFile.messages[1].status === 'stopped')
 check('...the new conversation appears in the list', (await ev(`window.api.history.list()`)).conversations.some((c) => c.id === forgedId && c.title === 'a real question'))
 const gone = await ev(`window.api.history.remove(${JSON.stringify(forgedId)})`)
@@ -289,7 +292,7 @@ await sleep(1800)
 // two conversations again, so the dialog has something to show
 await resetMock()
 await H.sendAndWait('a conversation with a rather long first message that needs to be cut off somewhere sensible in the list')
-await H.clickHeader('New chat')
+await H.clickChat('New chat')
 await sleep(200)
 await H.sendAndWait('short one')
 await H.waitFirst('short one', (c) => c.messages.length === 2 && c.messages[1].status === 'done')
@@ -297,8 +300,8 @@ await H.waitFirst('a conversation with a rather long first message', (c) => c.me
 for (const width of [420, 320]) {
   await page.send('Emulation.setDeviceMetricsOverride', { width, height: 700, deviceScaleFactor: 1, mobile: false })
   await sleep(300)
-  const fit = await ev(`(() => { const bs = [...document.querySelectorAll('.app-header .header-button, .app-header .header-select')]; const r = bs.map((b) => b.getBoundingClientRect()); return { overflowX: document.documentElement.scrollWidth > window.innerWidth, allInside: r.every((x) => x.left >= 0 && x.right <= window.innerWidth), count: bs.length } })()`)
-  check(`at ${width}px wide the header has no sideways scroll and every control is fully on screen`, !fit.overflowX && fit.allInside && fit.count === 4, JSON.stringify(fit))
+  const fit = await ev(`(() => { const bs = [...document.querySelectorAll('.app-header .header-button, .app-header .header-select, .chat-bar .chat-button')]; const r = bs.map((b) => b.getBoundingClientRect()); return { overflowX: document.documentElement.scrollWidth > window.innerWidth, allInside: r.every((x) => x.left >= 0 && x.right <= window.innerWidth), count: bs.length } })()`)
+  check(`at ${width}px wide the header has no sideways scroll and every control is fully on screen`, !fit.overflowX && fit.allInside && fit.count === 5, JSON.stringify(fit)) // New chat, History, Instructions, Settings and the model menu
   await page.screenshot(`${shots}/4-2-header-${width}.png`)
   await H.openHistory()
   const dlg = await ev(`(() => { const d = document.querySelector('dialog.history').getBoundingClientRect(); const c = [...document.querySelectorAll('dialog.history .history-footer button')].pop().getBoundingClientRect(); return { left: d.left, right: d.right, top: d.top, bottom: d.bottom, closeInside: c.left >= 0 && c.right <= window.innerWidth && c.bottom <= window.innerHeight, w: window.innerWidth, h: window.innerHeight } })()`)

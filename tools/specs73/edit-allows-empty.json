@@ -1,0 +1,14 @@
+{
+  "label": "edit-allows-empty",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/rewrite.ts",
+      "from": " || edited === ''",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-3.mjs"
+  ],
+  "env": {}
+}

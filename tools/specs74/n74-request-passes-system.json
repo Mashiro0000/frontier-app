@@ -1,0 +1,14 @@
+{
+  "label": "n74-request-passes-system",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "      streamId,\n      messages: clean,\n      ...(checkedInstructions",
+      "to": "      ...(input as object),\n      streamId,\n      messages: clean,\n      ...(checkedInstructions"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

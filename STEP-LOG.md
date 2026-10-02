@@ -1745,3 +1745,197 @@ Running `npm run dev` shows one more menu in the header, **Task**, next to the m
    row in `registry/rankings.json`; nothing breaks if you leave the row.
 4. **The GitHub push.** When it was checked (1 October 2026) the repository had no `origin` remote, so nothing had been pushed from this folder.
 5. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 7 - What was built
+
+Stage 7 is built in five slices, one commit each: 7.1 Effort, 7.2 Markdown, 7.3 Copy / Regenerate / Edit and resend, 7.4 Instructions per
+chat, 7.5 the docs, the threat note and the full regression. This part describes what exists now.
+
+**7.1 Effort (D-024).** Running `npm run dev` shows one more menu in the header, **Effort**, right after the model menu:
+
+- It lists only the levels the registry gives the chosen model, from "faster" to "smarter", and marks the registry's own pick "(default)".
+  Claude Haiku 4.5 takes no effort setting, so for it the menu is not shown at all.
+- Your choice is kept **per model** in `preferences.json` (next to the model choice, which it never overwrites). The next reply asks the provider
+  for exactly that level; until you choose, replies are byte-for-byte what they were in Stage 6.
+- A higher level is slower and billed as more output (the thinking). The menu's tooltip says so, and says that the thinking counts against the
+  16,000-token limit of a reply, so at the highest levels a reply can be cut off.
+- The menu is locked while a reply is arriving: the level is fixed when a reply starts.
+- The page cannot choose anything the registry does not list for that model. Main checks the model and the level when they arrive, again when
+  it saves, and every time a reply starts.
+- No new package. One new decision, **D-024** (with its threat note and what was not checked); new files `src/shared/effort.ts` and
+  `src/renderer/src/settings/EffortPicker.tsx`.
+
+**7.2 Markdown (D-025).** A reply is now drawn as Markdown instead of plain text:
+
+- Headings, **bold**, _italic_, ~~strike-through~~, `inline code`, bulleted and numbered lists (nested), tables, block quotes, rules, and code
+  blocks with the language above them and a **Copy** button that puts exactly the code on the clipboard when you click it. A reply written the
+  old way (code indented by four spaces, hyphen lists) is drawn as code and lists too, so old chats look right.
+- **It cannot make HTML.** The reader is the app's own (no package): it turns text into a small tree and the page makes only a fixed list of
+  elements from it. Raw HTML in a reply, and images, are shown as the text they were written as; nothing is loaded and nothing runs.
+- **A link asks first.** Only `[text](https://address)` is clickable. Clicking shows a window with the whole address and where it goes, and only
+  **Open** sends it to your browser (**Cancel** has the focus; Escape cancels). Anything else (http, javascript:, an address with a password)
+  stays plain text. The main process now lets only https addresses through to the browser.
+- What you type is still shown exactly as typed. Replies and saved chats keep the Markdown as the model wrote it.
+- The instruction the model gets changed: it is told the window renders Markdown (it used to be told to use plain text).
+- No new package. One new decision, **D-025** (with its threat note and what was not checked); the files are in `src/renderer/src/markdown/`
+  (`parse.ts`, `Markdown.tsx`, `CodeBlock.tsx`, `LinkConfirm.tsx`, `linkContext.ts`), plus small changes to the message bubble, the chat view,
+  the style sheet, `src/main/security.ts` and the model's instruction (`src/main/providers/request.ts`).
+
+**7.3 Copy, Regenerate, Edit (D-026).** Under each message there are now small buttons (shown when the pointer is over the message or the
+keyboard is in it, and always under the last one):
+
+- **Copy** on any finished message: the text as it was written (your message as typed, a reply as its Markdown), put on the clipboard when you
+  click. One function now does all the copying in the app, the code blocks' Copy included.
+- **Regenerate** on the last reply (**Try again** if it failed): the reply is replaced by a new one, asked for with the model and effort chosen
+  now, so changing the model and pressing it is how you compare two models.
+- **Edit** on your own messages: the message turns into a text box in place; **Send** replaces it and everything after it and asks again. If that
+  would remove more than the reply right after it, it asks first and says how many messages go (they are gone from the saved chat too).
+- Regenerate and Edit wait while a reply is arriving, and each one sends the whole conversation again, **billed again** (the tooltips say so).
+  **A reply that is replaced is gone: there are no versions.** No new package, no change in the main process; one new decision, **D-026**.
+
+**7.4 Instructions per chat (D-027).** The header has a new button, **Instructions**, right after History:
+
+- It opens a box where you write instructions for **this chat** (who the model should be, how long to write, what to leave out). They are added
+  to the app's own short rules, after them, and sent with **every message** of that chat. While they are set the button says **on**.
+- The box says what that means before you save: they go to the company that runs the model that answers (to another company if you change the
+  model), they are billed as part of the conversation, they are saved as plain text with the chat on this computer, and they are not the place
+  for passwords. At most 8,000 characters; the count turns red when you are over, and a long text pasted in is never cut without telling you.
+- Typing changes nothing until **Save**; **Escape** and **Cancel** throw the draft away. Emptying the box turns the button into **Turn off**.
+- A new chat starts without instructions, and a chat opened from History brings its own back. Regenerate and Edit use the instructions the chat
+  has at that moment. The button is locked while a reply is arriving.
+- A chat without instructions sends exactly what it sent before (checked against the recorded requests, byte for byte).
+- **The saved file changed: it is now version 3**, with the instructions in it. Chats saved before (versions 1 and 2) still open, are not touched
+  until you next send a message in them or change their instructions, and are then saved as version 3. **A build from before Stage 7.4 cannot read a chat saved by this one.**
+- At the default window width the header's controls now wrap under the title (they no longer fit on one line with the new button).
+- No new package. One new decision, **D-027**; the dialog is `src/renderer/src/instructions/InstructionsDialog.tsx`, and the main process, the
+  shared checks and the saved-file code changed (`src/main/providers/request.ts`, `chat.ts`, `conversationStore.ts`, `src/shared/ipc.ts`,
+  `validate.ts`).
+
+**7.5 The close (D-028).** The app does not change in this slice. What is new is the stage's own threat note (D-028): what the four slices added
+taken together (one new bridge function, one optional field on two calls, the saved file at version 3, two small new powers of the page, no new
+package), the risks that only exist where they meet (above all money: a higher Effort, Regenerate and Edit, and the instructions all add billed
+tokens, and nothing limits them until Stage 8, which now has a list of what it must count), and what was not checked. And the full regression,
+which had been left for this slice: the Stage 4 history suites and the built app had not been run since Stage 7 began.
+
+**7.6 The header (D-029), at your request.** New chat, History and Instructions are no longer in the header. They are in a slim row under the message
+box (a group named "This chat"), with exactly the labels, rules and sentences they had. The header is now ONE row at the default window width (47
+px) whatever is showing: each of the seven models, each task, and the widest state (a task chosen and both badges), where the three menus give
+way a little (their text is cut with an ellipsis, none below 96 px) instead of the header wrapping; below 720 px of page the controls drop under the
+title as before. At the default window the chat gets 480 px of messages (468 before with a key saved, 434 with a badge). The Tab order changed: the
+header first, then the messages, the box, Send, and last the three buttons. No new package, and nothing in the main process, the preload or the
+shared checks changed. One new decision, **D-029**; new files `src/renderer/src/chat/ChatBar.tsx` and `tools/verify-7-6w.mjs`.
+
+## Stage 7 - Step by step
+
+1. **Plan approved ("Go", 1 October 2026).** Own Markdown renderer with no package, Copy writes to the clipboard on a click, links open the
+   browser only after a click and a confirmation, https only, Effort as a menu, Regenerate replaces the reply, the instructions of a chat go
+   after the app's own rules.
+2. **Slice 7.1 built and checked** on the branch `stage-7-chat-polish` (about 36 minutes): the plain-Node suite `verify-7-1.mjs`, the window
+   suites `verify-7-1w/b/c.mjs` through `run71.mjs` (a fresh profile, a restart, ten seeded `preferences.json` files), 17 + 21 deliberate
+   breakages (negative controls, `tools/specs71*`), and a byte comparison of the requests with a copy of `main`.
+3. **The older suites were re-run on the new tree** (`node tools/regress.mjs t71 node window seeds scenarios`, 2 October 2026). 46 runs, 44 clean the first time. Two checks had gone stale because of this very slice and were updated, not the code: the adapter suite listed the fields of a request (now with `effort`), and `verify-3-4` expected Tab from the model menu to reach Settings (it now reaches the Effort menu first). Both pass on their own re-run (94/94 and 78/78). The Stage 4 history suites and the built-app (`preview`) runs are left for the end of Stage 7 (7.5).
+
+4. **Slice 7.2 built and checked** (2 October 2026). The reader (`parse.ts`) was written first and checked on its own under Node before any window
+   existed (`verify-7-2.mjs`, now 195 checks: the Markdown, 29 hostile texts, 6000 random texts, the elements React makes read back against a list
+   of tags and attributes, the main process's link rule). That found three real faults before the window did: a tab after a list marker, a
+   quadratic scan on `[[[[...` (the link scan was not charged to the work budget), and (while writing the Copy check) tabs inside code being turned
+   into spaces. Then the window suite (`verify-7-2w.mjs` through `run72.mjs`, 53 checks) found two more: the bubble stretching past a narrow window
+   when a table is wide, and the Copy click in my own test landing on the wrong block (a test fault). The mock got a `say` directive (the reply is
+   the message's own text) and `say-chars` (two characters at a time).
+5. **Negative controls:** 25 breakages under Node (22 caught; the 3 not caught are overlapping layers, see D-025) and 8 in the real window (all
+   caught), `tools/specs72*`, each file proved restored by hash.
+6. **The older suites were re-run** (`node tools/regress.mjs t72 node window scenarios`): 28 of 32 clean the first time. Four checks had gone stale
+   because of this slice and were updated (they now read what a person sees in a reply, and the Stage 2 golden request compares everything but
+   the system prompt); all pass again. The requests (42) were compared with the Stage 7.1 commit's: only the system prompt differs.
+7. **Slice 7.3 built and checked** (2 October 2026). The three functions that decide what is sent again (`chat/rewrite.ts`) were written and
+   checked first under Node (`verify-7-3.mjs`, 27 checks, frozen inputs and hostile ids included), then the buttons and the edit box, then the
+   window suite (`verify-7-3w.mjs` through `run73.mjs`, 53 checks). The mock got a `count` directive ("Reply N", N = requests received) so that a
+   reply asked for again is visibly a new one. Faults the checks found in the checks themselves: an assignment that handed a DOM node over the
+   debug protocol, a clipboard read before the write had finished, one check that could not fail, and checks that crashed instead of failing.
+8. **Negative controls:** 12 breakages under Node (all caught) and 13 in the real window (12 caught; the one that was not is a layer that
+   overlaps by design, see D-026), `tools/specs73*`, each file proved restored by hash.
+9. **The older suites were re-run** (`node tools/regress.mjs t73 node window scenarios`). The Node suites all passed. The window and scenario parts passed 23 of 23 on the second run; the first had stopped early because a launcher outran `regress.mjs`'s 400-second limit and left its app on the debug port (the limit is now 15 minutes). No older check had to be changed for this slice. No file under `src/main`, `src/shared` or `src/preload` changed in this slice, so nothing about a request or about what the main process accepts is different.
+10. **Slice 7.4 built and checked** (2 October 2026). The one rule for instructions (`checkInstructions`) and the prompt were written first and checked under Node (`verify-7-4.mjs`, 151 checks, the store ones in a normal folder and in the EFS-encrypted AppData); then the dialog and the button; then the window suite (`verify-7-4w.mjs` through `run74.mjs`, 84 checks), which seeds four conversation files before the launch (versions 1, 2, 3 and a damaged 3) to prove that reading never writes them. What the checks and the screenshots found: the dialog was taller than the default window, so Save sat below the fold (the body scrolls now and the buttons stay in view); the new button makes the header wrap to two rows at the default window width (reported, not redesigned, see D-027); and, in my own checks, a click on an early message of a long chat landing on nothing (scrolled out of view), a History row clicked by a title that was only a prefix, and a paste check that could not see a `maxlength` (below).
+11. **Requests compared with the code before the change:** the recorded requests (42, with the answers and the errors: 163,796 bytes) are byte for byte the same; three breakages of the prompt each changed the capture, so the comparison can fail.
+12. **Negative controls:** 26 breakages under Node (all caught; three had first ended with no summary because a check threw, so every section of the suite now turns a throw into a FAIL line) and 17 in the real window (all caught in the end: one was not caught the first time, because the check that a long paste is not cut set the box's text from a script and so never met a `maxlength`; it now pastes for real). `tools/specs74*`, each file proved restored by hash. A dry check of every control (`tools/check-specs.mjs`) found nine older ones whose target text had changed (four because of this slice); they are repaired.
+13. **The older suites were re-run** (`node tools/regress.mjs t74 node window scenarios`): 35 of 36 clean. The one that was not was 7.3's Copy, Regenerate and Edit suite (28 of 31): with the header two rows high, an early message of a six-message chat scrolls out of view and that suite's click on it missed; it scrolls the message into view now (53 of 53). Eight older checks that pinned the file at version 2 were moved up by one, and the Stage 4 header checks learned of the new button. `run43a` (32 of 32) and `verify-4-2` (88 of 90; the two that fail are the Markdown-era text comparisons, ported at 7.5) were run once because they were edited. The seeded-preferences launches, the other Stage 4 suites and the built app wait for 7.5.
+14. **Slice 7.5 ("7.5 go", 2 October 2026).** Before the run I brought the Stage 4 suites up to date with Markdown (7.2): they read a reply off the
+    page with `textContent` and compared it with the saved file, and since 7.2 a reply's paragraphs are elements and its trailing space is not
+    drawn. `tools/lib4.mjs` now reads a reply as a person sees it (`innerText`) and the saved side goes through one small function (`shown`).
+    Typecheck, lint and prettier were clean on the tree first.
+15. **The full regression** (`node tools/regress.mjs t75`, all six parts, 54 minutes): **78 runs, 75 clean the first time.** Clean: the 12 Node
+    suites, 11 of 14 window launches, the 16 seeded `preferences.json` launches, the 10 registry scenarios, all 7 Stage 4 launches against the dev
+    app and all 7 against the built app, and the 11 window suites against the built app. The Stage 4 suites and the built app had not been run since
+    Stage 7 began; both are clean.
+16. **Three launches died** (`verify-2-3`, its restart `verify-2-3b`, and `verify-2-4`). In two the test window reported itself hidden and the mouse
+    input stalled for 5 s per click, so a Settings dialog "did not open" in time (the restart failed because the first had not saved its key).
+    They passed when run again on their own (64, 5 and 71 checks). The cause of the hidden window is **not proven**: a read-only watcher of the
+    system's windows, started afterwards, saw no stall in 3 moments of the test window being behind the Claude window. The watcher is now in
+    `tools/watch-windows.ps1` (tried on real windows: in front, covered all, covered part, no window, and its stop rule), and `tools/README.md`
+    says how to use it next time.
+17. **A control on the Stage 4 ports:** with the old (unported) files put back, `verify-4-2` gave 88 of 90 and `verify-4-3d` 7 of 8, `verify-4-2b`
+    still passed (17 of 17): so exactly three checks had been stale, and the fourth change is a precaution. The ported files were then put back and
+    proved identical by hash. No file under `src/` or `registry/` changed in this slice (`git diff` against the 7.4 commit is empty for both).
+18. **Documents:** the stage's threat note and the list of what was not checked are D-028 in `docs/DECISIONS.md`; the roadmap marks Stage 7 done;
+    this log; `tools/README.md` (measured durations, the hidden-window note, the rule about reading a reply).
+19. **Slice 7.6 ("move New chat, History and Instructions out of the header", 2 October 2026).** I measured the header first, in the real window at
+    the default size: what each control needs (title 92 px, Task menu 114, model menu 142, or 200 with a task chosen, Effort 175, Settings 72, the
+    badges 75 and 80; the three buttons 79, 66 and 92), and the header's height: 80 px with a key saved, 47 px for Haiku (no Effort menu), 115 px with
+    "No API key". Then I built `ChatBar`, the header rule (one row from 720 px up, the menus giving way) and the stylesheet, and looked at the
+    screenshots of the default state and of the widest one.
+20. **Suites ported.** Stage 1's layout checks (the box "sits at the very bottom": now the bar does, with the box right above it), Stage 4's helpers
+    (`H.chatButtons`, `chatButton`, `clickChat`) and `verify-4-2` (the header keeps only Settings, the bar has the three), the other suites that
+    clicked New chat or History, and 7.4's Instructions suite. A quick run of the affected suites (the Stage 1 chain, all of Stage 4, 7.2, 7.3, 7.4)
+    passed before the new suite was written. The two negative-control specs that named the Instructions button's code were pointed at its new file
+    (found by the dry check, `tools/check-specs.mjs`).
+21. **A new suite**, `verify-7-6w.mjs` (46 checks), and one check in `verify-4-5` with the real "Not saved" badge showing. **12 negative controls**
+    (`tools/specs76w`): 11 were caught the first time. The one that was not, a bar that cannot wrap, showed that my check only looked for overflow: at
+    280 px the buttons just broke their labels over two lines and nothing overflowed. The check now also requires every label on one line, and that
+    control is caught too. After the batch `src/` and `registry/` were proved identical to before by hash (64 files).
+22. **An intermittent retry** was reported once by the harness in the new suite ("no request reached the mock within 8 s" for the first message, in 1
+    of 7 launches). It is unexplained: the other launches were clean, and a look at the page after sending showed nothing wrong. The retry message in
+    `tools/lib3.mjs` now also lists the open dialogs, the messages on screen and the selected model, so that the next time it says more.
+23. **The full regression** (`node tools/regress.mjs t76`, all six parts, 80 runs, about an hour): **79 clean the first time.** The one that was not
+    was the built-app launch of `verify-5-3`: it waited for the 20 s Test-key timeout notice and the notice did not come. The watcher had logged three
+    moments of keyboard or mouse input at that time; the same launch passed on its own re-run (66 of 66, no input logged). The cause is not proven;
+    `tools/README.md` now says not to touch the machine during a run. The new suite and all of Stage 4 passed on the dev app and on the built app,
+    and the hidden-window stall of 7.5 did not recur.
+24. **Merge and tag.** After the commit of this slice, with a clean working tree, the branch was merged into `main` with a merge commit (not a
+    fast-forward, so that there is a commit to tag), and that commit was tagged `stage-7-done`. Both are local: nothing was pushed.
+
+## Stage 7 - Choices I made where things were unclear ("pick the simplest option")
+
+- **Markdown by a reader of the app's own, no package** (the plan's answer). It is not CommonMark; expect differences with real replies (D-025).
+- **One Effort level per model, not per chat.** The simplest thing that matches the registry; a per-chat level is in IDEAS (D-024).
+- **Regenerate replaces and keeps nothing, and does not ask.** Edit asks only when more than the reply right after the message would go (D-026).
+- **Copy stays on while another reply arrives** (the plan said every button waits): it asks nothing of the model (D-026).
+- **The field is `instructions`, not `system`**, so that nothing suggests the page controls the system prompt (D-027).
+- **The saved chat is version 3 with no conversion of old files.** Old files are read as they are and rewritten only when the chat is next saved;
+  the price is that a build from before 7.4 cannot read a version 3 chat (D-027).
+- **The header (you decided, 2 October): the three buttons move out.** I put them in a slim row under the message box (not above it, not inside it,
+  not in a sidebar: that costs the least height and leaves the box alone), and made the header one row by construction, with the menus giving way from
+  720 px up, because taking the buttons out alone would still have left a rare wrap (a task chosen and both badges showing need about 870 px).
+- **The test harness was not changed for the hidden window.** The three launches were run again on their own, which is the documented way, and
+  what was seen is written down with the watcher to catch it next time.
+
+## Stage 7 - Things to know (not problems, but worth your attention)
+
+1. **No real call has been made by me, in any stage.** Everything in Stage 7 was checked against local fakes. The check that is still open is yours:
+   Settings, then a message at two Effort levels, a reply with a table and a code block, Regenerate, and the Instructions box. If a real model
+   answers differently from the fakes, that is information, not a failure of the checks; tell me which model and what you saw.
+2. **Nothing limits what you spend yet.** A higher Effort is billed as more output, Regenerate and Edit each send the whole chat again, and the
+   instructions add up to about 2,000 input tokens to every request. The only bounds are 16,000 tokens per reply and 600,000 characters per
+   request. D-028 lists what Stage 8's limit has to count.
+3. **A replaced reply is gone** (no versions, no undo), and **a chat saved by this version cannot be read by a build from before 7.4** (that build
+   leaves it alone; it does not damage it). Old chats still open here.
+4. **The header is one row at the default window width** (D-029). Below 720 px of page it wraps as before, and so does it at a page zoom of about
+   125 % or more (the 900 px window then has fewer than 720 CSS px). The Tab order is different now: the three chat buttons come last.
+5. **Typing a very long message (21 KB) stalls the page for about 2.5 s.** The box, not looked into.
+6. **A test window now and then goes "hidden"** (2 of 78 launches in 7.5, none of the 80 in 7.6), and a key press or a click during a run can close a
+   dialog a suite is waiting on (one launch in 7.6): the suite times out and the run shows BAD. Leave the machine alone during a run, and run that
+   launch again on its own (`tools/README.md` has the commands). The causes are unproven.
+7. **Haiku 4.5 may be retired from 15 October 2026** at the earliest (unchanged since Stage 6).
+8. **Stage 7 is merged into `main` and tagged, locally; nothing was pushed.** The repository has an `origin` (github.com/Mashiro0000/frontier-app),
+   and `origin/main` is still c85242e. `main` now holds the merge commit, which carries the tag `stage-7-done`; the branch `stage-7-chat-polish` is
+   kept. Pushing `main` and the tag is yours to do.
+9. **Everything in the earlier stages' "Things to know" still applies.**

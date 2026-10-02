@@ -23,6 +23,9 @@ export function readJsonRetry(path) {
   throw last
 }
 export const shaFile = (path) => createHash('sha256').update(readRetry(path)).digest('hex').slice(0, 16)
+/** What a person SEES of a saved message. A reply is drawn as Markdown since 7.2: its paragraphs are elements and a trailing space is gone
+ *  (the person's own message is shown as typed). `screen()` reads a reply as `innerText`; compare it with `shown(role, saved)`, never the raw file text. */
+export const shown = (role, content) => (role === 'assistant' ? content.trim() : content)
 
 export function h4(page, { userData, mockUrl }) {
   const H = helpers(page, { userData, mockUrl })
@@ -69,16 +72,20 @@ export function h4(page, { userData, mockUrl }) {
       }
       return null
     },
+    // The header holds only Settings among its buttons since 7.6 (D-029); New chat, History and Instructions are in the chat bar under the message box.
     headerButtons: () => ev(`[...document.querySelectorAll('.app-header .header-button')].map((b) => ({ text: b.textContent, disabled: b.disabled, title: b.title }))`),
     headerButton: async (text) => (await H4.headerButtons()).find((b) => b.text === text),
     clickHeader: (text) => page.click(`.header-button@${text}`),
-    /** The messages on screen: [{ role, text, note }] */
-    screen: () => ev(`[...document.querySelectorAll('.message')].map((m) => ({ role: m.classList.contains('message-user') ? 'user' : 'assistant', text: m.querySelector('.bubble')?.textContent ?? '', note: m.querySelector('.message-note')?.textContent ?? null }))`),
+    chatButtons: () => ev(`[...document.querySelectorAll('.chat-bar .chat-button')].map((b) => ({ text: b.textContent, disabled: b.disabled, title: b.title }))`),
+    chatButton: async (text) => (await H4.chatButtons()).find((b) => b.text === text),
+    clickChat: (text) => page.click(`.chat-button@${text}`),
+    /** The messages on screen: [{ role, text, note }]. A reply is read as a person sees it (innerText), the person's own message as typed (see `shown`). */
+    screen: () => ev(`[...document.querySelectorAll('.message')].map((m) => { const user = m.classList.contains('message-user'); const b = m.querySelector('.bubble'); return { role: user ? 'user' : 'assistant', text: b ? (user ? b.textContent : b.innerText) : '', note: m.querySelector('.message-note')?.textContent ?? null } })`),
     emptyHint: () => ev(`document.querySelector('.empty-state')?.innerText ?? null`),
     replyReady: () => ev(`!!document.querySelector('.composer-button[type=submit]')`),
     waitReady: (timeoutMs = 15000) => page.waitFor(`!!document.querySelector('.composer-button[type=submit]')`, { timeoutMs }),
     historyOpen: () => ev(`!!document.querySelector('dialog.history')?.open`),
-    openHistory: async () => { await H4.clickHeader('History'); await page.waitFor(`!!document.querySelector('dialog.history')?.open`); await sleep(120) },
+    openHistory: async () => { await H4.clickChat('History'); await page.waitFor(`!!document.querySelector('dialog.history')?.open`); await sleep(120) },
     closeHistory: async () => { await page.press('Escape'); await sleep(200) },
     rows: () => ev(`[...document.querySelectorAll('dialog.history .history-row')].map((r) => ({ title: r.querySelector('.history-title')?.textContent ?? null, meta: r.querySelector('.history-meta')?.textContent ?? null, current: r.querySelector('.history-open')?.getAttribute('aria-current') === 'true', asking: !!r.querySelector('.history-ask'), buttons: [...r.querySelectorAll('button')].map((b) => b.textContent), disabled: [...r.querySelectorAll('button')].every((b) => b.disabled) }))`),
     historyText: () => ev(`document.querySelector('dialog.history')?.innerText ?? ''`),

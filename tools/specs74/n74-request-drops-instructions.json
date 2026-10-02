@@ -1,0 +1,14 @@
+{
+  "label": "n74-request-drops-instructions",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "...(checkedInstructions.instructions === ''\n        ? {}\n        : { instructions: checkedInstructions.instructions })",
+      "to": "...{}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

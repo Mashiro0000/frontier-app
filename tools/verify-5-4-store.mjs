@@ -1,6 +1,6 @@
 // Slice 5.4 under plain Node (no window): the two fields that say who wrote a reply (D-021), in the validators and in the store.
 // What the page may save (strict), what is read from a file (forgiving, and a version 1 file upgraded as it is read, never rewritten),
-// and the file that is written (version 2). Every store check runs in a normal folder and in the EFS-encrypted %APPDATA% (D-010).
+// and the file that is written (version 2 when this suite was made; version 3 since 7.4, D-027). Every store check runs in a normal folder and in the EFS-encrypted %APPDATA% (D-010).
 // Run: node tools/verify-5-4-store.mjs
 import { REPO_URL } from './paths.mjs'
 import './ts-resolve.mjs'
@@ -88,7 +88,7 @@ for (const [name, value] of [['empty', ''], ['65 characters', 'a'.repeat(65)], [
   check('parseSavedFile: a version 1 file is accepted and upgraded', typeof parsed !== 'string' && fields(parsed.messages[1]) === '["anthropic",null]', JSON.stringify(parsed))
   const parsed2 = parseSavedFile(text(2, [u(), a({ provider: 'anthropic', model: SONNET })]), id)
   check('parseSavedFile: a version 2 file is accepted as written', typeof parsed2 !== 'string' && fields(parsed2.messages[1]) === '["anthropic","claude-sonnet-5-5"]')
-  for (const version of [0, 3, 4, 9, '1', '2', null, undefined, 1.5]) {
+  for (const version of [0, 4, 5, 9, '1', '2', '3', null, undefined, 1.5]) {
     check(`parseSavedFile: version ${JSON.stringify(version)} was made by another version and is refused`, parseSavedFile(text(version, [u(), a()]), id) === 'it was made by another version of the app')
   }
   check('parseSavedFile: the id inside must still match the name', typeof parseSavedFile(text(2, [u(), a()]), randomUUID()) === 'string')
@@ -107,8 +107,8 @@ for (const [folderName, makeDir] of [['a normal folder', () => fsp.mkdtemp(join(
   check(T('save works'), saved.ok)
   const raw = readFileSync(join(dir, `${id}.json`), 'utf8')
   const onDisk = JSON.parse(raw)
-  check(T('the file says version 2'), onDisk.version === 2 && raw.startsWith('{"version":2,'), raw.slice(0, 30))
-  check(T('the file\'s top-level fields are version, id, title, createdAt, updatedAt, messages, in that order'), keys(onDisk) === '["version","id","title","createdAt","updatedAt","messages"]', keys(onDisk))
+  check(T('the file says version 3 (D-027; it was version 2 from 5.4 to 7.3)'), onDisk.version === 3 && raw.startsWith('{"version":3,'), raw.slice(0, 30))
+  check(T('the file\'s top-level fields are version, id, title, createdAt, updatedAt, instructions, messages, in that order'), keys(onDisk) === '["version","id","title","createdAt","updatedAt","instructions","messages"]', keys(onDisk))
   check(T('each reply in the file has both fields, and the person\'s messages have neither'), onDisk.messages.every((m) => (m.role === 'assistant' ? 'provider' in m && 'model' in m : !('provider' in m) && !('model' in m))))
   check(T('the models are the ones saved (Opus, then Sonnet)'), onDisk.messages.filter((m) => m.role === 'assistant').map((m) => m.model).join() === `${OPUS},${SONNET}`)
   const loaded = await store.load(id)
@@ -129,16 +129,16 @@ for (const [folderName, makeDir] of [['a normal folder', () => fsp.mkdtemp(join(
   check(T('listing and loading it wrote nothing: same bytes, same modification time, no other file'), sha(join(dir, `${oldId}.json`)) === before.sha && statSync(join(dir, `${oldId}.json`)).mtimeMs === before.mtime && (await names(dir)).join() === [id + '.json', oldId + '.json'].sort().join(), JSON.stringify(await names(dir)))
   const next = await fresh.save({ id: oldId, messages: [...old.conversation.messages, u('a new question'), a({ provider: 'anthropic', model: OPUS }, 'a new answer')] })
   const upgraded = JSON.parse(readFileSync(join(dir, `${oldId}.json`), 'utf8'))
-  check(T('the next save of it writes version 2, with the old replies still "anthropic"/null and the new one named'), next.ok && upgraded.version === 2 && upgraded.messages.filter((m) => m.role === 'assistant').map(fields).join(';') === `["anthropic",null];["anthropic",null];["anthropic","${OPUS}"]`, upgraded.version + ' ' + upgraded.messages.map(fields).join(';'))
+  check(T('the next save of it writes version 3, with the old replies still "anthropic"/null and the new one named'), next.ok && upgraded.version === 3 && upgraded.messages.filter((m) => m.role === 'assistant').map(fields).join(';') === `["anthropic",null];["anthropic",null];["anthropic","${OPUS}"]`, upgraded.version + ' ' + upgraded.messages.map(fields).join(';'))
   check(T('...keeps its creation date, and nothing else is left in the folder'), upgraded.createdAt === 5000 && (await names(dir)).join() === [id + '.json', oldId + '.json'].sort().join())
 
-  // a version 3 file (made by a later build) is left alone and counted
+  // a version 4 file (made by a later build) is left alone and counted
   const futureId = randomUUID()
-  const futureText = JSON.stringify({ version: 3, id: futureId, title: 'later', createdAt: 1, updatedAt: 2, messages: [u('x'), a()] })
+  const futureText = JSON.stringify({ version: 4, id: futureId, title: 'later', createdAt: 1, updatedAt: 2, instructions: '', messages: [u('x'), a()] })
   await fsp.writeFile(join(dir, `${futureId}.json`), futureText)
   const future = createConversationStore(dir)
   const fl = await future.list()
-  check(T('a version 3 file is counted as unreadable, not listed, and left as it is'), fl.unreadable === 1 && !fl.conversations.some((c) => c.id === futureId) && readFileSync(join(dir, `${futureId}.json`), 'utf8') === futureText)
+  check(T('a version 4 file is counted as unreadable, not listed, and left as it is'), fl.unreadable === 1 && !fl.conversations.some((c) => c.id === futureId) && readFileSync(join(dir, `${futureId}.json`), 'utf8') === futureText)
 
   // a version 2 file with unusable fields is still a conversation
   const oddId = randomUUID()

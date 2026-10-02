@@ -1,0 +1,14 @@
+{
+  "label": "levels-not-sorted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/effort.ts",
+      "from": "return EFFORT_LEVELS.filter((level) => levels.includes(level))",
+      "to": "return [...levels]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n74-request-ignores-bad-instructions",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "if (!checkedInstructions.ok) return refuse(checkedInstructions.error)",
+      "to": "void 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

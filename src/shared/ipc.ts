@@ -3,7 +3,7 @@
 // only: this file is bundled into the preload, which runs sandboxed (see D-004).
 
 import type { Suggestion, TaskOption } from './rankings'
-import type { ProviderId } from './registry'
+import type { Effort, ProviderId } from './registry'
 
 /**
  * A model the person can choose, as the page sees it: what to show about it, and nothing about how
@@ -32,6 +32,20 @@ export interface ProviderStatus {
   hasKey: boolean
 }
 
+/**
+ * The effort setting of the model that answers, as the page may know it (D-024): the levels to choose from, the one the next
+ * reply will use, and the one the registry picks until the person chooses. It is a menu to show, not a request: the page is
+ * still told nothing about how a model is called, and a reply's effort is main's to decide (the chat request carries none).
+ */
+export interface EffortStatus {
+  /** The levels the model accepts, from the one that thinks least to the one that thinks most. Never empty. */
+  levels: Effort[]
+  /** What the next reply will ask for: the person's saved choice for this model, or else `default`. One of `levels`. */
+  selected: Effort
+  /** The registry's own pick, used until the person chooses. One of `levels`. */
+  default: Effort
+}
+
 /** What the page may learn about settings. The API keys themselves are never part of it. */
 export interface SettingsStatus {
   /** Every provider this version of the app can call, in the order to show them. */
@@ -53,12 +67,15 @@ export interface SettingsStatus {
    * saved. Never a choice: the app only shows it. Empty if the registry or the rankings could not be loaded.
    */
   suggestions: Suggestion[]
+  /** How hard the model that answers thinks (D-024). Null if that model takes no such setting (Haiku 4.5), or none is selected. */
+  effort: EffortStatus | null
 }
 
 export type SetKeyResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
 /** What "Test key" found out: how many models the provider lists for the key (a free call), or what went wrong. */
 export type TestKeyResult = { ok: true; modelCount: number } | { ok: false; error: string }
 export type SetModelResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
+export type SetEffortResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
 
 /** A message as the model is told about it: who wrote it, and the plain text. */
 export type WireRole = 'user' | 'assistant'
@@ -72,6 +89,12 @@ export interface ChatRequest {
   /** Chosen by the page. Every event about this reply carries it back. */
   streamId: string
   messages: WireMessage[]
+  /**
+   * The person's own instructions for this chat (D-027). Main adds them to the app's own rules AFTER them and never in place of them:
+   * this is not the system prompt, and the page cannot replace that. Absent when there are none. Main checks them again
+   * (`checkInstructions`): text, trimmed, at most `CHAT_LIMITS.maxInstructionsChars`, and left out when blank.
+   */
+  instructions?: string
 }
 
 /** What the main process reports while a reply is being produced. */
@@ -119,6 +142,8 @@ export interface ConversationToSave {
   /** Chosen by the page, and checked by main: a UUID in lower case, because it becomes a file name. */
   id: string
   messages: MessageToSave[]
+  /** The person's instructions for this chat (D-027), saved with it. Absent means none. Checked again by main, as for a request. */
+  instructions?: string
 }
 
 /** A saved conversation, as main hands it back to be put on screen. */
@@ -129,6 +154,8 @@ export interface SavedConversation {
   /** Milliseconds since 1970. */
   createdAt: number
   updatedAt: number
+  /** The person's instructions for this chat (D-027): '' for none, and for every chat saved before version 3 of the file. */
+  instructions: string
   messages: SavedMessage[]
 }
 
@@ -169,6 +196,11 @@ export interface FrontierApi {
     testApiKey(provider: ProviderId): Promise<TestKeyResult>
     /** Chooses which model answers. Main only accepts an id that is in the registry, and remembers it. */
     setModel(modelId: string): Promise<SetModelResult>
+    /**
+     * Chooses how hard ONE model thinks before it answers (D-024). Main accepts only a model on offer and a level that model's
+     * registry entry lists, and remembers the choice per model. The answer describes the model that answers now.
+     */
+    setEffort(modelId: string, level: string): Promise<SetEffortResult>
   }
   chat: {
     /** Starts a reply. It is answered by events (see `onEvent`), not by a return value. */
@@ -196,6 +228,7 @@ export const CHANNELS = {
   settingsClearApiKey: 'settings:clear-api-key',
   settingsTestApiKey: 'settings:test-api-key',
   settingsSetModel: 'settings:set-model',
+  settingsSetEffort: 'settings:set-effort',
   chatStart: 'chat:start',
   chatCancel: 'chat:cancel',
   chatEvent: 'chat:event',
@@ -212,7 +245,12 @@ export const CHANNELS = {
 export const CHAT_LIMITS = {
   maxMessages: 500,
   maxMessageChars: 200_000,
-  maxTotalChars: 600_000
+  maxTotalChars: 600_000,
+  /**
+   * The person's instructions for a chat (D-027) go out with EVERY request, so they are kept short: about 2,000 tokens. They do not count
+   * towards maxTotalChars. The same limit applies when they are saved and when they are read back, so what is written can always be read.
+   */
+  maxInstructionsChars: 8_000
 } as const
 
 /**

@@ -4,7 +4,7 @@
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
-import { h4 } from './lib4.mjs'
+import { h4, shown } from './lib4.mjs'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -25,7 +25,7 @@ await sleep(800)
 check('the previous launch left three conversation files', state.ids.length === 3 && H.convFiles().length === 3, JSON.stringify(H.files()))
 check('starting up changed no file: every one has the same content and modification time as when the last launch ended', state.ids.every((id, i) => H.sha(id) === state.hashes[i] && H.mtime(id) === state.mtimes[i]))
 check('...and no stray file appeared (no .tmp, no backup)', H.strays().length === 0, JSON.stringify(H.files()))
-check('the app starts on an empty new chat, not on the last conversation', (await H.screen()).length === 0 && /Type a message to start/.test(await H.emptyHint()) && (await H.headerButton('New chat')).disabled)
+check('the app starts on an empty new chat, not on the last conversation', (await H.screen()).length === 0 && /Type a message to start/.test(await H.emptyHint()) && (await H.chatButton('New chat')).disabled)
 const list = await ev(`window.api.history.list()`)
 check('list(): the same three conversations, newest first', list.conversations.length === 3 && list.unreadable === 0 && JSON.stringify(list.conversations.map((c) => c.id)) === JSON.stringify([...list.conversations].sort((a, b) => b.updatedAt - a.updatedAt).map((c) => c.id)) && state.ids.every((id) => list.conversations.some((c) => c.id === id)), JSON.stringify(list.conversations.map((c) => c.title)))
 check('...titles are the ones from before the restart', JSON.stringify(list.conversations.map((c) => c.title).sort()) === JSON.stringify([...state.titles].sort()), JSON.stringify(list.conversations.map((c) => c.title)))
@@ -41,7 +41,7 @@ await H.clickRow(target.title)
 await page.waitFor(`!document.querySelector('dialog.history')?.open`)
 await sleep(300)
 const screen = await H.screen()
-check('opening it shows exactly its saved messages', screen.length === saved.messages.length && screen.every((m, i) => m.role === saved.messages[i].role && m.text === saved.messages[i].content), JSON.stringify(screen.map((m) => m.text.slice(0, 20))))
+check('opening it shows exactly its saved messages', screen.length === saved.messages.length && screen.every((m, i) => m.role === saved.messages[i].role && m.text === shown(m.role, saved.messages[i].content)), JSON.stringify(screen.map((m) => m.text.slice(0, 20))))
 check('...and opening it, in a fresh process, changed nothing on disk', H.sha(target.id) === state.hashes[state.ids.indexOf(target.id)] && H.mtime(target.id) === state.mtimes[state.ids.indexOf(target.id)])
 await H.sendAndWait('after the restart')
 const cont = await H.waitConv(target.id, (c) => c.messages.length === saved.messages.length + 2 && c.messages.at(-1).status === 'done')

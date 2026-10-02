@@ -1,4 +1,4 @@
-import type { ModelEntry, ProviderId } from '../../shared/registry'
+import type { Effort, ModelEntry, ProviderId } from '../../shared/registry'
 import type { Credentials, NeutralMessage, StreamRequest } from './types'
 
 // The app's own rules for a reply (D-012, D-013), applied here, once, whichever provider answers. An adapter
@@ -17,15 +17,27 @@ const ASSISTANT_NAME: Record<ProviderId, string> = {
   openai: 'an AI assistant'
 }
 
-// The chat window shows plain text only (D-009), and models write Markdown by default, which would appear as stray
-// asterisks and backticks. Remove this once replies are rendered as Markdown.
-const PLAIN_TEXT_RULES =
-  'The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or ' +
-  'underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple ' +
-  'hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.'
+// The chat window renders Markdown (D-025; until Stage 7 it showed plain text and this said so, D-009). It draws a closed set of
+// elements and nothing else, so the model is told which ones, and what is not drawn.
+const MARKDOWN_RULES =
+  'The window renders Markdown, so you may use it where it helps: **bold** and *italic*, `inline code`, # headings for long ' +
+  'answers, bulleted and numbered lists, tables, > quotes, and fenced code blocks with the language named (```python). ' +
+  'Raw HTML, images and diagrams are not shown, so do not use them. A link is written [text](https://address); only https ' +
+  'addresses can be opened. Keep short answers plain: no headings or tables where a sentence will do.'
 
-export const systemPromptFor = (provider: ProviderId): string =>
-  `You are ${ASSISTANT_NAME[provider]}, chatting with someone in Frontier App, a desktop chat window. ${PLAIN_TEXT_RULES}`
+/** The line that says whose words come next. It is the only text the app adds around the person's instructions (D-027). */
+const INSTRUCTIONS_LEAD = 'The person has given these instructions for this chat:'
+
+/**
+ * The system prompt: the app's own rules, and then, if the person wrote any, their instructions for this chat (D-027). The instructions
+ * come AFTER the rules and never replace them: the page cannot set this prompt, only add to it. Nothing but white space counts as none,
+ * and then the prompt is exactly what it was before instructions existed, byte for byte (the golden requests check it).
+ */
+export const systemPromptFor = (provider: ProviderId, instructions?: string): string => {
+  const rules = `You are ${ASSISTANT_NAME[provider]}, chatting with someone in Frontier App, a desktop chat window. ${MARKDOWN_RULES}`
+  const own = instructions?.trim() ?? ''
+  return own === '' ? rules : `${rules}\n\n${INSTRUCTIONS_LEAD}\n\n${own}`
+}
 
 /**
  * Providers want the two sides to take turns. After a reply that failed with no text, the person's next message
@@ -45,10 +57,17 @@ export function mergeAdjacent(messages: readonly NeutralMessage[]): NeutralMessa
   return merged
 }
 
-/** Turns what the chat knows into what an adapter is given. */
+/**
+ * Turns what the chat knows into what an adapter is given. `effort` is what chat.ts decided for this reply (the person's saved
+ * choice, D-024); left out, it is the registry's own pick for the model, which is what every reply asked for before there was a
+ * choice. `null` is a decision too: this model takes none. `instructions` is the person's own text for this chat, already checked
+ * (D-027); left out, the system prompt is the app's rules alone.
+ */
 export function buildStreamRequest(input: {
   credentials: Credentials
   model: ModelEntry
+  effort?: Effort | null
+  instructions?: string
   messages: readonly NeutralMessage[]
   signal: AbortSignal
 }): StreamRequest {
@@ -56,7 +75,8 @@ export function buildStreamRequest(input: {
   return {
     credentials,
     model,
-    system: systemPromptFor(model.provider),
+    effort: input.effort === undefined ? model.effort : input.effort,
+    system: systemPromptFor(model.provider, input.instructions),
     messages: mergeAdjacent(messages),
     maxOutputTokens: Math.min(MAX_REPLY_TOKENS, model.maxOutputTokens),
     signal

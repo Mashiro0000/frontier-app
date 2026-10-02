@@ -1,0 +1,14 @@
+{
+  "label": "w74-count-untrimmed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/instructions/InstructionsDialog.tsx",
+      "from": "const text = checked.ok ? checked.instructions : draft.trim()",
+      "to": "const text = draft"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run74.mjs"
+  ],
+  "env": {}
+}

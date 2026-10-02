@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import type { TaskId } from '../../shared/rankings'
+import ChatBar from './chat/ChatBar'
 import ChatView from './chat/ChatView'
 import { ipcReply } from './chat/ipcReply'
 import { useChat } from './chat/useChat'
 import HistoryDialog from './history/HistoryDialog'
 import { useHistory } from './history/useHistory'
+import InstructionsDialog from './instructions/InstructionsDialog'
+import EffortPicker from './settings/EffortPicker'
 import { providerMissingKey } from './settings/format'
 import ModelPicker from './settings/ModelPicker'
 import SettingsDialog from './settings/SettingsDialog'
@@ -15,10 +18,11 @@ function App(): React.JSX.Element {
   const { status, loadError, setStatus } = useSettingsStatus()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [instructionsOpen, setInstructionsOpen] = useState(false)
   // What the person says they are doing. Only the model menu reads it, to mark the models named for it (D-023).
   // It is not saved: it is a hint for the next choice, not a setting.
   const [task, setTask] = useState<TaskId | null>(null)
-  // The chat is held here, not in ChatView, because the header needs to know when a reply is arriving:
+  // The chat is held here, not in ChatView, because the header and the chat bar need to know when a reply is arriving:
   // the model cannot be changed meanwhile, and no other chat can be opened or started.
   const chat = useChat(ipcReply)
   // Saves the conversation on screen as it goes, and keeps the list of saved ones (D-016, D-017).
@@ -31,36 +35,6 @@ function App(): React.JSX.Element {
       <header className="app-header">
         <h1 className="app-title">Frontier App</h1>
         <div className="app-header-actions">
-          <button
-            type="button"
-            className="header-button"
-            disabled={chat.isReplying || chat.messages.length === 0}
-            title={
-              chat.isReplying
-                ? 'A new chat can be started when the reply has finished.'
-                : chat.messages.length === 0
-                  ? 'This chat is empty.'
-                  : history.saveError
-                    ? 'Start a new chat. This one is not saved, so it would be lost.'
-                    : 'Start a new chat. This one stays saved in History.'
-            }
-            onClick={history.startNew}
-          >
-            New chat
-          </button>
-          <button
-            type="button"
-            className="header-button"
-            disabled={chat.isReplying}
-            title={
-              chat.isReplying
-                ? 'History can be opened when the reply has finished.'
-                : 'Open a saved chat, or delete one.'
-            }
-            onClick={() => setHistoryOpen(true)}
-          >
-            History
-          </button>
           <TaskPicker status={status} task={task} onChange={setTask} />
           <ModelPicker
             status={status}
@@ -68,6 +42,7 @@ function App(): React.JSX.Element {
             disabled={chat.isReplying}
             onStatusChange={setStatus}
           />
+          <EffortPicker status={status} disabled={chat.isReplying} onStatusChange={setStatus} />
           {history.saveError !== null && (
             <button
               type="button"
@@ -97,7 +72,23 @@ function App(): React.JSX.Element {
         conversationId={history.activeId}
         onOpenSettings={() => setSettingsOpen(true)}
       />
+      {/* New chat, History and Instructions live under the message box, not in the header, so the header stays one row (D-029). */}
+      <ChatBar
+        isReplying={chat.isReplying}
+        messageCount={chat.messages.length}
+        instructions={chat.instructions}
+        saveFailed={history.saveError !== null}
+        onNewChat={history.startNew}
+        onOpenHistory={() => setHistoryOpen(true)}
+        onOpenInstructions={() => setInstructionsOpen(true)}
+      />
       <HistoryDialog open={historyOpen} history={history} onClose={() => setHistoryOpen(false)} />
+      <InstructionsDialog
+        open={instructionsOpen}
+        instructions={chat.instructions}
+        onSave={chat.setInstructions}
+        onClose={() => setInstructionsOpen(false)}
+      />
       <SettingsDialog
         open={settingsOpen}
         status={status}

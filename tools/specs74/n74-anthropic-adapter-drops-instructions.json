@@ -1,0 +1,14 @@
+{
+  "label": "n74-anthropic-adapter-drops-instructions",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "system: request.system,",
+      "to": "system: request.system.split('\\n\\n')[0],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

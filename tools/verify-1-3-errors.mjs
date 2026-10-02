@@ -55,7 +55,8 @@ check('reply module was swapped for the test wrapper', patched)
 const ev = (expr) => page.evaluate(expr)
 const SEND_READY = `!!document.querySelector('.composer-button[type=submit]')`
 const lastAssistant = (expr) => ev(`(() => { const a = [...document.querySelectorAll('.message-assistant')].at(-1); return a ? (${expr}) : null })()`)
-const bubbleText = () => lastAssistant(`a.querySelector('.bubble')?.textContent ?? null`)
+// 7.2: the text a person sees (Markdown: paragraphs are elements, trailing spaces are not shown)
+const bubbleText = () => lastAssistant(`a.querySelector('.bubble')?.innerText ?? null`)
 const noteText = () => lastAssistant(`a.querySelector('.message-note')?.textContent ?? null`)
 const send = async (text) => {
   await ev(`(() => { const t = document.querySelector('.composer-input'); t.focus(); t.select() })()`)
@@ -80,7 +81,7 @@ check('chat works normally after an error (the failed message travels with the n
 // 2. fails mid-stream: partial text kept + error
 await send('/fail-mid')
 await page.waitFor(SEND_READY, { timeoutMs: 4000 })
-check('error mid-stream: partial text kept', (await bubbleText()) === 'partial ', JSON.stringify(await bubbleText()))
+check('error mid-stream: partial text kept', (await bubbleText()) === 'partial', JSON.stringify(await bubbleText()))
 check('error mid-stream: error note shown', (await noteText()) === 'Connection lost')
 
 // 3. provider throws something that is not an Error
@@ -95,19 +96,19 @@ check('empty reply: explained, not a blank gap', (await noteText()) === 'The rep
 
 // 5. provider throws AbortError when stopped -> that is a Stop, not an error
 await send('/abort-error')
-await page.waitFor(`document.querySelector('.message-assistant:last-child .bubble')?.textContent === 'before '`, { timeoutMs: 4000 })
+await page.waitFor(`document.querySelector('.message-assistant:last-child .bubble')?.innerText === 'before'`, { timeoutMs: 4000 })
 await page.click('.composer-button-stop')
 await page.waitFor(SEND_READY, { timeoutMs: 4000 })
 check('AbortError after Stop is shown as "Stopped", not as an error', (await noteText()) === 'Stopped' && (await lastAssistant(`!a.querySelector('.message-note-error')`)), JSON.stringify(await noteText()))
-check('AbortError after Stop keeps the partial text', (await bubbleText()) === 'before ')
+check('AbortError after Stop keeps the partial text', (await bubbleText()) === 'before')
 
 // 6. provider sends one more piece after Stop -> must be dropped
 await send('/late-piece')
-await page.waitFor(`document.querySelector('.message-assistant:last-child .bubble')?.textContent === 'first '`, { timeoutMs: 4000 })
+await page.waitFor(`document.querySelector('.message-assistant:last-child .bubble')?.innerText === 'first'`, { timeoutMs: 4000 })
 await page.click('.composer-button-stop')
 await page.waitFor(SEND_READY, { timeoutMs: 4000 })
 await sleep(300)
-check('a piece that arrives after Stop is ignored', (await bubbleText()) === 'first ', JSON.stringify(await bubbleText()))
+check('a piece that arrives after Stop is ignored', (await bubbleText()) === 'first', JSON.stringify(await bubbleText()))
 check('...and it is marked Stopped', (await noteText()) === 'Stopped')
 
 // 7. unmodified behaviour still flows through the wrapper

@@ -1,0 +1,14 @@
+{
+  "label": "n74-store-v3-instructions-optional",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "    if (checked === null || !checked.ok) return 'its instructions are not usable'\n    instructions = checked.instructions",
+      "to": "    instructions = checked !== null && checked.ok ? checked.instructions : ''"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

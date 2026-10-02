@@ -1,0 +1,14 @@
+{
+  "label": "effort-level-from-any-model",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "const match = model.capabilities.effortLevels.find((candidate) => candidate === level)",
+      "to": "const match = models.flatMap((m) => m.capabilities.effortLevels).find((candidate) => candidate === level)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

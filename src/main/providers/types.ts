@@ -1,4 +1,4 @@
-import type { ModelEntry, ProviderId } from '../../shared/registry'
+import type { Effort, ModelEntry, ProviderId } from '../../shared/registry'
 
 // The vocabulary of the provider layer (D-018): what the rest of the app says to any provider, and what any provider
 // says back. Nothing here is Anthropic's or OpenAI's. Each provider has one adapter (anthropic.ts, ...) that
@@ -6,7 +6,7 @@ import type { ModelEntry, ProviderId } from '../../shared/registry'
 // only these types. No Electron imports, so every adapter can be run and checked under plain Node.
 
 /**
- * One turn of a conversation, in no provider's format. Text only, because the chat shows plain text (D-009):
+ * One turn of a conversation, in no provider's format. Text only, because the chat shows text (a reply is Markdown, D-025):
  * a different kind of content (an image, a tool call) would be a new field here and a translation in each adapter.
  */
 export interface NeutralMessage {
@@ -30,8 +30,14 @@ export interface Credentials {
  */
 export interface StreamRequest {
   credentials: Credentials
-  /** The registry entry: which model to ask, and the settings it takes (effort, limits). */
+  /** The registry entry: which model to ask, and what it can do (its limits, the effort levels it takes). */
   model: ModelEntry
+  /**
+   * How hard to ask the model to think (D-024): the person's saved choice for this model, or else the registry's pick. Null
+   * for a model that takes no effort setting, and then nothing about effort is sent. An adapter sends THIS, never
+   * `model.effort`, which is only the registry's default.
+   */
+  effort: Effort | null
   system: string
   /** Ends with the person's latest message, and the two sides take turns (consecutive turns are already joined, D-013). */
   messages: NeutralMessage[]

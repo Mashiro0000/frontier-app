@@ -1,0 +1,14 @@
+{
+  "label": "link-inside-a-link",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "if (c === '[' && !inLink) {",
+      "to": "if (c === '[') {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

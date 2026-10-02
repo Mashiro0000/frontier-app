@@ -1,0 +1,14 @@
+{
+  "label": "edit-while-arriving",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/rewrite.ts",
+      "from": "  if (messages.at(-1)?.status === 'streaming') return null\n  return [...messages.slice(0, at)",
+      "to": "  return [...messages.slice(0, at)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-3.mjs"
+  ],
+  "env": {}
+}

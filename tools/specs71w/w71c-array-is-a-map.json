@@ -1,0 +1,31 @@
+{
+  "label": "w71c-array-is-a-map",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/effort.ts",
+      "from": "if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return saved",
+      "to": "if (typeof raw !== 'object' || raw === null) return saved"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "verify-7-1c.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s71seednc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "A:\\frontier-app\\tools\\.out\\seeds71\\eff-not-a-map.json",
+    "SEED_NAME": "eff-not-a-map",
+    "SEED_SHA": "03fe16460a5bc712",
+    "EXPECT_MODEL": "claude-sonnet-5-5",
+    "EXPECT_EFFORT": "medium",
+    "WARN_LEVEL": "",
+    "SAVED_MODEL": "claude-sonnet-5-5",
+    "KEYS_AFTER": "[\"claude-sonnet-5-5\"]",
+    "LOG_LABEL": "nc-eff-not-a-map"
+  }
+}

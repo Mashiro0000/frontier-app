@@ -1,0 +1,14 @@
+{
+  "label": "saved-level-not-checked-against-list",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/effort.ts",
+      "from": "  if (entry.capabilities.effortLevels.includes(chosen)) return { effort: chosen, unusable: null }",
+      "to": "  if (true) return { effort: chosen, unusable: null }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

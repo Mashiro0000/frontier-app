@@ -1,0 +1,14 @@
+{
+  "label": "w74-new-chat-keeps-instructions",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/useChat.ts",
+      "from": "setInstructionsState(nextInstructions)",
+      "to": "void nextInstructions"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run74.mjs"
+  ],
+  "env": {}
+}

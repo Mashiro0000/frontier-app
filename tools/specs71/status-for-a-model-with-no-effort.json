@@ -1,0 +1,14 @@
+{
+  "label": "status-for-a-model-with-no-effort",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/effort.ts",
+      "from": "entry.capabilities.effortLevels.length === 0 || entry.effort === null || effort === null",
+      "to": "false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

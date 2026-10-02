@@ -1,0 +1,14 @@
+{
+  "label": "n74-prompt-not-trimmed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "const own = instructions?.trim() ?? ''",
+      "to": "const own = instructions ?? ''"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

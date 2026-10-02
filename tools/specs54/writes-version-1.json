@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",
-      "from": "JSON.stringify({ version: 2, ...conversation })",
+      "from": "JSON.stringify({ version: 3, ...conversation })",
       "to": "JSON.stringify({ version: 1, ...conversation })"
     }
   ],

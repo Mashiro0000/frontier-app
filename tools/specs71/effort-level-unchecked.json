@@ -1,0 +1,14 @@
+{
+  "label": "effort-level-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "  if (!match) return { ok: false, error: 'That model does not take that effort level.' }",
+      "to": "  if (false) return { ok: false, error: 'That model does not take that effort level.' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-1.mjs"
+  ],
+  "env": {}
+}

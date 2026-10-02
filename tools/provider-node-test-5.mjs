@@ -50,7 +50,7 @@ check('mock saw no problems with the request', req.problems.length === 0, JSON.s
 check('x-api-key carries the key; no Authorization header', req.headers['x-api-key'] === fakeKey && req.headers['authorization'] === undefined)
 check('body: model, stream, system, effort, caching are as designed', req.body.model === 'claude-opus-5-5' && req.body.stream === true && typeof req.body.system === 'string' && req.body.output_config?.effort === 'medium' && req.body.cache_control?.type === 'ephemeral' && req.body.max_tokens === 16000, JSON.stringify({ ...req.body, messages: undefined, system: undefined }))
 check('body: no sampling parameters, no thinking parameter, no tools', !['temperature', 'top_p', 'top_k', 'thinking', 'tools', 'tool_choice'].some((k) => k in req.body))
-check('body: the system prompt says plain text, no Markdown', /plain text/.test(req.body.system) && /Markdown/.test(req.body.system))
+check('body: the system prompt says the window renders Markdown (D-025)', /renders Markdown/.test(req.body.system) && !/plain text/.test(req.body.system))
 
 // ---- ambient environment must not leak in ------------------------------------------------------------
 await reset()
@@ -165,7 +165,12 @@ for (const [name, messages] of [
   ['merged', [{ role: 'user', content: 'first, never answered' }, { role: 'user', content: 'second' }]]
 ]) {
   const { res, request } = await sendOne(name, messages)
-  check(`golden (${name}): the default model's request body is identical to Stage 2's, key order included`, JSON.stringify(request.body) === JSON.stringify(golden.bodies[name]), res.error ? String(res.error) : '')
+  // 7.2 (D-025) changed ONE thing in the request: the system prompt now says the window renders Markdown. Everything else must be what
+  // Stage 2 sent, key order included; the system prompt keeps its opening and is checked on its own.
+  const noSystem = (body) => JSON.stringify({ ...body, system: '(checked below)' })
+  check(`golden (${name}): the default model's request body is identical to Stage 2's except the system prompt, key order included`, noSystem(request.body) === noSystem(golden.bodies[name]), res.error ? String(res.error) : '')
+  const opening = 'You are Claude, chatting with someone in Frontier App, a desktop chat window. '
+  check(`golden (${name}): ...and the system prompt still opens as Stage 2's did, then says the window renders Markdown`, request.body.system.startsWith(opening) && golden.bodies[name].system.startsWith(opening) && /renders Markdown/.test(request.body.system) && !/plain text/.test(request.body.system))
 }
 async function sendOne(_name, messages) { return sentBody(messages) }
 
@@ -181,7 +186,7 @@ for (const model of parsedRegistry.registry.models.filter((m) => m.provider === 
   } else {
     check(`${model.id}: effort is written out as "${model.effort}" and nothing else is in output_config`, JSON.stringify(body.output_config) === JSON.stringify({ effort: model.effort }), JSON.stringify(body.output_config))
   }
-  check(`${model.id}: automatic caching, plain-text system prompt, streaming`, body.cache_control?.type === 'ephemeral' && body.stream === true && /plain text/.test(body.system))
+  check(`${model.id}: automatic caching, Markdown system prompt, streaming`, body.cache_control?.type === 'ephemeral' && body.stream === true && /renders Markdown/.test(body.system))
   check(`${model.id}: no thinking, sampling, tool or prefill settings`, !['thinking', 'temperature', 'top_p', 'top_k', 'tools', 'tool_choice'].some((k) => k in body) && body.messages.at(-1).role === 'user')
 }
 

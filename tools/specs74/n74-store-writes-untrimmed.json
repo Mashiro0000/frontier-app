@@ -1,0 +1,14 @@
+{
+  "label": "n74-store-writes-untrimmed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "instructions: checkedInstructions.instructions,",
+      "to": "instructions: input.instructions ?? '',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

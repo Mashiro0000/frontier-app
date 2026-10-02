@@ -1,0 +1,14 @@
+{
+  "label": "edit-allows-a-reply",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/rewrite.ts",
+      "from": "messages[at].role !== 'user' || edited",
+      "to": "edited"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-3.mjs"
+  ],
+  "env": {}
+}

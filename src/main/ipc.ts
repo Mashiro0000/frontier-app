@@ -6,11 +6,13 @@ import {
   type HistoryLoadResult,
   type HistoryRemoveResult,
   type HistorySaveResult,
+  type SetEffortResult,
   type SetKeyResult,
   type SetModelResult,
   type SettingsStatus,
   type TestKeyResult
 } from '../shared/ipc'
+import { effortStatusOf } from '../shared/effort'
 import { suggestionsFor, TASKS } from '../shared/rankings'
 import {
   PROVIDER_NAMES,
@@ -21,6 +23,7 @@ import {
 import {
   checkConversationId,
   checkConversationSave,
+  checkEffortChoice,
   checkKeySubmission,
   checkModelChoice,
   checkProvider
@@ -29,7 +32,7 @@ import { baseUrlOverride } from './baseUrl'
 import { registerChatIpc } from './chat'
 import { createConversationStore } from './conversationStore'
 import { canStoreKey, clearApiKey, readApiKey, saveApiKey } from './keyStore'
-import { chooseModel, currentModel, inOrder } from './models'
+import { chooseEffort, chooseModel, currentModel, inOrder } from './models'
 import { adapterFor } from './providers'
 import { describeFailure, timeoutError } from './providers/errors'
 import { getRankings, reportRankingsProblems } from './rankings'
@@ -63,7 +66,8 @@ async function currentStatus(): Promise<SettingsStatus> {
     suggestions:
       registry.ok && rankings.ok
         ? suggestionsFor(rankings.rankings, registry.registry.models, hasKey)
-        : []
+        : [],
+    effort: choice.ok ? effortStatusOf(choice.entry, choice.effort) : null
   }
 }
 
@@ -159,6 +163,30 @@ export function registerIpc(appUrl: string): () => Promise<void> {
           // Logged here only; the message could name a file path.
           console.error(
             'Saving the model choice failed:',
+            error instanceof Error ? error.message : error
+          )
+          return { ok: false, error: 'The choice could not be saved on this computer.' }
+        }
+        return { ok: true, status: await currentStatus() }
+      })
+    )
+  )
+
+  // How hard a model thinks (D-024): the same shape as the model choice, and the same queue, because both live in preferences.json.
+  // The model and the level are checked here against what the registry lists for that model, and again where they are saved.
+  ipcMain.handle(
+    CHANNELS.settingsSetEffort,
+    guarded((input: unknown): Promise<SetEffortResult> =>
+      inOrder(async () => {
+        const registry = getRegistry()
+        const check = checkEffortChoice(input, registry.ok ? registry.registry.models : [])
+        if (!check.ok) return check // never trust what the page sends: only a model on offer, and a level it takes, get through
+        try {
+          await chooseEffort(check.modelId, check.level)
+        } catch (error) {
+          // Logged here only; the message could name a file path.
+          console.error(
+            'Saving the effort choice failed:',
             error instanceof Error ? error.message : error
           )
           return { ok: false, error: 'The choice could not be saved on this computer.' }

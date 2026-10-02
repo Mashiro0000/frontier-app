@@ -1,0 +1,14 @@
+{
+  "label": "w74-typing-applies-at-once",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/instructions/InstructionsDialog.tsx",
+      "from": "onChange={(event) => setDraft(event.target.value)}",
+      "to": "onChange={(event) => {\n            setDraft(event.target.value)\n            onSave(event.target.value.trim())\n          }}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run74.mjs"
+  ],
+  "env": {}
+}

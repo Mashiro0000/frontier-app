@@ -1,0 +1,14 @@
+{
+  "label": "url-length-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "raw.length > LIMITS.maxLinkChars || ",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

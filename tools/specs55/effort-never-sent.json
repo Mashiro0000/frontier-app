@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/providers/openai.ts",
-      "from": "...(model.effort ? { reasoning: { effort: model.effort } } : {}),",
+      "from": "...(request.effort ? { reasoning: { effort: request.effort } } : {}),",
       "to": "...{},"
     }
   ],
