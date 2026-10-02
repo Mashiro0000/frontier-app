@@ -4,7 +4,7 @@
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
-import { h4 } from './lib4.mjs'
+import { h4, shown } from './lib4.mjs'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -41,7 +41,7 @@ await H.clickRow(target.title)
 await page.waitFor(`!document.querySelector('dialog.history')?.open`)
 await sleep(300)
 const screen = await H.screen()
-check('opening it shows exactly its saved messages', screen.length === saved.messages.length && screen.every((m, i) => m.role === saved.messages[i].role && m.text === saved.messages[i].content), JSON.stringify(screen.map((m) => m.text.slice(0, 20))))
+check('opening it shows exactly its saved messages', screen.length === saved.messages.length && screen.every((m, i) => m.role === saved.messages[i].role && m.text === shown(m.role, saved.messages[i].content)), JSON.stringify(screen.map((m) => m.text.slice(0, 20))))
 check('...and opening it, in a fresh process, changed nothing on disk', H.sha(target.id) === state.hashes[state.ids.indexOf(target.id)] && H.mtime(target.id) === state.mtimes[state.ids.indexOf(target.id)])
 await H.sendAndWait('after the restart')
 const cont = await H.waitConv(target.id, (c) => c.messages.length === saved.messages.length + 2 && c.messages.at(-1).status === 'done')

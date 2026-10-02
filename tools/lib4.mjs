@@ -23,6 +23,9 @@ export function readJsonRetry(path) {
   throw last
 }
 export const shaFile = (path) => createHash('sha256').update(readRetry(path)).digest('hex').slice(0, 16)
+/** What a person SEES of a saved message. A reply is drawn as Markdown since 7.2: its paragraphs are elements and a trailing space is gone
+ *  (the person's own message is shown as typed). `screen()` reads a reply as `innerText`; compare it with `shown(role, saved)`, never the raw file text. */
+export const shown = (role, content) => (role === 'assistant' ? content.trim() : content)
 
 export function h4(page, { userData, mockUrl }) {
   const H = helpers(page, { userData, mockUrl })
@@ -72,8 +75,8 @@ export function h4(page, { userData, mockUrl }) {
     headerButtons: () => ev(`[...document.querySelectorAll('.app-header .header-button')].map((b) => ({ text: b.textContent, disabled: b.disabled, title: b.title }))`),
     headerButton: async (text) => (await H4.headerButtons()).find((b) => b.text === text),
     clickHeader: (text) => page.click(`.header-button@${text}`),
-    /** The messages on screen: [{ role, text, note }] */
-    screen: () => ev(`[...document.querySelectorAll('.message')].map((m) => ({ role: m.classList.contains('message-user') ? 'user' : 'assistant', text: m.querySelector('.bubble')?.textContent ?? '', note: m.querySelector('.message-note')?.textContent ?? null }))`),
+    /** The messages on screen: [{ role, text, note }]. A reply is read as a person sees it (innerText), the person's own message as typed (see `shown`). */
+    screen: () => ev(`[...document.querySelectorAll('.message')].map((m) => { const user = m.classList.contains('message-user'); const b = m.querySelector('.bubble'); return { role: user ? 'user' : 'assistant', text: b ? (user ? b.textContent : b.innerText) : '', note: m.querySelector('.message-note')?.textContent ?? null } })`),
     emptyHint: () => ev(`document.querySelector('.empty-state')?.innerText ?? null`),
     replyReady: () => ev(`!!document.querySelector('.composer-button[type=submit]')`),
     waitReady: (timeoutMs = 15000) => page.waitFor(`!!document.querySelector('.composer-button[type=submit]')`, { timeoutMs }),

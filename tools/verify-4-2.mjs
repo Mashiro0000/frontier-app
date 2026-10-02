@@ -5,7 +5,7 @@
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
-import { h4, UUID_FILE } from './lib4.mjs'
+import { h4, shown, UUID_FILE } from './lib4.mjs'
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -54,7 +54,7 @@ await sleep(500) // a save copies the file over and THEN deletes its .tmp: look 
 check('after the first reply there is exactly one file, <uuid>.json, and no leftover temp file', H.convFiles().length === 1 && H.strays().length === 0, JSON.stringify(H.files()))
 check('it is the documented shape: version 3, id equal to the file name, title, dates, instructions (none), messages', first.conv.version === 3 && first.conv.instructions === '' && first.conv.id === first.id && first.conv.title === 'first question' && Number.isSafeInteger(first.conv.createdAt) && first.conv.updatedAt >= first.conv.createdAt, JSON.stringify(Object.keys(first.conv)))
 check('the messages are the ones on screen: the question and "Echo: first question", both done, the reply naming the model that answered (D-021)', JSON.stringify(first.conv.messages) === JSON.stringify([{ role: 'user', content: 'first question', status: 'done' }, { role: 'assistant', content: 'Echo: first question', status: 'done', provider: 'anthropic', model: 'claude-opus-5-5' }]), JSON.stringify(first.conv.messages))
-check('...and what is on screen equals what is saved', JSON.stringify((await H.screen()).map((m) => [m.role, m.text])) === JSON.stringify(first.conv.messages.map((m) => [m.role, m.content])))
+check('...and what is on screen equals what is saved', JSON.stringify((await H.screen()).map((m) => [m.role, m.text])) === JSON.stringify(first.conv.messages.map((m) => [m.role, shown(m.role, m.content)])))
 const FIRST = first.id
 const listB = await ev(`window.api.history.list()`)
 check('list(): one conversation with the same title and 2 messages', listB.conversations.length === 1 && listB.conversations[0].id === FIRST && listB.conversations[0].title === 'first question' && listB.conversations[0].messageCount === 2, JSON.stringify(listB.conversations))
@@ -94,7 +94,7 @@ await sleep(300)
 const afterStop = await H.waitConv(FIRST, (c) => c.messages.length === 4 && c.messages[3].status === 'stopped')
 const lastScreen = (await H.screen()).at(-1)
 check('Stop: the file ends with the partial reply and the status "stopped"', afterStop.messages.length === 4 && afterStop.messages[3].status === 'stopped' && afterStop.messages[3].content.startsWith('tick0 '), JSON.stringify(afterStop.messages[3]).slice(0, 100))
-check('...exactly the text that is on screen, which says "Stopped"', afterStop.messages[3].content === lastScreen.text && lastScreen.note === 'Stopped', JSON.stringify(lastScreen).slice(0, 100))
+check('...exactly the text that is on screen (a reply is drawn without its trailing space), which says "Stopped"', shown('assistant', afterStop.messages[3].content) === lastScreen.text && lastScreen.note === 'Stopped', JSON.stringify(lastScreen).slice(0, 100))
 check('...and no temp file is left', H.strays().length === 0, JSON.stringify(H.files()))
 
 // ===================== D. what the person sent is saved even if the reply never comes =====================
@@ -148,7 +148,7 @@ await page.waitFor(`!document.querySelector('dialog.history')?.open`)
 await sleep(300)
 const screenG = await H.screen()
 const wantG = H.readConv(FIRST).messages
-check('opening it closes the dialog and shows the whole conversation, in order', screenG.length === wantG.length && screenG.every((m, i) => m.role === wantG[i].role && m.text === wantG[i].content), JSON.stringify(screenG.map((m) => m.text.slice(0, 14))))
+check('opening it closes the dialog and shows the whole conversation, in order', screenG.length === wantG.length && screenG.every((m, i) => m.role === wantG[i].role && m.text === shown(m.role, wantG[i].content)), JSON.stringify(screenG.map((m) => m.text.slice(0, 14))))
 const wantNotes = wantG.map((m) => (m.status === 'stopped' ? 'Stopped' : m.status === 'error' ? m.error : m.status === 'done' && m.content === '' ? 'The reply was empty.' : null))
 check('...with exactly the notes the saved statuses call for ("Stopped" for stopped, the saved error text for failed ones)', JSON.stringify(screenG.map((m) => m.note)) === JSON.stringify(wantNotes) && wantNotes.filter((n) => n === 'Stopped').length >= 2 && wantNotes.filter((n) => n && n !== 'Stopped').length >= 2, JSON.stringify(wantNotes))
 check('...and opening wrote nothing (the file is identical, same modification time)', H.sha(FIRST) === beforeNew.sha && H.mtime(FIRST) === beforeNew.mtime && H.convFiles().length === 2)

@@ -4,7 +4,7 @@
 // Needs INSPECT_PORT, MOCK_PORT, USER_DATA_DIR, APP_LOG.
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
-import { h4, mainInspector } from './lib4.mjs'
+import { h4, mainInspector, shown } from './lib4.mjs'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -25,7 +25,7 @@ await H.clickRow('before the close')
 await page.waitFor(`!document.querySelector('dialog.history')?.open`)
 await sleep(300)
 const screen = await H.screen()
-check('opening it shows the first exchange, the question, and the partial reply with the note "Stopped"', screen.length === 4 && screen[3].text === st.saved && screen[3].note === 'Stopped' && screen[2].text === '[[mock:slow]] interrupted by closing', JSON.stringify(screen.map((m) => [m.role, m.text.slice(0, 16), m.note])))
+check('opening it shows the first exchange, the question, and the partial reply with the note "Stopped"', screen.length === 4 && screen[3].text === shown('assistant', st.saved) && screen[3].note === 'Stopped' && screen[2].text === '[[mock:slow]] interrupted by closing', JSON.stringify(screen.map((m) => [m.role, m.text.slice(0, 16), m.note])))
 await page.screenshot(`${process.argv[2]}/4-3d-interrupted.png`)
 check('the composer is ready (the interrupted reply is not still "streaming")', await H.replyReady() && !(await H.headerButton('New chat')).disabled && !(await H.headerButton('History')).disabled)
 await H.sendAndWait('carry on after the crash')

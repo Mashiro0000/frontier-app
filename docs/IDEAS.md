@@ -35,7 +35,7 @@
 - Export or copy a saved conversation as Markdown (the idea above, now with something to export from)
 - "Delete all", and an option to clear conversations older than some age
 - Encrypt saved conversations with the operating system's secure storage (D-016 says what it would cost)
-- Run `tools/regress.mjs` automatically (a pre-release script or CI); today it is run by hand, about 40 minutes
+- Run `tools/regress.mjs` automatically (a pre-release script or CI); today it is run by hand, about 55 minutes
 - Gemini as the third provider (an adapter and a registry entry; the provider tables will not compile without them, D-018)
 - Windows Credential Manager instead of safeStorage files for the keys (needs a native keyring package; D-020)
 - Chat Completions as a fallback for OpenAI if the Responses API misbehaves (D-022)

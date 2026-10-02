@@ -988,3 +988,106 @@ every message of that chat: who to be, how long to write, what to leave out. It 
 **Not checked:** (1) a real model given instructions, and how it weighs them against the rules; (2) a screen reader, and the layout where there is no pointer (`hover: none`); (3) window sizes other than the default (900 px wide), 420 and 320; (4) the Stage 4 history suites (all but the two above), the seeded `preferences.json` launches and the built app, which run at the end of Stage 7; (5) the guard in `useChat.setInstructions`, which the disabled button makes unreachable from outside; (6) Windows only.
 
 Status: accepted (Stage 7.4). Revisit: default instructions for every new chat (a setting); asking before Escape throws a long draft away; a header that does not wrap at the default window size; a mark on a chat that came from outside; counting the instructions against Stage 8's limit.
+
+## D-028 - Stage 7 as a whole: what it added to the app's surface, the threat note across its four slices, and what it hands to Stage 8
+
+Stage 7 (D-024 to D-027) made the chat nicer to use: an Effort menu, replies drawn as Markdown, Copy / Regenerate / Edit, and instructions of
+your own for each chat. Every slice has its own threat note. This is the stage's: the surface the four slices added taken together, the risks
+that only exist where they meet, what the full regression of 7.5 showed, and what is left for later stages. It changes no code.
+
+**What the stage added, in one list.**
+
+- **Across the bridge:** one new function, `settings.setEffort` (channel `settings:set-effort`), checked by main twice (D-024); and one optional
+  field, `instructions`, on two calls that already existed (`chat:start`, `history:save`), checked by main (D-027). Nothing else in the preload
+  changed and no other message exists.
+- **On disk:** `preferences.json` gained `efforts` (it is still version 1). A saved chat is now **version 3** (it holds the instructions);
+  versions 1 and 2 are still read and are not touched by reading. The step is one way: a build from before 7.4 cannot read a version 3 chat.
+- **Two small new powers of the page, both approved in the plan:** it writes the clipboard on a click (one function, `useCopy`), and it can ask
+  for an https address to be opened in the browser after a click and a confirmation. Main now lets through only https without a user name or
+  password (before, plain http too), which is narrower, not wider.
+- **Two new ways to ask the model again** (Regenerate, Edit), both from a click. They use the ordinary `chat:start`; there is no new message.
+- **One new thing the person writes that goes out with every request:** the chat's instructions, at most 8,000 characters.
+- **Not added:** no package (`package.json` and the lock file are unchanged), nothing in `registry/`, no access to files, commands, the network,
+  a camera or a microphone. The window's own guards (sandbox, context isolation, the navigation lock, the window-open handler, the
+  Content-Security-Policy) were not touched: `src/main/index.ts` and `index.html` are the same as at Stage 6, and the one change in
+  `security.ts` is the https-only rule above.
+
+**Threat note across the slices (what could go wrong where they meet, what stops it, what is left).**
+
+- _A model's words drawn as Markdown (7.2), and the person's instructions that may tell the model to drop the app's rules (7.4)._ Together they
+  allow a model that writes raw HTML or script. The reader has no way to turn text into HTML, so it appears as text (D-025: 22 attack texts and
+  3,000 random ones read back against a list of elements and attributes, and the same attacks in the real window). At the end of this stage a
+  search of `src` for `dangerouslySetInnerHTML`, `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, `eval`, `new Function` and
+  `srcdoc` found nothing but one comment that says there is none. Nothing safety-relevant depends on the prompt: the limits are in the code.
+- _Money, three ways at once (7.1, 7.3, 7.4)._ A higher Effort is billed as more output; Regenerate and Edit each send the whole chat again;
+  the instructions add up to about 2,000 input tokens to every request. A person at "Max", with long instructions, in a long chat, who presses
+  Regenerate again and again pays for all three each time. The tooltips and the dialog say that it is billed, and nothing repeats without a
+  click (safety rule 4). **Left: no limit exists until Stage 8**, and that stage has to count, per request: the output including the thinking
+  (which depends on the level), every request that Regenerate and Edit make, the instructions inside each request's input, and the whole
+  conversation that goes out again each time. The only bounds until then are the ceiling of 16,000 tokens a reply (D-024) and the limit of
+  600,000 characters of conversation in one request (the instructions come on top of that, up to 8,000).
+- _What leaves the PC (rule 1)._ Nothing new leaves it unseen. A request holds the chat that is on the screen (D-013 says how it is tidied),
+  the app's own rules, and the instructions as written in a box that shows all of them; changing the model sends the same chat to another
+  company, which the Instructions dialog says. There is no telemetry, and nothing loads by itself: a reply cannot make an `img`, `a` with an
+  address, `script`, `style` or a frame, and the Content-Security-Policy is unchanged.
+- _The saved files (rule 9)._ The instructions are plain text next to the messages (D-016: chats are not encrypted). A chat file brought in from
+  elsewhere carries instructions that go out with that chat's next message; the "on" mark shows them, and nothing marks a chat as coming from
+  outside. Version 3 cannot be taken back.
+- _Losing something._ Regenerate and Edit replace without an undo, turning the instructions off deletes the text, and Escape drops a draft.
+  Each is in its slice's note and in IDEAS. **Left:** no versions and no question before Escape.
+- _What the app's own page can still do._ Choose any effort level a model takes, call `window.open` with an https address without the dialog,
+  and write the clipboard. That is what its own code does: the checks stand against a hostile reply, a hostile file and a hostile caller of the
+  bridge, not against the app's own code. **Left:** Electron grants every permission request when no handler is set, and this app sets none; a
+  deny-by-default handler is in IDEAS and is worth having before any stage that asks for a real permission (the microphone, Stage 15).
+- _Rules 2 and 4 (untrusted content is data; no chaining)._ Nothing in this stage acts on what a model says. A reply is drawn and never read for
+  instructions; there are no tools, no loops, and no request that a click or a key press of the person did not start.
+
+**The roadmap's Stage 7 safety line, claim by claim.**
+
+- _A renderer that cannot make HTML, and no raw HTML._ A closed list of elements and attributes built from a tree of fourteen known kinds
+  (D-025); the Node attack suites; the window attack suites; the search of `src` above.
+- _Links are text and open in the browser only after a click on an https address._ `[text](https://...)` only; a button, not an address; a
+  dialog with the whole address and host; main passes only https without credentials (D-025; the window suite replaces `shell.openExternal`
+  with a recorder, so the real browser was never opened by a check).
+- _No image or resource loads by itself._ Nothing a reply makes has a `src` or an address; the policy is unchanged; no request for anything
+  outside the app was seen while the attack texts were on screen (D-025).
+- _Nothing can navigate or script the app window._ The navigation lock and the window-open handler were not touched; the 7.2 suite clicked
+  links and called `window.open` from the page and the window did not navigate; calls from an `about:blank` page are refused (re-run by the
+  older suites).
+- _Higher effort is billed as output, the control says so, and Stage 8's limit must count it._ The tooltip says it (D-024); what the limit has
+  to count is in the money paragraph above.
+
+**What the full regression of 7.5 showed (2 October 2026).** `node tools/regress.mjs t75`, all six parts, 54 minutes, on the tree of the 7.4
+commit with only the test tools changed (`src/` and `registry/` are identical to the commit, checked afterwards with `git diff`): 78 runs, 75
+clean the first time and the other three clean when run again on their own. Clean the first time: the 12 plain-Node suites; 11 of the 14 window
+launches (Stages 1, 3, 5, 6 and 7.1 to 7.4, with their restarts); the 16 seeded `preferences.json` launches; the 10 registry scenarios (each put
+`registry/models.json` back, proved by hash); all 7 Stage 4 history launches against the dev app (damaged folders, closing the window in the
+middle of a reply, 30 saves queued at quit, injected disk faults) and again all 7 against the built app; and the 11 window suites against the
+built app (`electron-vite build`, then the same suites on the compiled bundle). The three that failed were `verify-2-3`, its restart
+`verify-2-3b` and `verify-2-4`: in `verify-2-3` and `verify-2-4` the test window reported itself hidden (`visibilityState: "hidden"`) and the
+debug protocol's mouse input was acknowledged only after 5 s, so a click on Settings did not open its dialog in time; the restart failed only
+because the first never saved its key. They passed on their own re-run (64, 5 and 71 checks). This is the stall described in `tools/README.md`,
+a fault of the test window and not of the app, but **its cause is still not proven**: a read-only watcher of the operating system's windows
+(started after the incident; it is `tools/watch-windows.ps1`) saw 30 moments of input and three times the test window behind the Claude window,
+and no stall in any of them.
+**Stage 4 had gone stale, and was ported.** Its suites had not been run since Stage 7 began. Three checks failed at the 7.4 commit for the
+same reason, Markdown (7.2): they compared a reply as read from the page with the text saved in the file, and a reply's paragraphs are
+elements now and its trailing space is not drawn (two in `verify-4-2`, one in `verify-4-3d`; shown by running the old files again, which gave
+`verify-4-2` 88 of 90 and `verify-4-3d` 7 of 8). `tools/lib4.mjs` now reads a reply as a person sees it, and the saved side goes through one
+small function (`shown`); the same suites pass with it (`verify-4-2` 90 of 90, `verify-4-3d` 8 of 8, against the dev app and the built one). A
+fourth comparison (`verify-4-2b`, 17 of 17) was changed as a precaution and had passed before too. The app was not at fault in any of the three.
+
+**Not checked, for the stage as a whole.** (1) **A real call to either provider**: none has been made by me in any stage. How a real API
+answers at each effort level, how a real model draws on the Markdown rules and weighs the instructions against them, what real replies look
+like to the reader, and what a regenerated reply costs are all unknown; the mock is my reading of the documentation. The first real use is yours
+(Settings, then a message). (2) The OS-drawn list of a `<select>` (it cannot be seen or clicked through the debug protocol: levels were chosen
+by keyboard and by calling what the menu calls). (3) A screen reader, and the layout where there is no pointer (`hover: none`). (4) Window
+sizes other than the default 900 px, 420 and 320. (5) Any system other than Windows. (6) The reader against CommonMark's own test suite. (7)
+Typing a message of 21 KB stalls the page for about 2.5 s (the box, not investigated). (8) Two guards that the disabled buttons make unreachable
+from outside (`useChat.setInstructions` and the second-request refusal in `useChat`). (9) Two copies of the app at once overwriting each
+other's `preferences.json`. (10) The packaged installer: the built-app runs use `electron-vite preview` on the compiled bundle, not a
+program made by `electron-builder` (Stage 18); `app.isPackaged` is false in them, which is also why the mock's address is honoured there.
+
+Status: accepted (Stage 7 closed). Revisit: Stage 8's counting of everything in the money paragraph; the first real replies (what the reader
+gets wrong, what each effort level really costs); versions of a replaced reply; a deny-by-default permission handler; a header that does not
+wrap at the default window width (the owner's decision is open, see IDEAS).
