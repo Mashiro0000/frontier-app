@@ -1,0 +1,14 @@
+{
+  "label": "language-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "return /^[A-Za-z0-9_+#.-]{1,30}$/.test(word) ? word : null",
+      "to": "return word"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

@@ -97,8 +97,9 @@ is nothing left to default to. What history to send is D-013.
 React escapes text, so pasted HTML cannot run; checked with an `<img onerror>` message. Markdown or
 HTML from a model is a bigger risk. The window is now sandboxed (D-004), which limits what a mistake
 can reach but does not replace sanitising. Claude writes Markdown by default, so the system prompt
-(D-012) asks it for plain text; remove that once Markdown is rendered. Status: accepted. Revisit: before
-adding Markdown, use a sanitising renderer.
+(D-012) asks it for plain text; remove that once Markdown is rendered. Status: **superseded by D-025**
+(Stage 7.2): a reply is now drawn as Markdown by a reader of the app's own that can only make a fixed set of
+elements, and the system prompt says so. What the person types is still shown as plain text, as typed.
 
 ## D-010 - The API key is stored encrypted by the operating system and never leaves main
 
@@ -752,3 +753,104 @@ end of Stage 7. (5) Any system other than Windows.
 
 Status: accepted (Stage 7.1). Revisit: the first real call (the levels each model really accepts, and what each costs); Stage 8's spending
 limit counting the thinking; a per-chat level, if one level per model proves too coarse; raising the 16,000 ceiling for the highest levels.
+
+## D-025 - Replies are drawn as Markdown by a reader of the app's own that can only make a fixed set of elements; a link asks before it opens
+
+Until now a reply was shown as plain text, and the system prompt asked the model for plain text, because Markdown or HTML from a model needs a
+renderer that cannot be talked into running anything (D-009). Stage 7.2 draws replies as Markdown. D-009 is superseded.
+
+- **No package, no HTML.** The usual route (`marked` or `markdown-it` for HTML, then a sanitiser such as DOMPurify, then
+  `dangerouslySetInnerHTML`) puts a string of HTML between a model and the window, and the sanitiser is then the only thing in the way.
+  `react-markdown` avoids the string but pulls in dozens of packages (the `unified` tree). This app has no reader that ever makes HTML:
+  `parse.ts` turns text into a tree of fourteen known kinds (seven inline, seven block), and `Markdown.tsx` turns that tree into React
+  elements. The reader is about 740 lines and the rest about 310, all the app's own code, with no dependency and nothing to audit but
+  itself. The price is that it is not CommonMark, and it has the bugs of a new reader (see "not checked").
+- **What it reads:** paragraphs (a line break the model wrote is kept), headings, **bold**, _italic_, ~~strike-through~~, `inline code`, fenced
+  code (three backticks or three tildes, with a language label), code indented by four spaces (how replies were written under the old plain-text
+  rules, so old chats still show their code as code), block quotes, bulleted and numbered lists (nested), tables with alignment, rules, and
+  links. **What it does not read, and shows as the text it was:** raw HTML, images (`![alt](url)` appears as written and nothing is loaded),
+  reference links, bare web addresses (not clickable), footnotes, task lists, setext headings, entities (`&amp;` stays), maths.
+- **A closed set of elements.** The page makes only `p`, `h1` to `h6`, `strong`, `em`, `del`, `code`, `pre`, `blockquote`, `ul`, `ol`, `li`,
+  `table`, `thead`, `tbody`, `tr`, `th`, `td`, `hr`, `br`, `div`, `span` and `button`, with the attributes `class` (a fixed list), `title` (only an
+  https address), `type="button"` and `start` (digits). No `style`, no `href`, no `src`, no event handler of a reply's making, and no
+  `dangerouslySetInnerHTML` anywhere. What a reply says goes in as text, which React escapes.
+- **Links.** Only `[text](https://...)`. The address must be https, have no user name or password, no space, control character, backslash,
+  angle bracket or quote, be at most 2000 characters, and be accepted by `new URL`; what is shown and opened is the address as `new URL` writes
+  it (a host with accents appears in its `xn--` form). Anything else stays visible text. A link is a `button` with no `href`: a click opens a
+  dialog with the whole address, the host in words ("It goes to example.org") and **Cancel** (which has the focus; so has Escape) or **Open**.
+  Only Open calls `window.open`, which the main process passes to the operating system only for an https address without credentials (it
+  also passed plain http before; `isSafeExternalUrl` is narrower now). A middle click does nothing. The point of the dialog is a link whose
+  words say one address and whose target is another. **Left:** a script in the app's own page can still call `window.open('https://...')`
+  without the dialog; that is the app's own code, which the dialog was never meant to stand against.
+- **Limits, so that a hostile or broken text costs bounded work.** Quotes and lists nest to 6; emphasis and links to 6; a table has at most 20
+  columns and 200 rows (the rest stays text); a link's text is at most 1000 and its address 2000 characters; and each piece of text gets a work
+  budget of 40 steps per character (and 5000 over), after which the rest of that piece is plain text. The scan limits on links and the budget
+  overlap: either one alone is enough against a slow text, as the two layers in D-015.
+- **Streaming.** A reply is cut into pieces at a blank line that is followed by an unindented line, never inside a code fence. A finished piece
+  is read once (the page remembers it by its text); only the piece still growing is read again with each word. A list whose items are
+  separated by blank lines therefore becomes one list per item, each keeping its number; it looks the same.
+- **The person's own messages stay as typed.** They are not read as Markdown. What is sent to the model, and what is saved, is the Markdown
+  source as written, never HTML.
+- **The system prompt** now says the window renders Markdown, names what it draws, says that HTML, images and diagrams are not shown and that
+  only https links open, and asks short answers to stay plain. That is a request, not a safety measure: the reader above is what keeps a
+  model from doing anything. The requests are otherwise unchanged (see "what was checked").
+- **Copy on a code block** writes exactly the characters of the block to the clipboard when it is clicked (`navigator.clipboard.writeText`),
+  and says "Copied". Nothing in the app reads the clipboard, and nothing writes it except that click. It is a small new power, with no change
+  in the main process. A tab stays a tab inside a fenced block (Go, Makefiles). Windows itself turns line ends into CR LF on the clipboard.
+
+**Threat note (what could go wrong, what stops it, what is left).**
+
+- _A reply that tries to be HTML or script_ (`<script>`, `<img onerror>`, `<iframe>`, `<style>`, handlers, `javascript:` and `data:` links, an
+  attribute broken out of with a quote, text arriving in halves so that `<scr` and `ipt>` meet): there is no HTML reader to hand it to; the
+  markup is text. Checked in the real window with such texts (nothing ran, no forbidden element, nothing loaded, the page still showing), also
+  while streaming two characters at a time, and in Node by rendering 22 attack texts and 3000 random ones and reading everything React wrote
+  back against a list of tags, attributes and classes.
+- _A link that lies_ (words say one address, target is another; a user name in the address to hide the host; accents that imitate a host): the
+  dialog shows the real address and host, the user-name form is not offered, and the `xn--` form is shown honestly. **Left:** nothing stops a
+  person from pressing Open on a bad address. The app does not judge addresses, and does not stop https pages that are themselves harmful.
+- _Something loading by itself_ (an image, a font, a frame): nothing a reply makes has a `src` or an address of its own, and the page's
+  Content-Security-Policy (no remote sources) was left as it was. No request for anything outside the app was seen while the attack texts
+  were on screen.
+- _A text built to make the reader slow_ (a hundred thousand brackets, backticks or stars, quotes nested 50,000 deep, a 64 KB line, a table
+  of 5000 columns): 29 such texts, each read in under 1.5 s without an error, and 6000 random ones, none slower than 50 ms. **Left:** a text of
+  64 KB still takes some milliseconds, not none; the 16,000-token ceiling of a reply (D-024) is what keeps it from being larger.
+- _The clipboard._ **Left:** Electron grants every permission request when no handler is set, and this app sets none; the page asks for
+  nothing but the clipboard write, and the only code in the page is the app's own. A deny-by-default handler is in IDEAS.
+- _A model that ignores the system prompt and writes something the reader does not know:_ shown as text. Nothing breaks.
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only. Under plain Node (`verify-7-2.mjs`, 193 checks): the
+reader (inline, links with 23 kinds of refused address, blocks, tables, lists, the pieces of a growing text), 29 hostile texts and 6000
+random ones, `isSafeExternalUrl` (17 addresses), and the elements the page makes (22 attack texts, 3000 random texts, the allowed list). In
+the real window (`run72.mjs`, 53 checks): every kind of Markdown drawn; the person's own message untouched; what is sent back to the model
+being the source; attacks; a link asking first and only Open reaching a recorder in place of `shell.openExternal` (the real browser is never
+opened by the suite), by Cancel, Escape, Enter on Cancel, Open, a middle click, and a link whose words are another address; what
+`window.open` from the page can reach; Copy by mouse and by keyboard with exact characters; streaming by words and by two characters at a
+time (the finished page is the same DOM, and no snapshot on the way had a forbidden element); a 21 KB reply with 150 headings; old-style
+replies; the saved chat holding the source and being drawn again from History; empty and half-failed replies; 420 and 320 px wide. Negative controls: of 25 deliberate breakages of the reader, the elements, the link rule
+and the system prompt under Node, 22 were caught; the 3 that were not are layers that overlap by design, so removing one alone changes
+nothing (the depth cap, because the work budget stops a deep text first; the link-scan limits, because the budget bounds them too; the
+http spelling in the address check, because `new URL` refuses the scheme as well). All 8 breakages of the real window were caught (a link
+that opens without asking, Copy adding a character, the person's own text rendered, the bubble not capped, lines not kept, main letting http
+through, the old prompt, text written as HTML); every file was put back and proved identical by hash. The last of these also showed what the
+page's Content-Security-Policy does and does not add behind the reader: with text written as HTML, the policy refused the inline handler of an
+injected `<img>` (`script-src 'self'`, in the app's log, so nothing ran), but it did not stop an injected `<style>` from hiding the page
+(`style-src` allows inline styles, which the app's own React code needs). So the reader is the wall for markup, and the policy is only a
+second wall for scripts.
+The older suites were re-run on this tree (`node tools/regress.mjs t72 node window scenarios`, 2 October 2026): 32 runs, 28 clean the first
+time. The four that were not were checks this slice made stale, not faults: the Stage 2 golden request holds the old system prompt; the
+Stage 1 chain, `verify-2-4` and `verify-5-5` read an assistant bubble's text, where trailing spaces are no longer shown, paragraphs are
+elements and a run of spaces collapses (they now read what a person sees, `innerText`, and the person's own message is checked as typed).
+All four pass on their own re-run (96, 110, 71 and 53 checks). The requests of every model in every conversation shape (42 of them) were
+compared with those of the Stage 7.1 commit: they differ only in the system prompt (and the Content-Length it causes, by the same 107 bytes
+each), and the outcomes, the error sentences and the message merging are identical. The seeded launches, the Stage 4 history suites and the
+built-app (`preview`) runs were not re-run for this slice.
+**Not checked:** (1) **real model output.** Only the mock and my own samples. How real replies use Markdown (nested lists with odd
+indentation, tables with pipes in code, HTML inside code, maths, lines wrapped by the model) is unseen, and the reader is not run against the
+CommonMark test suite, so differences from CommonMark are expected beyond the ones listed. (2) A screen reader. (3) Syntax colours (none
+exist). (4) The real `shell.openExternal` (replaced by a recorder; the mechanism is Stage 2.2's and is unchanged). (5) The built app
+(`preview`) and the Stage 4 history suites; they run at the end of Stage 7. (6) Any system other than Windows. (7) Typing a very long message
+(21 KB) into the box stalls the page for about 2.5 s; that is the input box, not this slice, and was not looked into.
+
+Status: accepted (Stage 7.2). Revisit: the first real replies (what the reader gets wrong); syntax colours; the parts of Markdown left out; a
+deny-by-default permission handler; whether a line break inside a paragraph should be a space as in CommonMark (it is kept, which is right
+for old replies and wrong for a model that wraps its lines).

@@ -92,7 +92,8 @@ export function helpers(page, { userData, mockUrl } = {}) {
       return reqs.length > before ? reqs.at(-1) : null
     }
   }
-  h.bubbleText = () => h.lastAssistant(`a.querySelector('.bubble')?.textContent ?? null`)
+  // 7.2: a reply is drawn as Markdown (paragraphs are elements, trailing spaces are not shown), so the text a person SEES is innerText
+  h.bubbleText = () => h.lastAssistant(`a.querySelector('.bubble')?.innerText ?? null`)
   h.noteText = () => h.lastAssistant(`a.querySelector('.message-note')?.textContent ?? null`)
   return h
 }

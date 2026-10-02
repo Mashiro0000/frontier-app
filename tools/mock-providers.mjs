@@ -219,6 +219,18 @@ export function startMock(port = 8787) {
         return finish(res, index, 'model_context_window_exceeded')
       case 'empty':
         return finish(res, index, 'end_turn')
+      case 'say':
+      case 'say-chars': {
+        // 7.2 (Markdown): the reply is the rest of the message, word for word (no "Echo: "), so a test can send the app Markdown.
+        // say-chars streams it two characters at a time, so a marker (**, a code fence, a table row) arrives cut in the middle.
+        const verbatim = lastUserText(body).replace(/\[\[mock:[a-z0-9-]+\]\]\s*/g, '')
+        if (directive === 'say') await echoPieces(res, index, verbatim, () => alive)
+        else {
+          await sleep(100)
+          for (let i = 0; i < verbatim.length && alive; i += 2) { text(res, index, verbatim.slice(i, i + 2)); await sleep(4) }
+        }
+        return alive ? finish(res, index, 'end_turn') : undefined
+      }
       case 'slow':
         await sleep(200)
         for (let i = 0; alive && i < 300; i++) { text(res, index, `tick${i} `); await sleep(100) }

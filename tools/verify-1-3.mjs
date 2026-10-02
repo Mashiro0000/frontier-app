@@ -10,7 +10,8 @@ await sleep(1500)
 const ev = (expr) => page.evaluate(expr)
 const articles = () => ev(`document.querySelectorAll('article').length`)
 const lastAssistant = (expr) => ev(`(() => { const a = [...document.querySelectorAll('.message-assistant')].at(-1); return a ? (${expr}) : null })()`)
-const replyText = () => lastAssistant(`a.querySelector('.bubble')?.textContent ?? null`)
+// 7.2: the text a person sees (Markdown: paragraphs are elements)
+const replyText = () => lastAssistant(`a.querySelector('.bubble')?.innerText ?? null`)
 const replyNote = () => lastAssistant(`a.querySelector('.message-note')?.textContent ?? null`)
 const SEND_READY = `!!document.querySelector('.composer-button[type=submit]')`
 const STOP_SHOWN = `!!document.querySelector('.composer-button-stop')`
@@ -45,7 +46,10 @@ check('button is Send again', await ev(SEND_READY))
 // ---- 2. echo keeps spaces and line breaks exactly ----
 await send('a  b\nc   d')
 await page.waitFor(SEND_READY)
-check('echo preserves double spaces and newlines', (await replyText()) === 'Echo: a  b\nc   d', JSON.stringify(await replyText()))
+// 7.2 (D-025): a reply is Markdown, so a run of spaces collapses as it does in any rendered Markdown; the line break stays. What the
+// person typed is shown as typed.
+const typedText = () => ev(`[...document.querySelectorAll('.message-user .bubble')].at(-1).textContent`)
+check('echo keeps the line break (spaces collapse, as in rendered Markdown), and the person\'s own message keeps every space', (await replyText()) === 'Echo: a b\nc d' && (await typedText()) === 'a  b\nc   d', JSON.stringify([await replyText(), await typedText()]))
 
 // ---- 3. a long message streams in pieces and takes a bounded time ----
 const long = words(300)

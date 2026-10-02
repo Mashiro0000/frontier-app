@@ -8,7 +8,9 @@
 - Show running cost per conversation
 - Keyboard-first command palette
 - Export a conversation to Markdown
-- Render Markdown in replies (code blocks, lists), with a sanitising renderer (see D-009)
+- Syntax colours in code blocks (a package, or a small tokenizer of our own for a few languages; D-025)
+- The parts of Markdown the reader leaves out: task lists, footnotes, setext headings, reference links, entities (D-025)
+- A deny-by-default permission handler for the window, so the page can ask for nothing it does not use (it uses the clipboard write); Electron grants every request when none is set (D-025)
 - Copy button on each message
 - Retry / regenerate the last reply
 - Automated tests for `useChat` (needs a test runner; none is set up, see D-007)

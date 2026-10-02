@@ -1,4 +1,5 @@
 import type { SettingsStatus } from '../../../shared/ipc'
+import LinkConfirm from '../markdown/LinkConfirm'
 import { providerMissingKey } from '../settings/format'
 import Composer from './Composer'
 import MessageList from './MessageList'
@@ -46,12 +47,14 @@ function ChatView({
 
   return (
     <main className="chat">
-      <MessageList
-        messages={messages}
-        isReplying={isReplying}
-        emptyHint={emptyHint}
-        modelName={modelName}
-      />
+      <LinkConfirm>
+        <MessageList
+          messages={messages}
+          isReplying={isReplying}
+          emptyHint={emptyHint}
+          modelName={modelName}
+        />
+      </LinkConfirm>
       <Composer focusKey={conversationId} isReplying={isReplying} onSend={send} onStop={stop} />
     </main>
   )

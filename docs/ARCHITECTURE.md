@@ -57,6 +57,7 @@ changed the ones marked (3), Stage 4 the ones marked (4), Stage 5 the ones marke
 | `src/renderer/src/settings/`      | (3) The Settings dialog, the model menu in the header, and the hook that asks main for the settings status. (5) One key section per provider (`ProviderKeySection`: add, test, remove) . (6) The Task menu, and the "(suggested)" marks in the model menu |
 | `src/main/conversationStore.ts`   | (4) The saved conversations: one JSON file each, saved copy-then-delete, read with a recovery rule, listed from memory. No Electron imports                                                                                                               |
 | `src/renderer/src/history/`       | (4) `useHistory` (autosave and the list), `HistoryDialog` (open and delete), and the conversions between the chat and what is saved                                                                                                                       |
+| `src/renderer/src/markdown/`      | (7) A reply as Markdown (D-025): `parse.ts` (the reader), `Markdown.tsx` (a closed set of elements), `CodeBlock.tsx` (Copy), `LinkConfirm.tsx` (a link asks first)                                                                                        |
 
 ### Settings and the API keys
 
@@ -252,15 +253,18 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
   The four `history:` handlers run through the same sender guard as the rest.
 - The page gets only what `src/preload/index.ts` lists under `window.api`. Never expose Electron's
   whole `ipcRenderer`: any script in the page could then call any channel.
-- The window cannot navigate away from the app's own page, and only http(s) links reach the operating
-  system (`src/main/security.ts`). `about:blank` is the one navigation this cannot stop, and that page
-  still gets `window.api`, so every IPC handler must also check who is calling.
-- Message text is shown as plain text. React escapes it, so pasted HTML cannot run. Markdown or
-  HTML from a model needs a sanitising renderer first; see D-009.
+- The window cannot navigate away from the app's own page, and only https links (without a user name or
+  password) reach the operating system (`src/main/security.ts`; plain http was passed before Stage 7.2).
+  `about:blank` is the one navigation this cannot stop, and that page still gets `window.api`, so every IPC
+  handler must also check who is calling.
+- What the person types is shown as typed, as text. A reply is drawn as Markdown by `src/renderer/src/markdown/`
+  (D-025): the reader makes a tree of a few known kinds, never HTML, and the page makes elements from a closed set
+  (no `dangerouslySetInnerHTML`, no `style`, `href`, `src` or handler of a reply's making). Raw HTML and images in a
+  reply are shown as the text they were written as and nothing is loaded. A link in a reply is a button that asks
+  first; only Open hands an https address to the browser.
 
 ## Not built yet
 
-Markdown rendering (replies are plain text; the system prompt asks for that), a cost display, naming the model
-that wrote each reply, renaming or searching saved chats, a check against the real API (Stages 2 to 4 were tested
+A cost display, renaming or searching saved chats, a check against the real API (Stages 2 to 4 were tested
 against a mock, which covers four models), a single suggested model per task (D-023 says why not), other providers. See
 ROADMAP.md.

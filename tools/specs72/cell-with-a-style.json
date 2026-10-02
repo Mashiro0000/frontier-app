@@ -1,0 +1,14 @@
+{
+  "label": "cell-with-a-style",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/Markdown.tsx",
+      "from": "<th key={i} className={alignClass(block.align[i])}>",
+      "to": "<th key={i} style={{ textAlign: block.align[i] ?? undefined }}>"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

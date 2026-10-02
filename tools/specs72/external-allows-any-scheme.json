@@ -1,0 +1,14 @@
+{
+  "label": "external-allows-any-scheme",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/security.ts",
+      "from": "return protocol === 'https:' && username === '' && password === ''",
+      "to": "return protocol !== \"x:\""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

@@ -6,7 +6,7 @@ import type { Effort, ModelEntry, ProviderId } from '../../shared/registry'
 // only these types. No Electron imports, so every adapter can be run and checked under plain Node.
 
 /**
- * One turn of a conversation, in no provider's format. Text only, because the chat shows plain text (D-009):
+ * One turn of a conversation, in no provider's format. Text only, because the chat shows text (a reply is Markdown, D-025):
  * a different kind of content (an image, a tool call) would be a new field here and a translation in each adapter.
  */
 export interface NeutralMessage {

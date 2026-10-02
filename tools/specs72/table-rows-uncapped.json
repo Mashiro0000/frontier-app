@@ -1,0 +1,14 @@
+{
+  "label": "table-rows-uncapped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "while (i < lines.length && rows.length < LIMITS.maxTableRows) {",
+      "to": "while (i < lines.length) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

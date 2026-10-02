@@ -33,6 +33,9 @@ menu (chat, coding, writing, quick answer) marks the models the providers' own p
 it chooses nothing, and the list is `registry/rankings.json` (D-023). The **Effort** menu (Faster to Smarter) says how hard the chosen model
 thinks before it answers: it offers the levels the registry lists for that model, remembers your choice per model, and is not shown for a
 model that takes none (Haiku 4.5). A higher level is slower and billed as more output (D-024).
+Replies are shown as Markdown (headings, lists, tables, quotes, code blocks with a **Copy** button) by a small reader of the app's
+own; raw HTML and images in a reply are shown as text and nothing is loaded. A link in a reply asks first: you see the whole address,
+and only **Open** sends it to your browser (D-025). What you type is shown as typed.
 The list of models is `registry/models.json`: edit it, then restart `npm run dev` (or run `npm run dev -- --watch`
 so it restarts by itself). See docs/DECISIONS.md D-012, D-014, D-015, D-020 and D-022.
 

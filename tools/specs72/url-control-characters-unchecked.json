@@ -1,0 +1,14 @@
+{
+  "label": "url-control-characters-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "  if (/[\\x00-\\x20\\x7f-\\x9f\\\\<>\"]/.test(raw)) return null",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

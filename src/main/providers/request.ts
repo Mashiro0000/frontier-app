@@ -17,15 +17,16 @@ const ASSISTANT_NAME: Record<ProviderId, string> = {
   openai: 'an AI assistant'
 }
 
-// The chat window shows plain text only (D-009), and models write Markdown by default, which would appear as stray
-// asterisks and backticks. Remove this once replies are rendered as Markdown.
-const PLAIN_TEXT_RULES =
-  'The window shows replies as plain text and does not render Markdown, so do not use Markdown syntax: no asterisks or ' +
-  'underscores for emphasis, no # headings, no backticks, no tables. Write in ordinary paragraphs, and use simple ' +
-  'hyphen lists or numbered lines when a list helps. If you include code, put it on its own lines, indented by four spaces.'
+// The chat window renders Markdown (D-025; until Stage 7 it showed plain text and this said so, D-009). It draws a closed set of
+// elements and nothing else, so the model is told which ones, and what is not drawn.
+const MARKDOWN_RULES =
+  'The window renders Markdown, so you may use it where it helps: **bold** and *italic*, `inline code`, # headings for long ' +
+  'answers, bulleted and numbered lists, tables, > quotes, and fenced code blocks with the language named (```python). ' +
+  'Raw HTML, images and diagrams are not shown, so do not use them. A link is written [text](https://address); only https ' +
+  'addresses can be opened. Keep short answers plain: no headings or tables where a sentence will do.'
 
 export const systemPromptFor = (provider: ProviderId): string =>
-  `You are ${ASSISTANT_NAME[provider]}, chatting with someone in Frontier App, a desktop chat window. ${PLAIN_TEXT_RULES}`
+  `You are ${ASSISTANT_NAME[provider]}, chatting with someone in Frontier App, a desktop chat window. ${MARKDOWN_RULES}`
 
 /**
  * Providers want the two sides to take turns. After a reply that failed with no text, the person's next message

@@ -20,13 +20,14 @@ export function isAppUrl(url: string, appUrl: string): boolean {
 }
 
 /**
- * Only ordinary web links may be handed to the operating system. Other schemes (file:, ms-msdt:,
- * custom app protocols, ...) can start a program on this computer.
+ * Only https addresses may be handed to the operating system, and only without a user name or password in them. Other schemes
+ * (file:, ms-msdt:, custom app protocols, ...) can start a program on this computer, and plain http is not offered: the only
+ * links in the app are the ones in a reply, which the page offers only as https (D-025). Before Stage 7 http passed too.
  */
 export function isSafeExternalUrl(url: string): boolean {
   try {
-    const { protocol } = new URL(url)
-    return protocol === 'https:' || protocol === 'http:'
+    const { protocol, username, password } = new URL(url)
+    return protocol === 'https:' && username === '' && password === ''
   } catch {
     return false
   }

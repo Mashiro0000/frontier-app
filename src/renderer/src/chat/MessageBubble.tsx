@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import Markdown from '../markdown/Markdown'
 import type { ChatMessage } from './types'
 
 interface MessageBubbleProps {
@@ -27,13 +28,16 @@ function MessageBubble({ message, answeredBy }: MessageBubbleProps): React.JSX.E
     >
       {answeredBy && <p className="message-model">{answeredBy}</p>}
       {(message.content !== '' || isWaiting) && (
-        <div className="bubble">
+        <div className={message.role === 'assistant' ? 'bubble bubble-markdown' : 'bubble'}>
           {isWaiting ? (
             <span className="typing" aria-hidden="true">
               <span />
               <span />
               <span />
             </span>
+          ) : message.role === 'assistant' ? (
+            // A reply is Markdown (D-025); what the person typed is shown exactly as typed.
+            <Markdown text={message.content} />
           ) : (
             message.content
           )}

@@ -1,0 +1,14 @@
+{
+  "label": "url-accepts-http",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "!/^https:\\/\\//i.test(raw)",
+      "to": "!/^https?:\\/\\//i.test(raw)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}

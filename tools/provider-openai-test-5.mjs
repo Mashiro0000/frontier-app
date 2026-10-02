@@ -49,7 +49,7 @@ check('OpenAI is a supported provider, with an adapter that says so', SUPPORTED_
 check('...named "OpenAI" for the person', PROVIDER_NAMES.openai === 'OpenAI')
 check('the registry lists three OpenAI models: Astra, Sol, Luna', JSON.stringify(openaiModels.map((m) => m.id)) === JSON.stringify(['gpt-6-astra', 'gpt-6.1-sol', 'gpt-6-luna']))
 check('API_BASE_URL is the real address (with /v1, as the SDK wants it)', API_BASE_URL === 'https://api.openai.com/v1')
-check('the system prompt for OpenAI does not call the assistant Claude, and still asks for plain text', !/Claude/.test(systemPromptFor('openai')) && /^You are an AI assistant, chatting with someone in Frontier App/.test(systemPromptFor('openai')) && /plain text/.test(systemPromptFor('openai')) && /Markdown/.test(systemPromptFor('openai')))
+check('the system prompt for OpenAI does not call the assistant Claude, and says the window renders Markdown (D-025)', !/Claude/.test(systemPromptFor('openai')) && /^You are an AI assistant, chatting with someone in Frontier App/.test(systemPromptFor('openai')) && /renders Markdown/.test(systemPromptFor('openai')) && !/plain text/.test(systemPromptFor('openai')))
 check('...and Anthropic\'s is unchanged', /^You are Claude, chatting/.test(systemPromptFor('anthropic')))
 check('the OpenAI request builder keeps the app\'s own ceiling and joins turns, like any provider', (() => { const r = buildStreamRequest({ credentials: creds, model: sol, messages: [{ role: 'user', content: 'a' }, { role: 'user', content: 'b' }], signal: new AbortController().signal }); return r.maxOutputTokens === 16000 && r.messages.length === 1 && r.messages[0].content === 'a\n\nb' })())
 

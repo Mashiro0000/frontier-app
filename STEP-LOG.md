@@ -1746,7 +1746,7 @@ Running `npm run dev` shows one more menu in the header, **Task**, next to the m
 4. **The GitHub push.** When it was checked (1 October 2026) the repository had no `origin` remote, so nothing had been pushed from this folder.
 5. **Everything in the earlier stages' "Things to know" still applies.**
 
-## Stage 7 - What was built (so far: slice 7.1)
+## Stage 7 - What was built (so far: slices 7.1 and 7.2)
 
 Stage 7 is built in five slices, one commit each: 7.1 Effort, 7.2 Markdown, 7.3 Copy / Regenerate / Edit and resend, 7.4 Instructions per
 chat, 7.5 the docs, the threat note and the full regression. This part describes what exists now.
@@ -1765,6 +1765,22 @@ chat, 7.5 the docs, the threat note and the full regression. This part describes
 - No new package. One new decision, **D-024** (with its threat note and what was not checked); new files `src/shared/effort.ts` and
   `src/renderer/src/settings/EffortPicker.tsx`.
 
+**7.2 Markdown (D-025).** A reply is now drawn as Markdown instead of plain text:
+
+- Headings, **bold**, _italic_, ~~strike-through~~, `inline code`, bulleted and numbered lists (nested), tables, block quotes, rules, and code
+  blocks with the language above them and a **Copy** button that puts exactly the code on the clipboard when you click it. A reply written the
+  old way (code indented by four spaces, hyphen lists) is drawn as code and lists too, so old chats look right.
+- **It cannot make HTML.** The reader is the app's own (no package): it turns text into a small tree and the page makes only a fixed list of
+  elements from it. Raw HTML in a reply, and images, are shown as the text they were written as; nothing is loaded and nothing runs.
+- **A link asks first.** Only `[text](https://address)` is clickable. Clicking shows a window with the whole address and where it goes, and only
+  **Open** sends it to your browser (**Cancel** has the focus; Escape cancels). Anything else (http, javascript:, an address with a password)
+  stays plain text. The main process now lets only https addresses through to the browser.
+- What you type is still shown exactly as typed. Replies and saved chats keep the Markdown as the model wrote it.
+- The instruction the model gets changed: it is told the window renders Markdown (it used to be told to use plain text).
+- No new package. One new decision, **D-025** (with its threat note and what was not checked); the files are in `src/renderer/src/markdown/`
+  (`parse.ts`, `Markdown.tsx`, `CodeBlock.tsx`, `LinkConfirm.tsx`, `linkContext.ts`), plus small changes to the message bubble, the chat view,
+  the style sheet, `src/main/security.ts` and the model's instruction (`src/main/providers/request.ts`).
+
 ## Stage 7 - Step by step
 
 1. **Plan approved ("Go", 1 October 2026).** Own Markdown renderer with no package, Copy writes to the clipboard on a click, links open the
@@ -1774,3 +1790,16 @@ chat, 7.5 the docs, the threat note and the full regression. This part describes
    suites `verify-7-1w/b/c.mjs` through `run71.mjs` (a fresh profile, a restart, ten seeded `preferences.json` files), 17 + 21 deliberate
    breakages (negative controls, `tools/specs71*`), and a byte comparison of the requests with a copy of `main`.
 3. **The older suites were re-run on the new tree** (`node tools/regress.mjs t71 node window seeds scenarios`, 2 October 2026). 46 runs, 44 clean the first time. Two checks had gone stale because of this very slice and were updated, not the code: the adapter suite listed the fields of a request (now with `effort`), and `verify-3-4` expected Tab from the model menu to reach Settings (it now reaches the Effort menu first). Both pass on their own re-run (94/94 and 78/78). The Stage 4 history suites and the built-app (`preview`) runs are left for the end of Stage 7 (7.5).
+
+4. **Slice 7.2 built and checked** (2 October 2026). The reader (`parse.ts`) was written first and checked on its own under Node before any window
+   existed (`verify-7-2.mjs`, now 195 checks: the Markdown, 29 hostile texts, 6000 random texts, the elements React makes read back against a list
+   of tags and attributes, the main process's link rule). That found three real faults before the window did: a tab after a list marker, a
+   quadratic scan on `[[[[...` (the link scan was not charged to the work budget), and (while writing the Copy check) tabs inside code being turned
+   into spaces. Then the window suite (`verify-7-2w.mjs` through `run72.mjs`, 53 checks) found two more: the bubble stretching past a narrow window
+   when a table is wide, and the Copy click in my own test landing on the wrong block (a test fault). The mock got a `say` directive (the reply is
+   the message's own text) and `say-chars` (two characters at a time).
+5. **Negative controls:** 25 breakages under Node (22 caught; the 3 not caught are overlapping layers, see D-025) and 8 in the real window (all
+   caught), `tools/specs72*`, each file proved restored by hash.
+6. **The older suites were re-run** (`node tools/regress.mjs t72 node window scenarios`): 28 of 32 clean the first time. Four checks had gone stale
+   because of this slice and were updated (they now read what a person sees in a reply, and the Stage 2 golden request compares everything but
+   the system prompt); all pass again. The requests (42) were compared with the Stage 7.1 commit's: only the system prompt differs.

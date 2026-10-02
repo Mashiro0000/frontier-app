@@ -1,0 +1,14 @@
+{
+  "label": "image-becomes-a-link",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/parse.ts",
+      "from": "if (c === '!' && s[i + 1] === '[') {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-2.mjs"
+  ],
+  "env": {}
+}
