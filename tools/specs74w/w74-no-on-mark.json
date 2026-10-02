@@ -1,0 +1,14 @@
+{
+  "label": "w74-no-on-mark",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/App.tsx",
+      "from": "{chat.instructions !== '' && (\n              <>",
+      "to": "{false && (\n              <>"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run74.mjs"
+  ],
+  "env": {}
+}

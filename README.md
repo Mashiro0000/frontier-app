@@ -39,13 +39,17 @@ and only **Open** sends it to your browser (D-025). What you type is shown as ty
 Under each message: **Copy** (the text as written); under the last reply **Regenerate** (**Try again** after a failure), which replaces it;
 under your own messages **Edit**, which replaces the message and everything after it and asks again, asking first if more than the last
 exchange would go. Asking again sends the whole conversation again and is billed again (D-026).
+The **Instructions** button in the header opens a box for instructions of your own for the chat you are in (who the model should be, how long to
+write, what to leave out). They are added to the app's own rules and sent with every message of that chat, to the company that runs the model
+that answers, so they are billed and, like the chat, saved as plain text on your computer; do not put passwords in them. The button says "on"
+while they are set, a new chat starts without them, and a chat opened from History brings its own back (D-027).
 The list of models is `registry/models.json`: edit it, then restart `npm run dev` (or run `npm run dev -- --watch`
 so it restarts by itself). See docs/DECISIONS.md D-012, D-014, D-015, D-020 and D-022.
 
 Chats are saved on your computer as you go, one plain file each, in a `conversations` folder next to the app's
 other data (the History dialog shows the path). They are not encrypted, unlike the API key. **New chat** starts an
-empty chat; **History** opens a saved one or deletes it. Each reply records which model wrote it (D-021). See
-docs/DECISIONS.md D-016 and D-017.
+empty chat; **History** opens a saved one or deletes it. Each reply records which model wrote it (D-021), and the file holds the chat's
+instructions (D-027; a chat saved by this version cannot be read by one from before Stage 7.4). See docs/DECISIONS.md D-016 and D-017.
 
 ### Checks
 

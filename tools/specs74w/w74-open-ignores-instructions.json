@@ -1,0 +1,14 @@
+{
+  "label": "w74-open-ignores-instructions",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/useHistory.ts",
+      "from": "chat.load(messages, instructions)",
+      "to": "chat.load(messages)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run74.mjs"
+  ],
+  "env": {}
+}

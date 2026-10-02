@@ -6,12 +6,14 @@ import type { Answerer, ChatMessage } from './types'
  * The reply function (see `ReplyFn`) that asks the main process for a real answer. The page cannot
  * reach the network or the API key: it sends the conversation over the bridge, and the reply comes
  * back as events, which this turns into a stream of text pieces for `useChat`. The first event says which
- * model is answering; that goes to `onAnswerer`, not into the text.
+ * model is answering; that goes to `onAnswerer`, not into the text. The person's instructions (D-027) go
+ * along only when there are some, so a chat without them sends exactly what it always sent.
  */
 export async function* ipcReply(
   history: ChatMessage[],
   signal: AbortSignal,
-  onAnswerer: (answerer: Answerer) => void
+  onAnswerer: (answerer: Answerer) => void,
+  instructions: string
 ): AsyncGenerator<string> {
   if (!window.api) {
     throw new Error('The window could not connect to the app (the preload did not load).')
@@ -36,7 +38,11 @@ export async function* ipcReply(
   signal.addEventListener('abort', onAbort)
 
   try {
-    window.api.chat.start({ streamId, messages: toWireMessages(history) })
+    window.api.chat.start({
+      streamId,
+      messages: toWireMessages(history),
+      ...(instructions === '' ? {} : { instructions })
+    })
     while (!signal.aborted) {
       const event = arrived.shift()
       if (!event) {

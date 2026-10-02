@@ -35,10 +35,12 @@ export interface Answerer {
  * user just sent), it returns the reply as a stream of text pieces. It should stop producing text
  * when `signal` is aborted. `ipcReply` is the implementation: it asks the main process for a real reply.
  * `onAnswerer` is called once, before the first piece, with the model that is answering (a reply that fails
- * before any text still says which model was asked).
+ * before any text still says which model was asked). `instructions` is the person's own text for this chat
+ * ('' for none, D-027): it goes with the conversation and is added to the app's rules by the main process.
  */
 export type ReplyFn = (
   history: ChatMessage[],
   signal: AbortSignal,
-  onAnswerer: (answerer: Answerer) => void
+  onAnswerer: (answerer: Answerer) => void,
+  instructions: string
 ) => AsyncIterable<string>

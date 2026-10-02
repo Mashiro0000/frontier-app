@@ -6,7 +6,7 @@ import {
   type SavedConversation,
   type SavedMessage
 } from '../shared/ipc'
-import { checkSavedMessages, isConversationId } from '../shared/validate'
+import { checkInstructions, checkSavedMessages, isConversationId } from '../shared/validate'
 
 // The saved conversations: one small JSON file per conversation, all in one folder (D-016). No Electron
 // imports, so it can be checked under plain Node with any folder.
@@ -25,10 +25,12 @@ import { checkSavedMessages, isConversationId } from '../shared/validate'
 // Reading never writes: a conversation that cannot be read is left exactly as it is, counted, and named in the
 // log (by its id, never by a path). Nothing here deletes a file except remove().
 //
-// The file is "version": 2 since Stage 5.4 (D-021): each reply says which provider and model wrote it. A version 1 file
-// (Stages 2-4) is read as a version 2 one (its replies came from Anthropic, which model is not known) and stays version 1
-// on disk, byte for byte, until the conversation is next saved. Nothing is converted in bulk, so no crash can leave the
-// history half-converted. A file of any other version was made by another version of the app and is left alone.
+// The file is "version": 3 since Stage 7.4 (D-027): it also holds the person's instructions for the chat ("" for none). Version 2
+// (Stages 5.4-7.3, D-021: each reply says which provider and model wrote it) is read as a version 3 one with no instructions, and
+// a version 1 file (Stages 2-4) as a version 2 one (its replies came from Anthropic, which model is not known) with no
+// instructions. Both stay as they are on disk, byte for byte, until the conversation is next saved. Nothing is converted in bulk,
+// so no crash can leave the history half-converted. A file of any other version was made by another version of the app and is
+// left alone.
 
 // "<id>.json" or "<id>.json.tmp", with the id in the one spelling the app itself produces (lower case: Windows
 // treats upper and lower case as the same file, so two spellings of one id would be one file).
@@ -53,8 +55,9 @@ export interface ConversationStore {
   /**
    * Saves the whole conversation (a snapshot, not a change). Throws if the disk refuses, and then the earlier
    * saved copy is still there; answers `ok: false` for a refusal that is not a failure (too many, too large).
+   * `instructions` is the person's own text for the chat, already checked (D-027); absent is none.
    */
-  save(input: { id: string; messages: SavedMessage[] }): Promise<SaveOutcome>
+  save(input: { id: string; messages: SavedMessage[]; instructions?: string }): Promise<SaveOutcome>
   remove(id: string): Promise<RemoveOutcome>
   /** Resolves when every save and removal asked for so far has finished. For quitting the app. */
   whenIdle(): Promise<void>
@@ -82,12 +85,24 @@ const isTime = (value: unknown): value is number =>
 export function parseSavedFile(raw: unknown, id: string): SavedConversation | string {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return 'it is not an object'
   const file = raw as Record<string, unknown>
-  if (file.version !== 1 && file.version !== 2) return 'it was made by another version of the app'
+  if (file.version !== 1 && file.version !== 2 && file.version !== 3) {
+    return 'it was made by another version of the app'
+  }
   if (file.id !== id) return 'the id inside does not match the file name'
   if (typeof file.title !== 'string' || file.title.length > HISTORY_LIMITS.maxTitleChars) {
     return 'its title is not usable'
   }
   if (!isTime(file.createdAt) || !isTime(file.updatedAt)) return 'its dates are not usable'
+  // Instructions (D-027) belong to version 3, where the field must be there and be usable: strict, like the title, because a chat that
+  // opened without the instructions it was saved with would quietly answer differently. An older file has none, and whatever such a file
+  // says about them is not read (it was not made by a version that knew them).
+  let instructions = ''
+  if (file.version === 3) {
+    const checked =
+      typeof file.instructions === 'string' ? checkInstructions(file.instructions) : null
+    if (checked === null || !checked.ok) return 'its instructions are not usable'
+    instructions = checked.instructions
+  }
   const messages = checkSavedMessages(file.messages, file.version === 1 ? 'file-v1' : 'file')
   if (!messages.ok) return messages.error
   return {
@@ -95,6 +110,7 @@ export function parseSavedFile(raw: unknown, id: string): SavedConversation | st
     title: file.title,
     createdAt: file.createdAt,
     updatedAt: file.updatedAt,
+    instructions,
     messages: messages.messages
   }
 }
@@ -231,6 +247,10 @@ export function createConversationStore(dir: string): ConversationStore {
     save: (input) =>
       inOrder(async (): Promise<SaveOutcome> => {
         assertId(input.id)
+        // Whatever is written must be readable again, so the rule for reading instructions is also the rule for writing them (the caller
+        // has checked them already; a chat that turned unreadable because of a bug elsewhere would be a loss).
+        const checkedInstructions = checkInstructions(input.instructions)
+        if (!checkedInstructions.ok) return { ok: false, error: checkedInstructions.error }
         await ensureScanned()
         const known = index.get(input.id)
         if (!known && index.size >= HISTORY_LIMITS.maxConversations) {
@@ -245,9 +265,10 @@ export function createConversationStore(dir: string): ConversationStore {
           title: titleFor(input.messages),
           createdAt: known?.createdAt ?? now,
           updatedAt: now,
+          instructions: checkedInstructions.instructions,
           messages: input.messages
         }
-        const text = JSON.stringify({ version: 2, ...conversation })
+        const text = JSON.stringify({ version: 3, ...conversation })
         // Whatever is written must be readable again, so the limit on reading is also a limit on writing.
         if (Buffer.byteLength(text) > HISTORY_LIMITS.maxFileBytes) {
           return { ok: false, error: 'This conversation is too large to save.' }

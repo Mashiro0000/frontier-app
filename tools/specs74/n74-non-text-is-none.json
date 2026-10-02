@@ -1,0 +1,14 @@
+{
+  "label": "n74-non-text-is-none",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "  if (typeof input !== 'string')\n    return { ok: false, error: 'The instructions were not understood.' }",
+      "to": "  if (typeof input !== 'string') return { ok: true, instructions: '' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

@@ -104,6 +104,7 @@ async function runReply(
         credentials: { apiKey, baseURL: baseUrlOverride(entry.provider) },
         model: entry,
         effort,
+        instructions: request.instructions, // the person's own, already checked (D-027): added after the app's rules
         messages: request.messages,
         signal: controller.signal
       })

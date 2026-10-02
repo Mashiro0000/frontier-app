@@ -916,3 +916,75 @@ from History; the keyboard returning to the box; 420 and 320 px wide. Negative c
 
 Status: accepted (Stage 7.3). Revisit: versions of a reply (keep the old one, flip between them) if replacing proves too blunt; asking before
 Regenerate; counting the requests against Stage 8's limit.
+
+## D-027 - The person can give a chat instructions of its own: they are added after the app's rules, sent with every request of that chat, and saved with it (file version 3)
+
+Stage 7.4 puts an **Instructions** button in the header. It opens a dialog with one text box, and what is written there is told to the model with
+every message of that chat: who to be, how long to write, what to leave out. It is the "system prompt of your own per chat" of the roadmap.
+
+- **One text per chat.** Not per model and not for the whole app: a new chat starts without instructions, and a chat opened from History brings its
+  own back. Empty means none. The text is trimmed, and may hold at most 8,000 characters once trimmed (about 2,000 tokens): they go out with
+  EVERY request, so the limit is also a price, and a page of instructions is what the box is for. One function, `checkInstructions` (in
+  `src/shared/validate.ts`), applies that rule to everything that carries them: the chat request, the save, the file when it is read and
+  the store when it writes, so what is written can always be read and what is sent is what the person saw. The page runs it for its count; main
+  runs it again.
+- **After the app's rules, never in their place.** The system prompt is the app's own rules (what the window can draw, D-025), then a blank
+  line, then one line, "The person has given these instructions for this chat:", a blank line, and the text. That line is the only text the app
+  adds. The instructions are last, so the person's words are the last word. The page cannot set the system prompt: the request has no such field
+  (`ChatRequest.instructions`; the plan's working name `system` was dropped because a field with that name suggests the page controls the prompt),
+  and `checkChatRequest` drops a `system` field if a script sends one. What this costs: an instruction such as "ignore the rules above" may be
+  followed, and the model may then write raw HTML, which the window shows as text (D-025). Nothing safety-relevant depends on the prompt: the
+  limits are in the app's code, never in what a model is asked.
+- **Nothing changes for a chat without instructions.** The prompt is then exactly what Stage 7.3 sent, and the request has no new field on the way
+  to main (the page leaves the key out when there are none). Checked byte for byte against the recorded requests (below).
+- **Seen first, and always visible (safety rule 1).** The dialog says, next to the box: the instructions are added to the app's own rules and
+  sent with every message of this chat, to the company that runs the model that answers (and to another company if the model is changed),
+  billed as part of the conversation, saved as plain text in this chat's file on this computer, not for passwords or keys, and a new chat starts
+  without them. While they are set the header button says "on" (and its tooltip says how long they are). Nothing is sent that was not written in
+  the box, and the box shows all of it; the app's own rules are described, not shown (showing them would need a new message from main).
+- **A draft until Save.** Typing changes nothing. Save (the button reads "Turn off" when the box has been emptied) sets the chat's instructions;
+  Escape and Cancel throw the draft away. The count is of the trimmed text and turns into a warning ("1 too many") with Save off; the box does
+  **not** use `maxLength`, because a long paste would be cut without a word. Saving sends nothing; the chat is saved at once if it has messages (a
+  chat with no message has no file, as before). The button is off while a reply arrives, like the model and the effort menus (D-015, D-024), and
+  `useChat.setInstructions` refuses then too. **Asking again** (Regenerate, an edited message) sends the instructions the chat has at that
+  moment, so changing them and pressing Regenerate shows the difference.
+- **Saved with the chat: file version 3.** The `instructions` field sits between the dates and the messages and is always there (`""` for none). A
+  version 1 or 2 file is read as a version 3 one with no instructions and stays exactly as it is on disk until that chat is next saved: reading
+  never writes, and nothing is converted in bulk, as in D-021. In a version 3 file the field must be there and be usable text: **strict**,
+  like the title and the dates, because a chat that opened without the instructions it was saved with would quietly answer differently. A file
+  whose instructions are not usable is counted as unreadable and left alone, like any damaged file. A version 4 file is another build's and is
+  left alone. (A version 2 file that carries an `instructions` field, which no build wrote, is read without it.) The store also refuses to write
+  instructions it could not read back. **What it costs:** a chat saved by this build is version 3, so a build from before Stage 7.4 would count it
+  as unreadable and leave it alone; there is no way back to the old format.
+- **Small things.** The dialog keeps its title and buttons in view and scrolls only its body, so it fits the default window (900 by 670) and
+  works at 320 px wide. At the default window width the header's controls now wrap under the title (the header's own rule for a narrow window;
+  the new button made them wider than the window): measured at 886 px of page, with a key saved, the header goes from one row of 47 px to two
+  rows of 80 px, which takes 33 px of height from the chat (115 px when a badge such as "No API key" is also shown). **Left:** Escape discards a draft without
+  asking.
+
+**Threat note (what could go wrong, what stops it, what is left).**
+
+- _Something sent that the person did not write or see._ Nothing is added but the one line above and the app's own rules; the text is the
+  person's, shown in the box; the header says "on" while it is set. A chat file brought from somewhere else (put in the folder by another
+  program) carries instructions that go out with that chat's next message; the "on" mark and the box show them, and the messages of such a
+  file would be sent just the same. **Left:** nothing marks a chat as coming from outside.
+- _The page replacing the app's rules._ There is no way to: the request has no system field, a script's `system` is dropped, and `instructions`
+  is added after the rules. Tried from the page with raw calls (below).
+- _A model's output setting them._ Nothing reads a reply for instructions; only Save in the dialog sets them.
+- _Too much, or the wrong thing._ A text over the limit, or one that is not text, is refused by main with a sentence for the page, in a request
+  and in a save, and nothing is sent or written. A damaged saved file is left alone.
+- _Secrets._ The dialog says not to put them there. **Left:** the app cannot tell a password from a sentence, so this is a warning only; the
+  text is saved as plain text with the chat, like the messages (D-016).
+- _Money._ Up to about 2,000 more input tokens with every request, and the dialog says it is billed. **Left:** no limit before Stage 8, which
+  has to count them.
+- _Losing text._ Escape and Cancel discard a draft, and turning the instructions off deletes the text (it lived only in the chat's file, which
+  is rewritten). Instructions set on a chat that has no message yet are not saved anywhere (a chat with no message has no file), so opening
+  another chat from History before the first message replaces them. **Left:** no undo, and no warning in any of these cases.
+- _A real model._ The mock proves what is sent, in which field, in which order, to which provider. How a real model weighs the instructions
+  against the rules was not tried (no real API call has been made).
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only: no real API call has been made. **Under plain Node** (`verify-7-4.mjs`, 151 checks; the store ones in a normal folder and in the EFS-encrypted AppData): `checkInstructions` on text of every kind and on a dozen things that are not text (an object that prints as text, a symbol, a bigint, ...), and the limit exactly (8,000 pass, 8,001 do not, counted after trimming and in JavaScript's own characters); `checkChatRequest` (nothing added when there are none, a `system` field dropped, the instructions not counted towards the 600,000); the save check; the system prompt for both providers (exactly the Stage 7.3 text with none; the rules, then the one line, then the text, trimmed, also for instructions that try to cancel the rules or hold characters that a string replacement treats as special); what each adapter really sends to the strict mock (two request bodies that differ in the system field only); and the file (version 3 in the documented order and read back; versions 1 and 2 read with no instructions and left byte for byte, modification time included, by listing and loading them; the next save making them version 3; a damaged or version 4 file counted and left alone; a whole `.tmp` of version 3 winning and a cut-off one ignored). **In the real window** (`run74.mjs`, 84 checks; it seeds four conversation files before the launch): the seeded files open, or are left alone, and are never rewritten by reading; the button, the dialog (draft, Escape, Cancel, Enter, real typing, a real paste of 9,000 characters, the count, the limit, trimming, the focus going back); what is sent with each message and in what order, to an OpenAI model and back to Anthropic; what is saved; History bringing the instructions back, also after a reload; Regenerate and Edit using the instructions the chat has then; the button off while a reply arrives; raw calls from the page (a `system` field, 8,001 characters, something that is not text, a save that knows nothing of instructions); 420 and 320 px wide. **Requests:** the golden capture (42 requests, 21 outcomes, 33 errors times four, 6 merges: 163,796 bytes) is byte for byte what it was before the change; to show that this comparison can fail, three breakages of the prompt each changed it. **Negative controls** (`tools/specs74*`): 26 breakages under Node, all caught (three first ended with no summary line because a check threw; each section of the suite now turns a throw into a FAIL line, and those three were run again); 17 in the real window, all caught in the end. One was **not** caught the first time: the check that a long paste is not cut set the box's value from a script, which a `maxlength` never meets (it now pastes for real, and the control is caught). One ran out of time (the runner's limit) and was run again. One was caught only by a helper that wanted the form gone, not by the check meant for it (the helper was relaxed, and the intended check caught it). Four more stop the suite early (the chat is not saved; the dialog closes at the first keystroke), which counts as caught but does not reach the later checks. Every file was put back and proved identical by hash. **Older suites:** `node tools/regress.mjs t74 node window scenarios` (2 October 2026): 35 of 36 runs clean. The one that was not was 7.3's Copy, Regenerate and Edit suite (28 of 31): with the header two rows high at the default window size, an early message of a six-message chat scrolls out of view, and that suite's hover and click on it missed; it now scrolls the message into view first (53 of 53). Eight older checks that pinned the file at version 2, or version 3 as another build's, were moved up by one, and the Stage 4 header checks (the order and the count of the header's controls) learned of the new button. Nine negative-control specs that had gone stale were repaired (four by this slice, five before it), found by a new dry check, `tools/check-specs.mjs`. Two Stage 4 items were run once because they were edited: `run43a` (damaged folders, 32 of 32) and `verify-4-2` (88 of 90: the two that fail compare a reply's saved text with the text read from the page, which Markdown (7.2) changed; they are ported at 7.5).
+
+**Not checked:** (1) a real model given instructions, and how it weighs them against the rules; (2) a screen reader, and the layout where there is no pointer (`hover: none`); (3) window sizes other than the default (900 px wide), 420 and 320; (4) the Stage 4 history suites (all but the two above), the seeded `preferences.json` launches and the built app, which run at the end of Stage 7; (5) the guard in `useChat.setInstructions`, which the disabled button makes unreachable from outside; (6) Windows only.
+
+Status: accepted (Stage 7.4). Revisit: default instructions for every new chat (a setting); asking before Escape throws a long draft away; a header that does not wrap at the default window size; a mark on a chat that came from outside; counting the instructions against Stage 8's limit.

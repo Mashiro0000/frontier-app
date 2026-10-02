@@ -1,0 +1,14 @@
+{
+  "label": "w74-ipc-reply-drops-instructions",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ipcReply.ts",
+      "from": "...(instructions === '' ? {} : { instructions })",
+      "to": "...{}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run74.mjs"
+  ],
+  "env": {}
+}

@@ -43,7 +43,7 @@ check('opening it wrote nothing: same bytes, same modification time (reading nev
 await H.sendAndWait('a new question in the old conversation')
 successes++
 const upgraded = await H.waitConv(seed.id, (c) => c.messages.length === seed.messages + 2 && c.messages.at(-1).status === 'done')
-check('after the next message the file is saved as version 2', upgraded.version === 2, String(upgraded.version))
+check('after the next message the file is saved as version 3 (D-027; it was version 2 from 5.4 to 7.3)', upgraded.version === 3, String(upgraded.version))
 const oldPart = upgraded.messages.slice(0, seed.messages)
 check('every OLD assistant message now says provider "anthropic" and model null (a known fact and an unknown one, not an invented model)', oldPart.filter((m) => m.role === 'assistant').every((m) => m.provider === 'anthropic' && m.model === null), JSON.stringify(oldPart.filter((m) => m.role === 'assistant').map((m) => [m.provider, m.model])))
 check('...and the old messages are otherwise exactly as they were (text, status, error)', JSON.stringify(oldPart.map(stripAnswerer)) === JSON.stringify(seed.original), JSON.stringify(oldPart.map(stripAnswerer)).slice(0, 160))
@@ -67,7 +67,7 @@ await H.sendAndWait('three: third, with Sonnet')
 successes++
 const bFound = await H.waitFirst('one: first', (c) => c.messages.length === 6 && c.messages[5].status === 'done')
 check('the file records the model of each reply: Opus, Opus, Sonnet', JSON.stringify(answerers(bFound.conv)) === JSON.stringify([`anthropic/${OPUS}`, `anthropic/${OPUS}`, `anthropic/${SONNET}`]), JSON.stringify(answerers(bFound.conv)))
-check('...as version 2', bFound.conv.version === 2)
+check('...as version 3', bFound.conv.version === 3)
 check('on screen: the first reply names its model, the second (same model) does not, the third (a change) does', JSON.stringify(await captions()) === JSON.stringify(['Claude Opus 5.5', null, 'Claude Sonnet 5.5']), JSON.stringify(await captions()))
 const reqs = await H.mockReqs()
 check('the requests really went to those models', JSON.stringify(reqs.slice(-3).map((r) => r.body.model)) === JSON.stringify([OPUS, OPUS, SONNET]), JSON.stringify(reqs.slice(-3).map((r) => r.body.model)))
@@ -135,7 +135,7 @@ for (const [name, message] of refusedCases) {
   check(`a save with ${name} is refused, and no file is created`, r.startsWith('refused') && !H.convFiles().includes(`${sid}.json`), r)
 }
 check('a save with null provider and null model is accepted (unknown)', (await save([u(), a({ provider: null, model: null })])) === 'saved')
-check('...and the file says null and null', (() => { const c = H.readConv(sid); return c.version === 2 && c.messages[1].provider === null && c.messages[1].model === null })())
+check('...and the file says null and null', (() => { const c = H.readConv(sid); return c.version === 3 && c.messages[1].provider === null && c.messages[1].model === null })())
 check('a save with neither field is accepted, and the file gets null and null (never a missing field)', (await save([u(), a()])) === 'saved' && (() => { const c = H.readConv(sid); return c.messages[1].provider === null && c.messages[1].model === null })())
 check('a person\'s message that claims a provider and a model: accepted, and the fields are dropped', (await save([{ ...u(), provider: 'anthropic', model: OPUS }, a({ provider: 'anthropic', model: OPUS })])) === 'saved' && (() => { const c = H.readConv(sid); return !('provider' in c.messages[0]) && !('model' in c.messages[0]) && c.messages[1].model === OPUS })())
 check('extra fields on a reply are dropped (the file has exactly the documented ones)', (await save([u(), a({ provider: 'anthropic', model: SONNET, evil: { x: 1 }, usage: 99 })])) === 'saved' && JSON.stringify(Object.keys(H.readConv(sid).messages[1]).sort()) === '["content","model","provider","role","status"]', JSON.stringify(Object.keys(H.readConv(sid).messages[1])))

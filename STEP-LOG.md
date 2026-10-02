@@ -1746,7 +1746,7 @@ Running `npm run dev` shows one more menu in the header, **Task**, next to the m
 4. **The GitHub push.** When it was checked (1 October 2026) the repository had no `origin` remote, so nothing had been pushed from this folder.
 5. **Everything in the earlier stages' "Things to know" still applies.**
 
-## Stage 7 - What was built (so far: slices 7.1, 7.2 and 7.3)
+## Stage 7 - What was built (so far: slices 7.1 to 7.4)
 
 Stage 7 is built in five slices, one commit each: 7.1 Effort, 7.2 Markdown, 7.3 Copy / Regenerate / Edit and resend, 7.4 Instructions per
 chat, 7.5 the docs, the threat note and the full regression. This part describes what exists now.
@@ -1793,6 +1793,24 @@ keyboard is in it, and always under the last one):
 - Regenerate and Edit wait while a reply is arriving, and each one sends the whole conversation again, **billed again** (the tooltips say so).
   **A reply that is replaced is gone: there are no versions.** No new package, no change in the main process; one new decision, **D-026**.
 
+**7.4 Instructions per chat (D-027).** The header has a new button, **Instructions**, right after History:
+
+- It opens a box where you write instructions for **this chat** (who the model should be, how long to write, what to leave out). They are added
+  to the app's own short rules, after them, and sent with **every message** of that chat. While they are set the button says **on**.
+- The box says what that means before you save: they go to the company that runs the model that answers (to another company if you change the
+  model), they are billed as part of the conversation, they are saved as plain text with the chat on this computer, and they are not the place
+  for passwords. At most 8,000 characters; the count turns red when you are over, and a long text pasted in is never cut without telling you.
+- Typing changes nothing until **Save**; **Escape** and **Cancel** throw the draft away. Emptying the box turns the button into **Turn off**.
+- A new chat starts without instructions, and a chat opened from History brings its own back. Regenerate and Edit use the instructions the chat
+  has at that moment. The button is locked while a reply is arriving.
+- A chat without instructions sends exactly what it sent before (checked against the recorded requests, byte for byte).
+- **The saved file changed: it is now version 3**, with the instructions in it. Chats saved before (versions 1 and 2) still open, are not touched
+  until you next send a message in them or change their instructions, and are then saved as version 3. **A build from before Stage 7.4 cannot read a chat saved by this one.**
+- At the default window width the header's controls now wrap under the title (they no longer fit on one line with the new button).
+- No new package. One new decision, **D-027**; the dialog is `src/renderer/src/instructions/InstructionsDialog.tsx`, and the main process, the
+  shared checks and the saved-file code changed (`src/main/providers/request.ts`, `chat.ts`, `conversationStore.ts`, `src/shared/ipc.ts`,
+  `validate.ts`).
+
 ## Stage 7 - Step by step
 
 1. **Plan approved ("Go", 1 October 2026).** Own Markdown renderer with no package, Copy writes to the clipboard on a click, links open the
@@ -1823,3 +1841,7 @@ keyboard is in it, and always under the last one):
 8. **Negative controls:** 12 breakages under Node (all caught) and 13 in the real window (12 caught; the one that was not is a layer that
    overlaps by design, see D-026), `tools/specs73*`, each file proved restored by hash.
 9. **The older suites were re-run** (`node tools/regress.mjs t73 node window scenarios`). The Node suites all passed. The window and scenario parts passed 23 of 23 on the second run; the first had stopped early because a launcher outran `regress.mjs`'s 400-second limit and left its app on the debug port (the limit is now 15 minutes). No older check had to be changed for this slice. No file under `src/main`, `src/shared` or `src/preload` changed in this slice, so nothing about a request or about what the main process accepts is different.
+10. **Slice 7.4 built and checked** (2 October 2026). The one rule for instructions (`checkInstructions`) and the prompt were written first and checked under Node (`verify-7-4.mjs`, 151 checks, the store ones in a normal folder and in the EFS-encrypted AppData); then the dialog and the button; then the window suite (`verify-7-4w.mjs` through `run74.mjs`, 84 checks), which seeds four conversation files before the launch (versions 1, 2, 3 and a damaged 3) to prove that reading never writes them. What the checks and the screenshots found: the dialog was taller than the default window, so Save sat below the fold (the body scrolls now and the buttons stay in view); the new button makes the header wrap to two rows at the default window width (reported, not redesigned, see D-027); and, in my own checks, a click on an early message of a long chat landing on nothing (scrolled out of view), a History row clicked by a title that was only a prefix, and a paste check that could not see a `maxlength` (below).
+11. **Requests compared with the code before the change:** the recorded requests (42, with the answers and the errors: 163,796 bytes) are byte for byte the same; three breakages of the prompt each changed the capture, so the comparison can fail.
+12. **Negative controls:** 26 breakages under Node (all caught; three had first ended with no summary because a check threw, so every section of the suite now turns a throw into a FAIL line) and 17 in the real window (all caught in the end: one was not caught the first time, because the check that a long paste is not cut set the box's text from a script and so never met a `maxlength`; it now pastes for real). `tools/specs74*`, each file proved restored by hash. A dry check of every control (`tools/check-specs.mjs`) found nine older ones whose target text had changed (four because of this slice); they are repaired.
+13. **The older suites were re-run** (`node tools/regress.mjs t74 node window scenarios`): 35 of 36 clean. The one that was not was 7.3's Copy, Regenerate and Edit suite (28 of 31): with the header two rows high, an early message of a six-message chat scrolls out of view and that suite's click on it missed; it scrolls the message into view now (53 of 53). Eight older checks that pinned the file at version 2 were moved up by one, and the Stage 4 header checks learned of the new button. `run43a` (32 of 32) and `verify-4-2` (88 of 90; the two that fail are the Markdown-era text comparisons, ported at 7.5) were run once because they were edited. The seeded-preferences launches, the other Stage 4 suites and the built app wait for 7.5.

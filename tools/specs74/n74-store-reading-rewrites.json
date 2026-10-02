@@ -1,0 +1,14 @@
+{
+  "label": "n74-store-reading-rewrites",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "if ('conversation' in read) {\n              index.set(id, {",
+      "to": "if ('conversation' in read) {\n              await fs.utimes(join(dir, `${id}.json`), new Date(), new Date())\n              index.set(id, {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

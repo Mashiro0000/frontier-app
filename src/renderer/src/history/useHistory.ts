@@ -13,6 +13,17 @@ const NO_BRIDGE = 'the window could not connect to the app (the preload did not 
 const newestFirst = (a: ConversationSummary, b: ConversationSummary): number =>
   b.updatedAt - a.updatedAt || (a.id < b.id ? -1 : 1)
 
+/**
+ * What a saved copy holds: the messages and the person's instructions for the chat (D-027). The chat replaces its list of messages instead
+ * of editing it, so comparing the lists by reference says whether anything has changed; the instructions are text, compared as text.
+ */
+interface Snapshot {
+  messages: ChatMessage[]
+  instructions: string
+}
+const sameSnapshot = (a: Snapshot, b: Snapshot): boolean =>
+  a.messages === b.messages && a.instructions === b.instructions
+
 export interface UseHistory {
   /** What is saved, newest first; null until the main process has answered. */
   conversations: ConversationSummary[] | null
@@ -44,6 +55,7 @@ export interface UseHistory {
  *   - nothing is saved until there is a message, so opening the app and looking leaves no file;
  *   - a message the person sends is saved at once, a reply that streams in is saved at most once a second,
  *     and a finished, stopped or failed reply is saved at once;
+ *   - a change of the chat's instructions is saved at once, with the messages (D-027);
  *   - what was just opened from disk is not saved again (that would only change its date).
  */
 export function useHistory(chat: UseChat): UseHistory {
@@ -54,10 +66,13 @@ export function useHistory(chat: UseChat): UseHistory {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [activeId, setActiveId] = useState<string>(() => crypto.randomUUID())
 
-  const latest = useRef({ id: activeId, messages: chat.messages })
-  // The messages last opened from disk or handed over to be saved. The chat replaces its list of messages
-  // instead of editing it, so comparing by reference says whether anything has changed since.
-  const settled = useRef<ChatMessage[]>(chat.messages)
+  const latest = useRef({
+    id: activeId,
+    messages: chat.messages,
+    instructions: chat.instructions
+  })
+  // What was last opened from disk or handed over to be saved.
+  const settled = useRef<Snapshot>({ messages: chat.messages, instructions: chat.instructions })
   const lastSaveAt = useRef(0)
   const wasReplying = useRef(false)
   const timer = useRef<number | null>(null)
@@ -86,15 +101,15 @@ export function useHistory(chat: UseChat): UseHistory {
       window.clearTimeout(timer.current)
       timer.current = null
     }
-    const { id, messages } = latest.current
-    if (messages === settled.current || messages.length === 0) return
+    const { id, messages, instructions } = latest.current
+    if (sameSnapshot(settled.current, latest.current) || messages.length === 0) return
     if (!window.api) {
       setSaveError(`The conversation could not be saved: ${NO_BRIDGE}.`)
       return
     }
-    settled.current = messages
+    settled.current = { messages, instructions }
     lastSaveAt.current = Date.now()
-    window.api.history.save({ id, messages: toMessagesToSave(messages) }).then(
+    window.api.history.save({ id, messages: toMessagesToSave(messages), instructions }).then(
       (result) => {
         if (result.ok) {
           setSaveError(null)
@@ -106,28 +121,28 @@ export function useHistory(chat: UseChat): UseHistory {
                 )
           )
         } else {
-          settled.current = [] // not saved: the next change, or "retry", tries again
+          settled.current = { messages: [], instructions: '' } // not saved: the next change, or "retry", tries again
           setSaveError(result.error)
         }
       },
       () => {
-        settled.current = []
+        settled.current = { messages: [], instructions: '' }
         setSaveError('The conversation could not be saved: the app did not answer.')
       }
     )
   }, [])
 
   useEffect(() => {
-    latest.current = { id: activeId, messages: chat.messages }
+    latest.current = { id: activeId, messages: chat.messages, instructions: chat.instructions }
     // A reply has just begun: the person has just sent a message, and that is saved at once, whatever the
     // throttle says about the save before it. After that, a reply that streams in is saved once a second.
     const replyBegan = chat.isReplying && !wasReplying.current
     wasReplying.current = chat.isReplying
-    if (chat.messages === settled.current || chat.messages.length === 0) return
+    if (sameSnapshot(settled.current, latest.current) || chat.messages.length === 0) return
     const wait = SAVE_EVERY_MS - (Date.now() - lastSaveAt.current)
     if (!chat.isReplying || replyBegan || wait <= 0) flush()
     else timer.current ??= window.setTimeout(flush, wait)
-  }, [activeId, chat.messages, chat.isReplying, flush])
+  }, [activeId, chat.messages, chat.instructions, chat.isReplying, flush])
 
   // Closing or reloading the window: whatever is waiting for its turn goes now, and the timer goes with the page.
   useEffect(() => {
@@ -158,8 +173,9 @@ export function useHistory(chat: UseChat): UseHistory {
       }
       flush()
       const messages = fromSavedMessages(result.conversation.messages)
-      settled.current = messages
-      chat.load(messages)
+      const { instructions } = result.conversation // '' for a chat saved before version 3 of the file (D-027)
+      settled.current = { messages, instructions }
+      chat.load(messages, instructions)
       setActiveId(id)
       return null
     } catch {
@@ -176,7 +192,10 @@ export function useHistory(chat: UseChat): UseHistory {
       if (id === activeId) {
         // What is on screen no longer has a file. It was deleted on purpose: whatever it had not managed to
         // save (a failed save) must not bring it back, so nothing of it is left to save.
-        settled.current = latest.current.messages
+        settled.current = {
+          messages: latest.current.messages,
+          instructions: latest.current.instructions
+        }
         startNew()
       }
       return null

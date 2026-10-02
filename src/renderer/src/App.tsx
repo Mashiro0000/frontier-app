@@ -5,6 +5,7 @@ import { ipcReply } from './chat/ipcReply'
 import { useChat } from './chat/useChat'
 import HistoryDialog from './history/HistoryDialog'
 import { useHistory } from './history/useHistory'
+import InstructionsDialog from './instructions/InstructionsDialog'
 import EffortPicker from './settings/EffortPicker'
 import { providerMissingKey } from './settings/format'
 import ModelPicker from './settings/ModelPicker'
@@ -16,6 +17,7 @@ function App(): React.JSX.Element {
   const { status, loadError, setStatus } = useSettingsStatus()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [instructionsOpen, setInstructionsOpen] = useState(false)
   // What the person says they are doing. Only the model menu reads it, to mark the models named for it (D-023).
   // It is not saved: it is a hint for the next choice, not a setting.
   const [task, setTask] = useState<TaskId | null>(null)
@@ -62,6 +64,28 @@ function App(): React.JSX.Element {
           >
             History
           </button>
+          {/* The instructions are sent with every message, so while they are on the button says so: the always-visible mark (D-027). */}
+          <button
+            type="button"
+            className="header-button header-instructions"
+            disabled={chat.isReplying}
+            title={
+              chat.isReplying
+                ? 'The instructions can be changed when the reply has finished.'
+                : chat.instructions !== ''
+                  ? `Instructions are on for this chat (${chat.instructions.length.toLocaleString('en-US')} characters) and are sent with every message. Click to read or change them.`
+                  : 'Give the model instructions for this chat, for example how it should answer.'
+            }
+            onClick={() => setInstructionsOpen(true)}
+          >
+            Instructions
+            {chat.instructions !== '' && (
+              <>
+                {' '}
+                <span className="header-mark">on</span>
+              </>
+            )}
+          </button>
           <TaskPicker status={status} task={task} onChange={setTask} />
           <ModelPicker
             status={status}
@@ -100,6 +124,12 @@ function App(): React.JSX.Element {
         onOpenSettings={() => setSettingsOpen(true)}
       />
       <HistoryDialog open={historyOpen} history={history} onClose={() => setHistoryOpen(false)} />
+      <InstructionsDialog
+        open={instructionsOpen}
+        instructions={chat.instructions}
+        onSave={chat.setInstructions}
+        onClose={() => setInstructionsOpen(false)}
+      />
       <SettingsDialog
         open={settingsOpen}
         status={status}

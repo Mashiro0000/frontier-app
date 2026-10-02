@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/history/useHistory.ts",
-      "from": "    settled.current = []\n    flush()\n  }",
-      "to": "    flush()\n  }"
+      "from": "    flush() // a failed save left nothing marked as saved, so this sends the whole chat again",
+      "to": "    void 0"
     }
   ],
   "argv": [

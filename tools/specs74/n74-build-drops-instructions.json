@@ -1,0 +1,14 @@
+{
+  "label": "n74-build-drops-instructions",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "system: systemPromptFor(model.provider, input.instructions),",
+      "to": "system: systemPromptFor(model.provider),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

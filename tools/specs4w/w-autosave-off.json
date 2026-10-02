@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/history/useHistory.ts",
-      "from": "window.api.history.save({ id, messages: toMessagesToSave(messages) }).then(",
+      "from": "window.api.history.save({ id, messages: toMessagesToSave(messages), instructions }).then(",
       "to": "Promise.resolve({ ok: true as const, summary: { id, title: 'x', updatedAt: 1, messageCount: 1 } }).then("
     }
   ],

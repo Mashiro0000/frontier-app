@@ -9,8 +9,15 @@ export interface UseChat {
   send: (text: string) => void
   /** Stops the reply that is arriving. Whatever has arrived so far is kept. */
   stop: () => void
-  /** Replaces the conversation with another one: a saved one, or an empty list for a new chat. */
-  load: (messages: ChatMessage[]) => void
+  /** The person's instructions for this chat (D-027): '' for none. They go with every request, and are saved with the chat. */
+  instructions: string
+  /** Sets the instructions (the dialog has trimmed and checked them; main checks again). Does nothing while a reply is arriving. */
+  setInstructions: (text: string) => void
+  /**
+   * Replaces the conversation with another one: a saved one (with its instructions), or an empty list for a new chat, which starts with
+   * none.
+   */
+  load: (messages: ChatMessage[], instructions?: string) => void
   /** Asks again for the last reply: it is replaced by a new one (D-026). Does nothing while a reply is arriving. */
   regenerate: () => void
   /**
@@ -27,6 +34,9 @@ export interface UseChat {
  */
 export function useChat(reply: ReplyFn): UseChat {
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  // The person's own instructions for this chat (D-027). They belong to the conversation, like its messages, and are read when a request
+  // is made: a reply that is asked for again (Regenerate, an edited message) uses the instructions the chat has THEN.
+  const [instructions, setInstructionsState] = useState('')
   // Set while a reply is streaming. Used to stop it, and to refuse a second send meanwhile.
   const activeReply = useRef<AbortController | null>(null)
 
@@ -44,12 +54,16 @@ export function useChat(reply: ReplyFn): UseChat {
   ): Promise<void> {
     try {
       // The model that answers is known before any text, and is kept on the reply (D-021), whether it ends well or not.
-      const answered = reply(history, controller.signal, (answerer) =>
-        updateMessage(replyId, (m) => ({
-          ...m,
-          provider: answerer.provider,
-          model: answerer.model
-        }))
+      const answered = reply(
+        history,
+        controller.signal,
+        (answerer) =>
+          updateMessage(replyId, (m) => ({
+            ...m,
+            provider: answerer.provider,
+            model: answerer.model
+          })),
+        instructions
       )
       for await (const piece of answered) {
         if (controller.signal.aborted) break // ignore a piece that was already on its way
@@ -122,12 +136,29 @@ export function useChat(reply: ReplyFn): UseChat {
     activeReply.current?.abort()
   }
 
-  function load(next: ChatMessage[]): void {
+  // Fixed while a reply is arriving, like the model and the effort (D-015, D-024): the buttons that call this are off then; belt and braces.
+  const setInstructions = useCallback((text: string): void => {
+    if (activeReply.current) return
+    setInstructionsState(text)
+  }, [])
+
+  function load(next: ChatMessage[], nextInstructions = ''): void {
     activeReply.current?.abort() // the buttons that call this are off while a reply arrives; belt and braces
     setMessages(next)
+    setInstructionsState(nextInstructions)
   }
 
   const isReplying = messages.at(-1)?.status === 'streaming'
 
-  return { messages, isReplying, send, stop, load, regenerate, resend }
+  return {
+    messages,
+    isReplying,
+    send,
+    stop,
+    instructions,
+    setInstructions,
+    load,
+    regenerate,
+    resend
+  }
 }

@@ -1,0 +1,14 @@
+{
+  "label": "n74-store-writes-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "        if (!checkedInstructions.ok) return { ok: false, error: checkedInstructions.error }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

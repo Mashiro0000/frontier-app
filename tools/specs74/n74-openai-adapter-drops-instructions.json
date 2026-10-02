@@ -1,0 +1,14 @@
+{
+  "label": "n74-openai-adapter-drops-instructions",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "instructions: request.system,",
+      "to": "instructions: request.system.split('\\n\\n')[0],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

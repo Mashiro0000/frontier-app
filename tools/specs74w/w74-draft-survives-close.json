@@ -1,0 +1,14 @@
+{
+  "label": "w74-draft-survives-close",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/instructions/InstructionsDialog.tsx",
+      "from": "{open && (",
+      "to": "{("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run74.mjs"
+  ],
+  "env": {}
+}

@@ -89,6 +89,12 @@ export interface ChatRequest {
   /** Chosen by the page. Every event about this reply carries it back. */
   streamId: string
   messages: WireMessage[]
+  /**
+   * The person's own instructions for this chat (D-027). Main adds them to the app's own rules AFTER them and never in place of them:
+   * this is not the system prompt, and the page cannot replace that. Absent when there are none. Main checks them again
+   * (`checkInstructions`): text, trimmed, at most `CHAT_LIMITS.maxInstructionsChars`, and left out when blank.
+   */
+  instructions?: string
 }
 
 /** What the main process reports while a reply is being produced. */
@@ -136,6 +142,8 @@ export interface ConversationToSave {
   /** Chosen by the page, and checked by main: a UUID in lower case, because it becomes a file name. */
   id: string
   messages: MessageToSave[]
+  /** The person's instructions for this chat (D-027), saved with it. Absent means none. Checked again by main, as for a request. */
+  instructions?: string
 }
 
 /** A saved conversation, as main hands it back to be put on screen. */
@@ -146,6 +154,8 @@ export interface SavedConversation {
   /** Milliseconds since 1970. */
   createdAt: number
   updatedAt: number
+  /** The person's instructions for this chat (D-027): '' for none, and for every chat saved before version 3 of the file. */
+  instructions: string
   messages: SavedMessage[]
 }
 
@@ -235,7 +245,12 @@ export const CHANNELS = {
 export const CHAT_LIMITS = {
   maxMessages: 500,
   maxMessageChars: 200_000,
-  maxTotalChars: 600_000
+  maxTotalChars: 600_000,
+  /**
+   * The person's instructions for a chat (D-027) go out with EVERY request, so they are kept short: about 2,000 tokens. They do not count
+   * towards maxTotalChars. The same limit applies when they are saved and when they are read back, so what is written can always be read.
+   */
+  maxInstructionsChars: 8_000
 } as const
 
 /**

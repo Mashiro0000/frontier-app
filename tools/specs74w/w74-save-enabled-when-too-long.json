@@ -1,0 +1,14 @@
+{
+  "label": "w74-save-enabled-when-too-long",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/instructions/InstructionsDialog.tsx",
+      "from": "const canSave = checked.ok && text !== initial",
+      "to": "const canSave = text !== initial"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run74.mjs"
+  ],
+  "env": {}
+}

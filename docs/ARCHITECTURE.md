@@ -26,7 +26,8 @@ The renderer should never touch Node.js or the network for model calls directly.
 through the preload bridge (IPC).
 
 Stage 1 changed only `src/renderer`. Stage 2 added the files below (see Security notes), Stage 3 added or
-changed the ones marked (3), Stage 4 the ones marked (4), Stage 5 the ones marked (5), and Stage 6 the ones marked (6):
+changed the ones marked (3), Stage 4 the ones marked (4), Stage 5 the ones marked (5), Stage 6 the ones marked (6), and Stage 7 the ones
+marked (7):
 
 | File                              | Job                                                                                                                                                                                                                                                       |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -40,7 +41,7 @@ changed the ones marked (3), Stage 4 the ones marked (4), Stage 5 the ones marke
 | `src/main/providers/types.ts`     | (5) The provider layer's vocabulary: `ProviderAdapter` (`listModels`, `stream`, `usage`, `normalizeError`), the neutral message and request, usage and errors. No Electron imports                                                                        |
 | `src/main/providers/openai.ts`    | (5) The OpenAI adapter (D-022): the Responses API through OpenAI's own SDK, `store: false`, environment pinned; usage with cached tokens taken out of the input                                                                                           |
 | `src/main/providers/anthropic.ts` | (5) The Anthropic adapter: the one place that calls Anthropic's API, through the official SDK. It was `provider.ts`                                                                                                                                       |
-| `src/main/providers/request.ts`   | (5) The app's own rules for a reply, applied once for every provider: system prompt, reply ceiling, joining consecutive turns (D-013)                                                                                                                     |
+| `src/main/providers/request.ts`   | (5) The app's own rules for a reply, applied once for every provider: system prompt, reply ceiling, joining consecutive turns (D-013). (7) The person's instructions for the chat are added to the system prompt AFTER the app's rules (D-027)            |
 | `src/main/providers/errors.ts`    | (5) The sentences for a failure, shared by every provider; adds the request id and scrubs the key                                                                                                                                                         |
 | `src/main/providers/usage.ts`     | (5) Reading token counts out of a provider's usage report                                                                                                                                                                                                 |
 | `src/main/providers/index.ts`     | (5) The adapter for each provider: a table that must be complete, or it does not compile                                                                                                                                                                  |
@@ -55,9 +56,10 @@ changed the ones marked (3), Stage 4 the ones marked (4), Stage 5 the ones marke
 | `src/shared/registry.ts`          | (3) The shape of the registry file, `parseRegistry` (the strict check), and `toModelOption` (what the page may know about a model)                                                                                                                        |
 | `src/shared/rankings.ts`          | (6) The task list, the shape of the rankings file, `parseRankings` (the strict check) and `suggestionsFor` (which rows can be used now)                                                                                                                   |
 | `src/renderer/src/settings/`      | (3) The Settings dialog, the model menu in the header, and the hook that asks main for the settings status. (5) One key section per provider (`ProviderKeySection`: add, test, remove) . (6) The Task menu, and the "(suggested)" marks in the model menu |
-| `src/main/conversationStore.ts`   | (4) The saved conversations: one JSON file each, saved copy-then-delete, read with a recovery rule, listed from memory. No Electron imports                                                                                                               |
+| `src/main/conversationStore.ts`   | (4) The saved conversations: one JSON file each, saved copy-then-delete, read with a recovery rule, listed from memory. No Electron imports. (7) Version 3 holds the chat's instructions; versions 1 and 2 are still read (D-027)                         |
 | `src/renderer/src/history/`       | (4) `useHistory` (autosave and the list), `HistoryDialog` (open and delete), and the conversions between the chat and what is saved                                                                                                                       |
 | `src/renderer/src/markdown/`      | (7) A reply as Markdown (D-025): `parse.ts` (the reader), `Markdown.tsx` (a closed set of elements), `CodeBlock.tsx` (Copy), `LinkConfirm.tsx` (a link asks first)                                                                                        |
+| `src/renderer/src/instructions/`  | (7) The Instructions dialog (D-027): the person's own text for one chat, a draft until Save, with the count, the limit and what it is for, who gets it and where it is kept                                                                               |
 
 ### Settings and the API keys
 
@@ -104,7 +106,7 @@ told only the levels, the selected one and the registry's pick for the chosen mo
 ### Saving conversations
 
 ```
-page: useChat.messages --useHistory (on every change; a streaming reply at most once a second)--> window.api.history.save({ id, messages })
+page: useChat.messages --useHistory (on every change; a streaming reply at most once a second)--> window.api.history.save({ id, messages, instructions })
         |                                                                              preload --> ipc.ts guard --> checkConversationSave
         |                                                                                  (the title and dates are not the page's)
         |                                                                                              |
@@ -123,6 +125,12 @@ per-user data folder, in `conversations/`, and the History dialog shows where.
 Since Stage 5.4 the file is `"version": 2` (D-021): every reply in it says which `provider` and `model` wrote it (`null` where that
 is not known), and the person's own messages carry neither. A version 1 file (Stages 2-4) is read as a version 2 one, with the
 provider `anthropic` and the model `null`, and stays version 1 on disk until the conversation is next saved: reading never writes.
+
+Since Stage 7.4 the file is `"version": 3` (D-027): it also holds `instructions`, the person's own text for the chat (`""` for none), between
+the dates and the messages. A version 1 or 2 file is read as a version 3 one with no instructions, and stays as it is on disk until the
+conversation is next saved (reading never writes, as before). In a version 3 file the field must be present and usable (text, at most 8,000
+characters): a file whose instructions are not is counted as unreadable and left alone, like any other damaged file. A file of version 4 or
+later was made by another build and is left alone.
 
 ### Sending a message
 
@@ -144,13 +152,31 @@ says on the reply, and the list shows the model's name above a reply when it is 
 has finished, main logs once what it used (provider/model and the four token counts). What the model is told about
 earlier turns is D-013.
 
+### Instructions for a chat
+
+```
+header: Instructions (on) --InstructionsDialog (a draft until Save)--> useChat.instructions  (one text per conversation, '' for none)
+                                                                          |                \
+   every request: ipcReply --chat.start({ streamId, messages, instructions? })           useHistory: saved with the chat (version 3)
+        main: checkChatRequest (text, trimmed, at most 8,000 characters, left out when blank)
+              --> buildStreamRequest --> system = the app's rules + (if any) a line saying whose words follow + the instructions
+              --> the adapter sends `system` (Anthropic) or `instructions` (OpenAI), as it always did with the prompt
+```
+
+The instructions are the person's, set only by pressing Save in the dialog, kept with the conversation, and sent with every request of that chat to
+whichever provider answers (the dialog says so). They are added AFTER the app's own rules and never replace them: the page has no field that
+sets the system prompt, and a field called `system` in a request is dropped by `checkChatRequest`. A chat without instructions sends exactly the
+prompt it sent before Stage 7.4 (checked byte for byte against the recorded requests). A new chat starts without instructions; a chat opened
+from History brings its own back. The header button says "on" while they are set, and is off while a reply arrives, like the model and the
+effort. Asking again (Regenerate, an edited message) uses the instructions the chat has at that moment. See DECISIONS.md D-027.
+
 ## Chat UI (`src/renderer/src/chat/`)
 
 | File                 | Job                                                                                                                                  |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `ChatView.tsx`       | Puts the message list and the input box together. The conversation itself is held in `App`, which also feeds the header's model menu |
-| `useChat.ts`         | Conversation state, and the cycle: send, reply streams in, then done / stopped / error. (4) `load` replaces the conversation         |
-| `ipcReply.ts`        | The reply function: sends the conversation to main over the bridge and streams the answer                                            |
+| `useChat.ts`         | Conversation state and the cycle: send, reply streams in, then done / stopped / error. (4) `load`. (7) Instructions (D-027)          |
+| `ipcReply.ts`        | The reply function: sends the conversation (and the instructions, if any) to main over the bridge and streams the answer             |
 | `history.ts`         | Decides what the model is told about earlier turns (D-013)                                                                           |
 | `types.ts`           | `ChatMessage`, `MessageStatus` and `ReplyFn`                                                                                         |
 | `MessageList.tsx`    | Scrolling list. Stays on the newest text unless the reader scrolled up                                                               |
@@ -162,8 +188,8 @@ earlier turns is D-013.
 
 `src/renderer/src/useCopy.ts` is the one place that writes the clipboard (on a click, D-025, D-026).
 
-`App.tsx` adds the header (New chat, History, the model menu, Settings). All styling is one stylesheet, `assets/main.css`, with colours as CSS
-variables at the top. The UI is dark only.
+`App.tsx` adds the header (New chat, History, Instructions, the Task, model and Effort menus, Settings). All styling is one stylesheet,
+`assets/main.css`, with colours as CSS variables at the top. The UI is dark only.
 
 ```
 Composer --onSend--> useChat.send --> reply(history, signal) --text pieces--> messages --> MessageList
@@ -172,8 +198,9 @@ Composer --onSend--> useChat.send --> reply(history, signal) --text pieces--> me
 
 ### The reply seam
 
-`ReplyFn` is `(history, signal) => AsyncIterable<string>`: the conversation so far and an
-`AbortSignal` go in, and the reply comes out as a stream of text pieces. `useChat` accepts any
+`ReplyFn` is `(history, signal, onAnswerer, instructions) => AsyncIterable<string>`: the conversation so far, an
+`AbortSignal`, a callback that is told which model answers, and the chat's instructions ('' for none) go in, and the reply comes out as a
+stream of text pieces. `useChat` accepts any
 `ReplyFn` (`App` passes `ipcReply`). Real providers also stream and can be cancelled, so they fit this
 shape. The function behind it lives in the main process, reached over IPC; `useChat` and the components did
 not have to change. See DECISIONS.md D-008.
@@ -267,6 +294,11 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
   (no `dangerouslySetInnerHTML`, no `style`, `href`, `src` or handler of a reply's making). Raw HTML and images in a
   reply are shown as the text they were written as and nothing is loaded. A link in a reply is a button that asks
   first; only Open hands an https address to the browser.
+- The person's instructions for a chat (D-027) are text they wrote and saved in the dialog, and nothing else can set them: a reply is never
+  read for them, and the page cannot send a system prompt (a `system` field is dropped; only `instructions` is read, and main checks it
+  again). They are added after the app's own rules, never in place of them. They are sent with every request to whichever provider answers and
+  saved as plain text in the chat's file, and the dialog says both. A chat file opened from History brings its instructions with it, and the
+  "on" mark on the header button shows that they are there; a file whose instructions are not usable is left alone.
 
 ## Not built yet
 

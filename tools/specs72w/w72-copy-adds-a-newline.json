@@ -2,7 +2,7 @@
   "label": "w72-copy-adds-a-newline",
   "edits": [
     {
-      "file": "{{REPO}}/src/renderer/src/markdown/CodeBlock.tsx",
+      "file": "{{REPO}}/src/renderer/src/useCopy.ts",
       "from": "await navigator.clipboard.writeText(text)",
       "to": "await navigator.clipboard.writeText(text + '\\n')"
     }

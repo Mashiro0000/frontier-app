@@ -1,0 +1,14 @@
+{
+  "label": "w74-change-not-saved",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/useHistory.ts",
+      "from": "a.messages === b.messages && a.instructions === b.instructions",
+      "to": "a.messages === b.messages"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run74.mjs"
+  ],
+  "env": {}
+}

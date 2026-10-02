@@ -773,7 +773,8 @@ body {
 /* ---------- settings dialog ---------- */
 
 .settings,
-.history {
+.history,
+.instructions {
   /* The global reset removes the dialog's automatic centring margin, so put it back. */
   margin: auto;
   width: min(480px, calc(100vw - 32px));
@@ -787,12 +788,14 @@ body {
 }
 
 .settings::backdrop,
-.history::backdrop {
+.history::backdrop,
+.instructions::backdrop {
   background: rgba(0, 0, 0, 0.6);
 }
 
 .settings-title,
-.history-heading {
+.history-heading,
+.instructions-heading {
   margin-bottom: 14px;
   font-size: 18px;
   font-weight: 600;
@@ -1016,4 +1019,97 @@ body {
   .history-ask {
     margin-left: 10px;
   }
+}
+
+/* ---------- instructions dialog (D-027) ---------- */
+
+/* Wider than Settings: it holds a text box. */
+/*
+ * Like the History dialog: the heading and the buttons stay in view, and only the body scrolls when the window is short (at the default
+ * window size the whole dialog fits). Only while open: display on the dialog itself would show it when closed.
+ */
+.instructions {
+  width: min(560px, calc(100vw - 32px));
+}
+
+.instructions[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.instructions-form {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.instructions-body {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 160px;
+  overflow-y: auto;
+}
+
+.instructions-hint {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* What the person must know before they write: where the text goes, and where it is kept. */
+.instructions-warning {
+  color: var(--color-text);
+}
+
+.instructions-label {
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.instructions-input {
+  width: 100%;
+  min-height: 120px;
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-background);
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.instructions-input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.instructions-count {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.instructions-count-over {
+  font-size: 13px;
+  color: var(--color-danger);
+}
+
+.instructions-footer {
+  display: flex;
+  flex: none;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+/* The header's Instructions button says "on" while the chat has instructions: they are sent with every message. */
+.header-mark {
+  margin-left: 2px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border-radius: 999px;
 }

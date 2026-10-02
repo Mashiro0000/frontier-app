@@ -31,7 +31,7 @@ const launcher = (script, mode, label, what) => {
 }
 
 if (parts.includes('node')) {
-  for (const [label, script] of [['provider', process.env.PROVIDER_TEST ?? 'provider-node-test-5.mjs'], ['registry', process.env.REGISTRY_TEST ?? 'verify-5-2.mjs'], ['store', 'verify-4-1.mjs'], ['adapter', 'provider-adapter-test-5.mjs'], ['credstore', 'verify-5-3-store.mjs'], ['store54', 'verify-5-4-store.mjs'], ['openai', 'provider-openai-test-5.mjs'], ['rankings', 'verify-6-1.mjs'], ['effort', 'verify-7-1.mjs'], ['markdown', 'verify-7-2.mjs'], ['rewrite', 'verify-7-3.mjs'], ...(process.env.EXTRA_NODE_TESTS ? process.env.EXTRA_NODE_TESTS.split(',').map((t, i) => ['extra' + i, t]) : [])]) {
+  for (const [label, script] of [['provider', process.env.PROVIDER_TEST ?? 'provider-node-test-5.mjs'], ['registry', process.env.REGISTRY_TEST ?? 'verify-5-2.mjs'], ['store', 'verify-4-1.mjs'], ['adapter', 'provider-adapter-test-5.mjs'], ['credstore', 'verify-5-3-store.mjs'], ['store54', 'verify-5-4-store.mjs'], ['openai', 'provider-openai-test-5.mjs'], ['rankings', 'verify-6-1.mjs'], ['effort', 'verify-7-1.mjs'], ['markdown', 'verify-7-2.mjs'], ['rewrite', 'verify-7-3.mjs'], ['instructions', 'verify-7-4.mjs'], ...(process.env.EXTRA_NODE_TESTS ? process.env.EXTRA_NODE_TESTS.split(',').map((t, i) => ['extra' + i, t]) : [])]) {
     const r = runNode({ label: pfx(label), script })
     note(r.ok, `${r.ok ? 'OK  ' : 'BAD '} ${pfx(label).padEnd(26)} ${script}`)
   }
@@ -45,12 +45,13 @@ if (parts.includes('window')) {
   rec(seeded('24', 'dev', 'verify-2-4.mjs', base), pfx('24'), 'verify-2-4')
   rec(seeded('34', 'dev', 'verify-3-4.mjs', base), pfx('34'), 'verify-3-4')
   rec(seeded('w53', 'dev', 'verify-5-3.mjs', { USER_DATA_DIR: scratch('s5w53'), WIPE_USER_DATA: '1', MOCK_PORT: '8797', INSPECT_PORT: '9230' }), pfx('w53'), 'verify-5-3 (keys, Settings)')
-  launcher('run54.mjs', 'dev', 'w54', 'verify-5-4 (who answered, file v2)')
+  launcher('run54.mjs', 'dev', 'w54', 'verify-5-4 (who answered, file v3 since 7.4)')
   launcher('run55.mjs', 'dev', 'w55', 'verify-5-5 (two providers)')
   launcher('run62.mjs', 'dev', 'w62', 'verify-6-2/3 (task menu, rankings damaged)')
   launcher('run71.mjs', 'dev', 'w71', 'verify-7-1 (effort menu, restart, damaged efforts)')
   launcher('run72.mjs', 'dev', 'w72', 'verify-7-2 (Markdown replies, links, Copy)')
   launcher('run73.mjs', 'dev', 'w73', 'verify-7-3 (Copy, Regenerate, Edit and send again)')
+  launcher('run74.mjs', 'dev', 'w74', 'verify-7-4 (instructions per chat; seeded v1, v2, v3 files)')
   const mtime = statSync(join(P, 'preferences.json')).mtimeMs
   rec(seeded('34b', 'dev', 'verify-3-4b.mjs', { USER_DATA_DIR: P, MOCK_PORT: MOCK, EXPECT_MODEL: 'claude-haiku-4-5-20251001', PREFS_MTIME_MS: String(mtime) }), pfx('34b'), 'verify-3-4b (restart)')
 }
@@ -99,6 +100,7 @@ if (parts.includes('preview')) {
   launcher('run71.mjs', 'preview', 'prev-w71', 'built: verify-7-1 (effort menu, restart, seeds)')
   launcher('run72.mjs', 'preview', 'prev-w72', 'built: verify-7-2 (Markdown replies, links, Copy)')
   launcher('run73.mjs', 'preview', 'prev-w73', 'built: verify-7-3 (Copy, Regenerate, Edit and send again)')
+  launcher('run74.mjs', 'preview', 'prev-w74', 'built: verify-7-4 (instructions per chat)')
   stage4('preview')
 }
 

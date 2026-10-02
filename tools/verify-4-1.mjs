@@ -117,7 +117,7 @@ const timed = async (fn) => { const t0 = performance.now(); const value = await 
   const parsed = parseSavedFile(good, id)
   check('parseSavedFile: a good file is accepted', typeof parsed === 'object' && parsed.title === 'T' && parsed.messages.length === 2)
   const bad = [
-    ['another version', { ...good, version: 3 }], ['no version', { ...good, version: undefined }], ['a version written as a string', { ...good, version: '1' }],
+    ['another version', { ...good, version: 4 }], ['no version', { ...good, version: undefined }], ['a version written as a string', { ...good, version: '1' }],
     ['an id that is not the file name', { ...good, id: randomUUID() }], ['no id', { ...good, id: undefined }],
     ['a title that is a number', { ...good, title: 5 }], ['a title that is too long', { ...good, title: 'x'.repeat(HISTORY_LIMITS.maxTitleChars + 1) }],
     ['a negative date', { ...good, createdAt: -1 }], ['a fractional date', { ...good, updatedAt: 1.5 }], ['a date as text', { ...good, createdAt: '1000' }], ['an unsafe integer date', { ...good, updatedAt: 2 ** 60 }], ['NaN as a date', { ...good, updatedAt: NaN }],
@@ -172,7 +172,7 @@ async function storeChecks(baseDir, where) {
     check(T('save answers with a summary'), saved.ok && saved.summary.id === id && saved.summary.title === 'first question' && saved.summary.messageCount === 2)
     check(T('the folder holds exactly one file, named <id>.json (no leftover .tmp)'), JSON.stringify(await names(dir)) === JSON.stringify([`${id}.json`]), JSON.stringify(await names(dir)))
     const onDisk = JSON.parse(await read(dir, `${id}.json`))
-    check(T('the file is the documented shape (version 2, id, title, dates, messages)'), onDisk.version === 2 && onDisk.id === id && onDisk.title === 'first question' && Number.isSafeInteger(onDisk.createdAt) && onDisk.updatedAt >= onDisk.createdAt && onDisk.messages.length === 2, JSON.stringify(Object.keys(onDisk)))
+    check(T('the file is the documented shape (version 3, id, title, dates, instructions, messages)'), onDisk.version === 3 && onDisk.instructions === '' && onDisk.id === id && onDisk.title === 'first question' && Number.isSafeInteger(onDisk.createdAt) && onDisk.updatedAt >= onDisk.createdAt && onDisk.messages.length === 2, JSON.stringify(Object.keys(onDisk)))
     check(T('no message carries an id or a "streaming" status in the file'), onDisk.messages.every((m) => JSON.stringify(Object.keys(m)) === JSON.stringify(['role', 'content', 'status']) && m.status !== 'streaming'))
     check(T('the file is one line of compact JSON'), !(await read(dir, `${id}.json`)).includes('\n'))
     const loaded = await store.load(id)
@@ -259,7 +259,7 @@ async function storeChecks(baseDir, where) {
     add('a file over the size limit (a sparse 11 MB file; never read)', async (d, id) => { const h = await fsp.open(join(d, `${id}.json`), 'w'); await h.truncate(11 * 1024 * 1024); await h.close() }, [], 1, null)
     add('JSON null', async (d, id) => { await fsp.writeFile(join(d, `${id}.json`), 'null') }, [], 1, null)
     add('a JSON array', async (d, id) => { await fsp.writeFile(join(d, `${id}.json`), '[]') }, [], 1, null)
-    add('another version', async (d, id) => { await fsp.writeFile(join(d, `${id}.json`), make('v3', { id }).replace('"version":1', '"version":3')) }, [], 1, null)
+    add('another version', async (d, id) => { await fsp.writeFile(join(d, `${id}.json`), make('v4', { id }).replace('"version":1', '"version":4')) }, [], 1, null)
     add('an id inside that is not the file name', async (d, id) => { await fsp.writeFile(join(d, `${id}.json`), make('other', { id: randomUUID() })) }, [], 1, null)
     add('a "__proto__" key inside', async (d, id) => { await fsp.writeFile(join(d, `${id}.json`), make('proto', { id }).replace('{"version"', '{"__proto__":{"version":2},"version"')) }, ['proto'], 0, 'proto')
     add('a good file that starts with a byte-order mark (an editor added it)', async (d, id) => { await fsp.writeFile(join(d, `${id}.json`), '\ufeff' + make('bom', { id })) }, ['bom'], 0, 'bom')

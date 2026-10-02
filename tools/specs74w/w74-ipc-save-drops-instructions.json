@@ -1,0 +1,14 @@
+{
+  "label": "w74-ipc-save-drops-instructions",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "return await history.save(check.conversation)",
+      "to": "return await history.save({ id: check.conversation.id, messages: check.conversation.messages })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run74.mjs"
+  ],
+  "env": {}
+}

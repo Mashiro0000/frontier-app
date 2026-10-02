@@ -119,14 +119,15 @@ contract: each stage starts with a short written plan that the owner approves (a
 12. **I stop and ask before:** adding a new kind of power (file write, command run, network from a tool, microphone), adding a dependency with
     install scripts, publishing or pushing anything, or touching your real profile or accounts.
 
-## Stage 7 - Chat polish (in progress: 7.1 Effort, 7.2 Markdown and 7.3 Copy, Regenerate and Edit are done)
+## Stage 7 - Chat polish (in progress: 7.1 Effort, 7.2 Markdown, 7.3 Copy, Regenerate and Edit, and 7.4 Instructions are done)
 
 Five slices, one commit each: 7.1 Effort, 7.2 Markdown, 7.3 Copy / Regenerate / Edit and resend, 7.4 Instructions per chat, 7.5 docs, threat
 note and the full regression.
 
 - [x] (7.2, D-025) Markdown with code blocks (language label and a Copy button), tables, lists, quotes, headings, links that ask first.
 - [x] (7.3, D-026) **Copy** on each message, **regenerate** the last reply (Try again after a failure), **edit and resend** one of your own messages.
-- [ ] A system prompt of your own per chat (7.4).
+- [x] (7.4, D-027) **Instructions** of your own per chat: added after the app's rules, sent with every message of that chat, saved with it (the file is
+      now version 3), shown as "on" while set, at most 8,000 characters, and described in the box (who gets them, billed, plain text on disk).
 - [x] (7.1, D-024) An **Effort** control (a Faster to Smarter slider or menu, like the Claude desktop app's) next to the model menu. It offers only the levels
       the registry lists for the chosen model (`capabilities.effortLevels`), and is hidden for a model that takes none (Haiku 4.5). The choice is
       kept per model by the main process, which checks it against the registry again (as it does the model choice), and the default stays what

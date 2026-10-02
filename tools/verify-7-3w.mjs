@@ -53,7 +53,10 @@ const screen = () => ev(`[...document.querySelectorAll('${MSG}')].map((m) => ({
   caption: m.querySelector('.message-model')?.textContent ?? null,
   note: m.querySelector('.message-note')?.textContent ?? null
 }))`)
-const act = (index, label) => page.click(`${MSG}:nth-child(${index + 1}) .message-action@${label}`)
+// Since 7.4 the header is two rows high at the default window size, so an early message of a long chat can be scrolled out of sight: bring it in
+// first (a click or a hover at a point above the window lands on nothing).
+const intoView = async (index) => { await ev(`document.querySelector('${MSG}:nth-child(${index + 1})')?.scrollIntoView({ block: 'center' })`); await sleep(100) }
+const act = async (index, label) => { await intoView(index); return page.click(`${MSG}:nth-child(${index + 1}) .message-action@${label}`) }
 const titleOf = (index, label) => ev(`[...document.querySelectorAll('${MSG}:nth-child(${index + 1}) .message-action')].find((b) => b.textContent === ${JSON.stringify(label)})?.title ?? null`)
 const editor = () => ev(`(() => { const f = document.querySelector('.message-edit'); if (!f) return null; const t = f.querySelector('textarea'); const b = [...f.querySelectorAll('button')]; return { value: t.value, focused: document.activeElement === t, caret: [t.selectionStart, t.selectionEnd], note: f.querySelector('.message-edit-note')?.textContent ?? null, warning: f.querySelector('.message-edit-warning')?.textContent ?? null, send: b.find((x) => x.type === 'submit')?.textContent, sendDisabled: b.find((x) => x.type === 'submit')?.disabled, buttons: b.map((x) => x.textContent) } })()`)
 const setEditor = (text) => ev(`(() => { const t = document.querySelector('.message-edit textarea'); const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set; set.call(t, ${JSON.stringify(text)}); t.dispatchEvent(new Event('input', { bubbles: true })); return t.value })()`)
@@ -69,6 +72,7 @@ const afterAsking = async (before) => {
   return all.length > before ? all.at(-1) : null
 }
 const hover = async (index) => {
+  await intoView(index)
   const box = await ev(`(() => { const r = document.querySelector('${MSG}:nth-child(${index + 1}) .bubble, ${MSG}:nth-child(${index + 1})').getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 } })()`)
   await page.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: box.x, y: box.y })
   await sleep(120)

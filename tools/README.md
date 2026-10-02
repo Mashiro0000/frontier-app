@@ -20,7 +20,7 @@ tree), and keep the machine idle: `verify-4-3c` (quit with 60 queued saves) fail
 | Part        | What it runs                                                                        | About   |
 | ----------- | ----------------------------------------------------------------------------------- | ------- |
 | `node`      | Plain-Node suites: provider, registry, rankings, store, adapters, credential store  | 1.5 min |
-| `window`    | The window suites of Stages 1-3, 5, 6 and 7.1, each on its own scratch profile      | 7 min   |
+| `window`    | The window suites of Stages 1-3, 5, 6 and 7.1 to 7.4, each on its own scratch profile | 10 min |
 | `seeds`     | One launch per damaged `preferences.json` (`make-seeds.mjs` makes them)             | 4.5 min |
 | `scenarios` | The registry file deliberately broken in ten ways, restored after each (`run-scenario.mjs`) | 3 min   |
 | `stage4`    | The history suites (`final-new.mjs`): crashes, damaged folders, injected disk faults | long    |
@@ -34,6 +34,7 @@ Single pieces:
 ```
 node tools/run53.mjs                      one launch of the key / Settings suite
 node tools/run71.mjs [dev|preview]        the Effort menu (7.1): a fresh profile, a restart, and ten seeded preferences files
+node tools/run74.mjs [dev|preview]        Instructions per chat (7.4): seeds conversation files of versions 1, 2, 3 and a damaged 3, then the window suite
 node tools/run-scenario.mjs <scenario>    one registry scenario
 node tools/nc-all.mjs specs guard-off     one negative control (spec folders: specs, specs4, specs4w)
 node tools/with-load.mjs 8 tools/regress.mjs <tag> window      the same, with 8 busy CPU loops competing
@@ -60,6 +61,7 @@ running; `!! the app is GONE` means no `electron.exe` was left.
 | `provider-*-test-5.mjs`, `shim-new.mjs`| Plain-Node suites for the provider layer                                        |
 | `run4*.mjs`, `run53.mjs`, `run62.mjs`, `final-new.mjs` | Launchers that need two launches, a seeded folder, a damaged file or a crash in the middle |
 | `nc*.mjs`, `specs*/`, `make-specs54.mjs` | Negative controls: sabotage one thing, run the suite, prove it fails, restore the file and prove it by hash |
+| `check-specs.mjs`                      | Dry check that every negative-control spec still finds its sabotage text exactly once |
 | `capture-golden-5.mjs`, `golden-*.json`| The recorded request bodies the Anthropic path must keep sending byte for byte  |
 | `mock-openai.mjs`                      | OpenAI's side of the mock: Responses API streaming and its model list (my reading of the docs and the SDK's types, not the real API) |
 | `registry-good.json`                   | A fixed registry for the adapter suites (it is NOT the live one; update it when the schema changes) |
@@ -95,3 +97,10 @@ window on purpose, to show both cases.
   7 minutes or more. A launcher killed by its limit leaves its app running on port 9222, and then every later launch ends with "port 9222 still
   busy" (the summary shows `no summary`). Kill that app tree (the one with a scratch `--user-data-dir`, never anything else) and re-run.
 - A negative control whose run ends with "no summary line" is not a detection: look at its FAIL lines, and run it once more on its own.
+- Make a plain-Node suite fail with a FAIL line instead of dying (wrap each section in a guard that turns a throw into a failed check): a
+  sabotage often makes a value undefined, and a crash cannot be told from "the sabotage was noticed" (`verify-7-4.mjs` does it).
+- A check about text typed or pasted into a box must put the text in with `Input.insertText` (a real edit), not by setting `.value` from a script:
+  an attribute such as `maxlength` only limits real edits, so a check that sets the value cannot see it removed or added.
+- Before a batch of negative controls run `node tools/check-specs.mjs` (no window, changes nothing): every spec's sabotage text must still occur
+  exactly once in its file, or `nc.mjs` aborts and the control silently stops existing. Nine specs had gone stale unnoticed by the time of 7.4
+  and were repaired. (It reports a spec as stale while a control is sabotaging that very file, so do not run it during a batch.)

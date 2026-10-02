@@ -1,0 +1,14 @@
+{
+  "label": "n74-store-old-files-instructions-read",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "  let instructions = ''\n  if (file.version === 3) {",
+      "to": "  let instructions = typeof file.instructions === 'string' ? file.instructions : ''\n  if (file.version === 3) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

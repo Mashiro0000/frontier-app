@@ -1,0 +1,14 @@
+{
+  "label": "n74-prompt-blank-counts",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "return own === '' ? rules :",
+      "to": "return !instructions ? rules :"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-7-4.mjs"
+  ],
+  "env": {}
+}

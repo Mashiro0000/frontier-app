@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/shared/validate.ts",
-      "from": "return { ok: true, conversation: { id, messages: checked.messages } }",
-      "to": "return { ok: true, conversation: { ...(input as object), id, messages: checked.messages } as never }"
+      "from": "conversation: { id, messages: checked.messages, instructions: checkedInstructions.instructions }",
+      "to": "conversation: { ...(input as object), id, messages: checked.messages, instructions: checkedInstructions.instructions } as never"
     }
   ],
   "argv": [
