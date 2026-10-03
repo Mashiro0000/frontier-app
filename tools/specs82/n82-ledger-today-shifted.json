@@ -1,0 +1,14 @@
+{
+  "label": "n82-ledger-today-shifted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/usageLedger.ts",
+      "from": "summarize(records.values(), null, at, unreadable)",
+      "to": "summarize(records.values(), null, at - 86_400_000, unreadable)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

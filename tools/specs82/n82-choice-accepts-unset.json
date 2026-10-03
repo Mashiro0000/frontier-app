@@ -1,0 +1,14 @@
+{
+  "label": "n82-choice-accepts-unset",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "if (kind === 'none') return { kind: 'none' }",
+      "to": "if (kind === 'none' || kind === 'unset') return { kind: 'none' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

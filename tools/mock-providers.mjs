@@ -112,10 +112,10 @@ export function startMock(port = 8787) {
   }
 
   // What a reply reports it used (8.1). Anthropic gives the input side in message_start (cache tokens beside input_tokens, not inside it) and the
-  // output so far in message_delta. [[mock:cached]] reports cache tokens as well; [[mock:no-usage]] reports nothing (an empty usage object),
+  // output so far in message_delta. [[mock:cached]] reports cache tokens as well; [[mock:no-usage]] reports nothing (an empty usage object), [[mock:heavy]] reports a million input and a hundred thousand output tokens ($6 at Opus's prices; 8.2 uses it to reach a spending limit),
   // so the app has to guess; every other directive keeps the numbers the earlier stages knew (25 in, 12 out).
-  const USAGE_START = { 'cached': { input_tokens: 25, cache_read_input_tokens: 800, cache_creation_input_tokens: 40, output_tokens: 1 }, 'no-usage': {} }
-  const USAGE_END = { 'cached': { output_tokens: 300 }, 'no-usage': {} }
+  const USAGE_START = { 'cached': { input_tokens: 25, cache_read_input_tokens: 800, cache_creation_input_tokens: 40, output_tokens: 1 }, 'no-usage': {}, 'heavy': { input_tokens: 1_000_000, output_tokens: 1 } }
+  const USAGE_END = { 'cached': { output_tokens: 300 }, 'no-usage': {}, 'heavy': { output_tokens: 100_000 } }
   function beginStream(res, { thinking = true, model, directive } = {}) {
     res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', 'request-id': 'req_mock_ok' })
     sse(res, 'message_start', { type: 'message_start', message: { id: 'msg_mock', type: 'message', role: 'assistant', model, content: [], stop_reason: null, stop_sequence: null, usage: USAGE_START[directive] ?? { input_tokens: 25, output_tokens: 1 } } })

@@ -1,0 +1,14 @@
+{
+  "label": "n82-text-three-decimals",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "(?:\\.(\\d{1,2}))?",
+      "to": "(?:\\.(\\d{1,3}))?"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

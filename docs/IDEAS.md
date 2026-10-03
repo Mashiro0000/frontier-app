@@ -16,6 +16,8 @@
 - Ask before Escape throws away a long unsaved draft in the Instructions box (D-027 does not), and a mark on a chat that came from outside the app
 - Automated tests for `useChat` (needs a test runner; none is set up, see D-007)
 - Show what a reply cost on a chat opened from History (8.1 shows it live only: it is not saved with the message, so a chat file stays version 3; saving it would be version 4, and one more step a build cannot take back, D-030)
+- Stop a reply in the middle when its running cost would pass a limit (8.2 only checks before a request, so one reply can end over; D-031)
+- A warning in the empty chat or the chat bar when a limit is nearly used (say 80%), and a limit that resets on a day the person chooses (billing day) instead of the 1st (D-031)
 - Compact the usage ledger (it only grows: two lines a request; older months could be rolled into one line each), and export it as a CSV (D-030)
 - The pricing modifiers the ledger does not apply: Fast mode, the Batch API, data residency (1.1x), web search, and discounts or tax on an invoice (D-030)
 - Server-side refusal fallbacks for the provider, once there is a real key to try them with (D-012)

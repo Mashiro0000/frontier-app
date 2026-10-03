@@ -1,0 +1,14 @@
+{
+  "label": "n82-ledger-refusal-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/usageLedger.ts",
+      "from": "if (refusal !== null) throw new RequestRefused(refusal)",
+      "to": "void refusal"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

@@ -2,6 +2,7 @@
 // cross that boundary is described here, so all three sides agree. Types, channel names and limits
 // only: this file is bundled into the preload, which runs sandboxed (see D-004).
 
+import type { Limits, LimitsChoice } from './limits'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
 import type { ReplyUsage, UsageSummary } from './usage'
@@ -70,6 +71,11 @@ export interface SettingsStatus {
   suggestions: Suggestion[]
   /** How hard the model that answers thinks (D-024). Null if that model takes no such setting (Haiku 4.5), or none is selected. */
   effort: EffortStatus | null
+  /**
+   * The daily and the monthly spending limit (D-031). Each is an amount, "No limit" chosen on purpose, or not chosen yet; until both are chosen
+   * every request is refused. Main enforces them; the page only shows them and sends the person's choice.
+   */
+  limits: Limits
 }
 
 export type SetKeyResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
@@ -77,6 +83,7 @@ export type SetKeyResult = { ok: true; status: SettingsStatus } | { ok: false; e
 export type TestKeyResult = { ok: true; modelCount: number } | { ok: false; error: string }
 export type SetModelResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
 export type SetEffortResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
+export type SetLimitsResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
 
 /** A message as the model is told about it: who wrote it, and the plain text. */
 export type WireRole = 'user' | 'assistant'
@@ -210,6 +217,11 @@ export interface FrontierApi {
      * registry entry lists, and remembers the choice per model. The answer describes the model that answers now.
      */
     setEffort(modelId: string, level: string): Promise<SetEffortResult>
+    /**
+     * Chooses the daily and the monthly spending limit (D-031): both together, each an amount in whole dollars and cents or "No limit". Main
+     * checks them again and keeps them; the page cannot take a choice back to "not chosen", and has no other way to change a limit.
+     */
+    setLimits(choice: LimitsChoice): Promise<SetLimitsResult>
   }
   chat: {
     /** Starts a reply. It is answered by events (see `onEvent`), not by a return value. */
@@ -245,6 +257,7 @@ export const CHANNELS = {
   settingsTestApiKey: 'settings:test-api-key',
   settingsSetModel: 'settings:set-model',
   settingsSetEffort: 'settings:set-effort',
+  settingsSetLimits: 'settings:set-limits',
   chatStart: 'chat:start',
   chatCancel: 'chat:cancel',
   chatEvent: 'chat:event',

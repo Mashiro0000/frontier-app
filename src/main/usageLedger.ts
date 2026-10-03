@@ -1,9 +1,12 @@
 import { randomUUID } from 'crypto'
 import { promises as fs } from 'fs'
 import { dirname } from 'path'
+import type { Spend } from '../shared/limits'
 import type { Effort, ModelPricing, ProviderId } from '../shared/registry'
 import {
+  costOf,
   ledgerLine,
+  NO_TOKENS,
   parseLedgerRecord,
   summarize,
   type LedgerRecord,
@@ -25,6 +28,10 @@ import {
 // `begin` is awaited BEFORE the request goes out and throws if the line cannot be written: a request that cannot be counted is not
 // sent (the limit of 8.2 depends on this). `finish` never throws: the reply has already happened, so a failure to write its end is
 // logged, and the sums in memory are right for as long as the app runs.
+//
+// The spending limit (Stage 8.2, D-031) is checked INSIDE `begin`, in the same turn as the write: the sums it is checked against and the
+// line that adds the request to them cannot be separated by another request, so two requests cannot both pass on the same remaining
+// money. The ledger does not know what a limit is: it is handed a check, which answers with a sentence that refuses or with null.
 
 /** More than this is not read: the newest part of the file is, and the oldest records are left out of the sums (and logged). */
 export const LEDGER_LIMITS = { maxFileBytes: 64 * 1024 * 1024 } as const
@@ -46,9 +53,24 @@ export interface FinishInput {
   estimate: boolean
 }
 
+/** Thrown by `begin` when the check it was given refuses the request. Its message is the sentence for the person; nothing was written. */
+export class RequestRefused extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'RequestRefused'
+  }
+}
+
+/** Answers with the sentence that refuses a request, given what has been spent, or null when it may go out. */
+export type RequestCheck = (spend: Spend) => string | null
+
 export interface UsageLedger {
-  /** Records that a request is about to be sent, and answers with it. Throws if it cannot be written: then nothing may be sent. */
-  begin(input: BeginInput): Promise<LedgerRecord>
+  /**
+   * Records that a request is about to be sent, and answers with it. Throws if it cannot be written: then nothing may be sent. With a
+   * `check`, it is given what has been spent today and this month (requests still on their way included) and what this request's input
+   * costs, in the same turn as the write; if it refuses, this throws `RequestRefused` and writes nothing.
+   */
+  begin(input: BeginInput, check?: RequestCheck): Promise<LedgerRecord>
   /**
    * Records how the request ended, replacing what `begin` wrote. Never throws; `saved` says whether the line reached the disk (the
    * sums in memory are right either way). Answers null for an id that was never begun.
@@ -168,13 +190,23 @@ export function createUsageLedger(path: string, options: LedgerOptions = {}): Us
   }
 
   return {
-    begin: (input) =>
+    begin: (input, check) =>
       inOrder(async () => {
         await ensureLoaded()
+        const at = now() // one reading of the clock, for the check and for the record: a request cannot straddle midnight
+        if (check) {
+          const sums = summarize(records.values(), null, at, unreadable)
+          const refusal = check({
+            today: sums.today.costUsd,
+            month: sums.month.costUsd,
+            request: costOf({ ...NO_TOKENS, input: input.inputTokens }, input.prices)
+          })
+          if (refusal !== null) throw new RequestRefused(refusal)
+        }
         const record: LedgerRecord = {
           version: 1,
           id: newId(),
-          at: now(),
+          at,
           chat: input.chat,
           provider: input.provider,
           model: input.model,

@@ -140,7 +140,7 @@ note and the full regression (D-028); and a sixth after them, at the owner's req
 - [x] (7.6, D-029) The header stays ONE row at the default window width, whatever is showing: **New chat**, **History** and **Instructions** moved out of it
       into a slim row under the message box (the owner's decision of 2 October 2026, after D-027 had reported that the header wrapped).
 
-## Stage 8 - Usage, cost and spending limits (8.1 done; 8.2, 8.3 and 8.5 not started)
+## Stage 8 - Usage, cost and spending limits (8.1 and 8.2 done; 8.3 and 8.5 not started)
 
 The owner's decisions of 2 October 2026: **the limits are the owner's own, with no preset numbers**; **encrypted history is its own later stage
 (8b)**, with a tested backup and export before any encryption; **a guess marked "about" is counted** when a reply is stopped or fails with no usage
@@ -151,10 +151,11 @@ report, and replaced if a real report arrives.
       output including thinking), priced at the registry's four list prices per model (schema 0.4). Shown per reply, per chat, today and this month
       (Settings > Usage). A guess marked "about" when there is no report. Regenerate, Edit, the instructions and the thinking are all counted, because
       they are in the request or its report.
-- [ ] (8.2) **Limits.** A daily and a monthly limit, **set by the owner with no preset numbers**: on first run the app asks for both before the first
+- [x] (8.2, D-031) **Limits.** A daily and a monthly limit, **set by the owner with no preset numbers**: on first run the app asks for both before the first
       send, and Settings has a deliberate "No limit" with a one-line warning. The main process checks before every request (send, Regenerate, Edit),
       counting what is already on the ledger and what is in flight, and refuses with a plain sentence that says which limit and why. The page cannot
-      bypass it.
+      bypass it. Until both limits are chosen (an amount or "No limit") every request is refused; a missing or damaged `limits.json` counts as not chosen,
+      never as "No limit". A reply that starts under a limit can end over it by at most what one reply can write (D-031 gives the figure).
 - [ ] (8.3) **A confirmation before a very large request**: the estimate (input, and the most the reply could cost at its ceiling) and a question.
 - [ ] (8.5) The stage's threat note, the full regression, and the list of what was not checked.
 - This is the safety foundation for everything that can loop or spend. Nothing in Stages 11 to 13 is built before it.

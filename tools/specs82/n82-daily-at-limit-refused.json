@@ -1,0 +1,14 @@
+{
+  "label": "n82-daily-at-limit-refused",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "if (daily.kind === 'usd' && spend.today + spend.request > daily.usd) {",
+      "to": "if (daily.kind === 'usd' && spend.today + spend.request >= daily.usd) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

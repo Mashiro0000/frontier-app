@@ -1270,3 +1270,111 @@ section. (8) The built app: `npm run build` passes, but the suites were not run 
 Status: accepted (Stage 8.1). Revisit: the first real replies (do the numbers match the provider's usage page?); 8.2's limits, which will read
 `summary` and the in-flight records, and must say in Settings that deleting the file resets the count; thinking that is not shown, in a guess; a ledger
 that is compacted; the per-reply line on a chat from History (a file version 4).
+
+## D-031 - Stage 8.2: spending limits, chosen by the owner, checked in the main process before every request
+
+Safety rule 6 (money has a hard stop) is what this slice makes true: 8.1 counted, 8.2 stops. It carries out the owner's decision of 2 October 2026 that
+**there are no preset numbers**: the app asks for a daily and a monthly limit before the first send, with nothing filled in, and Settings has a
+deliberate "No limit" with a one-line warning. Nothing that can loop or spend more (Stages 11 to 13) is built before this exists.
+
+- **What a limit is.** Two of them, a daily and a monthly one, each in US dollars in whole cents ($0.01 to $10,000), or **"No limit" chosen on purpose**.
+  "Not chosen yet" is a third state, kept apart from "No limit" everywhere (the file, the status the page gets, the check). Today runs midnight to midnight
+  and the month from the 1st, by this computer's clock (as the Usage sums do, D-030). They are kept in `limits.json` in the data folder, beside
+  `preferences.json`, as a line a person can read: `{"version":1,"daily":5,"monthly":"none"}` (a limit not chosen is left out). Written in place and read back (D-010:
+  no rename on this PC's EFS-encrypted %APPDATA%), read once and kept; a change made to the file while the app runs is heard at the next start.
+- **Until both are chosen, nothing is sent.** The page asks in a dialog before the first message ("Set your spending limits": two empty boxes with a "No
+  limit" tick each, what is billed and by whom, and that they can be changed in Settings). It can be put off ("Not now" or Escape); then the empty chat says "Set
+  your spending limits to start chatting" with a "Set limits" button, and **main refuses every request** with a sentence ("Nothing was sent: no spending limits are
+  set yet. Open Settings, set a daily and a monthly limit (or choose No limit), and try again."). The page cannot get round it: a request made straight through its
+  bridge is refused the same way (checked). A `limits.json` that is **missing, damaged or cut off holds no choice**, never a default and never "No limit": each field
+  is read on its own (a bad daily keeps a good monthly), a bad one is "not chosen", the app asks again, and what was chosen is filled in. A file that cannot be
+  read at all (a folder in its place, a disk error) refuses requests with "the spending limits could not be read on this computer", and Settings shows "not chosen" so
+  that the person can choose; saving then says it could not write (checked with a folder in the file's place).
+- **The check.** In `src/main/chat.ts`, for every request, **in the ledger's own turn** (`begin` is given the check; it runs after the ledger is read and before the
+  request's line is written, so what has been spent and the line that adds this request to it cannot be parted by another request: ten requests asked for at
+  once with money for three let exactly three through, checked). It takes today's and this month's spending as the ledger counts them (requests still on their way
+  included, at their input guess; a refused request owes nothing; the provider's own report replaces a guess), adds **this request's input at list price**
+  (the least it can cost), and refuses if that is **more than** a limit: an amount that lands exactly on the limit may go, a cent more may not, and a limit that is
+  already reached refuses anything. A refusal writes nothing to the ledger (nothing was sent) and reaches the page as the reply's error, in one plain sentence that
+  names the limit: "Nothing was sent: you have reached your daily limit of $5.00 ($6.00 so far today). You can raise the limit in Settings (today's count starts
+  again at midnight)." ("this would take this month's spending past your monthly limit of $50.00 ($49.50 so far)" when it has not been reached yet; both limits in
+  one sentence when both stop it).
+- **Every way to ask is covered, because there is one place a provider is called.** A new message, Regenerate ("Try again" after a failure), an edited message sent
+  again, and a call made through the bridge all reach `runReply` in `chat.ts`, which is the only caller of a provider's `stream` (a source check in `verify-8-2.mjs` says
+  so, and that the check comes before the call). "Test key" asks for the list of models, which costs nothing, and is not a request in this sense.
+- **The one way past a limit, and how far.** The length of a reply is not known before it ends, so **a request that starts under a limit can end over it**: by at most what
+  one reply can write (the ceiling is 16,000 tokens a reply, thinking included: $0.80 at the dearest output price in the registry, $50 a million; $0.32 at Opus 5.5's
+  $20; $0.08 at Haiku 4.5's $5), plus whatever the real input was above the app's guess of it (the guess is on the high side for English), plus the same again for each request
+  that is in flight at the same moment (the page lets one reply run at a time; a script calling the bridge could start several, and each would pass on the same money). The
+  limit is on **the app's own count at list prices, not on the invoice** (D-030), so a provider's own limit in its account remains the real backstop, which the "No limit" line
+  says. Settings says the first part ("can end a little over it, by at most that one reply"). 8.3 (the confirmation before a very large request) will show the
+  worst case before it is sent.
+- **What the page can do.** One new bridge function, `settings.setLimits({ daily, monthly })`, and one new field in the settings status, `limits`. Main checks what it is given
+  (both sides, each "none" or an amount in whole cents between $0.01 and $10,000; an amount as text, a fraction of a cent, zero, a negative number, NaN or a missing side is
+  refused) and **builds its own copy field by field**, so nothing else the page adds is kept. The page **cannot take a choice back to "not chosen"**, cannot read the file
+  or its path, and has no function that touches the ledger. In Settings: a "Spending limits" section (two boxes, "No limit", the warning when either is ticked, a hint when
+  the daily limit is above the monthly one, what the limit counts, the one-reply overshoot, and that **deleting the usage file starts the count again from zero**), and the
+  Usage rows say how much of each limit has gone ("$6.00 of $5.00").
+
+**Choices I made where things were unclear.** (1) The check adds only the request's own input, not the most the reply could cost: adding the ceiling would refuse
+requests while there is still room (a $50 limit would stop at $49.20 on the dearest model) and is what 8.3 shows the owner to decide on. (2) A reply is not stopped in the middle
+when its running cost passes a limit (IDEAS): the running figure of an unfinished reply is a guess, and a half reply is also billed. (3) The limits are in their own file, not in
+`preferences.json`: the two files are read and written in different directions of safety (a torn preferences file forgets a model, a torn limits file must forget nothing that
+lets money through). (4) The dialog can be put off, because a person who opens the app to read an old chat should not be forced to choose first; main is what refuses. (5) Whole cents
+and a ceiling of $10,000: a fraction of a cent cannot be typed, and "No limit" says what a larger number would mean. (6) A limit of zero is refused (it would be "pause the app", and
+"Not now" does that). (7) Today and this month follow the computer's clock, as the sums do. (8) The first-run dialog and the Settings section share one form
+(`LimitsForm`); the Settings section is rebuilt each time Settings opens, so its boxes show what is saved now (a first version showed empty boxes after the limits had been
+chosen in the dialog: found by the window suite, fixed, and the check stays).
+
+**Threat note.** What could go wrong, what stops it, what is left.
+
+- _A hostile or broken page._ It can only choose limits, in whole cents within bounds, and cannot unset them; every field is rebuilt by main; a refused choice leaves the file byte for
+  byte as it was (checked for nine kinds of bad choice); it cannot read `limits.json`, learn its path, or write the ledger; the check is in main, in the one place a provider is called,
+  and runs whatever the page says. A page that raised its own limit would be doing what the person's own Settings does; nothing in a reply (a model's output is text, never a call) can reach it.
+- _The person's own files._ `limits.json` and the ledger are plain files the owner can edit or delete (safety rule 9). Raising a limit in the file is the owner raising it; deleting the
+  ledger resets the count (Settings says so); damaging `limits.json` makes the app ask again, never lets money through. The limits stop the app, not a person who changes its files.
+- _Spending that is not stopped._ (1) The reply that passes the limit it started under (above). (2) Anything D-030 lists as not counted: thinking that was never shown in a guess,
+  a request the provider billed although it refused it, an unreadable ledger line (Settings says how many; the limit does not fail closed on them, because a cut-off last line is
+  what a crash leaves), two copies of the app each reading the file once, costs that are not tokens at list prices. (3) The clock: a clock set back, or a changed time zone, moves
+  "today" and "this month" and so can give back room that was used; it is the person's own computer. (4) Requests on their way when the app is killed count for their input only
+  (D-030). (5) A model whose price changed since the registry was checked (D-030): the limit counts at the price in the registry.
+- _A limit that is not there._ Not chosen is never "No limit": a missing, empty, cut-off, not-JSON or wrong-version file, a field that is not an amount this app could have
+  written, and a file that cannot be read all refuse requests; "No limit" is only what a person ticked (the file reads it only as `"none"`, in lower case).
+- _A refusal that costs something._ Nothing: a refused request is not sent and not written, and the limit is read from memory, so refusing does not touch the disk.
+- _Rule 1 (nothing leaves the PC unseen)._ Nothing new leaves it: the limits are local, and nothing in a request changed.
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only. A plain-Node suite, `verify-8-2.mjs` (215 checks, every file check in a normal folder and in the
+EFS-encrypted %APPDATA%): what an amount is and the 40 or so texts a person might type (a table of accepted and refused ones); what the page may hand over (a table of 25 bad choices, extra
+fields dropped); what `limits.json` holds and how each kind of damage is read (every one as "not chosen", a good field kept beside a bad one); the check itself (exactly at the limit may go,
+a cent more may not, a limit already reached, the daily alone, the monthly alone, both, "No limit", the sentences); the ledger running the check in its own turn (a refusal writes nothing, not even
+the folder; what the check is given, including requests on their way and a finished request's real report; yesterday's spending is in the month and not in the day, to the millisecond; **ten
+requests at once with money for three let exactly three through**; the limit still holds after a restart); the store (missing, damaged, empty, cut off, with a byte-order mark, unreadable, a save that
+fails, twenty saves at once, a read between two saves, an edit made while the app runs not heard); and two source checks (a provider is called from one place in main, and the check comes before
+the call). A window suite, `verify-8-2w.mjs` (62 checks, `run82.mjs`), on a profile that has never chosen limits, against the fake Anthropic API (which now has `[[mock:heavy]]`, a million
+tokens in and a hundred thousand out, $6 at Opus's prices): the first-run dialog (empty boxes, what is typed, "No limit", the warning, "Not now", Save), every way of asking refused while nothing is chosen
+(the message box, "Try again", the bridge), a request under the limits going, **a daily limit that is reached refusing a new message, "Try again", an edited message and a call through the bridge, each
+with the same sentence, nothing reaching the mock and nothing written to the ledger**, raising the limit in Settings and the retry going through, the monthly limit alone (with the day set to "No limit"),
+"No limit" for both, the limit passed by one reply that started under it (as the text says), nine kinds of bad choice from the page leaving the file byte for byte as it was, and extra fields dropped;
+a restart (`verify-8-2b.mjs`, 8 checks: the limits and the spending survive, the question does not come back, the daily limit is still reached with $12.00 counted from the file, and raising it lets
+the next request through); and three launches with a `limits.json` that is half there, not JSON, or a folder (`verify-8-2c.mjs`, 21 checks: asked again with what is known filled in, refused through
+the bridge, choosing repairs it, and with a folder in the file's place the request is refused with "could not be read" and Save says it could not write). **Negative controls: 32 breakages, all
+caught** (`tools/specs82`: 23 under Node; `tools/specs82w`: 9 in the real window), each file proved restored by hash. They cover: a limit that refuses at its own amount, a limit ignored (each of the two),
+the request's input not added, "not chosen" allowed or counted as chosen when only one is, an amount of zero or above the most accepted, three decimals accepted, extra fields or "unset" accepted from the
+page, a bad field or a file that is not JSON or a missing file read as "No limit", an unreadable file read as "not chosen", a byte-order mark, a cache that is not updated, the ledger skipping or ignoring
+its check or running it on yesterday's clock or with a request that costs nothing, the check not passed in `chat.ts`, a refusal treated as a write failure, the limits not read, a save of the page's choice
+without the check, a status that hides "not chosen", the dialog never opening, the amount used not shown, the "No limit" warning missing, and Save on while a limit is missing. Five of the nine window
+controls ended without a summary line because the suite waited for something that the breakage had made impossible (a dialog that never opened, a request that went through); each printed the failed
+checks that name the breakage first, so they are detections, but they are not counted as a clean pass-fail run. **What the suites found:** one real fault of mine, a Settings form that showed empty boxes
+after the limits had been chosen in the first-run dialog (the form was built before they existed); fixed, and the check stays. Everything else the first window run reported was my test (a click on a button
+below the fold of a dialog taller than the window; a limit of 7 that the profile's $12 of spending rightly refused). **Older suites made stale** by 8.1 or this slice and updated: the exact lists of the bridge
+and of the settings status in `verify-2-3`, `verify-3-4`, `verify-4-2`, `verify-4-3d` and `verify-5-3` (`usage` since 8.1, `setLimits` and `limits` now), the button count in `verify-5-3`'s check at 420 and 320
+px (which now also proves that "Save limits" stays inside the dialog), and one negative-control spec of 7.6 (`App.tsx` gained props). Re-run on this tree and clean: `verify-2-3` (64), `verify-2-3b` (5),
+`verify-3-4` (78), `verify-5-3` (66), `verify-7-6w` (46), `verify-8-1w` and `verify-8-1b` (81 and 12), and the plain-Node part of the regression (14 suites).
+**Not checked:** (1) **a real call to either provider**: nothing was sent to a real API, so a real usage report has still never been read by this app. (2) **The full regression** (about 54 minutes) and **the
+built app**: only the suites named above were run on this tree; the other window suites, the seeds, the scenarios, Stage 4 and the `preview` part wait for your go-ahead. (3) Daylight-saving changes, other time
+zones and a clock set back (the edges of a day and a month are checked under Node with the local clock). (4) Two copies of the app at once (each reads the ledger once). (5) A screen reader, and the limits
+form at 280 px (the older check at 320 and 420 px covers the Save button only). (6) A ledger near its size cap together with a limit. (7) A real reply that ends over a limit by more than the figure above
+(it is the registry's ceiling and prices, not a measurement).
+
+Status: accepted (Stage 8.2). Revisit: the first real replies (does the count the limit uses match the provider's usage page?); stopping a reply in the middle (IDEAS); 8.3, which shows the worst case before a
+very large request is sent; a warning when a limit is nearly used; a billing-day reset (IDEAS); what happens when the registry's prices change (the limit counts at the price in the registry).

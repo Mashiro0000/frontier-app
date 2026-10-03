@@ -2018,3 +2018,58 @@ encryption; a guess marked "about" is counted when a reply is stopped or fails w
    of the build, so this only matters if you copy `registry/models.json` between versions.
 7. **Nothing is pushed.** Stage 7 is merged into `main` locally (tag `stage-7-done`), and this slice is on the branch `stage-8-usage-limits`.
 8. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 8 - Slice 8.2: spending limits (3 October 2026 session; D-031)
+
+**Your decisions that shaped it.** No preset limit numbers (the app asks for a daily and a monthly limit before the first send, with nothing filled in; "No limit" is a deliberate
+choice with a one-line warning); the limit is checked by the main process before every request, so the page cannot get round it.
+
+**What was built.**
+
+- **Two limits, chosen by you** (`src/shared/limits.ts`, `src/main/limits.ts`): a daily and a monthly one, each in dollars and cents ($0.01 to $10,000) or "No limit", kept in a small plain
+  file, `limits.json`, in the app's data folder. Until both are chosen **nothing is sent**: a dialog asks before the first message, and if you put it off ("Not now") every request is
+  refused with a sentence that says so. A missing or damaged file counts as "not chosen", never as "No limit".
+- **The check** (`src/main/chat.ts`, `src/main/usageLedger.ts`): before every request (a new message, Regenerate / Try again, an edited message), in the ledger's own turn, what has been spent
+  today and this month (requests on their way included) plus this request's input at list price is compared with each limit. Over it: the request is not sent and not written, and the reply
+  says which limit ("Nothing was sent: you have reached your daily limit of $5.00 ($6.00 so far today). You can raise the limit in Settings (today's count starts again at midnight).").
+- **What you see:** the first-run dialog; Settings > Spending limits (two boxes, "No limit", the warning, what the limit counts, and that deleting the usage file starts the count again from zero);
+  the Usage rows now say "$6.00 of $5.00"; the empty chat says "Set your spending limits to start chatting" with a button, if you put the question off.
+
+**Step by step.**
+
+1. **Where the plan stood.** I read the 8.1 ledger and the code that sends a request, and found that the ledger already serialises its writes, so the check could go **inside** `begin` and
+   not beside it: two requests cannot both pass on the same money (ten at once, money for three: three go).
+2. **The shared parts and the store were written and checked under plain Node first** (`verify-8-2.mjs`, 215 checks, in a normal folder and in the EFS-encrypted %APPDATA%). The first run found
+   one slip of my own: an edit script of mine turned `$$` into `$`, so the "most a limit can be" sentence lost its dollar sign. Fixed in the source and the check stays.
+3. **The page:** one form shared by the first-run dialog and the Settings section. **The first window run** (`run82.mjs`: a fresh profile with no limits, a restart, and three launches with a
+   damaged `limits.json`) found **one real fault of mine**: the Settings boxes showed empty after the limits had been chosen in the dialog (the form was built before they existed). Fixed (the
+   section is rebuilt each time Settings opens), and a check stays. The other failures of that run were my tests (a click below the fold of the Settings dialog, and a monthly limit of 7 that the
+   profile's $12 of spending rightly refused). The second run: **62, 8 and 8 + 6 + 7 checks, all clean**.
+4. **Older suites made stale** (some by 8.1, which had not re-run them): the exact lists of the bridge and of the settings status in five suites, a button count in `verify-5-3`, and one old
+   negative-control spec. Updated, and re-run clean on this tree: `verify-2-3`, `2-3b`, `3-4`, `5-3`, `7-6w`, both 8.1 window suites, and the plain-Node part of the regression (14 suites).
+   The test profiles now get "No limit" written by the harness (`run-with-app.mjs`), which is how the older suites keep testing what they always did; this is a file written in a scratch
+   profile, and there is no switch for it inside the app.
+5. **Negative controls: 32 breakages, all caught** (23 under Node, 9 in the real window), each file proved restored by hash. Five of the window ones ended without a summary line (the suite waited
+   for something the breakage made impossible) but printed the failed checks that name it. The Node suite now turns a throw into a failed check instead of a crash.
+6. **What was run, and what was not.** Run: lint, prettier, `npm run build`, the dry spec check (306 specs, 0 stale), the suites above. **Not run, waiting for your go-ahead: the full regression (about 54
+   minutes) and the built-app run, for 8.1 and 8.2 together.** No real call to a provider was made.
+
+## Stage 8.2 - Choices I made where things were unclear ("pick the simplest option")
+
+- **The check adds only the request's own input**, not the most the reply could cost: a reply can still end over a limit, by at most one reply's output (D-031 gives the figures). 8.3 shows the worst case
+  before a very large request.
+- **A reply is not stopped in the middle** when its cost passes a limit (it is in IDEAS).
+- **The limits have their own file**, not `preferences.json`: a torn write there must never let money through.
+- **The first-run question can be put off**; main refuses requests meanwhile.
+- **Whole cents, at most $10,000, never zero.** "No limit" says what a larger number would mean.
+
+## Stage 8.2 - Things to know (not problems, but worth your attention)
+
+1. **The app now asks for limits on first run.** In your own profile it will open the question the first time you start this build; nothing is sent until you choose.
+2. **A reply that starts under a limit can end over it**, by at most what one reply can write (16,000 tokens: $0.80 at the dearest model, $0.32 on Opus 5.5, $0.08 on Haiku 4.5). The limit counts what
+   the app counts at list prices; your provider's invoice and your provider's own limit in its account are what really count.
+3. **Deleting the usage file resets the count** (Settings says so), and a changed clock moves "today" and "this month".
+4. **`limits.json` is a plain file** (`{"version":1,"daily":5,"monthly":"none"}`). A change made to it while the app runs is heard at the next start.
+5. **No real call has been made by me**, still. Compare the first real replies with your provider's usage page.
+6. **Nothing is pushed.** This slice is committed on the branch `stage-8-usage-limits` (8.1 is committed there too); `main` has Stage 7.
+7. **Everything in the earlier stages' "Things to know" still applies.**

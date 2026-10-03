@@ -1,0 +1,14 @@
+{
+  "label": "n82-ledger-check-skipped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/usageLedger.ts",
+      "from": "        if (check) {\n",
+      "to": "        if (false) {\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n82-store-missing-file-is-none",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/limits.ts",
+      "from": "if ((error as NodeJS.ErrnoException).code === 'ENOENT') return unsetLimits()",
+      "to": "if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { daily: { kind: 'none' }, monthly: { kind: 'none' } }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

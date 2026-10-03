@@ -12,7 +12,7 @@ const P = '{{REPO}}/src/renderer/src/'
 const CSS = P + 'assets/main.css', BAR = P + 'chat/ChatBar.tsx', APP = P + 'App.tsx'
 const CHATBAR_BOX = '  max-width: calc(var(--chat-width) + 40px);\n  margin: 0 auto;\n  padding: 0 20px 10px;'
 // the two elements of App.tsx that the move concerns, in the order they have now (the chat area, then the bar) and swapped
-const CHAT_VIEW = '      <ChatView\n        status={status}\n        chat={chat}\n        conversationId={history.activeId}\n        onOpenSettings={() => setSettingsOpen(true)}\n      />\n'
+const CHAT_VIEW = '      <ChatView\n        status={status}\n        chat={chat}\n        conversationId={history.activeId}\n        needsLimits={needsLimits}\n        onOpenSettings={() => setSettingsOpen(true)}\n        onOpenLimits={() => setLimitsPutOff(false)}\n      />\n'
 const CHAT_BAR = '      {/* New chat, History and Instructions live under the message box, not in the header, so the header stays one row (D-029). */}\n      <ChatBar\n        isReplying={chat.isReplying}\n        messageCount={chat.messages.length}\n        instructions={chat.instructions}\n        saveFailed={history.saveError !== null}\n        onNewChat={history.startNew}\n        onOpenHistory={() => setHistoryOpen(true)}\n        onOpenInstructions={() => setInstructionsOpen(true)}\n      />\n'
 const BAR_IN_HEADER = '\n        <ChatBar isReplying={chat.isReplying} messageCount={chat.messages.length} instructions={chat.instructions} saveFailed={false} onNewChat={history.startNew} onOpenHistory={() => setHistoryOpen(true)} onOpenInstructions={() => setInstructionsOpen(true)} />'
 

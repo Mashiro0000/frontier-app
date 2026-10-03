@@ -1,0 +1,14 @@
+{
+  "label": "n82-set-needs-only-daily",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "limits.daily.kind !== 'unset' && limits.monthly.kind !== 'unset'",
+      "to": "limits.daily.kind !== 'unset'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

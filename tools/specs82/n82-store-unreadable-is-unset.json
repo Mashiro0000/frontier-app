@@ -1,0 +1,14 @@
+{
+  "label": "n82-store-unreadable-is-unset",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/limits.ts",
+      "from": "      throw error\n    }\n    if (text.charCodeAt(0)",
+      "to": "      return unsetLimits()\n    }\n    if (text.charCodeAt(0)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

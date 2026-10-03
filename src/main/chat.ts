@@ -1,5 +1,6 @@
 import { ipcMain, type WebContents } from 'electron'
 import { CHANNELS, type ChatRequest, type ChatStreamEvent } from '../shared/ipc'
+import { checkAgainstLimits, type Limits } from '../shared/limits'
 import { PROVIDER_NAMES, type ProviderId } from '../shared/registry'
 import {
   costOfRecord,
@@ -16,12 +17,13 @@ import { checkChatRequest } from '../shared/validate'
 import { baseUrlOverride } from './baseUrl'
 import { readApiKey } from './keyStore'
 import { currentModel } from './models'
+import type { LimitsStore } from './limits'
 import { adapterFor } from './providers'
 import { describeFailure, unknownError } from './providers/errors'
 import { buildStreamRequest } from './providers/request'
 import type { ErrorKind, ProviderAdapter, ReplyEnd, Usage } from './providers/types'
 import { isTrustedSender } from './security'
-import type { UsageLedger } from './usageLedger'
+import { RequestRefused, type UsageLedger } from './usageLedger'
 
 const noKeyMessage = (provider: ProviderId): string =>
   `No API key is saved yet. Open Settings and add your ${PROVIDER_NAMES[provider]} API key.`
@@ -106,7 +108,8 @@ async function runReply(
   windowId: number,
   request: ChatRequest,
   send: (event: ChatStreamEvent) => void,
-  ledger: UsageLedger
+  ledger: UsageLedger,
+  limitsStore: LimitsStore
 ): Promise<void> {
   const { streamId } = request
   const key = `${windowId}:${streamId}`
@@ -183,17 +186,41 @@ async function runReply(
       messages: request.messages,
       signal: controller.signal
     })
-    // Counted BEFORE it is sent (D-030): a request that cannot be written down is not made, so nothing is spent that is not on record.
+    // The spending limits (D-031), read here and checked inside the ledger's turn below. They are asked for on EVERY request, whichever way
+    // it came (a new message, Regenerate, an edited message): this is the only place a provider is called. A file that cannot be read
+    // at all refuses the request, and so does a limit that has not been chosen yet.
+    let limits: Limits
     try {
-      began = await ledger.begin({
-        chat: request.conversationId ?? null,
-        provider: entry.provider,
-        model: entry.id,
-        effort,
-        prices: entry.pricing,
-        inputTokens: estimateInputTokens(streamRequest.system, streamRequest.messages)
-      })
+      limits = await limitsStore.read()
     } catch (error) {
+      // Logged here only; the message could name a file path.
+      console.error('Reading the limits failed:', error instanceof Error ? error.message : error)
+      send({
+        streamId,
+        type: 'error',
+        message: 'Nothing was sent: the spending limits could not be read on this computer.'
+      })
+      return
+    }
+    // Counted BEFORE it is sent (D-030): a request that cannot be written down is not made, so nothing is spent that is not on record. The
+    // limit is checked in the same turn (D-031): what has been spent and the line that adds this request to it cannot be parted by another.
+    try {
+      began = await ledger.begin(
+        {
+          chat: request.conversationId ?? null,
+          provider: entry.provider,
+          model: entry.id,
+          effort,
+          prices: entry.pricing,
+          inputTokens: estimateInputTokens(streamRequest.system, streamRequest.messages)
+        },
+        (spend) => checkAgainstLimits(limits, spend)
+      )
+    } catch (error) {
+      if (error instanceof RequestRefused) {
+        send({ streamId, type: 'error', message: error.message }) // a sentence for the person, naming the limit; nothing was written
+        return
+      }
       // Logged here only; the message could name a file path.
       console.error(
         'Writing to the usage ledger failed:',
@@ -253,7 +280,11 @@ async function runReply(
 }
 
 /** Registers the chat messages. Called from registerIpc, after the app is ready. */
-export function registerChatIpc(appUrl: string, ledger: UsageLedger): void {
+export function registerChatIpc(
+  appUrl: string,
+  ledger: UsageLedger,
+  limitsStore: LimitsStore
+): void {
   ipcMain.on(CHANNELS.chatStart, (event, raw: unknown) => {
     if (!isTrustedSender(event, appUrl)) return // nobody to answer: it is not our page
     const sender = event.sender
@@ -266,7 +297,7 @@ export function registerChatIpc(appUrl: string, ledger: UsageLedger): void {
       return
     }
     stopWhenPageGoes(sender)
-    void runReply(sender.id, check.request, send, ledger)
+    void runReply(sender.id, check.request, send, ledger, limitsStore)
   })
 
   ipcMain.on(CHANNELS.chatCancel, (event, streamId: unknown) => {

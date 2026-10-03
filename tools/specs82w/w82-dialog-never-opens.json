@@ -1,0 +1,25 @@
+{
+  "label": "w82-dialog-never-opens",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/App.tsx",
+      "from": "open={needsLimits && !limitsPutOff}",
+      "to": "open={false}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-8-2w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s82nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8799",
+    "PRESEED_FILE": "",
+    "PRESEED_LIMITS": "off",
+    "LOG_LABEL": "nc-w82-dialog-never-opens"
+  }
+}

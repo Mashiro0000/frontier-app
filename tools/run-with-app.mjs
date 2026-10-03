@@ -2,7 +2,7 @@
 // usage: node run-with-app.mjs <dev|preview> <script.mjs> <screenshot-dir> [port]
 import { REPO_WIN } from './paths.mjs'
 import { spawn, spawnSync } from 'node:child_process'
-import { copyFileSync, createWriteStream, mkdirSync, rmSync } from 'node:fs'
+import { copyFileSync, createWriteStream, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { OUT } from './paths.mjs'
 import { fileURLToPath } from 'node:url'
@@ -33,6 +33,13 @@ if (userData) mkdirSync(userData, { recursive: true })
 // PRESEED_FILE (optional): copied into the scratch profile as preferences.json before the app starts, to test how the app
 // reads a saved model choice that is stale, corrupt or hostile.
 if (userData && process.env.PRESEED_FILE) copyFileSync(process.env.PRESEED_FILE, join(userData, 'preferences.json'))
+// Spending limits (8.2, D-031): until both are chosen the app refuses every request and asks for them before anything else, so a scratch
+// profile that has no limits.json gets "No limit" for both, which is what the suites written before 8.2 need (they test other things).
+// PRESEED_LIMITS=off leaves the profile as it is (the 8.2 suites choose limits themselves); an existing limits.json is never replaced, so a
+// restart keeps what the first launch chose. This is the harness writing a file in a scratch profile, never a switch inside the app.
+if (userData && process.env.PRESEED_LIMITS !== 'off' && !existsSync(join(userData, 'limits.json'))) {
+  writeFileSync(join(userData, 'limits.json'), '{"version":1,"daily":"none","monthly":"none"}')
+}
 // EXTRA_ELECTRON_ARGS (optional): more Chromium flags for the app, e.g. to switch off occlusion detection (Stage 4)
 // Default: the flags automation tools use so that a window covered by other windows is not treated as hidden (a hidden window
 // acknowledges mouse events only after ~5 s, which made a few launches misbehave: see the Stage 4 notes). Set it to '' to turn off.

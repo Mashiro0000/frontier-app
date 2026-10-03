@@ -1,0 +1,14 @@
+{
+  "label": "n82-chat-no-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "(spend) => checkAgainstLimits(limits, spend)",
+      "to": "undefined"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { SettingsStatus } from '../../../shared/ipc'
 import { formatPrice, formatTokens, providerName } from './format'
+import LimitsSection from './LimitsSection'
 import ProviderKeySection from './ProviderKeySection'
 import UsageSection from './UsageSection'
 
@@ -103,7 +104,10 @@ function SettingsDialog({
         )}
       </section>
 
-      <UsageSection open={open} conversationId={conversationId} />
+      <UsageSection open={open} conversationId={conversationId} limits={status?.limits ?? null} />
+
+      {/* Fresh each time Settings opens (and closes), so the boxes show the limits as they are saved NOW: they may have been chosen in the first-run question. */}
+      <LimitsSection key={`${session}:${open}`} status={status} onStatusChange={onStatusChange} />
 
       <div className="settings-footer">
         <button

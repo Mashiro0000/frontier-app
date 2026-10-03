@@ -38,6 +38,8 @@ node tools/run74.mjs [dev|preview]        Instructions per chat (7.4): seeds con
 node tools/run-one.mjs w76 dev setup-key.mjs,verify-7-6w.mjs USER_DATA_DIR=s76 MOCK_PORT=8790      the header-one-row and chat-bar suite (7.6)
 node tools/run81.mjs [dev|preview]        the usage ledger (8.1): a fresh profile (verify-8-1w.mjs), a crash imitated in the ledger file, then a restart (verify-8-1b.mjs)
 node tools/verify-8-1.mjs                 the usage ledger under plain Node (cost, the guess, the reader, the sums, the file, the registry's four prices)
+node tools/run82.mjs [dev|preview]        the spending limits (8.2): a fresh profile with NO limits (verify-8-2w.mjs), a restart (verify-8-2b.mjs), then three launches with a limits.json that is half there, not JSON, or a folder (verify-8-2c.mjs)
+node tools/verify-8-2.mjs                 the spending limits under plain Node (the check, what is typed, the file and its damage, the ledger's gate, the store, two source checks)
 node tools/run-one.mjs w81 dev setup-key.mjs,verify-8-1w.mjs USER_DATA_DIR=s81 MOCK_PORT=8790      just the first launch of the usage suite
 node tools/run-scenario.mjs <scenario>    one registry scenario
 node tools/nc-all.mjs specs guard-off     one negative control (spec folders: specs, specs4, specs4w)
@@ -114,6 +116,10 @@ window focus; it was not tried on a hidden one.)
 
 ## Rules learned the hard way
 
+- **Limits in a scratch profile (8.2):** a profile with no `limits.json` is asked for its spending limits before anything else (a modal dialog), and main refuses every request until it
+  has them. `run-with-app.mjs` therefore writes `{"version":1,"daily":"none","monthly":"none"}` into a scratch profile that has none, so the older suites test what they always did;
+  `PRESEED_LIMITS=off` leaves the profile bare (the 8.2 suites), and an existing `limits.json` is never replaced. `setup-key.mjs` puts the first-run question off with Escape so that it can open Settings.
+  This is the harness writing a file in a scratch profile, never a switch inside the app. The mock has `[[mock:heavy]]` (a million tokens in, a hundred thousand out: $6 at Opus's prices) to reach a limit.
 - **Scratch profile:** every launch passes `--user-data-dir=<dir>` after a second `--`. `ELECTRON_CLI_ARGS` does NOT
   work for dev (the electron-vite CLI overwrites it and the app silently uses the REAL profile). Each window suite calls
   `assertScratchProfile()` before it writes anything.

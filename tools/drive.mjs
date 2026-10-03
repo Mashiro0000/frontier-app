@@ -108,7 +108,7 @@ function runAppOnce({ label, mode = 'dev', scripts, env = {}, port = 9222, timeo
     ...env
   }
   // anything left over from a previous run in this process must not leak in
-  for (const k of ['PRESEED_FILE']) if (!(k in env)) delete fullEnv[k]
+  for (const k of ['PRESEED_FILE', 'PRESEED_LIMITS']) if (!(k in env)) delete fullEnv[k]
   const run = spawnSync(process.execPath, [join(here, 'run-with-app.mjs'), mode, scripts, SHOTS, String(port)], {
     env: fullEnv,
     encoding: 'utf8',

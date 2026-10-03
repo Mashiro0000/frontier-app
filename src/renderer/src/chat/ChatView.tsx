@@ -11,7 +11,11 @@ interface ChatViewProps {
   status: SettingsStatus | null
   /** The conversation. It is held in App, because the header and the chat bar need to know when a reply is arriving. */
   chat: UseChat
+  /** True when no spending limits are chosen yet: the main process refuses every request until they are (D-031). */
+  needsLimits: boolean
   onOpenSettings: () => void
+  /** Asks for the spending limits again, after the person put the question off. */
+  onOpenLimits: () => void
   /** Changes when another conversation is put on screen, so the input box can take the focus. */
   conversationId: string
 }
@@ -19,7 +23,9 @@ interface ChatViewProps {
 function ChatView({
   status,
   chat,
+  needsLimits,
   onOpenSettings,
+  onOpenLimits,
   conversationId
 }: ChatViewProps): React.JSX.Element {
   const { messages, isReplying, send, stop, regenerate, resend } = chat
@@ -48,6 +54,15 @@ function ChatView({
   const missingKey = providerMissingKey(status)
   if (status?.modelsError) {
     emptyHint = `The list of models could not be loaded (${status.modelsError}), so replies are unavailable. Check registry/models.json.`
+  } else if (needsLimits) {
+    emptyHint = (
+      <>
+        Set your spending limits to start chatting.{' '}
+        <button type="button" className="link-button" onClick={onOpenLimits}>
+          Set limits
+        </button>
+      </>
+    )
   } else if (status !== null && missingKey === null) {
     emptyHint = 'Type a message to start.'
   } else if (missingKey !== null) {

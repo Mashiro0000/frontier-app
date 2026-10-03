@@ -1,0 +1,14 @@
+{
+  "label": "n82-ledger-request-cost-zero",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/usageLedger.ts",
+      "from": "request: costOf({ ...NO_TOKENS, input: input.inputTokens }, input.prices)",
+      "to": "request: 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

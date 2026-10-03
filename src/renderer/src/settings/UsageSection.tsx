@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { formatMoney, type LimitSetting, type Limits } from '../../../shared/limits'
 import type { UsageSummary, UsageTotals } from '../../../shared/usage'
 import { formatCount, formatSpend, inputSide } from './format'
 
@@ -7,11 +8,13 @@ interface UsageSectionProps {
   open: boolean
   /** The conversation on screen, whose own sum is shown first. */
   conversationId: string
+  /** The spending limits (D-031), so that a row can say how much of its limit it has used. Null until the settings are known. */
+  limits: Limits | null
 }
 
 const NO_BRIDGE = 'the window could not connect to the app (the preload did not load)'
 
-function row(label: string, totals: UsageTotals): React.JSX.Element {
+function row(label: string, totals: UsageTotals, limit?: LimitSetting): React.JSX.Element {
   return (
     <tr>
       <th scope="row">{label}</th>
@@ -19,7 +22,10 @@ function row(label: string, totals: UsageTotals): React.JSX.Element {
         {formatCount(inputSide(totals.tokens))} in, {formatCount(totals.tokens.output)} out,{' '}
         {totals.requests === 1 ? '1 request' : `${formatCount(totals.requests)} requests`}
       </td>
-      <td className="settings-usage-cost">{formatSpend(totals.costUsd, totals.about)}</td>
+      <td className="settings-usage-cost">
+        {formatSpend(totals.costUsd, totals.about)}
+        {limit?.kind === 'usd' && ` of ${formatMoney(limit.usd)}`}
+      </td>
     </tr>
   )
 }
@@ -29,7 +35,7 @@ function row(label: string, totals: UsageTotals): React.JSX.Element {
  * asks for the sums. They are counted at the registry's list prices, so they say what the app thinks it owes, and the provider's invoice
  * is what decides; "about" marks a sum that includes a guess.
  */
-function UsageSection({ open, conversationId }: UsageSectionProps): React.JSX.Element {
+function UsageSection({ open, conversationId, limits }: UsageSectionProps): React.JSX.Element {
   const [summary, setSummary] = useState<UsageSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -79,8 +85,8 @@ function UsageSection({ open, conversationId }: UsageSectionProps): React.JSX.El
           <table className="settings-usage" aria-label="Usage so far">
             <tbody>
               {summary.chat !== null && row('This chat', summary.chat)}
-              {row(`Today (${day})`, summary.today)}
-              {row(`This month (${month})`, summary.month)}
+              {row(`Today (${day})`, summary.today, limits?.daily)}
+              {row(`This month (${month})`, summary.month, limits?.monthly)}
             </tbody>
           </table>
           {summary.unreadable > 0 && (

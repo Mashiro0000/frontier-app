@@ -1,0 +1,14 @@
+{
+  "label": "n82-amount-zero-allowed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "  value > 0 &&\n",
+      "to": "  value >= 0 &&\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}
