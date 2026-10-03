@@ -1,0 +1,14 @@
+{
+  "label": "n83-figures-no-epsilon",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/format.ts",
+      "from": "Math.ceil(dollars * 100 - 1e-7)",
+      "to": "Math.ceil(dollars * 100)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

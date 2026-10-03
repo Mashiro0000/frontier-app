@@ -1,3 +1,4 @@
+import type { RequestEstimate } from '../../../shared/askFirst'
 import type { ProviderId } from '../../../shared/registry'
 import type { ReplyUsage } from '../../../shared/usage'
 
@@ -38,6 +39,16 @@ export interface Answerer {
 }
 
 /**
+ * A large request that the main process is holding until the person says yes (D-032): which model would answer, what the request could cost
+ * at the most (the main process's own figures, shown as they are) and the amount above which the app asks.
+ */
+export interface LargeRequest {
+  model: string
+  estimate: RequestEstimate
+  askAboveUsd: number
+}
+
+/**
  * Where assistant replies come from. Given the conversation so far (it ends with the message the
  * user just sent), it returns the reply as a stream of text pieces. It should stop producing text
  * when `signal` is aborted. `ipcReply` is the implementation: it asks the main process for a real reply.
@@ -53,5 +64,10 @@ export type ReplyFn = (
   /** The id the chat is saved under, so the cost can be shown under that chat (D-030); null if there is none. */
   conversationId: string | null,
   /** Called once, just before the reply ends, with what it used and cost, when something is owed. */
-  onUsage: (usage: ReplyUsage) => void
+  onUsage: (usage: ReplyUsage) => void,
+  /**
+   * Called when the main process is holding a large request for the person's yes (D-032): it puts the question in front of them and answers
+   * true for yes, false for no (and false if the reply is stopped meanwhile). Nothing is sent until it says yes.
+   */
+  onLargeRequest: (request: LargeRequest) => Promise<boolean>
 ) => AsyncIterable<string>

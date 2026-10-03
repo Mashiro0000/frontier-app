@@ -58,7 +58,7 @@ const win = {
   'w81-guess-not-marked': [[CHAT, "estimate: state !== 'rejected' && report === null", 'estimate: false']],
   // the text that arrived is not counted in a guess; the system prompt is not counted in the input guess
   'w81-guess-output-zero': [[CHAT, 'output: estimateOutputTokens(arrivedBytes)', 'output: 0']],
-  'w81-guess-input-without-system-prompt': [[CHAT, 'inputTokens: estimateInputTokens(streamRequest.system, streamRequest.messages)', "inputTokens: estimateInputTokens('', streamRequest.messages)"]],
+  'w81-guess-input-without-system-prompt': [[CHAT, 'const inputTokens = estimateInputTokens(streamRequest.system, streamRequest.messages)', "const inputTokens = estimateInputTokens('', streamRequest.messages)"]],
   // a stopped reply is not counted as stopped (the safety net in `finally` settles it as failed instead)
   'w81-stopped-not-settled': [[CHAT, "      await settle('stopped', null)\n      return", '      return']],
   // the page is not told what the reply cost

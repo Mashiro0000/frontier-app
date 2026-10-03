@@ -1,0 +1,14 @@
+{
+  "label": "n83-request-keeps-confirmed-field",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "    request: {\n      streamId,\n      messages: clean,",
+      "to": "    request: {\n      streamId,\n      ...(typeof (input as Record<string, unknown>).confirmed === 'boolean' ? { confirmed: true } : {}),\n      messages: clean,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

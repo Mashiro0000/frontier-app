@@ -1,0 +1,14 @@
+{
+  "label": "n83-file-cut-reads-never",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "  } catch {\n    return nothing(true)\n  }",
+      "to": "  } catch {\n    return /nev/.test(text) ? { setting: { kind: 'never' }, damaged: true } : nothing(true)\n  }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

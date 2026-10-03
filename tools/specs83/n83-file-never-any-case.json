@@ -1,0 +1,14 @@
+{
+  "label": "n83-file-never-any-case",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "if (above === 'never') return { setting: { kind: 'never' }, damaged: false }",
+      "to": "if (typeof above === 'string' && above.toLowerCase() === 'never') return { setting: { kind: 'never' }, damaged: false }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

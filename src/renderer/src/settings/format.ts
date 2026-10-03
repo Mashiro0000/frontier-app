@@ -1,6 +1,7 @@
 // How numbers from the registry are written for the person. Kept apart from the components, which may
 // export nothing but components (the dev server's hot reload relies on that).
 
+import type { RequestEstimate } from '../../../shared/askFirst'
 import type { EffortStatus, ProviderStatus, SettingsStatus } from '../../../shared/ipc'
 import type { Suggestion, TaskId } from '../../../shared/rankings'
 import type { Effort, ProviderId } from '../../../shared/registry'
@@ -91,6 +92,26 @@ export function formatCost(dollars: number): string {
   if (dollars < 0.0001) return 'less than $0.0001'
   if (dollars < 0.01) return `$${dollars.toFixed(4)}`
   return `$${dollars.toFixed(2)}`
+}
+
+/** Whole cents, rounded UP: a figure that is "at most" must never be shown lower than it is. (The small subtraction keeps 0.51 * 100 = 51.00000000000001 at 51.) */
+const ceilCents = (dollars: number): number => Math.max(0, Math.ceil(dollars * 100 - 1e-7))
+
+const centsText = (cents: number): string => `$${(cents / 100).toFixed(2)}`
+
+/**
+ * The three amounts in the question about a large request (D-032), as the person reads them: what sending the conversation could cost at the
+ * most, what the reply could cost at the most, and the two together. Each is rounded UP to the cent so that none is shown below what it
+ * could be, and the total is the sum of the other two as shown, so the rows add up.
+ */
+export function largeRequestFigures(estimate: RequestEstimate): {
+  input: string
+  output: string
+  total: string
+} {
+  const input = ceilCents(estimate.inputUsd)
+  const output = ceilCents(estimate.outputUsd)
+  return { input: centsText(input), output: centsText(output), total: centsText(input + output) }
 }
 
 /** A cost, with "about" in front when any of it is the app's own guess (D-030): "about $0.12". */

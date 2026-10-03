@@ -848,7 +848,8 @@ body {
 .settings,
 .history,
 .instructions,
-.limits-dialog {
+.limits-dialog,
+.large-request {
   /* The global reset removes the dialog's automatic centring margin, so put it back. */
   margin: auto;
   width: min(480px, calc(100vw - 32px));
@@ -864,8 +865,38 @@ body {
 .settings::backdrop,
 .history::backdrop,
 .instructions::backdrop,
-.limits-dialog::backdrop {
+.limits-dialog::backdrop,
+.large-request::backdrop {
   background: rgba(0, 0, 0, 0.6);
+}
+
+/* The question before a large request (D-032): what it could cost at the most, in three rows that add up */
+.large-request-intro {
+  margin-bottom: 10px;
+}
+
+.large-request-table {
+  margin-bottom: 10px;
+}
+
+/* How many tokens a row is for, under its label (the label wraps, the amount beside it does not) */
+.large-request-tokens {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.large-request-total th,
+.large-request-total td {
+  padding-top: 8px;
+  font-weight: 600;
+  border-top: 1px solid var(--color-border);
+}
+
+.large-request-actions {
+  justify-content: flex-end;
+  margin-top: 14px;
 }
 
 .settings-title,

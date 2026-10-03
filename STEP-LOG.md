@@ -2073,3 +2073,76 @@ choice with a one-line warning); the limit is checked by the main process before
 5. **No real call has been made by me**, still. Compare the first real replies with your provider's usage page.
 6. **Nothing is pushed.** This slice is committed on the branch `stage-8-usage-limits` (8.1 is committed there too); `main` has Stage 7.
 7. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 8 - Slice 8.3: a question before a very large request (3 October 2026 session; D-032)
+
+**Your decisions that shaped it.** The plan you approved on 2 October 2026 said only "before a very large request, it shows the estimate and asks first". It did not say what "very large" is, and
+nothing in the notes or the earlier sessions does, so **what counts as very large, and the amount, are my choices** (below). Your rule that money has a hard stop is untouched: the limits of 8.2 are
+still checked, after any yes, exactly as before. This is the question that can come before them.
+
+**What was built.**
+
+- **The estimate** (`src/shared/askFirst.ts`): worked out by the main process, for every request, before anything is written or sent. What **sending** the conversation could cost at the most (its tokens
+  at the dearer of the two input prices, because the first send of a conversation is billed at the cache-write price) and what the **reply** could cost at the most (the request's own ceiling,
+  16,000 tokens, at the output price). Both are guesses on the high side, at list prices; the question says so.
+- **When it asks:** when **what the request sends** could cost **more than an amount of yours**. Settings has a new section, **Large requests**: an amount in dollars and cents, or a deliberate
+  **Never ask**, kept in `ask-first.json`. **Until you choose, $0.50 applies** (it begins to ask above 40,000 tokens on Fable 5.1, 100,000 on Opus 5.5, 200,000 on Sonnet 5.5).
+- **The question** (`LargeRequestDialog`): "Send this large request?" with what sending could cost, what the reply could cost, and the most the request could cost (three rows that add up, each rounded
+  up to the cent), **Don't send** (first, and where the keyboard starts, so Enter alone cannot send) and **Send**. Escape is no. **While the question is open nothing is sent and nothing is written to the
+  ledger.** "Don't send" ends the reply as "Not sent: you chose not to send this request." with **Try again**, which asks again. Regenerate and an edited message are asked about like a new message.
+- **The waiting room** (`src/main/confirmation.ts`): the request waits in the main process until you answer. A yes is heard only for a question that is waiting: one sent ahead of it, twice, for another
+  stream or after you said no is dropped. A Stop, a reload or a closed window says no.
+- **A damaged `ask-first.json` asks at the default; it never turns the question off.** (The opposite of the limits' file, which refuses when damaged.)
+
+**Step by step.**
+
+1. **Where the plan stood.** I read the notes, the roadmap and the earlier planning session: nothing says what "very large" means. I chose to ask on the **input** (what is sent, which grows with the
+   conversation and is known), not on the most the whole request could cost, because on the dearest models the reply ceiling alone ($0.80) would make every request "large".
+2. **The shared parts, the store and the waiting room were written and checked under plain Node first** (`verify-8-3.mjs`, 288 checks, files in a normal folder and in the EFS-encrypted %APPDATA%).
+   The first run had three failures, all in my expectations, none in the app: on the cheapest model one token is an eighth of a millionth of a dollar, which the comparison (in millionths) rightly does not
+   see; and a check that counted a wrong-version file containing the word "never" as "said never".
+3. **The page:** the dialog, the pending question in `useChat`, "Not sent" in `ipcReply`, and the Settings section. The amount box of the limits form was taken out into its own file and shared (same page
+   as before).
+4. **The first window run** (`run83.mjs`: 47 checks went through before it stopped) found **one real fault of mine**: the new Settings section had the same React key as the section beside it, and the check that
+   the page logs no console error reported "two children with the same key". Fixed (its own key). The rest of that run's failures were my test (a wrong paragraph number in two checks, and waiting for
+   the Send button while the question was open). The next run found a **second real fault, in the layout**: at 280 px wide the question's three-column table ran past the dialog; it is now two
+   columns with the number of tokens under each label. I also added the check that I had not thought of at first: after "Don't send", a yes sent later by a script for that same question sends nothing.
+5. **Result:** `run83.mjs` 84 + 7 + 9 + 9 + 10 = **119 checks, all clean**, with **real 150,000-character requests** on Fable 5.1 against the fake provider. The token count the question showed, the ledger's first
+   line and a count made in the test from the request the provider received are the same number.
+6. **Older suites made stale** and updated: the exact lists of the bridge and of the settings status (`setAskFirst`, `chat.confirm`, `askFirst`) in six suites, the button count in `verify-5-3` (the Settings
+   dialog has one more Save), and two negative controls of 8.1 and 8.2 whose target line had moved. Re-run on this tree and clean: `verify-2-3` (64; its first run had one failure, a status-shape line I
+   had missed), `2-3b`, `2-4` (71), `3-4` (78), `4-2` (91), `5-3` (66), `7-3` (53), `7-6w` (46), the 8.1 suites (81 and 12), the 8.2 suites (62, 8, 8, 6 and 7), and the plain-Node part (15 suites).
+7. **Negative controls: 65 breakages, all caught** (44 under Node, 21 in the real window), each file proved restored by hash, and the hash over `src/` and `registry/` identical before and after every
+   batch. They taught me things about the checks and the harness (D-032 lists them): the window suite cannot see the waiting room's abort listener on its own, because `chat.ts` has a second check behind it
+   (the Node suite sees it, and the window control now removes both); a field that is merely kept changes nothing in the window (the control now makes `chat.ts` honour it); one control first looked caught
+   only because of an unrelated flake at the first step, and a second run showed it was not; hangs became failed checks. And **one real fault in the harness**: after one control `nc.mjs` did not put
+   `chat.ts` back and said nothing. I found it only because I had hashed the whole tree before and after the batch; the file was restored from its backup, and `nc.mjs` now retries the copy, proves each
+   file by hash and prints `RESTORE FAILED` if it cannot.
+8. **What was run, and what was not.** Run: lint, prettier, typecheck, the dry spec check, the plain-Node part of the regression (15 suites), the suites above. **Not run, waiting for your go-ahead: the full
+   regression (about 55 minutes) and the built-app run, for 8.1, 8.2 and 8.3 together** (this is slice 8.5). No real call to a provider was made.
+
+## Stage 8.3 - Choices I made where things were unclear ("pick the simplest option")
+
+- **What "very large" means: the input, not the worst case** (see step 1).
+- **An amount of my own, $0.50, until you choose.** You decided that the spending **limits** have no numbers of the app's own. This is not a limit, it only asks, and it is the one place where I put a number.
+  I did it so the question is on from the start (a question that is off until someone finds it protects nobody) without a third box in the first-run dialog. **It is the number to confirm or change**: Settings >
+  Large requests, one box, and "Never ask" is there on purpose.
+- **The dearer of the two input prices**, so the figure is never lower than what the first send of a conversation can cost; the question says "up to" and that a conversation the provider still holds in its cache
+  costs much less.
+- **It asks every time**, including every message of a long chat on a dear model. "Don't ask again in this chat" is in IDEAS.
+- **The question is a dialog in the page, held by main**, not an operating system dialog (which the checks of this project cannot drive).
+- **The README** still said that nothing limits spending (it was stale since 8.2); it now says what 8.2 and 8.3 do.
+
+## Stage 8.3 - Things to know (not problems, but worth your attention)
+
+1. **The question is not a defence against a hostile page.** A page that can call the bridge can say yes to its own question. What stops spending is the limit (8.2), which runs after any yes. The question
+   protects you from your own slip and from a bug in the page; D-032's threat note says so.
+2. **$0.50 is mine.** It is the default until you pick an amount in Settings > Large requests (or "Never ask"). With it, the question will show up on Fable 5.1 and GPT-6 Astra once a chat passes about 40,000
+   tokens (every message after that), on Opus 5.5 past 100,000, and almost never on the cheaper models.
+3. **The figure says "up to".** It is on the high side: input at the cache-write price, a reply at its 16,000-token ceiling. A real reply is usually far shorter, and a conversation your provider still holds in
+   its cache costs far less to send.
+4. **A damaged or unreadable `ask-first.json` asks at the default.** A person who writes "never" into it (lower case, exactly) has chosen "Never ask".
+5. **While the question is open nothing is sent and nothing is written.** Closing the app then saves the chat with the reply as "stopped".
+6. **No real call has been made by me**, still. Compare the first real replies with your provider's usage page, and the figure in the question with them.
+7. **Nothing is pushed.** This slice is committed on the branch `stage-8-usage-limits` (8.1 and 8.2 are committed there too); `main` has Stage 7.
+8. **Everything in the earlier stages' "Things to know" still applies.**

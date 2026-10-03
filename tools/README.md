@@ -19,8 +19,8 @@ tree), and keep the machine idle: `verify-4-3c` (quit with 60 queued saves) fail
 
 | Part        | What it runs                                                                        | About   |
 | ----------- | ----------------------------------------------------------------------------------- | ------- |
-| `node`      | Plain-Node suites: provider, registry, rankings, store, adapters, credential store, usage ledger | 1.5 min |
-| `window`    | The window suites of Stages 1-3, 5, 6 and 7.1 to 7.4 and 7.6, each on its own scratch profile | 18 min |
+| `node`      | Plain-Node suites: provider, registry, rankings, store, adapters, credential store, usage ledger, limits, the question before a large request | 1.5 min |
+| `window`    | The window suites of Stages 1-3, 5, 6, 7.1 to 7.4, 7.6 and 8.1 to 8.3, each on its own scratch profile | 20 min |
 | `seeds`     | One launch per damaged `preferences.json` (`make-seeds.mjs` makes them; 16 of them) | 7 min   |
 | `scenarios` | The registry file deliberately broken in ten ways, restored after each (`run-scenario.mjs`) | 5 min   |
 | `stage4`    | The history suites (`final-new.mjs`): crashes, damaged folders, injected disk faults | 5 min   |
@@ -40,6 +40,8 @@ node tools/run81.mjs [dev|preview]        the usage ledger (8.1): a fresh profil
 node tools/verify-8-1.mjs                 the usage ledger under plain Node (cost, the guess, the reader, the sums, the file, the registry's four prices)
 node tools/run82.mjs [dev|preview]        the spending limits (8.2): a fresh profile with NO limits (verify-8-2w.mjs), a restart (verify-8-2b.mjs), then three launches with a limits.json that is half there, not JSON, or a folder (verify-8-2c.mjs)
 node tools/verify-8-2.mjs                 the spending limits under plain Node (the check, what is typed, the file and its damage, the ledger's gate, the store, two source checks)
+node tools/run83.mjs [dev|preview]        the question before a very large request (8.3): a fresh profile (verify-8-3w.mjs), a restart (verify-8-3b.mjs), then three launches with an ask-first.json that is not JSON, spells "Never" in capitals, or is a folder (verify-8-3c.mjs)
+node tools/verify-8-3.mjs                 the question under plain Node (the estimate for all seven models, when it asks, what is typed, the file and its damage, the store, the waiting room's races, how the amounts are written, source checks)
 node tools/run-one.mjs w81 dev setup-key.mjs,verify-8-1w.mjs USER_DATA_DIR=s81 MOCK_PORT=8790      just the first launch of the usage suite
 node tools/run-scenario.mjs <scenario>    one registry scenario
 node tools/nc-all.mjs specs guard-off     one negative control (spec folders: specs, specs4, specs4w)
@@ -120,6 +122,11 @@ window focus; it was not tried on a hidden one.)
   has them. `run-with-app.mjs` therefore writes `{"version":1,"daily":"none","monthly":"none"}` into a scratch profile that has none, so the older suites test what they always did;
   `PRESEED_LIMITS=off` leaves the profile bare (the 8.2 suites), and an existing `limits.json` is never replaced. `setup-key.mjs` puts the first-run question off with Escape so that it can open Settings.
   This is the harness writing a file in a scratch profile, never a switch inside the app. The mock has `[[mock:heavy]]` (a million tokens in, a hundred thousand out: $6 at Opus's prices) to reach a limit.
+- **A large request in a window suite (8.3):** the default amount ($0.50) asks above 40,000 tokens on Claude Fable 5.1, so a message of 150,000 characters (`bigText` in
+  `verify-8-3w.mjs`: `[[mock:count]]` first, so the mock answers "Reply N" and does not echo it back) is a large request there and not on Opus 5.5. A chat can hold at most
+  600,000 characters, so start a New chat between sections; `Input.insertText` puts the whole text in at once. While the question is open the composer shows Stop, not Send, so
+  `H.waitReady()` waits for nothing: wait for `dialog.large-request` instead. `window.__ev` (a listener on `window.api.chat.onEvent`) records the events, `confirm` included. A
+  clean `page.problems` is checked at the end of each launch: it caught a duplicate React key in 8.3.
 - **Scratch profile:** every launch passes `--user-data-dir=<dir>` after a second `--`. `ELECTRON_CLI_ARGS` does NOT
   work for dev (the electron-vite CLI overwrites it and the app silently uses the REAL profile). Each window suite calls
   `assertScratchProfile()` before it writes anything.
@@ -150,3 +157,11 @@ window focus; it was not tried on a hidden one.)
 - Before a batch of negative controls run `node tools/check-specs.mjs` (no window, changes nothing): every spec's sabotage text must still occur
   exactly once in its file, or `nc.mjs` aborts and the control silently stops existing. Nine specs had gone stale unnoticed by the time of 7.4
   and were repaired. (It reports a spec as stale while a control is sabotaging that very file, so do not run it during a batch.)
+- **Hash `src/` and `registry/` before and after a batch of negative controls** (a hash over every file in both, in the order of their paths). In 8.3 one control left `chat.ts` sabotaged with no
+  message: its copy-back failed or never ran, and only the hash showed it. `nc.mjs` now retries the copy, proves each file by hash and prints `RESTORE FAILED`; `nc-all.mjs` prints
+  `RESTORE NOT CONFIRMED` for a control that printed no "restored:" line. If either appears, copy the original back from `%TEMP%\frontier-negative-control\<label>-<file>.bak` before anything else runs.
+- **A control that is caught at its very first check is worth running twice.** One window control "failed" at the first step of the suite for an unrelated reason (a flake), and a second run showed
+  that the suite did not see its sabotage at all. A control can also be invisible for a good reason: when one protection stands behind another (the waiting room's abort listener, and `chat.ts`
+  refusing to send after an abort), only a control that removes both can be seen from outside; the single one belongs to the plain-Node suite, which looks at the room itself.
+- Make a window suite print its summary even when a step waits for something that never comes: catch the error at the top, record it as a failed check that says where
+  (`the suite stopped before its end: ...`), and let the summary run. A control that breaks the flow then shows as a named detection, not as "no summary line" (`verify-8-3w.mjs`).

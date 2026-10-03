@@ -1,0 +1,14 @@
+{
+  "label": "n83-room-abort-not-heard",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/confirmation.ts",
+      "from": "        signal.addEventListener('abort', onAbort, { once: true })\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

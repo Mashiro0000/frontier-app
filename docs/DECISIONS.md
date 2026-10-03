@@ -1378,3 +1378,150 @@ form at 280 px (the older check at 320 and 420 px covers the Save button only). 
 
 Status: accepted (Stage 8.2). Revisit: the first real replies (does the count the limit uses match the provider's usage page?); stopping a reply in the middle (IDEAS); 8.3, which shows the worst case before a
 very large request is sent; a warning when a limit is nearly used; a billing-day reset (IDEAS); what happens when the registry's prices change (the limit counts at the price in the registry).
+
+## D-032 - Stage 8.3: a question before a very large request, asked by the main process, with the figures shown
+
+The limits of 8.2 are the hard stop; they cannot tell the person what a request could cost before it goes, and they let a reply that starts under a limit end over it (D-031). This slice
+is the question that can come before the limit's check: when a request is large, the app shows what it could cost at the most, in dollars, and sends nothing until the person says yes.
+The plan said only "before a very large request, it shows the estimate and asks first", so **what "very large" means is my design, and the one number in it is mine**: see the choices.
+
+- **What is worked out, and by whom.** The main process, for every request, after the key is found and the request is built and **before anything is written or sent**. One guess at the
+  tokens the request sends (`estimateInputTokens`, D-030: the app's rules, the person's instructions and every message), made once and used three times, so the question, the limit's check
+  and the ledger's first line carry the same number (a check in the window suite compares the three). From it, `estimateRequest` (`src/shared/askFirst.ts`):
+  **what sending could cost at the most**, the tokens at the **dearer of the ordinary input price and the cache-write price** (the Anthropic request asks for caching, D-030, and the first
+  send of a conversation is written to the cache at a quarter more; a conversation the provider still holds from a message a few minutes ago costs far less, so the figure says "up to"
+  and the question says why), and **what the reply could cost at the most**: the request's own ceiling (`streamRequest.maxOutputTokens`: 16,000 tokens, thinking included, or less for a
+  model that cannot write that much) at the output price. The two added are the most the request could cost. All are guesses on the high side, at list prices; the provider's invoice decides.
+- **When it asks.** When **what the request sends** could cost **more than** the person's amount (exactly at the amount goes, as exactly at a limit does; the comparison is in millionths
+  of a dollar so that float noise cannot decide). **Not the reply**: its length is not known, and on the two dearest models a reply at its ceiling alone ($0.80) would make every request
+  "large". The amount is the person's: Settings > Large requests, in whole cents ($0.01 to $10,000) or a deliberate **"Never ask"**, kept in `ask-first.json` beside `limits.json`
+  (`{"version":1,"above":0.5}`, `"above":"never"`), written in place and read back (D-010), read once and kept. **Until the person chooses, $0.50 applies** (see the choices). Where $0.50
+  begins to ask, from the registry's prices (checked in `verify-8-3.mjs`): above **40,000 tokens** on Claude Fable 5.1 and GPT-6 Astra, **100,000** on Opus 5.5, **200,000** on Sonnet 5.5 and
+  GPT-6.1 Sol, **400,000** on Haiku 4.5, **4,000,000** on GPT-6 Luna. The dearest request the app can make today (the caps of `CHAT_LIMITS`: 600,000 characters of messages, 8,000 of
+  instructions) is about **$3.36** on Fable 5.1 or Astra: $2.56 to send and $0.80 to reply.
+- **A damaged file asks; it never turns the question off.** This is the opposite of the limits' file on purpose: a limit file that is damaged holds no choice and **refuses** requests (D-031),
+  and this one holds no choice and **asks at the default**. A file that is missing, damaged, cut off, in the wrong version, spelled in a way this app never writes (`"Never"` in capitals) or
+  unreadable (a folder in its place) reads as nothing chosen, and **never as "Never ask"**: every cut-off copy of the "Never ask" file reads as the default (checked). `read` never throws, so the
+  question cannot be skipped by a failure to read; an unreadable file is not remembered, so repairing it is heard.
+- **The question.** The main process sends the page a `confirm` event (the model, the figures, and the amount it asked above) **instead of sending the request**, and waits. The page shows
+  "Send this large request?" with three rows that add up (sending the conversation, the reply, the most it could cost), a line that these are guesses at list prices and a cached conversation
+  costs less, a line that the app asks above $X and that Settings changes it, and two buttons, **"Don't send" first and focused** (Enter alone cannot send a large request) and "Send". Escape is
+  no. It is a modal `<dialog>` with the role `alertdialog`, labelled by its title and described by its introduction. The page works out no figure of its own: it shows main's, each rounded **up** to the cent so that none is shown below what it could be, and the total is the sum of the rows as shown.
+  A request on the cheaper models almost never meets it (the most the app can send costs about $0.51 to send on Sonnet 5.5 and GPT-6.1 Sol, about $0.26 on Haiku 4.5); a request that is only
+  large because the conversation is long does meet it on the dearer ones (the whole conversation is what goes out again).
+- **Nothing is sent, and nothing is written, while it asks; and a yes means something.** The request waits in a small waiting room (`src/main/confirmation.ts`, no Electron imports) under the same
+  key as its running reply, "<window id>:<stream id>". **The ledger is not begun while the question is open**, so a request that is never answered counts nothing and an app that is killed
+  leaves nothing. A yes (`chat.confirm(streamId)`, a new bridge function) is **heard only for a question that is waiting**: one sent ahead of the question, twice, for another stream, for
+  a question already declined, or after a Stop is dropped (checked over the bridge, and with 100 questions at once under Node). A Stop, a reload, a closed window or a "no" **declines**: main
+  returns without a request. A question for a key that is already waiting is declined at once; a question that cannot be shown is declined; the question is shown only after it is waiting, so an
+  answer can never come too early to be heard. The request itself cannot carry an approval: `checkChatRequest` builds main's own copy, so a `confirmed` or `askFirst` field the page adds is
+  not read (checked, and a control breaks it).
+- **The limits come after the yes, never instead of it.** After a yes, main reads the limits **again** (they may have changed while the question was open) and `ledger.begin` runs the check of
+  8.2 in the ledger's own turn, exactly as before. A request that the limits would refuse anyway is **not asked about**: before asking, main looks at the sums and the limits, and if they refuse
+  the request it sends their sentence at once. That look only spares the person a question that cannot matter; the check that counts is the one inside `begin`.
+- **What the person sees afterwards.** "Don't send" (and Escape) ends the reply as an error line, **"Not sent: you chose not to send this request."**, with **Try again** (which asks again); the
+  page tells main (`chat.cancel`) so the question is gone from main and a later yes for it is dropped. It is saved in the chat like any failed reply. A Stop while the question is open ends the
+  reply as "Stopped". Regenerate, Try again and an edited message are asked about like a new message: all of them reach `runReply`, the one place a provider is called.
+- **What the page can do.** Two new bridge functions: `chat.confirm(streamId)` and `settings.setAskFirst(choice)` (an amount in whole cents, or "Never ask", checked again in main and rebuilt
+  field by field; the page cannot take a choice back to "nothing chosen", read the file or reach the ledger), one new event (`confirm`) and one new field in the settings status (`askFirst`).
+
+**Choices I made where things were unclear.**
+
+1. **What "very large" means: the input, not the worst case.** A trigger on the most the whole request could cost (input plus the reply ceiling) asks for every request on the dearest models, because
+   $0.80 of ceiling is always there; a trigger on the input alone is the part that grows with the conversation and is known. The figure for the reply is shown in the question, not part of the trigger.
+2. **An amount of my own, $0.50, until the person chooses.** The owner's decision of 2 October 2026 was that the spending **limits** have no numbers of the app's own. This is not a limit: it only
+   asks, the limits still decide, and it is the one place where I chose a number. I chose a default (instead of asking for a third number in the first-run dialog, or leaving the question off until
+   it was found) because a question that is off until someone finds it protects nobody, and a third box in the first-run dialog would be one more thing to answer before the first message. It is
+   shown in Settings ("You have not chosen an amount, so the app asks above $0.50") and in the question itself, changing it is one box, and "Never ask" is there on purpose. **This is the one
+   number to confirm or change.** I did not tie it to the limits (a fraction of the smaller limit): it would move whenever a limit is edited, and with a small budget it would ask on every message
+   to the dearest model.
+3. **The dearer of the two input prices.** For an Anthropic model the first send is billed at the cache-write price, so pricing the input at the ordinary price would show less than it can cost. The
+   question therefore says "up to", and says that a conversation still in the provider's cache costs much less. It overstates for an active chat; that is the safe way.
+4. **A question in the page, held by main, not an operating system dialog.** It is the same kind of dialog as the others, and the real window can be driven (an operating system dialog cannot be, by
+   the checks this project has). The cost is that the page can answer its own question: see the threat note.
+5. **It asks every time.** In a long chat on a dear model every message after the first asks, because the whole conversation goes out again. "Don't ask again in this chat" would weaken the question
+   (IDEAS); the amount in Settings is the way to ask less.
+6. **Figures rounded up, rows that add up.** A figure "up to $0.50" under an amount of $0.50 would look like a mistake when the request is a hair above it; so each figure is rounded up to the cent
+   and the total is the sum of the rows as shown (so the total can be a cent above the true total, never below).
+7. **`AmountField` is shared.** The amount box of the limits form was taken out into its own file and used by both forms; the page it draws is the same (the 8.2 suite re-run on it is clean).
+8. **The README was stale since 8.2** (it still said that nothing limits spending); it now says what 8.2 and 8.3 do.
+
+**Threat note.** What could go wrong, what stops it, what is left.
+
+- _A hostile or broken page._ **This question is not a defence against a hostile page, and says so:** a page that can call the bridge can call `chat.confirm` itself the moment it sees the `confirm`
+  event, and can choose "Never ask" in `settings.setAskFirst`, exactly as the person's own Settings can. What stops a hostile page spending is the limit (D-031), which the question never replaces
+  and which runs after any yes. What the page **cannot** do: give a yes ahead of time (dropped, checked), approve a request by a field on it (not read, checked), approve a question that was
+  declined or stopped (dropped, checked), approve another stream's question, make main skip the limit's check, read `ask-first.json` or its path, write the ledger, or turn the question off with
+  anything but the two choices main accepts. The question guards the person against their own slip and against a bug in the page.
+- _The person's own files._ `ask-first.json` is a plain file the person can edit or delete (rule 9). Damage to it asks at the default; a person who writes "never" into it has chosen "Never ask".
+- _Spending the question does not stop._ (1) A request under the amount, however many (a chat that grows in small steps asks the first time its input is over the amount, and every time after).
+  (2) Everything D-030 and D-031 list as not counted or not stopped: the figure is the app's own guess at list prices, on the high side for English and about right for Chinese, Japanese and Korean,
+  and it leaves out thinking that is not shown only in a guess made after the fact; a model whose price changed since the registry was checked. (3) "Never ask". (4) The reply, whose length is not
+  known: the question shows the most it could cost, and a reply that starts under a limit can still end over it (D-031).
+- _A question that is never answered._ It waits until the window closes, reloads or the person answers; nothing is written and nothing is sent meanwhile, so waiting costs nothing. If the app is
+  closed with a question open, the chat is saved with the reply as "stopped" (as any reply that was still arriving).
+- _A question that is wrong._ The figures are main's own guess, rounded up. A model changed while the question is open does not change what was asked about: the request was built with the model that
+  is shown, and that is the one that answers. The limits are read again after the yes. A key removed meanwhile does not stop a request already built (the key was read before the question).
+- _Rule 1 (nothing leaves the PC unseen)._ Nothing new leaves it, and nothing in a request changed (the golden requests are the same bytes). The `confirm` event carries a model id and numbers, no text.
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only. A plain-Node suite, `verify-8-3.mjs` (288 checks, every file check in a normal folder and in the
+EFS-encrypted %APPDATA%): the estimate for all seven models in the registry (a million tokens in at the dearer input price, the 16,000-token ceiling out, the two added; the ceiling of the request
+that is really built, including a model that can only write 4,000), where the default begins to ask on each model (a table, and the first token count that asks), when the question is asked
+(16 cases: exactly at the amount, a millionth above it, float noise, "Never ask" for a request that could cost a million dollars, the input and not the reply deciding), what is typed (14 accepted and
+25 refused texts, and that the words are not the words of a limit), what the page may hand over (a table of 25 bad choices, extra fields dropped, the kind "default" refused), what `ask-first.json`
+holds (the exact texts; 26 damaged files, each read as the default and none as "Never ask"; every one of the 29 cut-off copies of the "Never ask" file; the whole file still reading as "Never ask"),
+the store (missing, damaged, with and without a byte-order mark, a folder in its place with `read` not throwing and the failure not remembered, a save that cannot be written, 20 saves at once,
+a read between two saves, an edit made while the app runs not heard), **the waiting room** (a yes the moment the question is shown, a yes before any question not remembered, a stop, a signal already
+aborted, the same key twice, a `show` that throws, other keys, a yes and a stop together in both orders, 100 questions at once, and no listener left on any signal), the way the amounts are written (ten
+cases and 20,000 random pairs: never below what it is, never more than a cent above, the rows adding up), and source checks (the question comes after the estimate and before the limits are read again,
+before the ledger and before the provider; nothing between touches the ledger but a look at the sums; one guess; the ceiling and the prices are the request's own; the provider is still called from
+one place; the yes handler checks who asks and answers only the sender's own stream; the page works out no estimate of its own; a chat request carries no field that approves it). A window suite,
+`verify-8-3w.mjs` (84 checks, `run83.mjs`) against the fake Anthropic API with Fable 5.1 chosen and **real 150,000-character requests**: a small request goes without a question; a large one opens the
+question with nothing sent and nothing written while it is open; the figures on screen against figures worked out in the suite from what the mock then received (**the same token count three times**: the
+question, the ledger's first line and an independent count of the request the provider got); Send, "Don't send", Escape, Try again, an edited message, the keyboard (focus on "Don't send", Enter
+declines, Tab then Enter sends), a Stop while the question is open, and **a yes sent afterwards by a script for each question that was declined or stopped, which sends nothing**; the limits coming first
+(a request a daily limit of $0.01 refuses is refused at once and not asked about); Settings (what it says, the box refusing "abc", 0 and 20000, Save, the sentence, the file, an amount of $5 letting the
+same request through, $0.10 asking for a conversation that is large only as a whole, "Never ask" with its warning); what the page cannot do (ten bad choices from the bridge leaving the file byte for byte
+as it was, extra fields dropped, **a yes sent twice the moment a request starts, and for other streams, and malformed, a field that claims approval, a yes after the end**, none of which sent anything,
+and a yes given to the question that is waiting sending exactly one request); narrow windows (420, 320 and 280 px); and a reload while the question is open. A restart suite, `verify-8-3b.mjs`
+(7 checks: $0.25 read back from the file and honoured by a request that the default would not ask about) and three launches with a damaged file, `verify-8-3c.mjs` (9, 9 and 10 checks: not JSON,
+`"Never"` in capitals, a folder: the default asks, saving repairs the file, and with a folder in its place Save says it could not write and the question is still asked). **Negative controls: 65
+breakages, all caught** (`tools/specs83`: 44 under Node; `tools/specs83w`: 21 in the real window), each file proved restored by hash, and the hash over `src/` and `registry/` identical before and
+after every batch. They cover: the estimate (the input at the plain price, or at the cache-write price alone; the reply priced as input; the total without the reply; the ceiling a constant
+instead of the request's own), when it asks (exactly at the amount asking; the reply counting in the trigger; "Never ask" still asking; no rounding to millionths; the default amount changed; the
+default read as "Never ask"), what is typed (three decimals, zero, no maximum), what the page may hand over ("default" accepted, extra fields kept, an amount not checked), the file (not JSON, a
+cut-off file, a bad amount, "never" in any case, each read as "Never ask"; the version ignored), the store (a missing file read as "Never ask", an unreadable one thrown or remembered, a
+byte-order mark, a cache not updated, a save not read back), the waiting room (an early yes remembered, a stop not heard, an answered question not removed, a second question replacing the first,
+a stopped reply still shown its question, the question shown before it waits, a `show` that throws), a request that keeps a field that approves it, the figures (rounded down, without the small
+subtraction, a total from unrounded figures), `chat.ts` (the guess made twice, the limits not read again after the wait, the yes handler not checking who asks, a yes keyed without the window, the
+answer ignored) and, in the window, the question never asked, the request sent whatever the answer, the ledger begun before the question, no look at the limits first, the saved choice ignored,
+Send saying no, "Don't send" saying yes, Escape saying yes, the keyboard starting on Send, a Stop not heard, the yes never sent, the no not told to main, a choice saved unchecked, the status hiding
+the choice, Save on for an invalid amount, the "Never ask" warning missing, the dialog's role missing, a field that approves a request (kept and honoured), and the waiting room not hearing a stop
+together with `chat.ts` not checking its signal. **What the controls taught me about the checks and the harness:** (1) The window suite cannot see the waiting room's own abort listener on its own:
+`chat.ts` also refuses to send when its signal was aborted, which stands behind the room, so nothing a person or a script can do shows the difference. The Node suite sees it; the window control
+removes both protections and is seen. (2) A field that is only kept and never read changes nothing in the window; the Node suite sees it kept, and the window control makes `chat.ts` honour it.
+(3) One window control first looked caught only because a step at the very start of the suite failed for an unrelated reason (a flake); a second run showed it was not caught, which is how (1) was
+found. A control that is caught at its first check is worth running twice. (4) The checks of the waiting room could hang on a sabotaged room; every awaited answer now has a timeout, so it is a FAIL
+line. (5) The window suite now records a step that waits for something that never comes as a failed check ("the suite stopped before its end: ..."), so a control that breaks the flow shows as a
+named detection with a summary and not as a crash. (6) **A real fault of the harness:** after one Node control `nc.mjs` did not put `chat.ts` back, and printed nothing about it (its copy-back step
+failed or never ran; the cause is not proven, a file held for a moment by another program on Windows is the likely one, and the same control ran clean when repeated). It was found only because the
+whole tree was hashed before and after the batch. The file was restored from its backup (the backup's hash checked against the one printed by the other controls), `nc.mjs` now retries the copy for
+several seconds, proves each file by hash and prints `RESTORE FAILED` if it cannot, and `nc-all.mjs` says when a control printed no "restored" line.
+**What the suites found:** one real fault of mine, found by the check that the page logs no console error: the new Settings section had the same React key as the section beside it (the first window
+run reported "two children with the same key"); fixed with its own key, and the check stays. A second, found by the narrow-window check: the question's table of three columns overflowed sideways
+at 280 px; it is now two columns with the tokens under each label. Everything else the first runs reported was my test (a wrong paragraph number in two checks; waiting for the Send button while the
+question was open; a millionth-of-a-dollar rounding that made "one more token" the wrong expectation on the cheapest model). **Older suites made stale** by this slice and updated: the exact lists of the
+bridge and of the settings status in `verify-2-3`, `verify-2-4`, `verify-3-4`, `verify-4-2`, `verify-5-3` and `verify-8-2w` (`setAskFirst`, `chat.confirm`, `askFirst`), the button count in
+`verify-5-3`'s check at 420 and 320 px (the Settings dialog has one more Save), and two negative controls of 8.1 and 8.2 whose target line had moved in `chat.ts`. Re-run on this tree and clean: `verify-2-3` (64; its first run had one failure, a status-shape line I had
+missed), `verify-2-3b` (5), `verify-2-4` (71), `verify-3-4` (78), `verify-4-2` (91), `verify-5-3` (66), `verify-7-3` (53), `verify-7-6w` (46), the 8.1 suites (81 and 12), the 8.2 suites (62, 8, 8, 6
+and 7), and the plain-Node part of the regression (15 suites).
+**Not checked:** (1) **a real call to either provider**: nothing was sent to a real API, so what a real request costs against these figures is unknown (compare the first real replies with the provider's
+usage page; the figure is a guess on the high side, and a cached conversation costs far less). (2) **The full regression** (about 55 minutes) and **the built app**: only the suites named above were run on
+this tree; the other window suites, the seeds, the scenarios, Stage 4 and the `preview` part wait for your go-ahead. (3) The question with an OpenAI model through the window (the code is provider-neutral and
+the estimate is checked for all seven models under Node; the window was driven with Fable 5.1 only). (4) A screen reader (the dialog is a modal `<dialog>` with the role `alertdialog`, a label and a description, and its rows are a table with row
+headers; only the attributes were checked), and a real keyboard rather than the test client's key events. (5) Another display scale, a right-to-left language, and a window zoomed to 200%. (6) A model whose `maxOutputTokens` is lower
+than 16,000 in the window (checked under Node). (7) Two windows (the app has one).
+
+Status: accepted (Stage 8.3). Revisit: the first real requests (is the figure about right against the provider's usage page, and is $0.50 the right amount to start from); "don't ask again in this chat"
+(IDEAS); the limits still left in the question (IDEAS); whether the question should be an operating system dialog once there is a way to check one; Stage 9's attachments, which will change the cap on a
+request and so how often this asks.

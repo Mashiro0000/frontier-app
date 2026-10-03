@@ -52,9 +52,9 @@ const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'))
 
 // ============ 1. a fresh profile ============
 const api = await ev(`JSON.stringify({ top: Object.keys(window.api), settings: Object.keys(window.api.settings) })`)
-check('window.api.settings has getStatus / setApiKey / clearApiKey / testApiKey / setModel / setEffort / setLimits, in that order (and window.api has usage since 8.1)', api === '{"top":["settings","chat","usage","history"],"settings":["getStatus","setApiKey","clearApiKey","testApiKey","setModel","setEffort","setLimits"]}', api)
+check('window.api.settings has getStatus / setApiKey / clearApiKey / testApiKey / setModel / setEffort / setLimits / setAskFirst, in that order (and window.api has usage since 8.1)', api === '{"top":["settings","chat","usage","history"],"settings":["getStatus","setApiKey","clearApiKey","testApiKey","setModel","setEffort","setLimits","setAskFirst"]}', api)
 const st0 = await ev(`window.api.settings.getStatus()`)
-check('getStatus: exactly providers, canStoreKey, models, selectedModelId, modelsError, modelsCheckedOn, tasks, suggestions, effort, limits (since 8.2)', Object.keys(st0).join() === 'providers,canStoreKey,models,selectedModelId,modelsError,modelsCheckedOn,tasks,suggestions,effort,limits', Object.keys(st0).join())
+check('getStatus: exactly providers, canStoreKey, models, selectedModelId, modelsError, modelsCheckedOn, tasks, suggestions, effort, limits (since 8.2), askFirst (since 8.3)', Object.keys(st0).join() === 'providers,canStoreKey,models,selectedModelId,modelsError,modelsCheckedOn,tasks,suggestions,effort,limits,askFirst', Object.keys(st0).join())
 check('getStatus: two providers, Anthropic then OpenAI, neither with a key', JSON.stringify(st0.providers) === '[{"id":"anthropic","name":"Anthropic","hasKey":false},{"id":"openai","name":"OpenAI","hasKey":false}]', JSON.stringify(st0.providers))
 check('getStatus: every model names its provider by id', st0.models.length >= 7 && st0.models.every((m) => ['anthropic', 'openai'].includes(m.provider)) && new Set(st0.models.map((m) => m.provider)).size === 2, JSON.stringify(st0.models.map((m) => m.provider)))
 check('getStatus: each model still has exactly id, label, provider, description, contextWindow, pricing', st0.models.every((m) => Object.keys(m).join() === 'id,label,provider,description,contextWindow,pricing'))
@@ -253,7 +253,7 @@ for (const width of [420, 320]) {
   await page.send('Emulation.setDeviceMetricsOverride', { width, height: 700, deviceScaleFactor: 1, mobile: false })
   await sleep(300)
   const fit = await ev(`(() => { const d = document.querySelector('dialog.settings'); const r = d.getBoundingClientRect(); const bs = [...d.querySelectorAll('.settings-actions button')].map((b) => b.getBoundingClientRect()); return { dialog: [Math.round(r.left), Math.round(r.right)], overflowX: d.scrollWidth > d.clientWidth, buttonsInside: bs.every((b) => b.left >= r.left - 1 && b.right <= r.right + 1), rows: new Set(bs.map((b) => Math.round(b.top))).size, count: bs.length } })()`)
-  check(`at ${width} px wide: no sideways scroll, and Save / Test / Remove (and the second provider's Save, and since 8.2 Save limits) all stay inside the dialog`, !fit.overflowX && fit.buttonsInside && fit.count === 5, JSON.stringify(fit))
+  check(`at ${width} px wide: no sideways scroll, and Save / Test / Remove (and the second provider's Save, since 8.2 Save limits, and since 8.3 the Save of Large requests) all stay inside the dialog`, !fit.overflowX && fit.buttonsInside && fit.count === 6, JSON.stringify(fit))
   await page.screenshot(`${shots}/5-3-narrow-${width}.png`)
 }
 await page.send('Emulation.clearDeviceMetricsOverride')

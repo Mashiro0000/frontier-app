@@ -1,0 +1,14 @@
+{
+  "label": "n83-never-still-asks",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "return above !== null && micros(estimate.inputUsd) > micros(above)",
+      "to": "return micros(estimate.inputUsd) > micros(above ?? 0)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n83-figures-total-unrounded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/format.ts",
+      "from": "total: centsText(input + output)",
+      "to": "total: centsText(ceilCents(estimate.totalUsd))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

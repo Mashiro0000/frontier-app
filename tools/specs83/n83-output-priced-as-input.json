@@ -1,0 +1,14 @@
+{
+  "label": "n83-output-priced-as-input",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "const outputUsd = (maxOutputTokens * prices.outputPerMTok) / 1_000_000",
+      "to": "const outputUsd = (maxOutputTokens * prices.inputPerMTok) / 1_000_000"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

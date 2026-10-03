@@ -1,0 +1,14 @@
+{
+  "label": "n83-chat-yes-key-without-window",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "confirmations.send(`${event.sender.id}:${streamId}`)",
+      "to": "confirmations.send(streamId)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

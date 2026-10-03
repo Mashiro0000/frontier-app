@@ -1,0 +1,14 @@
+{
+  "label": "n83-default-is-never",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "return setting.kind === 'usd' ? setting.usd : ASK_FIRST_DEFAULT_USD",
+      "to": "return setting.kind === 'usd' ? setting.usd : null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

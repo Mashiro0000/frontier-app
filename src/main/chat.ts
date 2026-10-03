@@ -1,8 +1,10 @@
 import { ipcMain, type WebContents } from 'electron'
+import { askFirstAmount, estimateRequest, needsConfirmation } from '../shared/askFirst'
 import { CHANNELS, type ChatRequest, type ChatStreamEvent } from '../shared/ipc'
 import { checkAgainstLimits, type Limits } from '../shared/limits'
 import { PROVIDER_NAMES, type ProviderId } from '../shared/registry'
 import {
+  costOf,
   costOfRecord,
   estimateInputTokens,
   estimateOutputTokens,
@@ -14,7 +16,9 @@ import {
   type TokenCounts
 } from '../shared/usage'
 import { checkChatRequest } from '../shared/validate'
+import type { AskFirstStore } from './askFirst'
 import { baseUrlOverride } from './baseUrl'
+import { createConfirmations } from './confirmation'
 import { readApiKey } from './keyStore'
 import { currentModel } from './models'
 import type { LimitsStore } from './limits'
@@ -61,6 +65,8 @@ const replyUsageOf = (record: LedgerRecord): ReplyUsage => ({
 /** Replies in progress, by "<window id>:<stream id>", so each one can be stopped on its own. */
 const running = new Map<string, AbortController>()
 const watched = new WeakSet<WebContents>()
+/** Large requests waiting for the person's yes (D-032), under the same keys as `running`: a yes is heard only for a question that is waiting. */
+const confirmations = createConfirmations()
 
 function stopAllFor(windowId: number): void {
   for (const [key, controller] of running) {
@@ -109,7 +115,8 @@ async function runReply(
   request: ChatRequest,
   send: (event: ChatStreamEvent) => void,
   ledger: UsageLedger,
-  limitsStore: LimitsStore
+  limitsStore: LimitsStore,
+  askFirstStore: AskFirstStore
 ): Promise<void> {
   const { streamId } = request
   const key = `${windowId}:${streamId}`
@@ -186,22 +193,61 @@ async function runReply(
       messages: request.messages,
       signal: controller.signal
     })
-    // The spending limits (D-031), read here and checked inside the ledger's turn below. They are asked for on EVERY request, whichever way
-    // it came (a new message, Regenerate, an edited message): this is the only place a provider is called. A file that cannot be read
-    // at all refuses the request, and so does a limit that has not been chosen yet.
-    let limits: Limits
-    try {
-      limits = await limitsStore.read()
-    } catch (error) {
-      // Logged here only; the message could name a file path.
-      console.error('Reading the limits failed:', error instanceof Error ? error.message : error)
-      send({
-        streamId,
-        type: 'error',
-        message: 'Nothing was sent: the spending limits could not be read on this computer.'
-      })
-      return
+    // One guess at what this request sends, used three times and the same each time: for the question below (D-032), for the limit's check
+    // (D-031) and for the ledger's first line (D-030).
+    const inputTokens = estimateInputTokens(streamRequest.system, streamRequest.messages)
+    // The spending limits (D-031), as they are now. They are asked for on EVERY request, whichever way it came (a new message, Regenerate,
+    // an edited message): this is the only place a provider is called. A file that cannot be read at all refuses the request (null, after
+    // the page has been told), and so does a limit that has not been chosen yet.
+    const readLimits = async (): Promise<Limits | null> => {
+      try {
+        return await limitsStore.read()
+      } catch (error) {
+        // Logged here only; the message could name a file path.
+        console.error('Reading the limits failed:', error instanceof Error ? error.message : error)
+        send({
+          streamId,
+          type: 'error',
+          message: 'Nothing was sent: the spending limits could not be read on this computer.'
+        })
+        return null
+      }
     }
+    // A very large request is asked about BEFORE anything is written or sent (D-032): what it could cost at the most is shown to the person,
+    // and it goes only on their yes. Nothing is begun in the ledger while the question is open, so a request that is never answered never counts.
+    // The answer comes from `confirmations`, which hears a yes only for a question that is waiting.
+    const estimate = estimateRequest(inputTokens, streamRequest.maxOutputTokens, entry.pricing)
+    const askFirst = await askFirstStore.read() // never throws: damage to the file is "nothing chosen", and the default asks
+    const askAbove = askFirstAmount(askFirst)
+    if (askAbove !== null && needsConfirmation(askFirst, estimate)) {
+      const before = await readLimits()
+      if (before === null) return
+      // A request the limits will refuse anyway is not asked about: the person is told why it cannot go. This look is only so that the question is not
+      // wasted; the check that counts is the one inside `begin`, below, which runs again after the yes.
+      let refusal: string | null = null
+      try {
+        const sums = await ledger.summary(null)
+        refusal = checkAgainstLimits(before, {
+          today: sums.today.costUsd,
+          month: sums.month.costUsd,
+          request: costOf({ ...NO_TOKENS, input: inputTokens }, entry.pricing)
+        })
+      } catch {
+        // The ledger could not be read: `begin` below fails the same way and says so. The question is asked meanwhile.
+      }
+      if (refusal !== null) {
+        send({ streamId, type: 'error', message: refusal })
+        return
+      }
+      const answer = await confirmations.ask(key, controller.signal, () =>
+        send({ streamId, type: 'confirm', model: entry.id, estimate, askAboveUsd: askAbove })
+      )
+      // No yes: the person said no, or the window went away. Nothing was sent and nothing was written. (A yes and a Stop at the same moment: Stop wins.)
+      if (answer !== 'send' || controller.signal.aborted) return
+    }
+    // Read again, after any wait: what is checked is what the limits are NOW.
+    const limits = await readLimits()
+    if (limits === null) return
     // Counted BEFORE it is sent (D-030): a request that cannot be written down is not made, so nothing is spent that is not on record. The
     // limit is checked in the same turn (D-031): what has been spent and the line that adds this request to it cannot be parted by another.
     try {
@@ -212,7 +258,7 @@ async function runReply(
           model: entry.id,
           effort,
           prices: entry.pricing,
-          inputTokens: estimateInputTokens(streamRequest.system, streamRequest.messages)
+          inputTokens
         },
         (spend) => checkAgainstLimits(limits, spend)
       )
@@ -283,7 +329,8 @@ async function runReply(
 export function registerChatIpc(
   appUrl: string,
   ledger: UsageLedger,
-  limitsStore: LimitsStore
+  limitsStore: LimitsStore,
+  askFirstStore: AskFirstStore
 ): void {
   ipcMain.on(CHANNELS.chatStart, (event, raw: unknown) => {
     if (!isTrustedSender(event, appUrl)) return // nobody to answer: it is not our page
@@ -297,11 +344,18 @@ export function registerChatIpc(
       return
     }
     stopWhenPageGoes(sender)
-    void runReply(sender.id, check.request, send, ledger, limitsStore)
+    void runReply(sender.id, check.request, send, ledger, limitsStore, askFirstStore)
   })
 
   ipcMain.on(CHANNELS.chatCancel, (event, streamId: unknown) => {
     if (!isTrustedSender(event, appUrl) || typeof streamId !== 'string') return
     running.get(`${event.sender.id}:${streamId}`)?.abort()
+  })
+
+  // The person's yes to a large request that is waiting (D-032). Heard only from a window that is asking, for its own stream and only while the
+  // question is waiting: a yes sent ahead of the question, twice, or for a stream that is not asking finds nobody and is dropped.
+  ipcMain.on(CHANNELS.chatConfirm, (event, streamId: unknown) => {
+    if (!isTrustedSender(event, appUrl) || typeof streamId !== 'string') return
+    confirmations.send(`${event.sender.id}:${streamId}`)
   })
 }

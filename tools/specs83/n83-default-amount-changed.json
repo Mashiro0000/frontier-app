@@ -1,0 +1,14 @@
+{
+  "label": "n83-default-amount-changed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "export const ASK_FIRST_DEFAULT_USD = 0.5",
+      "to": "export const ASK_FIRST_DEFAULT_USD = 1"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

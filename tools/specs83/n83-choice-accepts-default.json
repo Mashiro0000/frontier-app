@@ -1,0 +1,14 @@
+{
+  "label": "n83-choice-accepts-default",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "if (kind === 'never') return { ok: true, choice: { kind: 'never' } }",
+      "to": "if (kind === 'never' || kind === 'default') return { ok: true, choice: { kind: 'never' } }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

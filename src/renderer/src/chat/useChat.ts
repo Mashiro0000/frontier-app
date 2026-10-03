@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { withEditedMessage, withoutLastReply } from './rewrite'
-import type { ChatMessage, ReplyFn } from './types'
+import type { ChatMessage, LargeRequest, ReplyFn } from './types'
 
 export interface UseChat {
   messages: ChatMessage[]
   /** True while an assistant reply is still arriving. */
   isReplying: boolean
+  /** A large request that is waiting for the person's yes (D-032), or null. Nothing has been sent while this is set. */
+  largeRequest: LargeRequest | null
+  /** The person's answer to `largeRequest`: true to send it, false not to. Does nothing when no question is open. */
+  answerLargeRequest: (yes: boolean) => void
   send: (text: string) => void
   /** Stops the reply that is arriving. Whatever has arrived so far is kept. */
   stop: () => void
@@ -49,9 +53,36 @@ export function useChat(reply: ReplyFn): UseChat {
   }, [])
   // Set while a reply is streaming. Used to stop it, and to refuse a second send meanwhile.
   const activeReply = useRef<AbortController | null>(null)
+  // A large request waiting for the person's yes (D-032): what to show, and how its answer reaches the reply that is waiting for it.
+  const [largeRequest, setLargeRequest] = useState<LargeRequest | null>(null)
+  const answerRef = useRef<((yes: boolean) => void) | null>(null)
 
   // If the chat goes away mid-reply (window closing, hot reload), stop the reply too.
   useEffect(() => () => activeReply.current?.abort(), [])
+
+  /** Puts a large request in front of the person and waits for the answer. A reply that is stopped meanwhile answers no, and the question goes. */
+  function askAboutLargeRequest(request: LargeRequest, signal: AbortSignal): Promise<boolean> {
+    return new Promise<boolean>((resolve) => {
+      if (signal.aborted) {
+        resolve(false)
+        return
+      }
+      const finish = (yes: boolean): void => {
+        signal.removeEventListener('abort', onAbort)
+        answerRef.current = null
+        setLargeRequest(null)
+        resolve(yes)
+      }
+      const onAbort = (): void => finish(false)
+      signal.addEventListener('abort', onAbort, { once: true })
+      answerRef.current = finish
+      setLargeRequest(request)
+    })
+  }
+
+  const answerLargeRequest = useCallback((yes: boolean): void => {
+    answerRef.current?.(yes)
+  }, [])
 
   function updateMessage(id: string, update: (message: ChatMessage) => ChatMessage): void {
     setMessages((previous) => previous.map((m) => (m.id === id ? update(m) : m)))
@@ -75,7 +106,8 @@ export function useChat(reply: ReplyFn): UseChat {
           })),
         instructions,
         conversationId.current,
-        (usage) => updateMessage(replyId, (m) => ({ ...m, usage }))
+        (usage) => updateMessage(replyId, (m) => ({ ...m, usage })),
+        (request) => askAboutLargeRequest(request, controller.signal)
       )
       for await (const piece of answered) {
         if (controller.signal.aborted) break // ignore a piece that was already on its way
@@ -165,6 +197,8 @@ export function useChat(reply: ReplyFn): UseChat {
   return {
     messages,
     isReplying,
+    largeRequest,
+    answerLargeRequest,
     send,
     stop,
     instructions,

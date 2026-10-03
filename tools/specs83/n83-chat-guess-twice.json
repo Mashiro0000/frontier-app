@@ -1,0 +1,14 @@
+{
+  "label": "n83-chat-guess-twice",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "          inputTokens\n        },\n        (spend)",
+      "to": "          inputTokens: estimateInputTokens(streamRequest.system, streamRequest.messages)\n        },\n        (spend)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

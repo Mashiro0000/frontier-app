@@ -1,0 +1,14 @@
+{
+  "label": "n83-room-aborted-still-shows",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/confirmation.ts",
+      "from": "if (signal.aborted || pending.has(key)) {",
+      "to": "if (pending.has(key)) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

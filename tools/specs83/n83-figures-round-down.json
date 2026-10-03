@@ -1,0 +1,14 @@
+{
+  "label": "n83-figures-round-down",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/format.ts",
+      "from": "Math.max(0, Math.ceil(dollars * 100 - 1e-7))",
+      "to": "Math.max(0, Math.floor(dollars * 100))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

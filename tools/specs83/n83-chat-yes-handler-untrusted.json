@@ -1,0 +1,14 @@
+{
+  "label": "n83-chat-yes-handler-untrusted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "  ipcMain.on(CHANNELS.chatConfirm, (event, streamId: unknown) => {\n    if (!isTrustedSender(event, appUrl) || typeof streamId !== 'string') return",
+      "to": "  ipcMain.on(CHANNELS.chatConfirm, (event, streamId: unknown) => {\n    if (typeof streamId !== 'string') return"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

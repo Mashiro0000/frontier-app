@@ -1,0 +1,14 @@
+{
+  "label": "n83-file-not-json-is-never",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "  } catch {\n    return nothing(true)\n  }",
+      "to": "  } catch {\n    return { setting: { kind: 'never' }, damaged: true }\n  }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

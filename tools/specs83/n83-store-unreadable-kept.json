@@ -1,0 +1,14 @@
+{
+  "label": "n83-store-unreadable-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/askFirst.ts",
+      "from": "keep: false",
+      "to": "keep: true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

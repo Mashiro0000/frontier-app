@@ -140,7 +140,7 @@ note and the full regression (D-028); and a sixth after them, at the owner's req
 - [x] (7.6, D-029) The header stays ONE row at the default window width, whatever is showing: **New chat**, **History** and **Instructions** moved out of it
       into a slim row under the message box (the owner's decision of 2 October 2026, after D-027 had reported that the header wrapped).
 
-## Stage 8 - Usage, cost and spending limits (8.1 and 8.2 done; 8.3 and 8.5 not started)
+## Stage 8 - Usage, cost and spending limits (8.1, 8.2 and 8.3 done; 8.5 not started)
 
 The owner's decisions of 2 October 2026: **the limits are the owner's own, with no preset numbers**; **encrypted history is its own later stage
 (8b)**, with a tested backup and export before any encryption; **a guess marked "about" is counted** when a reply is stopped or fails with no usage
@@ -156,7 +156,11 @@ report, and replaced if a real report arrives.
       counting what is already on the ledger and what is in flight, and refuses with a plain sentence that says which limit and why. The page cannot
       bypass it. Until both limits are chosen (an amount or "No limit") every request is refused; a missing or damaged `limits.json` counts as not chosen,
       never as "No limit". A reply that starts under a limit can end over it by at most what one reply can write (D-031 gives the figure).
-- [ ] (8.3) **A confirmation before a very large request**: the estimate (input, and the most the reply could cost at its ceiling) and a question.
+- [x] (8.3, D-032) **A question before a very large request.** Before anything is written or sent, the main process works out the most the request could cost: what it
+      sends (at the dearer of the two input prices) and a reply as long as its ceiling. When **what it sends** could cost more than **an amount of the owner's** (Settings > Large
+      requests; $0.50 until chosen, or a deliberate "Never ask") it sends nothing, shows the figures ("Send this large request?": Send, Don't send, Escape is no) and waits for the
+      yes. Nothing is written to the ledger while it waits, a yes is heard only for a question that is waiting, and the limits of 8.2 are checked after the yes exactly as before
+      (a request they would refuse is not asked about). A damaged or unreadable `ask-first.json` means the default amount, never "Never ask".
 - [ ] (8.5) The stage's threat note, the full regression, and the list of what was not checked.
 - This is the safety foundation for everything that can loop or spend. Nothing in Stages 11 to 13 is built before it.
 

@@ -1,0 +1,14 @@
+{
+  "label": "n83-no-micro-rounding",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "micros(estimate.inputUsd) > micros(above)",
+      "to": "estimate.inputUsd > above"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

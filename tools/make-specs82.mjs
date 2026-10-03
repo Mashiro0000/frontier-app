@@ -53,7 +53,7 @@ const node = {
 const win = {
   // chat.ts: the ledger's refusal is treated as a write failure; the limits are not read (everything is allowed); no check is passed
   'w82-chat-refusal-as-write-failure': [[CHAT, 'if (error instanceof RequestRefused) {', 'if (false) {']],
-  'w82-chat-limits-not-read': [[CHAT, 'limits = await limitsStore.read()', 'limits = ' + NONE_BOTH]],
+  'w82-chat-limits-not-read': [[CHAT, 'return await limitsStore.read()', 'return ' + NONE_BOTH]],
   'w82-chat-no-check': [[CHAT, '(spend) => checkAgainstLimits(limits, spend)', 'undefined']],
   // ipc.ts: a choice from the page is saved without being checked; the status hides that nothing is chosen
   'w82-set-limits-unchecked': [[IPC, 'const check = checkLimitsChoice(input)\n      if (!check.ok) return check\n      try {\n        await limitsStore.save(check.limits)', 'const check = { ok: true, limits: input as never }\n      try {\n        await limitsStore.save(check.limits)']],

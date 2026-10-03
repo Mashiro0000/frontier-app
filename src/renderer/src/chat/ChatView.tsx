@@ -3,6 +3,7 @@ import type { SettingsStatus } from '../../../shared/ipc'
 import LinkConfirm from '../markdown/LinkConfirm'
 import { providerMissingKey } from '../settings/format'
 import Composer from './Composer'
+import LargeRequestDialog from './LargeRequestDialog'
 import MessageList from './MessageList'
 import type { UseChat } from './useChat'
 
@@ -28,7 +29,8 @@ function ChatView({
   onOpenLimits,
   conversationId
 }: ChatViewProps): React.JSX.Element {
-  const { messages, isReplying, send, stop, regenerate, resend } = chat
+  const { messages, isReplying, largeRequest, answerLargeRequest, send, stop, regenerate, resend } =
+    chat
   // Asking again (Regenerate, an edited message) takes the keyboard back to the input box, as sending does.
   const [asked, setAsked] = useState(0)
   // Stable from one render to the next (the chat re-renders with every word of a reply), so that the messages that have not changed
@@ -93,6 +95,12 @@ function ChatView({
         isReplying={isReplying}
         onSend={send}
         onStop={stop}
+      />
+      {/* A large request is held by the main process until the person says yes here (D-032). */}
+      <LargeRequestDialog
+        request={largeRequest}
+        modelName={modelName}
+        onAnswer={answerLargeRequest}
       />
     </main>
   )

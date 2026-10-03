@@ -2,6 +2,7 @@
 // cross that boundary is described here, so all three sides agree. Types, channel names and limits
 // only: this file is bundled into the preload, which runs sandboxed (see D-004).
 
+import type { AskFirstChoice, AskFirstSetting, RequestEstimate } from './askFirst'
 import type { Limits, LimitsChoice } from './limits'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
@@ -76,6 +77,11 @@ export interface SettingsStatus {
    * every request is refused. Main enforces them; the page only shows them and sends the person's choice.
    */
   limits: Limits
+  /**
+   * What the person chose for "ask me before a very large request" (D-032): an amount, "Never ask", or nothing yet (the default amount applies,
+   * `ASK_FIRST_DEFAULT_USD`). Main asks the question; the page only shows the setting and sends the person's choice.
+   */
+  askFirst: AskFirstSetting
 }
 
 export type SetKeyResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
@@ -84,6 +90,7 @@ export type TestKeyResult = { ok: true; modelCount: number } | { ok: false; erro
 export type SetModelResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
 export type SetEffortResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
 export type SetLimitsResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
+export type SetAskFirstResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
 
 /** A message as the model is told about it: who wrote it, and the plain text. */
 export type WireRole = 'user' | 'assistant'
@@ -115,6 +122,17 @@ export interface ChatRequest {
 export type ChatStreamEvent =
   /** Always first, before the key is looked up: which model is answering (D-021). Not sent if no model could be chosen. */
   | { streamId: string; type: 'start'; provider: ProviderId; model: string }
+  /**
+   * The request is large (D-032) and nothing has been sent: main is WAITING for the person's yes (`chat.confirm`) before it sends. It says which
+   * model would answer, what the request could cost at the most, and the amount above which it asks. A reply that gets no yes is never sent.
+   */
+  | {
+      streamId: string
+      type: 'confirm'
+      model: string
+      estimate: RequestEstimate
+      askAboveUsd: number
+    }
   | { streamId: string; type: 'text'; text: string }
   /** What the reply used and cost (D-030). Sent just before 'done' or 'error', and only when something is owed. */
   | { streamId: string; type: 'usage'; usage: ReplyUsage }
@@ -222,12 +240,22 @@ export interface FrontierApi {
      * checks them again and keeps them; the page cannot take a choice back to "not chosen", and has no other way to change a limit.
      */
     setLimits(choice: LimitsChoice): Promise<SetLimitsResult>
+    /**
+     * Chooses the amount above which the app asks before sending a large request (D-032), or "Never ask". Main checks it again and keeps it; the
+     * page cannot send anything but those two, and this is not a limit: the spending limits still stop a request, whatever is chosen here.
+     */
+    setAskFirst(choice: AskFirstChoice): Promise<SetAskFirstResult>
   }
   chat: {
     /** Starts a reply. It is answered by events (see `onEvent`), not by a return value. */
     start(request: ChatRequest): void
-    /** Stops a reply that is still arriving. */
+    /** Stops a reply that is still arriving, or says no to a request that is waiting for the person's yes. */
     cancel(streamId: string): void
+    /**
+     * Says yes to the large request that main is waiting to send (the `confirm` event of this stream). Heard only while that question is
+     * waiting: one sent before it, after it was answered, or for a stream that is not asking is dropped, so a yes cannot be given ahead of time.
+     */
+    confirm(streamId: string): void
     /** Listens for reply events. Returns a function that stops listening. */
     onEvent(listener: (event: ChatStreamEvent) => void): () => void
   }
@@ -258,8 +286,10 @@ export const CHANNELS = {
   settingsSetModel: 'settings:set-model',
   settingsSetEffort: 'settings:set-effort',
   settingsSetLimits: 'settings:set-limits',
+  settingsSetAskFirst: 'settings:set-ask-first',
   chatStart: 'chat:start',
   chatCancel: 'chat:cancel',
+  chatConfirm: 'chat:confirm',
   chatEvent: 'chat:event',
   usageSummary: 'usage:summary',
   historyList: 'history:list',

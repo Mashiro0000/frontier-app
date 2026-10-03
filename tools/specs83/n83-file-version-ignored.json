@@ -1,0 +1,14 @@
+{
+  "label": "n83-file-version-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "(raw as { version?: unknown }).version !== 1",
+      "to": "false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

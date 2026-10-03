@@ -1,0 +1,14 @@
+{
+  "label": "n83-total-without-output",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "totalUsd: inputUsd + outputUsd",
+      "to": "totalUsd: inputUsd"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

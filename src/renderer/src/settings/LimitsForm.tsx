@@ -7,6 +7,7 @@ import {
   type LimitSetting,
   type Limits
 } from '../../../shared/limits'
+import AmountField, { type AmountFieldState } from './AmountField'
 
 interface LimitsFormProps {
   /** The limits as they are saved now (a limit not chosen yet has an empty box). */
@@ -20,85 +21,19 @@ interface LimitsFormProps {
   secondary?: React.ReactNode
 }
 
-interface Field {
-  /** What is typed in the amount box. */
-  text: string
-  /** "No limit" is ticked. */
-  none: boolean
-}
-
 type Notice = { kind: 'ok' | 'error'; text: string }
 
-const fieldOf = (setting: LimitSetting): Field => ({
+const fieldOf = (setting: LimitSetting): AmountFieldState => ({
   text: setting.kind === 'usd' ? setting.usd.toFixed(2) : '',
   none: setting.kind === 'none'
 })
 
 /** What the field says, as a choice, or why it cannot be one yet (null while the box is simply empty, so nothing shouts before typing). */
-function readField(field: Field): { choice: LimitChoice } | { error: string | null } {
+function readField(field: AmountFieldState): { choice: LimitChoice } | { error: string | null } {
   if (field.none) return { choice: { kind: 'none' } }
   const parsed = parseLimitText(field.text)
   if (parsed.ok) return { choice: { kind: 'usd', usd: parsed.usd } }
   return { error: field.text.trim() === '' ? null : parsed.error }
-}
-
-interface LimitFieldProps {
-  id: string
-  label: string
-  field: Field
-  error: string | null
-  disabled: boolean
-  onChange: (field: Field) => void
-}
-
-function LimitField({
-  id,
-  label,
-  field,
-  error,
-  disabled,
-  onChange
-}: LimitFieldProps): React.JSX.Element {
-  return (
-    <div className="limit-field">
-      <label className="settings-label" htmlFor={id}>
-        {label}
-      </label>
-      <div className="limit-row">
-        <span className="limit-currency" aria-hidden="true">
-          $
-        </span>
-        <input
-          id={id}
-          className="settings-input limit-amount"
-          type="text"
-          inputMode="decimal"
-          autoComplete="off"
-          spellCheck={false}
-          placeholder="for example 5.00"
-          value={field.text}
-          disabled={disabled || field.none}
-          aria-invalid={error !== null}
-          aria-describedby={error !== null ? `${id}-problem` : undefined}
-          onChange={(event) => onChange({ ...field, text: event.target.value })}
-        />
-        <label className="limit-none">
-          <input
-            type="checkbox"
-            checked={field.none}
-            disabled={disabled}
-            onChange={(event) => onChange({ ...field, none: event.target.checked })}
-          />
-          No limit
-        </label>
-      </div>
-      {error !== null && (
-        <p id={`${id}-problem`} className="settings-notice settings-notice-error">
-          {error}
-        </p>
-      )}
-    </div>
-  )
 }
 
 /**
@@ -113,8 +48,8 @@ function LimitsForm({
   onSaved,
   secondary
 }: LimitsFormProps): React.JSX.Element {
-  const [daily, setDaily] = useState<Field>(() => fieldOf(limits.daily))
-  const [monthly, setMonthly] = useState<Field>(() => fieldOf(limits.monthly))
+  const [daily, setDaily] = useState<AmountFieldState>(() => fieldOf(limits.daily))
+  const [monthly, setMonthly] = useState<AmountFieldState>(() => fieldOf(limits.monthly))
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState<Notice | null>(null)
 
@@ -154,20 +89,24 @@ function LimitsForm({
 
   return (
     <form className="limits-form" onSubmit={save}>
-      <LimitField
+      <AmountField
         id={`${idPrefix}-daily`}
         label="Daily limit (US dollars)"
         field={daily}
         error={'error' in readDaily ? readDaily.error : null}
         disabled={busy}
+        noneLabel="No limit"
+        placeholder="for example 5.00"
         onChange={setDaily}
       />
-      <LimitField
+      <AmountField
         id={`${idPrefix}-monthly`}
         label="Monthly limit (US dollars)"
         field={monthly}
         error={'error' in readMonthly ? readMonthly.error : null}
         disabled={busy}
+        noneLabel="No limit"
+        placeholder="for example 5.00"
         onChange={setMonthly}
       />
       {(daily.none || monthly.none) && (
