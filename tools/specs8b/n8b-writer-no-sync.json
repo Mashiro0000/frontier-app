@@ -1,0 +1,14 @@
+{
+  "label": "n8b-writer-no-sync",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "    if (!tooLarge) await handle.sync()\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n8b-store-add-full-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "        if (index.size >= HISTORY_LIMITS.maxConversations) {\n          return {\n            ok: false,\n            why: 'full',",
+      "to": "        if (false) {\n          return {\n            ok: false,\n            why: 'full',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-2.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

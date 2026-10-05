@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { formatCount, formatWhen } from './format'
+import RestorePreviewPanel from './RestorePreviewPanel'
+import { useBackup } from './useBackup'
 import type { UseHistory } from './useHistory'
 
 interface HistoryDialogProps {
@@ -16,6 +18,11 @@ function HistoryDialog({ open, history, onClose }: HistoryDialogProps): React.JS
   // The chat whose "Delete" was pressed and which is waiting for a yes.
   const [asking, setAsking] = useState<string | null>(null)
   const [problem, setProblem] = useState<string | null>(null)
+  // Backing up to a file and restoring from one (D-034).
+  const backup = useBackup(history.reload)
+  const { dismiss: dismissPreview, clearNotice } = backup
+  // Nothing is changed while a chat is being opened or deleted, or while a dialog or a file is being worked on.
+  const locked = busy || backup.working
 
   // The parent decides whether the dialog is open; the <dialog> element does the modal work (see SettingsDialog).
   useEffect(() => {
@@ -28,6 +35,8 @@ function HistoryDialog({ open, history, onClose }: HistoryDialogProps): React.JS
   function handleClosed(): void {
     setAsking(null)
     setProblem(null)
+    dismissPreview() // a file that was looked at and not added is let go
+    clearNotice()
     onClose()
   }
 
@@ -71,7 +80,14 @@ function HistoryDialog({ open, history, onClose }: HistoryDialogProps): React.JS
         </p>
       )}
 
-      {history.loadError ? (
+      {backup.preview !== null ? (
+        <RestorePreviewPanel
+          preview={backup.preview}
+          disabled={locked}
+          onAdd={() => void backup.add()}
+          onDismiss={backup.dismiss}
+        />
+      ) : history.loadError ? (
         <div className="history-section">
           <p className="history-notice history-notice-error" role="status">
             The saved chats could not be listed: {history.loadError}.
@@ -98,7 +114,7 @@ function HistoryDialog({ open, history, onClose }: HistoryDialogProps): React.JS
                   type="button"
                   className="history-open"
                   aria-current={isOpen ? 'true' : undefined}
-                  disabled={busy}
+                  disabled={locked}
                   onClick={() => void choose(conversation.id)}
                 >
                   <span className="history-title">{conversation.title}</span>
@@ -113,7 +129,7 @@ function HistoryDialog({ open, history, onClose }: HistoryDialogProps): React.JS
                     <button
                       type="button"
                       className="history-button history-button-danger"
-                      disabled={busy}
+                      disabled={locked}
                       onClick={() => void confirmDelete(conversation.id)}
                     >
                       Delete
@@ -122,22 +138,33 @@ function HistoryDialog({ open, history, onClose }: HistoryDialogProps): React.JS
                       type="button"
                       className="history-button"
                       autoFocus
-                      disabled={busy}
+                      disabled={locked}
                       onClick={() => setAsking(null)}
                     >
                       Keep
                     </button>
                   </span>
                 ) : (
-                  <button
-                    type="button"
-                    className="history-button"
-                    aria-label={`Delete the chat "${conversation.title}"`}
-                    disabled={busy}
-                    onClick={() => setAsking(conversation.id)}
-                  >
-                    Delete
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      className="history-button"
+                      aria-label={`Export the chat "${conversation.title}" to a file`}
+                      disabled={locked}
+                      onClick={() => void backup.exportOne(conversation.id)}
+                    >
+                      Export
+                    </button>
+                    <button
+                      type="button"
+                      className="history-button"
+                      aria-label={`Delete the chat "${conversation.title}"`}
+                      disabled={locked}
+                      onClick={() => setAsking(conversation.id)}
+                    >
+                      Delete
+                    </button>
+                  </>
                 )}
               </li>
             )
@@ -150,26 +177,58 @@ function HistoryDialog({ open, history, onClose }: HistoryDialogProps): React.JS
           {problem}
         </p>
       )}
-      {history.unreadable > 0 && (
-        <p className="history-hint">
-          {history.unreadable === 1
-            ? '1 saved file could not be read'
-            : `${history.unreadable} saved files could not be read`}{' '}
-          and was left as it is. The app&apos;s log says which.
+      {backup.notice && (
+        <p
+          className={`history-notice backup-notice${backup.notice.kind === 'error' ? ' history-notice-error' : ''}`}
+          role={backup.notice.kind === 'error' ? 'alert' : 'status'}
+        >
+          {backup.notice.text}
         </p>
       )}
-      <p className="history-hint history-where">
-        Chats are saved on this computer
-        {history.folder ? (
-          <>
-            , in <span className="history-folder">{history.folder}</span>,
-          </>
-        ) : null}{' '}
-        as plain files. Unlike your API key, the app does not encrypt them. Deleting a chat deletes
-        its file.
-      </p>
+      {/* While a backup file is being looked at, the dialog is only about that: the notes about the saved files wait. */}
+      {backup.preview === null && (
+        <>
+          {history.unreadable > 0 && (
+            <p className="history-hint">
+              {history.unreadable === 1
+                ? '1 saved file could not be read'
+                : `${history.unreadable} saved files could not be read`}{' '}
+              and was left as it is. The app&apos;s log says which.
+            </p>
+          )}
+          <p className="history-hint history-where">
+            Chats are saved on this computer
+            {history.folder ? (
+              <>
+                , in <span className="history-folder">{history.folder}</span>,
+              </>
+            ) : null}{' '}
+            as plain files. Unlike your API key, the app does not encrypt them. Deleting a chat
+            deletes its file. A backup is one plain file you choose the place for; restoring from
+            one adds chats and never replaces a saved one.
+          </p>
+        </>
+      )}
 
       <div className="history-footer">
+        <div className="history-backup-buttons">
+          <button
+            type="button"
+            className="history-button"
+            disabled={locked || backup.preview !== null || !conversations?.length}
+            onClick={() => void backup.exportAll()}
+          >
+            Back up all chats...
+          </button>
+          <button
+            type="button"
+            className="history-button"
+            disabled={locked || backup.preview !== null}
+            onClick={() => void backup.look()}
+          >
+            Restore from a backup...
+          </button>
+        </div>
         <button
           type="button"
           className="button button-secondary"

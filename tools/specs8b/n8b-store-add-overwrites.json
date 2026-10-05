@@ -1,0 +1,26 @@
+{
+  "label": "n8b-store-add-overwrites",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "        if (index.has(conversation.id)) return occupied('listed')\n",
+      "to": ""
+    },
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "        if (unreadable.has(conversation.id)) return occupied('a file that cannot be read')\n",
+      "to": ""
+    },
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "          if (there) return occupied('a file that was not in the list')",
+      "to": "          void there"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-2.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

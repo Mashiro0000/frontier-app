@@ -1,0 +1,14 @@
+{
+  "label": "n8b-writer-leaves-part-on-fault",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "    await discard() // a disk that failed halfway: nothing of the half-written file is left lying about\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

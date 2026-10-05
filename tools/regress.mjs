@@ -31,7 +31,7 @@ const launcher = (script, mode, label, what) => {
 }
 
 if (parts.includes('node')) {
-  for (const [label, script] of [['provider', process.env.PROVIDER_TEST ?? 'provider-node-test-5.mjs'], ['registry', process.env.REGISTRY_TEST ?? 'verify-5-2.mjs'], ['store', 'verify-4-1.mjs'], ['adapter', 'provider-adapter-test-5.mjs'], ['credstore', 'verify-5-3-store.mjs'], ['store54', 'verify-5-4-store.mjs'], ['openai', 'provider-openai-test-5.mjs'], ['rankings', 'verify-6-1.mjs'], ['effort', 'verify-7-1.mjs'], ['markdown', 'verify-7-2.mjs'], ['rewrite', 'verify-7-3.mjs'], ['instructions', 'verify-7-4.mjs'], ['usage', 'verify-8-1.mjs'], ['limits', 'verify-8-2.mjs'], ['askfirst', 'verify-8-3.mjs'], ...(process.env.EXTRA_NODE_TESTS ? process.env.EXTRA_NODE_TESTS.split(',').map((t, i) => ['extra' + i, t]) : [])]) {
+  for (const [label, script] of [['provider', process.env.PROVIDER_TEST ?? 'provider-node-test-5.mjs'], ['registry', process.env.REGISTRY_TEST ?? 'verify-5-2.mjs'], ['store', 'verify-4-1.mjs'], ['adapter', 'provider-adapter-test-5.mjs'], ['credstore', 'verify-5-3-store.mjs'], ['store54', 'verify-5-4-store.mjs'], ['openai', 'provider-openai-test-5.mjs'], ['rankings', 'verify-6-1.mjs'], ['effort', 'verify-7-1.mjs'], ['markdown', 'verify-7-2.mjs'], ['rewrite', 'verify-7-3.mjs'], ['instructions', 'verify-7-4.mjs'], ['usage', 'verify-8-1.mjs'], ['limits', 'verify-8-2.mjs'], ['askfirst', 'verify-8-3.mjs'], ['backupfile', 'verify-8b-1.mjs'], ['restore', 'verify-8b-2.mjs'], ...(process.env.EXTRA_NODE_TESTS ? process.env.EXTRA_NODE_TESTS.split(',').map((t, i) => ['extra' + i, t]) : [])]) {
     const r = runNode({ label: pfx(label), script })
     note(r.ok, `${r.ok ? 'OK  ' : 'BAD '} ${pfx(label).padEnd(26)} ${script}`)
   }
@@ -55,6 +55,7 @@ if (parts.includes('window')) {
   launcher('run81.mjs', 'dev', 'w81', 'verify-8-1 (usage ledger; restart with a cut-off ledger)')
   launcher('run82.mjs', 'dev', 'w82', 'verify-8-2 (spending limits; restart; damaged limits.json)')
   launcher('run83.mjs', 'dev', 'w83', 'verify-8-3 (the question before a large request; restart; damaged file)')
+  launcher('run8b.mjs', 'dev', 'w8b', 'verify-8b (backing up and restoring chats; the system dialogs replaced from main)')
   rec(seeded('w76', 'dev', 'setup-key.mjs,verify-7-6w.mjs', { USER_DATA_DIR: scratch('s76'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('w76'), 'verify-7-6 (header one row, chat bar under the box)')
   const mtime = statSync(join(P, 'preferences.json')).mtimeMs
   rec(seeded('34b', 'dev', 'verify-3-4b.mjs', { USER_DATA_DIR: P, MOCK_PORT: MOCK, EXPECT_MODEL: 'claude-haiku-4-5-20251001', PREFS_MTIME_MS: String(mtime) }), pfx('34b'), 'verify-3-4b (restart)')
@@ -108,6 +109,7 @@ if (parts.includes('preview')) {
   launcher('run81.mjs', 'preview', 'prev-w81', 'built: verify-8-1 (usage ledger, restart)')
   launcher('run82.mjs', 'preview', 'prev-w82', 'built: verify-8-2 (spending limits, restart, damaged file)')
   launcher('run83.mjs', 'preview', 'prev-w83', 'built: verify-8-3 (the question before a large request, restart, damaged file)')
+  launcher('run8b.mjs', 'preview', 'prev-w8b', 'built: verify-8b (backing up and restoring chats)')
   rec(seeded('prev-w76', 'preview', 'setup-key.mjs,verify-7-6w.mjs', { USER_DATA_DIR: scratch('s76p'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('prev-w76'), 'built: verify-7-6 (header one row, chat bar)')
   stage4('preview')
 }

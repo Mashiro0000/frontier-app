@@ -1,0 +1,16 @@
+{
+  "label": "n8b-service-no-inside-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "if (await isInside(dataDir, dest)) {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-2.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

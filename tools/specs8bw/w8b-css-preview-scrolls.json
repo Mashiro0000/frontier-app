@@ -1,0 +1,17 @@
+{
+  "label": "w8b-css-preview-scrolls",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/assets/main.css",
+      "from": ".backup-preview {\n  flex: none;\n}",
+      "to": ".backup-preview {\n  overflow-y: auto;\n  min-height: 0;\n}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-css-preview-scrolls"
+  }
+}

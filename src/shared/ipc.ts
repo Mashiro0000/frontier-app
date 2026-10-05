@@ -216,6 +216,65 @@ export type HistorySaveResult =
   { ok: true; summary: ConversationSummary } | { ok: false; error: string }
 export type HistoryRemoveResult = { ok: true } | { ok: false; error: string }
 
+/** What to back up (D-034): every saved chat, or one. Never a path: the person picks where in the system's own dialog, which main opens. */
+export type BackupRequest = { scope: 'all' } | { scope: 'one'; id: string }
+
+/** `cancelled`: the person closed the dialog, which is not a failure and is not shown as one. */
+export type HistoryExportResult =
+  | {
+      ok: true
+      /** How many chats are in the file; it was read back and every one matched. */
+      count: number
+      /** Saved files that could not be read, and so are NOT in it. */
+      leftOut: number
+      /** Where it is, for the person to see. */
+      where: string
+    }
+  | { ok: false; error: string; cancelled?: true }
+
+/** What a backup file holds, for the person to look at before anything is added (D-034). */
+export interface RestorePreview {
+  /** Given back to `restoreApply`; good for one use and for ten minutes. */
+  token: string
+  fileName: string
+  /** Milliseconds since 1970, or null if the file does not say. */
+  exportedAt: number | null
+  /** False if the file stops short, is missing chats, or has lines after its end. */
+  complete: boolean
+  /** Chats that were not in the backup because their files could not be read when it was made; null if the file stops before it says. */
+  leftOutAtExport: number | null
+  /** New chats, ones already here (skipped), and ones that share an id with a different chat here (added as copies). */
+  fresh: number
+  same: number
+  copies: number
+  /** Chats that would be added (fresh and copies) and carry instructions of their own, which go out with each message of that chat (D-027). */
+  withInstructions: number
+  /** Chats in the file that cannot be used, and why (the first few). */
+  refusedCount: number
+  refused: { line: number; why: string }[]
+  /** How many of the chats to add there is room for, given the limit on saved chats. */
+  room: number
+  /** The titles of the first chats that would be added. */
+  titles: string[]
+}
+
+export type HistoryRestoreLookResult =
+  { ok: true; preview: RestorePreview } | { ok: false; error: string; cancelled?: true }
+
+export type HistoryRestoreApplyResult =
+  | {
+      ok: true
+      /** Added as they were; added under a new id because the id was taken by a different chat; skipped because the same chat is already here. */
+      added: number
+      copies: number
+      same: number
+      /** Not added: unusable, no room, or the disk refused. */
+      refused: number
+      noRoom: number
+      failed: number
+    }
+  | { ok: false; error: string }
+
 /** Everything the preload hands to the page as `window.api`. Nothing else is reachable. */
 export interface FrontierApi {
   settings: {
@@ -275,6 +334,20 @@ export interface FrontierApi {
     save(conversation: ConversationToSave): Promise<HistorySaveResult>
     /** Deletes a saved conversation's file. */
     remove(id: string): Promise<HistoryRemoveResult>
+    /**
+     * Backs up one chat or all of them to a file the person picks in the system's own save dialog (D-034). The page sends no path and learns
+     * where the file went only afterwards. The file is read back and checked before this answers "ok".
+     */
+    exportChats(request: BackupRequest): Promise<HistoryExportResult>
+    /**
+     * Asks the person for a backup file in the system's own open dialog and reads it, adding NOTHING: the answer says what is in it. The page
+     * sends no path.
+     */
+    restoreLook(): Promise<HistoryRestoreLookResult>
+    /** Adds the chats of the file that `restoreLook` showed, with the token it gave. Never replaces a saved chat. */
+    restoreApply(token: string): Promise<HistoryRestoreApplyResult>
+    /** Drops what `restoreLook` read, so its token can no longer be used. */
+    restoreCancel(token: string): void
   }
 }
 
@@ -295,7 +368,11 @@ export const CHANNELS = {
   historyList: 'history:list',
   historyLoad: 'history:load',
   historySave: 'history:save',
-  historyRemove: 'history:remove'
+  historyRemove: 'history:remove',
+  historyExport: 'history:export',
+  historyRestoreLook: 'history:restore-look',
+  historyRestoreApply: 'history:restore-apply',
+  historyRestoreCancel: 'history:restore-cancel'
 } as const
 
 /**

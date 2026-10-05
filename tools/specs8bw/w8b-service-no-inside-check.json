@@ -1,0 +1,17 @@
+{
+  "label": "w8b-service-no-inside-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "if (await isInside(dataDir, dest)) {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-service-no-inside-check"
+  }
+}

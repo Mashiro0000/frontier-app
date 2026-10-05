@@ -1,0 +1,14 @@
+{
+  "label": "n8b-writer-wrong-checksum",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "const hash = sha256(text)",
+      "to": "const hash = sha256(text + ' ')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

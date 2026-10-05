@@ -1,0 +1,16 @@
+{
+  "label": "n8b-service-links-not-followed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "return join(await fs.realpath(current), ...[...missing].reverse())",
+      "to": "return join(resolve(current), ...[...missing].reverse())"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-2.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

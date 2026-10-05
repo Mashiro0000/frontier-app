@@ -1,0 +1,14 @@
+{
+  "label": "n8b-reader-no-checksum",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "if (typeof claimed !== 'string' || !HASH.test(claimed) || claimed !== hash) {",
+      "to": "if (typeof claimed !== 'string') {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

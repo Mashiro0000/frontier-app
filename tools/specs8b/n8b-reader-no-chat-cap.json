@@ -1,0 +1,14 @@
+{
+  "label": "n8b-reader-no-chat-cap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "if (result.seen >= BACKUP_LIMITS.maxChats) {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

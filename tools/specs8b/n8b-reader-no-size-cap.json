@@ -1,0 +1,14 @@
+{
+  "label": "n8b-reader-no-size-cap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "if (info.size > BACKUP_LIMITS.maxFileBytes)",
+      "to": "if (false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

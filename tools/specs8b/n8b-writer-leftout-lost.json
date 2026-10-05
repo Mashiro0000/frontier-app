@@ -1,0 +1,14 @@
+{
+  "label": "n8b-writer-leftout-lost",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "return { ok: true, count: written.length, leftOut: source.leftOut + gone, bytes }",
+      "to": "return { ok: true, count: written.length, leftOut: source.leftOut, bytes }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

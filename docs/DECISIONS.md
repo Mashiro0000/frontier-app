@@ -1636,3 +1636,99 @@ system other than Windows. (13) **Why the test window sometimes reports "hidden"
 
 Status: accepted (Stage 8 closed; 8.4 is Stage 8b). Revisit: the first real requests (the figures, and $0.50); a way to raise or remove a limit that the page cannot do alone, before
 Stage 11; the data folder kept out of reach of tools, before Stages 12 and 13; a measured guess; a ledger that is compacted; a warning when a limit is nearly used (IDEAS).
+
+## D-034 - Stage 8b.1 and 8b.2: chats are backed up to one plain file the person chooses the place for, the file is read back before it counts, and a restore never replaces a chat
+
+Stage 8b is "optional encrypted history", and the owner's decision of 2 October 2026 (ROADMAP, D-030) put **a tested backup and export path before any encryption exists**, because losing the
+key would mean losing the chats. This entry is that path: **8b.1 backs up** (one chat, or all of them, to a file) and **8b.2 restores** (from such a file). Encryption itself (8b.3 and 8b.4) is
+not started; it waits for the owner to try the backup on real chats. (On 5 October 2026 the owner had no preference for how the chats would be encrypted and left the choice, and where to pause, to me;
+the plan is in ROADMAP: each chat file encrypted with Electron's `safeStorage`, the protection the API keys already have, with no key and no cryptography of my own.)
+
+**The file.** One plain text file, JSON Lines, UTF-8 (`src/main/backup.ts`): line 1 is a header (`format`, `version`, `exportedAt`); then one line per chat, `{"n":1,"sha256":"...","chat":{...}}`, where
+`chat` is exactly what the chat's own file holds (version 3) and `sha256` is the checksum of that text; the last line says `{"end":true,"count":N,"leftOut":K}` (how many chats, and how many saved
+files could not be read when it was made and so are not in it). Why lines and not one JSON object: a file that was cut off (a copy that stopped, a full disk) still gives back every chat before the cut and
+_says_ it is not whole, where one big object would give back nothing; and a reader never needs more memory than one chat. Why a checksum on each chat: a changed byte inside a message still parses as JSON, so
+nothing else would notice; with it a changed chat is refused, named by its line, and the others are unaffected. **The checksum guards against damage, not against a person who rewrites both the chat and its
+checksum: the file is the owner's own, and a backup from anyone else is untrusted data (below).** The last line is what tells a whole file from a cut-off one.
+
+**Reading** (`readBackup`) never writes anything and never needs more memory than one line: the file is read in 64 KB pieces, a line longer than the largest chat is skipped without being kept (a 160 MB
+line was read with the memory growing by 11 MB), a file over 2 GiB is not read, and at most 1000 chat lines are looked at. Every chat goes through the same strict check as a saved file's contents
+(`parseSavedFile`: versions 1 to 3, the id's one spelling, the dates, the instructions, the messages and every limit of D-016), after its checksum and its id. A damaged file is a **result, never an
+exception**: "not a Frontier chat backup", "made by another version", the chats that could be read, and the lines that could not (the first 20 with their reasons). `complete` means the file is whole: the last line
+is there, its count is the number of chat lines, the lines are numbered 1, 2, 3 ... and nothing comes after the end. A byte-order mark and CR LF line ends are tolerated; invalid UTF-8 is not.
+
+**Writing** (`writeBackup`) follows D-016's rule: the new file is written beside the real one as `<name>.part` and flushed, **read back with the same reader** (every checksum, every id, the count, the
+last line, and that it holds exactly what was written, in the order it was written), copied over the real path, read back again, and only then is the `.part` removed. A disk fault before the copy leaves the
+old file exactly as it was and no `.part`; once the copy has begun a whole `.part` is kept and named in the error. A backup is never "saved" on the word of the write.
+
+**Where it goes: the person chooses, in the system's own dialog, and the page never names a path.** The page can say `{scope:'all'}` or `{scope:'one', id}` (`checkBackupRequest`: nothing else is read, so a
+path in the request is ignored) and, later, "add what you showed me". Main opens the save or open dialog for the window that asked (`BrowserWindow.fromWebContents(event.sender)`, in the one wrapper
+`guardedForWindow`, which runs through the same sender guard as every handler), and only afterwards does the page learn where the file went. **A backup is refused inside the app's own data folder**
+(`isInside`, looking through links: a path through a junction, a path that climbs out and back in with `..`, and other capitals all count as inside), so it can never land on a key file or a setting:
+with that check removed, the suite's backup overwrote the stand-in key file. One backup or restore runs at a time (a second call is told to wait and opens no second dialog), and quitting waits for it.
+
+**Restoring is two steps, so that nothing is added before the person has seen what is in the file.** `restoreLook` opens the dialog, reads the file and **adds nothing**; it answers with the file's
+name (never its folder), when it was made, whether it is whole, how many chats are new, already here, or share an id with a different chat, how many cannot be used and why, how many carry
+instructions of their own, the first ten titles, and how much room there is. `restoreApply` adds, and only with the token that look returned: **one use, ten minutes, replaced by a newer look, dropped by
+Cancel, and only if the file is still the file that was looked at (same size, same time)**. It reads the file _again_ and checks every chat again as it adds it, so what is added is what passes now. **A restore never
+replaces anything**: a chat whose id is free is added as it was (its dates and instructions kept, its title worked out again from its messages); the same chat already here is skipped; a different chat under the same id, or a damaged file under it, is
+added as a **copy under a new id**; an id taken between the look and the apply is a copy too. The look and the apply use the same classifier, so a chat that appears twice in one file is not copied twice.
+It stops at the limit of 1000 saved chats, and the chats that did not fit are counted ("no room").
+
+**The store gained two methods** (`conversationStore.ts`; the rest of `save` is unchanged, with the three-step write moved into one function that both use): `inspect(id)` (free, here, or damaged) and `add(chat)`, which
+keeps the chat's own dates and **never replaces**: it answers `occupied` for an id that is listed, one whose file cannot be read, a file that appeared after the list was made, or a half-saved `.tmp`.
+
+**What the page shows** (`HistoryDialog`, `useBackup`, `RestorePreviewPanel`): an **Export** button on each row, **Back up all chats...** and **Restore from a backup...** in the footer, a notice after each (a status
+for success, an alert for a refusal; a closed dialog is not an error and shows nothing), every button off while a dialog or a file is being worked on, and a preview that replaces the list until the person adds or lets it go. The
+**safe button has the focus** ("Don't add"; "Back to the list" when there is nothing to add). The preview says when the file is not whole, which chats cannot be used and why, that chats with instructions of their own
+will send them with every message (D-027), and **to add only a backup the person made or trusts**, because the model reads what is in a chat as a conversation that really happened.
+
+**Testing the dialogs.** The system's dialogs cannot be driven from the page, so the window suite replaces `dialog.showSaveDialog` and `showOpenDialog` from the main process's inspector (as 7.2 did for
+`shell.openExternal`): each ask is recorded (was it modal, the name suggested, the file type, the ask before replacing) and answered with a path the suite chose or with "the person closed it". **No switch
+was added to the app for this**, and the code under test is the real one. The flow itself takes its two dialogs as functions, so the plain-Node suites play them directly.
+
+**What the work found.**
+
+1. **A real weakness in `isInside`, found by the EFS pass.** This PC reaches `%APPDATA%` through a package folder for programs started by the Claude desktop app, so a path that exists resolves into one tree and a path that does not
+   yet exist, "as typed", sits in another: a backup to a folder that did not exist yet was judged outside the data folder. It now resolves the deepest folder that exists and adds the rest on, for both sides. (The suite's junction
+   check had the same artefact and now makes its junction from the resolved target.)
+2. **Restoring is slow where the disk is slow.** 1000 chats took 7 s in a normal folder and **109 s in this PC's EFS-encrypted data folder**, because each chat goes through the same four file steps as any save (D-016). The page
+   shows nothing but "buttons off" while it works. A restore is safe to repeat (the chats already added are skipped), so cutting it short is harmless; a progress line is in IDEAS.
+3. **Three older checks went stale, none because the app was wrong:** `verify-4-2` lists the bridge's exact functions (four more, as intended here); `verify-4-4` allows two Tab stops per row to reach Close and there are three now
+   (Export), so it allows three; and five negative-control specs of earlier stages no longer found their sabotage text (the save code moved into one function, and my two new handlers repeated the sender check that the "guard off" controls
+   expect once; the handlers now go through `guarded`, and the two store specs point at the new text).
+4. **Two of my own checks were wrong at first** (a place where a changed byte is harmlessly not noticed: the file's final line break; a 280 px click that landed below the fold of a scrolling dialog). Both were read before they were
+   believed; the second also showed a real layout flaw (the preview was a small scroll box inside the scrolling dialog), which is fixed and now has its own check and control.
+
+**What was checked (plain Node, then the real window).** `verify-8b-1.mjs`, 129 checks, in a normal folder and in the EFS one: the file's exact shape; a backup of 12 chats, of one, with chats left out; **the file cut at each of its 4,827
+lengths** (never an exception; always a prefix of whole chats, exactly as they were, never half a chat; "whole" only when nothing but the last line break is missing) and **one byte changed at each of its 4,826 places** (never an exception; never a
+chat that is not exactly an original; every change noticed except in the time it was made, the left-out count and the last line break, which carry no chat); not-a-backup files (empty, random bytes, a PNG header, a chat file, a ledger line,
+another format or version, a bad time); a line deleted, repeated, out of order, appended after the end; an edited message, a wrong or malformed checksum; 22 chats that are well-formed and checksummed but not what the app saves; old versions
+inside a backup; `__proto__` and extra fields; the caps (a cap of 3 chats, a 1000-chat file, one chat line more, a file over the cap); a 160 MB line; and the writer with nine disk faults (no room, a write that fails, a flush that fails, a byte
+changed silently, a failing copy, a short copy, an undeletable `.part`, a chat that cannot be read, too large), each leaving the old file or a whole copy. `verify-8b-2.mjs`, 254 checks (131 in the quick mode the controls use): the store's
+`add` and `inspect` (occupied in four ways, full, too large, a copy that fails); the flow with fake dialogs (what the page may ask: 13 junk requests all refused before any dialog; a path in a request ignored; seven places inside the data folder
+refused; one at a time; cancel); restoring (an empty profile, the same file again, a different chat under the same id, a damaged file under another, a chat twice in one file, instructions, a changed line, a cut file, a letter, a folder, a missing
+file; the token refused in eight ways, reused, expired, cancelled, replaced; the file longer, replaced or deleted after the look; no room); **1000 chats out and back in, and a backup of the restored profile is byte for byte the first
+backup**; and eleven checks of the source. `verify-8b-w.mjs`, 68 checks on the dev app and 68 on the built one: the dialog, every notice, the preview, the focus, Escape, deleted chats coming back byte for byte, nothing replaced, a cut file and a
+changed chat, a letter, the bridge refusing junk, a path in a request ignored, the dialog at 460, 320 and 280 px, and in a window only 300 px high. **Negative controls: 50 for the plain-Node suites (`specs8b`) and 18 for the window suite (`specs8bw`), every one caught, each file put back (proved by hash; `src/` identical after each batch).** They were not all caught the first time, and the misses were read, not shrugged off: five were fixed in the **checks**, none by changing the app. `n8b-ipc-look-no-window` (the open dialog given no parent window) had no plain-Node check (a source check was added; the window suite already saw it); the footer's wrap is held by two layers, so removing one changes nothing a person can see (the control now removes both); the preview's own scroll box needed a short window to show (a 300 px high pass was added); a notice that is on screen when the dialog closes was never tested (it is now); and a token used twice was only tested under Node (a page script can call the bridge, so the window suite does it now). **The full regression `t8b`: 93 runs in 73 minutes (18:38 to 19:51), 92 clean the first time**, with the Node part (17 suites), the 18 window launches, the 16 seeded launches, the 10 registry scenarios, the 7 Stage 4 launches and the built app (the new 8b suite 68 of 68 there too, and the three of Stage 8). `src/` and `registry/` were identical by hash before and after, the watcher logged no keyboard or mouse input and no hidden window, and there was no lost window and no retry. **The one run that was not clean is not about this stage**: the built app's Stage 8.1 usage suite (`verify-8-1w`, 80 of 81) failed because the page's usage figures lagged the ledger by one request ("This chat" 3 requests, expected 4; later runs: Today 11 against a count of 12 made from the file). It failed in 3 more re-runs (78, 79, 79 of 81) and **also fails sometimes on the untouched `main` tree** (a stashed copy of `1eca723`, built the same way: 81 of 81 once, 79 of 81 and 11 of 12 on the next run). In the regression of 8.5 (5 October, earlier the same day) it passed; the dev app's run passed this time. The cause is **not proven**: it looks like a race between the page asking for the sums and the ledger's last write finishing, which would be a small fault of 8.1 and not of 8b, or the machine being slower now. I did not change anything for it; it is in the list of what is not checked.
+
+**Threat note (8b.1 and 8b.2).**
+
+- _What could go wrong, and what stops it._ **A backup written over a key or a setting:** refused inside the data folder, links followed. **A backup that is damaged and trusted:** it is read back whole before "Saved" is said, and again at its place; a damaged
+  one is told apart from a whole one. **A restore that replaces a chat:** it cannot (`add` answers `occupied`; copies get new ids). **A page that names a path:** it cannot; it asks for "all" or "one" and the person picks. **A page that restores something the person
+  did not pick:** the token is one use, ten minutes, tied to the file's size and time, and a restore needs the person to have chosen a file in the dialog first. **A page that opens dialogs in a loop:** only one runs at a time, each is modal to the
+  window, and none writes or reads until the person picks.
+- _What is left._ **The checksum is not a signature**: anyone who can write the file can make a chat that checks out. **A backup from someone else is untrusted:** it can hold a made-up conversation, with replies the model never wrote and instructions, and the
+  model takes a chat's history as true when it is continued; the preview shows titles and the instructions mark but **not the messages**, and says to add only one the person made or trusts. **A backup is plain text**: anyone who can read the file can
+  read every chat in it, in the place the person chose (a synced folder, a USB stick); the dialog says it is a plain file, and encryption (8b.3) will not cover backups unless the owner asks. **A page that exports in a loop** costs the person a dialog each time and
+  writes only where they choose. **A hostile page can still lift the limits (D-033)**: nothing here changes that.
+- _Rule 9._ Plain files the owner can read, export and delete: now with an export and a restore that were proved against damage. Deleting still asks first, and nothing here deletes.
+
+**Not checked.** (1) **The real Windows dialogs were never shown or clicked**: they were replaced from main, so what is proved is what the app asks of them (modal, name, file type, ask before replacing), not how they look or what Windows does with
+a name typed without an extension. (2) **The owner's own profile and chats**: only scratch profiles; the owner is to try the backup on real chats before encryption is built. (3) **A removable or network disk that goes away in the middle**: only
+simulated faults. (4) **Quitting while a restore runs** (the quit waits 5 s, which can be less than a restore takes): reasoned to be harmless, because each chat is written whole and a restore can be repeated, but not tested. (5) **Two copies of the app at
+once**, and a folder changed by another program while a restore runs (the late-file case is tested for one chat). (6) **A backup of 2 GiB, or a chat line of 10 MB, through the window** (the caps are tested with small caps under Node, and the 9 MB chat
+passes under Node). (7) **A screen reader, a real keyboard, other display scales, a right-to-left language**. (8) **The built app here is `electron-vite preview`, not the installer.** (9) **Systems other than Windows** (the junction and capitals checks are Windows). (10) **The built app's Stage 8.1 suite, which is intermittently 1 to 3 checks short on this PC** (above): reproduced on `main`, cause unknown.
+
+Status: accepted (8b.1 and 8b.2; **8b.3 and 8b.4, the encryption, are not started**). Negative controls and the full regression: above and in STEP-LOG. Revisit: why the built app's 8.1 usage figures sometimes lag the ledger; a progress line while a restore runs; a mark on a chat that came from a backup; a way to back up the settings and the
+ledger too; a Markdown export (IDEAS); encryption (8b.3).

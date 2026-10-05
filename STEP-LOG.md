@@ -2182,3 +2182,39 @@ folder must lie outside anything a tool can reach.
    app, a very large ledger, a screen reader and other display settings, the installer, and the others).
 6. **Pushed:** the branch `stage-8-usage-limits` was pushed at your go, up to 8.3 (31b4f59); this slice is committed on it, **not pushed**, and `main` (Stage 7 merged) is not pushed either.
 7. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 8b - Slices 8b.1 and 8b.2: back up and restore chats (5 October 2026 session; D-034)
+
+**Your instruction.** "Stage 8b." Stage 8b is the optional encryption of saved chats, with **a tested backup path first** (your decision of 2 October). I read the roadmap, D-016 and the store, and asked three
+questions: how to encrypt (you had no idea), whether to stop after the backup (your call), and the format of an export (JSON only). **My choices:** the encryption, later, will be each chat file under Electron's
+`safeStorage` (the protection the API keys already have, no key or cryptography of my own); and I **stop after the backup** so you can try it on your real chats before anything is encrypted. 8b.3 and 8b.4 are not started.
+
+**Step by step.**
+
+1. **The backup file** (`src/main/backup.ts`): JSON Lines, a checksum on every chat, a last line with the count, so a cut-off file still gives back the chats before the cut. A reader that never holds more than one line, and a
+   writer that reads its file back with the same reader before it replaces anything. Under it, `conversationStore.ts` got `inspect` and `add` (a chat from a backup, keeping its dates, **never replacing**), the old
+   `save` unchanged but for the three-step write moving into one function both use.
+2. **The flow** (`backupService.ts`, `backupDialogs.ts`, five handlers in `ipc.ts`, four functions on `window.api.history`): the page asks for "all" or "one chat"; **the system's save dialog, opened by main, picks the place**, and the page never names
+   a path; a backup is refused inside the app's data folder; **a restore is a look (adds nothing) and then an add with a one-use token** for the file that was looked at.
+3. **The page**: an Export button on each row, "Back up all chats..." and "Restore from a backup..." in the History dialog's footer, a notice after each, a preview with the safe button focused. A screenshot at 280 px showed
+   the preview as a small scroll box inside the scrolling dialog and two buttons both called "Close"; fixed (the dialog scrolls as a whole; the preview's button is "Back to the list").
+4. **The proof.** Three suites: `verify-8b-1.mjs` (129 checks: the file cut at every one of its 4,827 lengths, a byte changed at each of its 4,826 places, nine disk faults, a 160 MB line read with 11 MB of memory),
+   `verify-8b-2.mjs` (254 checks, in a normal folder and the EFS one: the store, the flow with fake dialogs, the token, a changed file, 1000 chats out and back in **byte for byte**), and `verify-8b-w.mjs` (68 checks on the dev app and on
+   the built one, with the Windows dialogs replaced from main's inspector, down to 280 px). All 17 plain-Node suites of the regression pass on the new tree, and the Stage 4 history suites 7 of 7.
+5. **What it found.** (a) `isInside` compared a resolved path with an unresolved one; on this PC (which reaches `%APPDATA%` through a package folder for programs started by the Claude desktop app) a backup to a folder that did not
+   exist yet was judged outside the data folder: fixed. (b) Restoring 1000 chats took **109 s in the EFS data folder** (7 s elsewhere): the page shows only "buttons off"; in IDEAS. (c) Stale tests, none the app's fault:
+   `verify-4-2` (the bridge's exact list), `verify-4-4` (Tab stops per row: now three), and **five older negative-control specs** my refactor had broken, repaired.
+6. **Negative controls: 50 for the plain-Node suites and 18 for the window suite, every one caught, each file restored (hash identical).** Five were not caught the first time; each miss was a gap in a CHECK (a missing source check, a footer held by two layers, a short window, a notice on screen at closing, a token used twice) and was fixed there, not in the app. All 439 specs find their sabotage text.
+7. **The full regression `t8b`: 93 runs, 73 minutes, 92 clean.** The one that was not is the built app's Stage 8.1 usage suite (80 of 81), **which also fails sometimes on the untouched `main`** (a stashed copy, built the same way): the page's usage figures lag the ledger by one request. Cause not proven; I changed nothing for it (D-034 says more).
+
+## Stage 8b.1 and 8b.2 - Things to know (not problems, but worth your attention)
+
+1. **Please try it on your own chats before I build the encryption.** Open History > "Back up all chats...", pick a place, then "Restore from a backup..." on the same file: it should say every chat is "already here". Nothing in my tests ever touched your
+   profile or your real chats, and the real Windows dialogs were never shown (I replaced them from the main process), so how they look is unseen.
+2. **A backup is a plain text file**: whoever can read it can read every chat. It goes where you choose (not into the app's data folder; that is refused). The encryption I plan for 8b.3 would not cover backups unless you ask.
+3. **Only restore a backup you made or trust.** The checksum catches damage, not a person who rewrites the file, and the model takes a restored chat's messages and instructions as a conversation that really happened. The preview says so.
+4. **A restore is slow where the disk is slow** (109 s for 1000 chats in your EFS-encrypted data folder; a few seconds elsewhere). It is safe to repeat, and it never replaces a chat: the same chat is skipped, a different chat under the same id is added as a copy.
+5. **The History list has three Tab stops per row now** (open, Export, Delete); IDEAS has a shorter keyboard path.
+6. **Pushed to the branch `stage-8b-backup` only (your go), not merged**: `main` is still `origin/main` = 1eca723 (Stage 8).
+7. **One thing to know that is not from this stage**: the built app's Stage 8.1 usage suite is intermittently 1 to 3 checks short on this PC, on `main` too (D-034). It looks like a small race between the page's refresh of the sums and the ledger's last write; I have not proved it and did not touch it. Tell me if you want it chased.
+8. **Everything in the earlier stages' "Things to know" still applies**, including D-033's finding (a page can lift the limits) and the first real API call still to be made by you.

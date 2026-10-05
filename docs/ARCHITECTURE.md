@@ -27,13 +27,13 @@ through the preload bridge (IPC).
 
 Stage 1 changed only `src/renderer`. Stage 2 added the files below (see Security notes), Stage 3 added or
 changed the ones marked (3), Stage 4 the ones marked (4), Stage 5 the ones marked (5), Stage 6 the ones marked (6), Stage 7 the ones
-marked (7), and Stage 8 the ones marked (8):
+marked (7), Stage 8 the ones marked (8), and Stage 8b the ones marked (8b):
 
 | File                                         | Job                                                                                                                                                                                                                                                                                               |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/main/index.ts`                          | Creates the sandboxed window, wires the navigation lock, registers the message handlers. (4) Holds the quit until saves finish                                                                                                                                                                    |
 | `src/main/security.ts`                       | Plain functions: is this URL the app's own page? may it be opened in the browser?                                                                                                                                                                                                                 |
-| `src/main/ipc.ts`                            | The message handlers. Each one first checks that the app's own page is calling. (4) The four `history:` handlers. (8) `usage:summary`, and the one ledger                                                                                                                                         |
+| `src/main/ipc.ts`                            | The message handlers. Each one first checks that the app's own page is calling. (4) The four `history:` handlers. (8) `usage:summary`, and the one ledger (8b) Four more `history:` handlers: back up, look, add, cancel.                                                                         |
 | `src/main/keyStore.ts`                       | Saves, reads and deletes the API keys: the Electron side (the secure storage and the data folder) of the credential store. (5) One key per provider                                                                                                                                               |
 | `src/main/credentialStore.ts`                | (5) One encrypted file per provider (`credentials.<provider>.json`), tied to its provider; reads the old `credentials.json` as Anthropic's key. No Electron imports                                                                                                                               |
 | `src/main/baseUrl.ts`                        | (5) The test-only address override (`FRONTIER_API_BASE_URL`), for replies and for Test key; never in an installed app                                                                                                                                                                             |
@@ -49,15 +49,18 @@ marked (7), and Stage 8 the ones marked (8):
 | `src/main/rankings.ts`                       | (6) The rankings file, embedded in the build and checked once at startup; optional: if it is broken the app only loses its suggestions                                                                                                                                                            |
 | `src/main/models.ts`                         | (3) Which model answers: the saved choice (`preferences.json`) or the registry's default; changes run one at a time. (7) Also the effort kept per model, written with the model in one file                                                                                                       |
 | `src/shared/effort.ts`                       | (7) The effort levels: sorting a model's levels, reading the saved `efforts` forgivingly, resolving the level a reply asks for (the saved one if the model still lists it), and what the page is told (D-024)                                                                                     |
-| `src/preload/index.ts`                       | Builds `window.api`, the only thing the page can ask main for. (4) Gained `history`                                                                                                                                                                                                               |
+| `src/preload/index.ts`                       | Builds `window.api`, the only thing the page can ask main for. (4) Gained `history` (8b) `history.exportChats`, `restoreLook`, `restoreApply`, `restoreCancel`: none takes a path.                                                                                                                |
 | `src/preload/index.d.ts`                     | Tells the renderer's TypeScript what `window.api` looks like                                                                                                                                                                                                                                      |
-| `src/shared/ipc.ts`                          | Every message that crosses the boundary: types, channel names. (4) The history types and `HISTORY_LIMITS`. (8) `usage.summary`, the `usage` event, `conversationId`. (8.3) The `confirm` event, `chat.confirm`, `settings.setAskFirst`                                                            |
-| `src/shared/validate.ts`                     | `checkApiKey`, `checkChatRequest`, `checkModelChoice`: the page may use them for feedback, main runs them again. (4) `checkConversationId`, `checkConversationSave`, `checkSavedMessages`                                                                                                         |
+| `src/shared/ipc.ts`                          | Every message that crosses the boundary: types, channel names. (4) The history types and `HISTORY_LIMITS`. (8) `usage.summary`, the `usage` event, `conversationId`. (8.3) The `confirm` event, `chat.confirm`, `settings.setAskFirst` (8b) The backup types (`BackupRequest`, `RestorePreview`). |
+| `src/shared/validate.ts`                     | `checkApiKey`, `checkChatRequest`, `checkModelChoice`: the page may use them for feedback, main runs them again. (4) `checkConversationId`, `checkConversationSave`, `checkSavedMessages` (8b) `checkBackupRequest`.                                                                              |
 | `src/shared/registry.ts`                     | (3) The shape of the registry file, `parseRegistry` (the strict check), and `toModelOption` (what the page may know about a model). (8) Four prices per model                                                                                                                                     |
 | `src/shared/rankings.ts`                     | (6) The task list, the shape of the rankings file, `parseRankings` (the strict check) and `suggestionsFor` (which rows can be used now)                                                                                                                                                           |
 | `src/renderer/src/settings/`                 | (3) The Settings dialog, the model menu in the header, and the hook that asks main for the settings status. (5) One key section per provider (`ProviderKeySection`: add, test, remove) . (6) The Task menu, and the "(suggested)" marks in the model menu                                         |
-| `src/main/conversationStore.ts`              | (4) The saved conversations: one JSON file each, saved copy-then-delete, read with a recovery rule, listed from memory. No Electron imports. (7) Version 3 holds the chat's instructions; versions 1 and 2 are still read (D-027)                                                                 |
-| `src/renderer/src/history/`                  | (4) `useHistory` (autosave and the list), `HistoryDialog` (open and delete), and the conversions between the chat and what is saved                                                                                                                                                               |
+| `src/main/conversationStore.ts`              | (4) The saved conversations: one JSON file each, saved copy-then-delete, read with a recovery rule, listed from memory. No Electron imports. (7) Version 3 holds the chat's instructions; versions 1 and 2 are still read (D-027) (8b) `inspect`, `add` (restore; never replaces).                |
+| `src/main/backup.ts`                         | (8b) The backup file (D-034): JSON Lines, a checksum on every chat, a last line with the count; a reader that never holds more than one line; a writer that reads its file back first. No Electron imports                                                                                        |
+| `src/main/backupService.ts`                  | (8b) The flow around a backup (D-034): what to back up, the look at a file, the one-use token, a restore that never replaces. The two dialogs are handed in. No Electron imports                                                                                                                  |
+| `src/main/backupDialogs.ts`                  | (8b) The system's save and open dialogs for backups: the only file that opens one                                                                                                                                                                                                                 |
+| `src/renderer/src/history/`                  | (4) `useHistory` (autosave and the list), `HistoryDialog` (open and delete), and the conversions between the chat and what is saved (8b) `useBackup` and `RestorePreviewPanel`; Export on each row.                                                                                               |
 | `src/renderer/src/markdown/`                 | (7) A reply as Markdown (D-025): `parse.ts` (the reader), `Markdown.tsx` (a closed set of elements), `CodeBlock.tsx` (Copy), `LinkConfirm.tsx` (a link asks first)                                                                                                                                |
 | `src/renderer/src/instructions/`             | (7) The Instructions dialog (D-027): the person's own text for one chat, a draft until Save, with the count, the limit and what it is for, who gets it and where it is kept                                                                                                                       |
 | `src/main/usageLedger.ts`                    | (8) The usage ledger (D-030): one plain file of JSON lines, appended to, a later line replacing an earlier one with the same id; a cut-off or damaged line skipped and counted; a request that cannot be written down is refused. No Electron imports                                             |
@@ -141,6 +144,24 @@ the dates and the messages. A version 1 or 2 file is read as a version 3 one wit
 conversation is next saved (reading never writes, as before). In a version 3 file the field must be present and usable (text, at most 8,000
 characters): a file whose instructions are not is counted as unreadable and left alone, like any other damaged file. A file of version 4 or
 later was made by another build and is left alone.
+
+### Backing up and restoring chats
+
+```
+page: History dialog --exportChats({ scope: 'all' | 'one', id })--> preload --> ipc.ts guardedForWindow (sender guard + the window that asked)
+                                                                        |  checkBackupRequest (no path can be in it)
+                                                                        v
+                                backupService: the system's SAVE dialog (backupDialogs.ts, main's own, modal) --> the person picks the place
+                                        |  refused inside the data folder (links followed)  --> backup.ts writeBackup:
+                                        |  <name>.part written + flushed + READ BACK, copied over <name>, READ BACK, .part removed
+        --restoreLook()--> the system's OPEN dialog --> readBackup (adds nothing) --> a preview + a one-use token (10 minutes, the file's size and time)
+        --restoreApply(token)--> the file read AGAIN, every chat checked again --> store.add (never replaces; a taken id becomes a copy)
+```
+
+A backup is one JSON Lines file (D-034): a header, one line per chat with its own SHA-256, and a last line with the count, so a cut-off file still gives
+back the chats before the cut and says it is not whole. The page never names a file: the person chooses in the system's dialogs, which main opens, and
+the page is told where a backup went only afterwards. `backupService.ts` and `backup.ts` have no Electron imports (the dialogs are handed in), so the plain-Node
+suites play the dialogs themselves; the window suite replaces `dialog.showSaveDialog` and `showOpenDialog` from main's inspector.
 
 ### Sending a message
 
@@ -364,6 +385,10 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
   `ipc.ts` and inside the store) against the one spelling the app makes; the title and dates are never the
   page's; a file's size is looked at before it is read; and nothing deletes a file but the person's own Delete.
   The four `history:` handlers run through the same sender guard as the rest.
+- A backup of chats (D-034) goes where the person chooses in the system's own dialog, never where the page says: the page sends "all" or "one chat" and receives
+  the place only afterwards. A backup is refused inside the app's data folder (links followed), so it cannot land on a key or a setting. The file is read back before
+  it counts. A restore adds and never replaces, only after a look the person has seen, with a one-use token for the file that was looked at. **A backup from someone else
+  is untrusted**: the checksum guards against damage and not against a person who rewrites it, and the model takes a chat's history as true when it is continued.
 - The page gets only what `src/preload/index.ts` lists under `window.api`. Never expose Electron's
   whole `ipcRenderer`: any script in the page could then call any channel.
 - The window cannot navigate away from the app's own page, and only https links (without a user name or
@@ -383,6 +408,6 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
 
 ## Not built yet
 
-Encrypted history (Stage 8b), renaming or searching saved chats, a check against the real API (Stages 2 to 4 were tested
+Encrypted history (Stage 8b.3 and 8b.4), renaming or searching saved chats, a check against the real API (Stages 2 to 4 were tested
 against a mock, which covers four models), a single suggested model per task (D-023 says why not), other providers. See
 ROADMAP.md.

@@ -1,0 +1,16 @@
+{
+  "label": "n8b-validate-scope-loose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "if (scope === 'all') return { ok: true, request: { scope: 'all' } }",
+      "to": "if (typeof scope === 'string' && scope.toLowerCase() === 'all') return { ok: true, request: { scope: 'all' } }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-2.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

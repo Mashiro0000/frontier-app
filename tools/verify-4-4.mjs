@@ -77,7 +77,7 @@ for (const [width, height] of [[900, 670], [420, 700], [320, 700]]) {
   // keyboard: Tab from the first row eventually reaches Close, and Escape closes
   await ev(`document.querySelector('dialog.history .history-open').focus()`)
   let reached = false
-  for (let i = 0; i < 2 * N + 6 && !reached; i++) {
+  for (let i = 0; i < 3 * N + 6 && !reached; i++) { // three stops per row since 8b (open, Export, Delete); it was two
     await page.press('Tab')
     reached = await ev(`document.activeElement?.textContent === 'Close'`)
   }

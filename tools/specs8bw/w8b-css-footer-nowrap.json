@@ -1,0 +1,22 @@
+{
+  "label": "w8b-css-footer-nowrap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/assets/main.css",
+      "from": ".history-footer {\n  flex-wrap: wrap;\n  align-items: center;",
+      "to": ".history-footer {\n  flex-wrap: nowrap;\n  align-items: center;"
+    },
+    {
+      "file": "{{REPO}}/src/renderer/src/assets/main.css",
+      "from": ".history-backup-buttons {\n  display: flex;\n  flex-wrap: wrap;",
+      "to": ".history-backup-buttons {\n  display: flex;\n  flex-wrap: nowrap;"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-css-footer-nowrap"
+  }
+}

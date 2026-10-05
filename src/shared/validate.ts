@@ -4,6 +4,7 @@
 import {
   CHAT_LIMITS,
   HISTORY_LIMITS,
+  type BackupRequest,
   type ChatRequest,
   type SavedMessage,
   type WireMessage
@@ -224,6 +225,18 @@ export const chatForUsage = (input: unknown): string | null =>
   isConversationId(input) ? input : null
 
 export type ConversationIdCheck = { ok: true; id: string } | { ok: false; error: string }
+
+export type BackupRequestCheck = { ok: true; request: BackupRequest } | { ok: false; error: string }
+
+/** Checks what the page wants backed up (D-034): every chat, or one chat by id. Nothing else is read from it, and it can never carry a path. */
+export function checkBackupRequest(input: unknown): BackupRequestCheck {
+  const bad = { ok: false, error: 'The backup was not understood.' } as const
+  if (typeof input !== 'object' || input === null) return bad
+  const { scope, id } = input as Record<string, unknown>
+  if (scope === 'all') return { ok: true, request: { scope: 'all' } }
+  if (scope === 'one' && isConversationId(id)) return { ok: true, request: { scope: 'one', id } }
+  return bad
+}
 
 /** Checks an id from the page, for loading or deleting a saved conversation. */
 export function checkConversationId(input: unknown): ConversationIdCheck {

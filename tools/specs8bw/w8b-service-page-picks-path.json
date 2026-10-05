@@ -1,0 +1,17 @@
+{
+  "label": "w8b-service-page-picks-path",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "    const dest = await pickers.savePath(owner, name)",
+      "to": "    const dest = (request as { path?: string }).path ?? (await pickers.savePath(owner, name))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-service-page-picks-path"
+  }
+}

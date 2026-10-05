@@ -1,8 +1,11 @@
-import { app, ipcMain, type IpcMainInvokeEvent } from 'electron'
+import { app, BrowserWindow, ipcMain, type IpcMainInvokeEvent } from 'electron'
 import { join } from 'path'
 import {
   CHANNELS,
+  type HistoryExportResult,
   type HistoryList,
+  type HistoryRestoreApplyResult,
+  type HistoryRestoreLookResult,
   type HistoryLoadResult,
   type HistoryRemoveResult,
   type HistorySaveResult,
@@ -35,6 +38,8 @@ import {
   checkProvider
 } from '../shared/validate'
 import { createAskFirstStore } from './askFirst'
+import { systemPickers } from './backupDialogs'
+import { createBackupService } from './backupService'
 import { baseUrlOverride } from './baseUrl'
 import { registerChatIpc } from './chat'
 import { createConversationStore } from './conversationStore'
@@ -106,6 +111,15 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       }
       return handler(...args)
     }
+
+  // The same check, for a handler that must open a dialog: it is given the window the call came from (never one the page named).
+  const guardedForWindow =
+    <A extends unknown[], R>(handler: (window: BrowserWindow | null, ...args: A) => Promise<R>) =>
+    (event: IpcMainInvokeEvent, ...args: A): Promise<R> =>
+      guarded((...rest: A) => handler(BrowserWindow.fromWebContents(event.sender), ...rest))(
+        event,
+        ...args
+      )
 
   ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))
 
@@ -313,6 +327,35 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
+  // Backing up chats to a file and restoring them from one (D-034). The person chooses the place and the file in the system's own dialogs, which main
+  // opens for the window that asked; the page sends "all", or "one" and an id, and later "add what you showed me". It never sends a path.
+  const backups = createBackupService({
+    store: history,
+    dataDir: app.getPath('userData'),
+    pickers: systemPickers
+  })
+
+  ipcMain.handle(
+    CHANNELS.historyExport,
+    guardedForWindow((window, input: unknown): Promise<HistoryExportResult> =>
+      backups.exportChats(input, window)
+    )
+  )
+
+  ipcMain.handle(
+    CHANNELS.historyRestoreLook,
+    guardedForWindow((window): Promise<HistoryRestoreLookResult> => backups.restoreLook(window))
+  )
+
+  ipcMain.handle(
+    CHANNELS.historyRestoreApply,
+    guarded((token: unknown): Promise<HistoryRestoreApplyResult> => backups.restoreApply(token))
+  )
+
+  ipcMain.on(CHANNELS.historyRestoreCancel, (event, token: unknown) => {
+    if (isTrustedSender(event, appUrl)) backups.restoreCancel(token)
+  })
+
   // What was used and what it cost (D-030): one plain file, written by main alone. The page can ask for sums and nothing else.
   const ledger = createUsageLedger(join(app.getPath('userData'), 'usage', 'ledger.jsonl'))
 
@@ -329,5 +372,6 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   )
 
   registerChatIpc(appUrl, ledger, limitsStore, askFirstStore)
-  return () => Promise.all([history.whenIdle(), ledger.whenIdle()]).then(() => undefined)
+  return () =>
+    Promise.all([history.whenIdle(), ledger.whenIdle(), backups.whenIdle()]).then(() => undefined)
 }

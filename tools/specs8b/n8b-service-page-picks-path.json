@@ -1,0 +1,16 @@
+{
+  "label": "n8b-service-page-picks-path",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "    const dest = await pickers.savePath(owner, name)",
+      "to": "    const dest = (request as { path?: string }).path ?? (await pickers.savePath(owner, name))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-2.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

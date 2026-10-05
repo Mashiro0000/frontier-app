@@ -1,0 +1,16 @@
+{
+  "label": "n8b-ipc-window-calls-unguarded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      guarded((...rest: A) => handler(BrowserWindow.fromWebContents(event.sender), ...rest))(\n        event,\n        ...args\n      )",
+      "to": "      handler(BrowserWindow.fromWebContents(event.sender), ...args)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-2.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

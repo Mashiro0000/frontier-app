@@ -41,7 +41,11 @@ const api: FrontierApi = {
     list: () => ipcRenderer.invoke(CHANNELS.historyList),
     load: (id) => ipcRenderer.invoke(CHANNELS.historyLoad, id),
     save: (conversation) => ipcRenderer.invoke(CHANNELS.historySave, conversation),
-    remove: (id) => ipcRenderer.invoke(CHANNELS.historyRemove, id)
+    remove: (id) => ipcRenderer.invoke(CHANNELS.historyRemove, id),
+    exportChats: (request) => ipcRenderer.invoke(CHANNELS.historyExport, request),
+    restoreLook: () => ipcRenderer.invoke(CHANNELS.historyRestoreLook),
+    restoreApply: (token) => ipcRenderer.invoke(CHANNELS.historyRestoreApply, token),
+    restoreCancel: (token) => ipcRenderer.send(CHANNELS.historyRestoreCancel, token)
   }
 }
 

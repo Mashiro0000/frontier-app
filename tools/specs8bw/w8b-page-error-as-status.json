@@ -1,0 +1,17 @@
+{
+  "label": "w8b-page-error-as-status",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/HistoryDialog.tsx",
+      "from": "role={backup.notice.kind === 'error' ? 'alert' : 'status'}",
+      "to": "role=\"status\""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-page-error-as-status"
+  }
+}

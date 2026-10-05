@@ -1,0 +1,17 @@
+{
+  "label": "w8b-page-no-whole-warning",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/RestorePreviewPanel.tsx",
+      "from": "{!preview.complete && (",
+      "to": "{false && ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-page-no-whole-warning"
+  }
+}

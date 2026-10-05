@@ -1,0 +1,14 @@
+{
+  "label": "n8b-reader-no-line-cap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "if (have + (end - start) > maxLine) {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

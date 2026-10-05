@@ -1,0 +1,14 @@
+{
+  "label": "n8b-reader-unreadable-line-vanishes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "      result.seen += 1\n      // A line that cannot be used still holds its place",
+      "to": "      // A line that cannot be used still holds its place"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

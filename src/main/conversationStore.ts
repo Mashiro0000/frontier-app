@@ -47,6 +47,13 @@ export type SaveOutcome = { ok: true; summary: ConversationSummary } | { ok: fal
 export type LoadOutcome =
   { ok: true; conversation: SavedConversation } | { ok: false; error: string }
 export type RemoveOutcome = { ok: true } | { ok: false; error: string }
+/** Why a chat brought in from a backup was not added (D-034): `occupied` = something is already saved under that id; `full` and `too-large` as for a save. */
+export type AddOutcome =
+  | { ok: true; summary: ConversationSummary }
+  | { ok: false; why: 'occupied' | 'full' | 'too-large'; error: string }
+/** What is saved under an id, for deciding what to do with a chat in a backup. `damaged`: a file is there (or was) that cannot be read. */
+export type Inspection =
+  { kind: 'free' } | { kind: 'here'; conversation: SavedConversation } | { kind: 'damaged' }
 
 export interface ConversationStore {
   /** Every readable conversation, newest first, and how many files could not be read (and were left alone). */
@@ -59,6 +66,16 @@ export interface ConversationStore {
    */
   save(input: { id: string; messages: SavedMessage[]; instructions?: string }): Promise<SaveOutcome>
   remove(id: string): Promise<RemoveOutcome>
+  /**
+   * Looks at what is saved under an id without changing anything (D-034).
+   */
+  inspect(id: string): Promise<Inspection>
+  /**
+   * Saves a chat that comes from a backup (D-034), exactly as it is: its id, its dates and its instructions are kept, only the title is worked out
+   * again. Unlike `save` it NEVER replaces anything: if a file, a half-written copy or a damaged file is already there under the id, it answers
+   * `occupied` and writes nothing. The file is written like any other (a ".tmp" first, read back, copied, read back).
+   */
+  add(conversation: SavedConversation): Promise<AddOutcome>
   /** Resolves when every save and removal asked for so far has finished. For quitting the app. */
   whenIdle(): Promise<void>
 }
@@ -217,6 +234,33 @@ export function createConversationStore(dir: string): ConversationStore {
     return scanned
   }
 
+  // The three steps of D-016, for a conversation whose fields are all decided (a save decides the dates itself, a chat brought in from a
+  // backup keeps its own). Called only inside `inOrder`.
+  async function writeConversation(conversation: SavedConversation): Promise<SaveOutcome> {
+    const text = JSON.stringify({ version: 3, ...conversation })
+    // Whatever is written must be readable again, so the limit on reading is also a limit on writing.
+    if (Buffer.byteLength(text) > HISTORY_LIMITS.maxFileBytes) {
+      return { ok: false, error: 'This conversation is too large to save.' }
+    }
+    await fs.mkdir(dir, { recursive: true, mode: 0o700 })
+    const file = join(dir, `${conversation.id}.json`)
+    const copy = `${file}.tmp`
+    await fs.writeFile(copy, text, { mode: 0o600 })
+    if ((await fs.readFile(copy, 'utf8')) !== text) {
+      await fs.rm(copy, { force: true }).catch(() => undefined) // cut off: the real file is still the old copy
+      throw new Error('the new copy could not be read back')
+    }
+    // From here on the ".tmp" is whole and checked, so it is kept if anything below fails: reading uses it.
+    await fs.copyFile(copy, file)
+    if ((await fs.readFile(file, 'utf8')) !== text)
+      throw new Error('the saved file could not be read back')
+    await fs.rm(copy, { force: true }).catch(() => undefined) // if this fails the ".tmp" only repeats the file
+    const summary = summaryOf(conversation)
+    index.set(conversation.id, { summary, createdAt: conversation.createdAt })
+    unreadable.delete(conversation.id)
+    return { ok: true, summary }
+  }
+
   return {
     list: () =>
       inOrder(async () => {
@@ -260,36 +304,64 @@ export function createConversationStore(dir: string): ConversationStore {
           }
         }
         const now = Date.now()
-        const conversation: SavedConversation = {
+        return writeConversation({
           id: input.id,
           title: titleFor(input.messages),
           createdAt: known?.createdAt ?? now,
           updatedAt: now,
           instructions: checkedInstructions.instructions,
           messages: input.messages
+        })
+      }),
+
+    inspect: (id) =>
+      inOrder(async (): Promise<Inspection> => {
+        assertId(id)
+        await ensureScanned()
+        if (unreadable.has(id)) return { kind: 'damaged' }
+        if (!index.has(id)) return { kind: 'free' }
+        const read = await readConversation(dir, id)
+        if (read !== null && 'conversation' in read)
+          return { kind: 'here', conversation: read.conversation }
+        // Gone or damaged since it was listed. A file that is still there (damaged) must not be written over; one that has gone is free.
+        index.delete(id)
+        if (read === null) return { kind: 'free' }
+        unreadable.add(id)
+        return { kind: 'damaged' }
+      }),
+
+    add: (conversation) =>
+      inOrder(async (): Promise<AddOutcome> => {
+        assertId(conversation.id)
+        await ensureScanned()
+        const occupied = (why: string): AddOutcome => ({
+          ok: false,
+          why: 'occupied',
+          error: `A chat is already saved under that id (${why}).`
+        })
+        if (index.has(conversation.id)) return occupied('listed')
+        if (unreadable.has(conversation.id)) return occupied('a file that cannot be read')
+        // Not trusted to the list alone: whatever is on disk under this id, readable or not, is somebody's chat and is never written over.
+        const file = join(dir, `${conversation.id}.json`)
+        for (const path of [file, `${file}.tmp`]) {
+          const there = await fs.access(path).then(
+            () => true,
+            () => false
+          )
+          if (there) return occupied('a file that was not in the list')
         }
-        const text = JSON.stringify({ version: 3, ...conversation })
-        // Whatever is written must be readable again, so the limit on reading is also a limit on writing.
-        if (Buffer.byteLength(text) > HISTORY_LIMITS.maxFileBytes) {
-          return { ok: false, error: 'This conversation is too large to save.' }
+        if (index.size >= HISTORY_LIMITS.maxConversations) {
+          return {
+            ok: false,
+            why: 'full',
+            error: `There are already ${HISTORY_LIMITS.maxConversations} saved conversations. Delete some to add more.`
+          }
         }
-        await fs.mkdir(dir, { recursive: true, mode: 0o700 })
-        const file = join(dir, `${input.id}.json`)
-        const copy = `${file}.tmp`
-        await fs.writeFile(copy, text, { mode: 0o600 })
-        if ((await fs.readFile(copy, 'utf8')) !== text) {
-          await fs.rm(copy, { force: true }).catch(() => undefined) // cut off: the real file is still the old copy
-          throw new Error('the new copy could not be read back')
-        }
-        // From here on the ".tmp" is whole and checked, so it is kept if anything below fails: reading uses it.
-        await fs.copyFile(copy, file)
-        if ((await fs.readFile(file, 'utf8')) !== text)
-          throw new Error('the saved file could not be read back')
-        await fs.rm(copy, { force: true }).catch(() => undefined) // if this fails the ".tmp" only repeats the file
-        const summary = summaryOf(conversation)
-        index.set(input.id, { summary, createdAt: conversation.createdAt })
-        unreadable.delete(input.id)
-        return { ok: true, summary }
+        const written = await writeConversation({
+          ...conversation,
+          title: titleFor(conversation.messages) // worked out here, as for every save: a file's own title is not trusted
+        })
+        return written.ok ? written : { ok: false, why: 'too-large', error: written.error }
       }),
 
     remove: (id) =>

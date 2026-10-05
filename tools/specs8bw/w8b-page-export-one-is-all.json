@@ -1,0 +1,17 @@
+{
+  "label": "w8b-page-export-one-is-all",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/useBackup.ts",
+      "from": "exportOne: (id) => exportWith({ scope: 'one', id }),",
+      "to": "exportOne: () => exportWith({ scope: 'all' }),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-page-export-one-is-all"
+  }
+}

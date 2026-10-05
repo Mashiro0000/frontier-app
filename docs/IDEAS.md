@@ -48,3 +48,9 @@
 - Chat Completions as a fallback for OpenAI if the Responses API misbehaves (D-022)
 - Image input and tools: the registry already records which models take them (D-019)
 - Run `tools/regress.mjs` automatically before a release; today it is run by hand
+- A progress line while a restore runs ("Adding 412 of 1000..."): 1000 chats took 109 s in this PC's EFS-encrypted data folder and the page shows only "buttons off" (D-034); and a restore that writes several chats at once, if the copy-then-delete rule allows it
+- A mark on a chat that came from a backup (or from any file brought in), and a look at its messages in the preview, not only the titles: a made-up chat is read by the model as history (D-034; the same gap as D-027's)
+- Back up the settings, the usage ledger and the limits with the chats (D-034 backs up chats only), and a "restore everything" that asks about each part
+- A readable Markdown export of one chat or all of them, next to the JSON backup that restore reads (the owner chose JSON only for 8b.1)
+- Encrypt the backup file itself with a password the owner types, for a backup that is kept in a synced folder (D-034 says a backup is plain text, and 8b.3 will not cover it)
+- A shorter keyboard path through a long History list: three Tab stops per row now (open, Export, Delete), and a person with 150 chats tabs 450 times to get past the list (D-034; where Shift+Tab goes from the first row was not measured)

@@ -1,0 +1,17 @@
+{
+  "label": "w8b-page-focus-on-add",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/RestorePreviewPanel.tsx",
+      "from": "useEffect(() => dismissRef.current?.focus(), [])",
+      "to": "useEffect(() => document.querySelector<HTMLButtonElement>('.backup-preview .button:not(.button-secondary)')?.focus(), [])"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-page-focus-on-add"
+  }
+}

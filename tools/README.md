@@ -14,13 +14,13 @@ Node 24 (built-in `fetch` and `WebSocket`, and it runs `.ts` files directly).
 node tools/regress.mjs <tag> [node|window|seeds|scenarios|stage4|preview]...
 ```
 
-No parts = all of them, about 70 minutes (69 on 5 October 2026, `t85`, 89 runs; 54 on 2 October, `t75`, 78 runs, before Stage 8's three suites in both the dev and the built app). Do not edit `src/` or `registry/` while it runs (dev launches build from the
+No parts = all of them, about 75 minutes (73 on 5 October 2026 later, `t8b`, 93 runs, with the 8b suites in both the dev and the built app; 69 earlier that day, `t85`, 89 runs; 54 on 2 October, `t75`, 78 runs, before Stage 8's three suites in both the dev and the built app). Do not edit `src/` or `registry/` while it runs (dev launches build from the
 tree), and keep the machine idle: `verify-4-3c` (quit with 60 queued saves) fails under extra CPU or disk load.
 
 | Part        | What it runs                                                                        | About   |
 | ----------- | ----------------------------------------------------------------------------------- | ------- |
-| `node`      | Plain-Node suites: provider, registry, rankings, store, adapters, credential store, usage ledger, limits, the question before a large request | 1.5 min |
-| `window`    | The window suites of Stages 1-3, 5, 6, 7.1 to 7.4, 7.6 and 8.1 to 8.3, each on its own scratch profile | 20 min |
+| `node`      | Plain-Node suites: provider, registry, rankings, store, adapters, credential store, usage ledger, limits, the question before a large request, the backup file and restoring (8b; the last takes about 3 min with its EFS pass) | 5 min |
+| `window`    | The window suites of Stages 1-3, 5, 6, 7.1 to 7.4, 7.6, 8.1 to 8.3 and 8b, each on its own scratch profile | 20 min |
 | `seeds`     | One launch per damaged `preferences.json` (`make-seeds.mjs` makes them; 16 of them) | 7 min   |
 | `scenarios` | The registry file deliberately broken in ten ways, restored after each (`run-scenario.mjs`) | 5 min   |
 | `stage4`    | The history suites (`final-new.mjs`): crashes, damaged folders, injected disk faults | 5 min   |
@@ -42,6 +42,9 @@ node tools/run82.mjs [dev|preview]        the spending limits (8.2): a fresh pro
 node tools/verify-8-2.mjs                 the spending limits under plain Node (the check, what is typed, the file and its damage, the ledger's gate, the store, two source checks)
 node tools/run83.mjs [dev|preview]        the question before a very large request (8.3): a fresh profile (verify-8-3w.mjs), a restart (verify-8-3b.mjs), then three launches with an ask-first.json that is not JSON, spells "Never" in capitals, or is a folder (verify-8-3c.mjs)
 node tools/verify-8-3.mjs                 the question under plain Node (the estimate for all seven models, when it asks, what is typed, the file and its damage, the store, the waiting room's races, how the amounts are written, source checks)
+node tools/run8b.mjs [dev|preview]        backing up and restoring chats (8b): seeds five chats and four backup files (whole, cut at 60%, one changed chat, a letter) OUTSIDE the profile, then verify-8b-w.mjs with the system dialogs replaced from the main inspector
+node tools/verify-8b-1.mjs                the backup file under plain Node (its shape, a cut at every length, a changed byte at every place, caps, a 160 MB line, nine disk faults)
+QUICK=1 node tools/verify-8b-2.mjs        restoring under plain Node (the store's add and inspect, the flow with fake dialogs, the token, a changed file, 1000 chats out and back); without QUICK it also runs in the EFS folder with the real 1000 (about 3 min)
 node tools/run-one.mjs w81 dev setup-key.mjs,verify-8-1w.mjs USER_DATA_DIR=s81 MOCK_PORT=8790      just the first launch of the usage suite
 node tools/run-scenario.mjs <scenario>    one registry scenario
 node tools/nc-all.mjs specs guard-off     one negative control (spec folders: specs, specs4, specs4w)
@@ -169,3 +172,16 @@ window focus; it was not tried on a hidden one.)
   that no slice had re-run failed for that reason and nothing else: `verify-5-4` expected a reply's events to be `start`, text, `done` (8.1 added a `usage` event before `done`), and `verify-3-6` expected "reads 0.3" (the
   registry has been schema 0.4 since 8.1). The failing lines said so at once (`FAIL ... -> ["start","text",...,"usage","done"]`; `... reads 0.4`); the fix is in the test, after checking the decision (D-030) says the app is right.
   A check that names a version number or lists every event is the kind that goes stale: when it must, it should name what it means (`usage` just before `done`), as `verify-5-4` now does.
+
+- **The system's dialogs cannot be driven from the page, and need no switch in the app (8b).** `verify-8b-w.mjs` replaces `dialog.showSaveDialog` and `showOpenDialog` in the main process through
+  the inspector (`INSPECT_PORT`, as 7.2 did for `shell.openExternal`): every ask is recorded (modal or not, the options) and answered with a path the suite chose, or with "the person closed it". The code
+  that calls them must look `dialog` up at the time of the call (`backupDialogs.ts` does), or a replacement made later is not seen. Backup files the suite points at live in `scratch('s8b-files')`, OUTSIDE the
+  profile: a backup inside the data folder is refused on purpose.
+- **A click lands where a button is ON SCREEN.** In a window narrow enough that the dialog scrolls (280 px), a footer button is below the fold and `page.click` aims at nothing: scroll it to the middle first (`reveal` in `verify-8b-w.mjs`).
+- **Compare only what the app owns when you hash a profile.** Chromium keeps its own files in the profile and changes them all the time, so "the profile is unchanged" is checked on the conversations folder and the app's own files, not the whole folder.
+- **This PC reaches `%APPDATA%` through a package folder for programs started by the Claude desktop app** (a path that exists resolves to `A:\WpSystem\...\LocalCache\Roaming\...`, one that does not yet exist stays as typed): found by `isInside` (D-034). A junction made
+  for a test must point at the resolved target (`fs.realpath`), or it dangles.
+- **A heredoc through this Bash tool halves backslashes** (a regex `\d` became `d`, a `\n` inside a JS string became a real line break and broke the file): write anything with a backslash with the Edit or Write tool, and read the result back.
+- **`make-specs*.mjs` never deletes a spec it no longer writes**: rename a control and the old file stays and goes stale (`check-specs.mjs` says so). Remove it by hand.
+- **After a refactor, run `node tools/check-specs.mjs` at once**: moving the save code into one function and adding two handlers that repeat the sender check made five older controls stale (found, and repaired, in 8b).
+- **`QUICK=1` for a Node suite that is slow only because of its biggest block** (`verify-8b-2.mjs`: the normal folder only, and 40 chats instead of 1000): the controls use it; the regression runs the full one.
