@@ -140,7 +140,7 @@ note and the full regression (D-028); and a sixth after them, at the owner's req
 - [x] (7.6, D-029) The header stays ONE row at the default window width, whatever is showing: **New chat**, **History** and **Instructions** moved out of it
       into a slim row under the message box (the owner's decision of 2 October 2026, after D-027 had reported that the header wrapped).
 
-## Stage 8 - Usage, cost and spending limits (8.1, 8.2 and 8.3 done; 8.5 not started)
+## Stage 8 - Usage, cost and spending limits (done: 8.1 the ledger, 8.2 limits, 8.3 the question before a large request, 8.5 the stage's threat note and the full regression; 8.4 moved to Stage 8b)
 
 The owner's decisions of 2 October 2026: **the limits are the owner's own, with no preset numbers**; **encrypted history is its own later stage
 (8b)**, with a tested backup and export before any encryption; **a guess marked "about" is counted** when a reply is stopped or fails with no usage
@@ -161,7 +161,9 @@ report, and replaced if a real report arrives.
       requests; $0.50 until chosen, or a deliberate "Never ask") it sends nothing, shows the figures ("Send this large request?": Send, Don't send, Escape is no) and waits for the
       yes. Nothing is written to the ledger while it waits, a yes is heard only for a question that is waiting, and the limits of 8.2 are checked after the yes exactly as before
       (a request they would refuse is not asked about). A damaged or unreadable `ask-first.json` means the default amount, never "Never ask".
-- [ ] (8.5) The stage's threat note, the full regression, and the list of what was not checked.
+- [x] (8.5, D-033) The stage's threat note across the three slices, the full regression (89 runs, the built app included), and the list of what was not checked. **One finding for the owner:**
+      the page can raise or remove a limit, and choose "Never ask", with no answer from the person, so the limits stop a slip, a bug and a model's words but not a hostile page; a way
+      to raise a limit that the page cannot do alone is recommended before Stage 11 (IDEAS).
 - This is the safety foundation for everything that can loop or spend. Nothing in Stages 11 to 13 is built before it.
 
 ## Stage 8b - Optional encrypted history (not started; its own stage, after Stage 8)

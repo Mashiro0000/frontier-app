@@ -2016,7 +2016,7 @@ encryption; a guess marked "about" is counted when a reply is stopped or fails w
    changes the file.
 6. **The registry changed shape** (schema 0.4: four prices per model). A build from before this slice cannot read this registry file; the file is part
    of the build, so this only matters if you copy `registry/models.json` between versions.
-7. **Nothing is pushed.** Stage 7 is merged into `main` locally (tag `stage-7-done`), and this slice is on the branch `stage-8-usage-limits`.
+7. **Nothing was pushed when this was written.** Stage 7 is merged into `main` locally (tag `stage-7-done`), and this slice is on the branch `stage-8-usage-limits`. (At your go the branch has been pushed since; `main` has not: see Stage 8.5.)
 8. **Everything in the earlier stages' "Things to know" still applies.**
 
 ## Stage 8 - Slice 8.2: spending limits (3 October 2026 session; D-031)
@@ -2071,7 +2071,7 @@ choice with a one-line warning); the limit is checked by the main process before
 3. **Deleting the usage file resets the count** (Settings says so), and a changed clock moves "today" and "this month".
 4. **`limits.json` is a plain file** (`{"version":1,"daily":5,"monthly":"none"}`). A change made to it while the app runs is heard at the next start.
 5. **No real call has been made by me**, still. Compare the first real replies with your provider's usage page.
-6. **Nothing is pushed.** This slice is committed on the branch `stage-8-usage-limits` (8.1 is committed there too); `main` has Stage 7.
+6. **Nothing was pushed when this was written.** This slice is committed on the branch `stage-8-usage-limits` (8.1 is committed there too); `main` has Stage 7. (The branch has been pushed since, at your go; `main` has not: see Stage 8.5.)
 7. **Everything in the earlier stages' "Things to know" still applies.**
 
 ## Stage 8 - Slice 8.3: a question before a very large request (3 October 2026 session; D-032)
@@ -2144,5 +2144,41 @@ still checked, after any yes, exactly as before. This is the question that can c
 4. **A damaged or unreadable `ask-first.json` asks at the default.** A person who writes "never" into it (lower case, exactly) has chosen "Never ask".
 5. **While the question is open nothing is sent and nothing is written.** Closing the app then saves the chat with the reply as "stopped".
 6. **No real call has been made by me**, still. Compare the first real replies with your provider's usage page, and the figure in the question with them.
-7. **Nothing is pushed.** This slice is committed on the branch `stage-8-usage-limits` (8.1 and 8.2 are committed there too); `main` has Stage 7.
+7. **Nothing was pushed when this was written.** This slice is committed on the branch `stage-8-usage-limits` (8.1 and 8.2 are committed there too); `main` has Stage 7. (The branch has been pushed since, at your go, up to 8.3; `main` has not: see Stage 8.5.)
 8. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 8 - Slice 8.5: the stage's threat note and the full regression (5 October 2026 session; D-033)
+
+**Your instruction.** "Go 8.5. Run the full regression and the built-app run, then write the threat note for 8.1 to 8.3 and the list of what was not checked." No code of the app was changed.
+
+**Step by step.**
+
+1. **Before the run.** Checked that the tree was clean and that no `electron` or `node` process was running, then typecheck, lint and `prettier --check .` (all clean), and took a hash over every file of `src/` and
+   `registry/` to compare afterwards. Started the read-only window watcher (`tools/watch-windows.ps1 -Tag t85`), then `node tools/regress.mjs t85` in the background (all six parts, the built app included).
+2. **While it ran** I only edited `docs/` (safe: the dev launches build from `src/`, not from `docs/`), and read `src/main/chat.ts` and `src/main/ipc.ts` to check the claims of the threat note against the code.
+3. **The result: 89 runs in 69 minutes, 86 clean the first time.** The other three were two stale expectations in tests: `verify-5-4` (dev and built) expected a reply's events to end `text`, `done`, and since 8.1
+   a `usage` event comes before `done`; the `wrong-version` registry scenario expected "reads 0.3" and the registry has been schema 0.4 since 8.1. Both were fixed in the tests (`tools/verify-5-4.mjs`,
+   `tools/verify-3-6.mjs`), and the three launches were run again: 47 of 47 on the dev app, 47 of 47 on a freshly built one, and 13 of 13 for the scenario. The app was right in both.
+4. **After it:** the hash of `src/` and `registry/` was the same as before, `git status` showed only `docs/` and the two test files, no `electron` process was left, and the watcher had stopped by itself.
+   No hidden window, no lost window and no retry in the 89 runs.
+5. **The threat note** is D-033 in `docs/DECISIONS.md`: the stage's whole surface in one list, the risks that only exist where the three slices meet, the roadmap's safety line claim by claim, what the
+   regression showed, and the list of what was not checked.
+
+**What the threat note found that the slices' own notes did not.** D-032 and the architecture file said that what stops a hostile page spending is the limit. **It is not, quite: the same page can call
+`settings.setLimits` with "No limit" and `settings.setAskFirst` with "Never ask", and answer its own question, and main does not ask you.** (The regression itself does this through the bridge: `verify-8-3w` lifts both
+limits that way to run its requests.) So the limits stop you from spending by accident and stop anything a model writes, and they do not stop code running in the page; what keeps such code out is the window's guards.
+I did not change the app (8.5 is the check and the note), and I corrected the architecture file. **My recommendation, for you to decide: before Stage 11, raising a limit or choosing "No limit" should need an answer
+that the page cannot give by itself** (an operating system dialog, say). It is in IDEAS. The second thing: the ledger and the limits file are plain files, so from Stage 12 and 13 on (files, commands) the app's data
+folder must lie outside anything a tool can reach.
+
+## Stage 8.5 - Things to know (not problems, but worth your attention)
+
+1. **Stage 8 is checked on the whole tree**, with the one thing above to decide. The built app passes the same suites as the dev app, the three of Stage 8 included (81, 62 and 84 checks).
+2. **No real call has been made by me, in any stage.** The figures (the line under a reply, Settings > Usage, the question) have never been compared with a real provider's page. Please compare the first real
+   replies, and tell me if they differ, the cache numbers and the thinking in particular.
+3. **$0.50 is still mine** (Settings > Large requests): confirm it or change it.
+4. **Your own profile has never been run.** It has no `limits.json`, so the first start of this build on it asks for a daily and a monthly limit before the first send.
+5. **The full list of what was not checked** is at the end of D-033 (13 items: no real call, the guess against a real tokenizer, the OpenAI path in the window, time zones and daylight saving, two copies of the
+   app, a very large ledger, a screen reader and other display settings, the installer, and the others).
+6. **Pushed:** the branch `stage-8-usage-limits` was pushed at your go, up to 8.3 (31b4f59); this slice is committed on it, **not pushed**, and `main` (Stage 7 merged) is not pushed either.
+7. **Everything in the earlier stages' "Things to know" still applies.**

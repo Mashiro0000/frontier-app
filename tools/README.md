@@ -14,7 +14,7 @@ Node 24 (built-in `fetch` and `WebSocket`, and it runs `.ts` files directly).
 node tools/regress.mjs <tag> [node|window|seeds|scenarios|stage4|preview]...
 ```
 
-No parts = all of them, about 55 minutes (54 on 2 October 2026, `t75`, 78 runs). Do not edit `src/` or `registry/` while it runs (dev launches build from the
+No parts = all of them, about 70 minutes (69 on 5 October 2026, `t85`, 89 runs; 54 on 2 October, `t75`, 78 runs, before Stage 8's three suites in both the dev and the built app). Do not edit `src/` or `registry/` while it runs (dev launches build from the
 tree), and keep the machine idle: `verify-4-3c` (quit with 60 queued saves) fails under extra CPU or disk load.
 
 | Part        | What it runs                                                                        | About   |
@@ -165,3 +165,7 @@ window focus; it was not tried on a hidden one.)
   refusing to send after an abort), only a control that removes both can be seen from outside; the single one belongs to the plain-Node suite, which looks at the room itself.
 - Make a window suite print its summary even when a step waits for something that never comes: catch the error at the top, record it as a failed check that says where
   (`the suite stopped before its end: ...`), and let the summary run. A control that breaks the flow then shows as a named detection, not as "no summary line" (`verify-8-3w.mjs`).
+- **A slice that changes what the app emits or what a file says can make an older suite stale without anyone noticing, so the full regression is run at the end of every stage, and a BAD is read before it is believed.** In 8.5 two checks
+  that no slice had re-run failed for that reason and nothing else: `verify-5-4` expected a reply's events to be `start`, text, `done` (8.1 added a `usage` event before `done`), and `verify-3-6` expected "reads 0.3" (the
+  registry has been schema 0.4 since 8.1). The failing lines said so at once (`FAIL ... -> ["start","text",...,"usage","done"]`; `... reads 0.4`); the fix is in the test, after checking the decision (D-030) says the app is right.
+  A check that names a version number or lists every event is the kind that goes stale: when it must, it should name what it means (`usage` just before `done`), as `verify-5-4` now does.

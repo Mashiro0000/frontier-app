@@ -356,7 +356,8 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
   damaged or cut off means "not chosen", never "No limit"; one that cannot be read at all refuses requests. The page can choose limits and cannot take a choice back.
 - The question before a very large request (D-032) is asked by the main process, in the same place, and holds the request until the person says yes: nothing is written
   to the ledger and nothing is sent while it waits. It guards the person against their own slip and a bug in the page; it is not a defence against a hostile page, which can
-  answer its own question: the limits above are the hard stop. A yes is heard only for a question that is waiting (not ahead of it, not twice, not for another stream), and the
+  answer its own question. The limits above stop a slip, a bug and a model's words, and a hostile page could also change them (`settings.setLimits` needs no answer from the person: D-033),
+  so they are not a defence against one either: what keeps hostile code out of the page is the window's own guards. A yes is heard only for a question that is waiting (not ahead of it, not twice, not for another stream), and the
   request carries no field that approves it. A damaged or unreadable `ask-first.json` means the default amount, so the question is still asked; it never means "Never ask".
 - Saved conversations are plain text on disk, not encrypted like the key (D-016): the History dialog says so and
   names the folder. The id of a conversation becomes part of a file name, so it is checked twice (in

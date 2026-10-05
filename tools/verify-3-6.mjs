@@ -24,7 +24,7 @@ const OPENAI = good.models.filter((m) => m.provider === 'openai').map((m) => m.i
 const tag = `[${SCENARIO}]`
 
 const EXPECT = {
-  'wrong-version': { available: false, error: /schemaVersion is "0\.1", but this version of the app reads 0\.3/ },
+  'wrong-version': { available: false, error: /schemaVersion is "0\.1", but this version of the app reads 0\.4/ },
   'no-usable-models': { available: false, error: /none of the entries in models is usable/, logMore: [/unknown field "effrot"/] },
   'default-missing': { available: false, error: /defaultModelId "claude-nope" is not one of the usable models/ },
   'default-is-broken-entry': { available: false, error: /defaultModelId "claude-opus-5-5" is not one of the usable models/, logMore: [/models\[1\] \("claude-opus-5-5"\): effort must be one of "none", "low", "medium", "high", "xhigh", "max" or null/] },
