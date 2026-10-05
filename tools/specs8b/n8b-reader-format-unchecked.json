@@ -1,0 +1,14 @@
+{
+  "label": "n8b-reader-format-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "header === null || header.format !== BACKUP_FORMAT) {",
+      "to": "header === null) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

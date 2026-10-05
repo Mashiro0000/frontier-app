@@ -1,0 +1,16 @@
+{
+  "label": "n8b-store-add-dates-now",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "          {\n            ...conversation,\n",
+      "to": "          {\n            ...conversation,\n            updatedAt: Date.now(),\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-2.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

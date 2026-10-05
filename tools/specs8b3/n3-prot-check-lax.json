@@ -1,0 +1,16 @@
+{
+  "label": "n3-prot-check-lax",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatProtection.ts",
+      "from": "    file.check.length <= MAX_CHECK_CHARS &&\n    BASE64.test(file.check)\n",
+      "to": "    file.check.length <= MAX_CHECK_CHARS\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n3-prot-size-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatProtection.ts",
+      "from": "if ((await fs.stat(pathOf())).size > MAX_FILE_BYTES) {",
+      "to": "if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

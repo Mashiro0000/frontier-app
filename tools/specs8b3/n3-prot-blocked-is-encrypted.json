@@ -1,0 +1,16 @@
+{
+  "label": "n3-prot-blocked-is-encrypted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatProtection.ts",
+      "from": "        if (now.blocked !== null) return { refused: now.blocked }",
+      "to": "        if (now.blocked !== null) return { form: 'encrypted' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

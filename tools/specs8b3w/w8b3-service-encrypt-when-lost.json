@@ -1,0 +1,20 @@
+{
+  "label": "w8b3-service-encrypt-when-lost",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatEncryptionService.ts",
+      "from": "    if (before.choice === 'on' && before.keyUsable !== true) {",
+      "to": "    if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b3.mjs",
+    "dev",
+    "3"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b3-service-encrypt-when-lost",
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 700000
+}

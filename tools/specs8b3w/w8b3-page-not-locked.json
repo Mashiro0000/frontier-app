@@ -1,0 +1,20 @@
+{
+  "label": "w8b3-page-not-locked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/ChatStorageSection.tsx",
+      "from": "disabled={storage.working || !status.canEncrypt}",
+      "to": "disabled={!status.canEncrypt}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b3.mjs",
+    "dev",
+    "1"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b3-page-not-locked",
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 300000
+}

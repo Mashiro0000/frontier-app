@@ -1,0 +1,16 @@
+{
+  "label": "n3-prot-nostorage-unseen",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatProtection.ts",
+      "from": "    if (!canEncrypt) {\n      return { choice: 'on'",
+      "to": "    if (false as boolean) {\n      return { choice: 'on'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

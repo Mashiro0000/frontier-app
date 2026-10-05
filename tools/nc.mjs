@@ -33,7 +33,7 @@ try {
     writeFileSync(f, text)
   }
   console.log(`[${label}] sabotaged: ${spec.edits.length} edit(s) in ${files.length} file(s): ${spec.edits.map((e) => e.to.slice(0, 60).replace(/\s+/g, ' ')).join('  ||  ')}`)
-  const run = spawnSync(process.execPath, spec.argv, { encoding: 'utf8', env: { ...process.env, ...(spec.env ?? {}), NODE_NO_WARNINGS: '1' }, timeout: 280000, maxBuffer: 64 * 1024 * 1024 })
+  const run = spawnSync(process.execPath, spec.argv, { encoding: 'utf8', env: { ...process.env, ...(spec.env ?? {}), NODE_NO_WARNINGS: '1' }, timeout: spec.timeoutMs ?? 280000, maxBuffer: 64 * 1024 * 1024 })
   const out = (run.stdout ?? '') + (run.stderr ?? '')
   writeFileSync(join(dir, `${label}.out.txt`), out)
   const fails = out.split('\n').filter((l) => l.startsWith('FAIL'))

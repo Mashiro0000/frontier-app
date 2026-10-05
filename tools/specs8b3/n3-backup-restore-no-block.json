@@ -1,0 +1,16 @@
+{
+  "label": "n3-backup-restore-no-block",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "    if (refusal !== null) return { ok: false, error: `Nothing was added. ${refusal}` }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

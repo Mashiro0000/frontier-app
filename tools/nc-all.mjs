@@ -10,7 +10,8 @@ const names = process.argv.slice(3)
 const free = async () => { for (let i = 0; i < 120; i++) { try { await fetch('http://127.0.0.1:9222/json') } catch { return } await new Promise((r) => setTimeout(r, 250)) } }
 for (const name of names) {
   await free()
-  const r = spawnSync(process.execPath, [join(here, 'nc.mjs'), join(here, dir, `${name}.json`)], { encoding: 'utf8', timeout: 400000, maxBuffer: 64 * 1024 * 1024 })
+  const specTimeout = JSON.parse(readFileSync(join(here, dir, `${name}.json`), 'utf8')).timeoutMs ?? 280000 // a spec may say it needs longer (the lost-key window controls make three launches)
+  const r = spawnSync(process.execPath, [join(here, 'nc.mjs'), join(here, dir, `${name}.json`)], { encoding: 'utf8', timeout: specTimeout + 120000, maxBuffer: 64 * 1024 * 1024 })
   const out = (r.stdout ?? '') + (r.stderr ?? '')
   const lines = out.split('\n')
   console.log(`--- ${name}`)

@@ -1,0 +1,16 @@
+{
+  "label": "n3-prot-turnon-no-availability",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatProtection.ts",
+      "from": "        if (!box.isAvailable()) throw new Error('this computer has no secure storage')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

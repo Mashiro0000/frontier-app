@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",
-      "from": "if (copy.kind === 'ok') return { conversation: copy.conversation }\n  const real = await readFileAt(file, id)\n  if (real.kind === 'ok') return { conversation: real.conversation }",
-      "to": "const real = await readFileAt(file, id)\n  if (real.kind === 'ok') return { conversation: real.conversation }\n  if (copy.kind === 'ok') return { conversation: copy.conversation }"
+      "from": "if (copy.kind === 'ok') {\n    // The \".tmp\" wins",
+      "to": "if (copy.kind === 'ok' && (await readFileAt(file, id, box)).kind !== 'ok') {\n    // The \".tmp\" wins"
     }
   ],
   "argv": [

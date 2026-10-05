@@ -1,0 +1,16 @@
+{
+  "label": "n3-ipc-decrypt-unguarded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    CHANNELS.historyDecrypt,\n    guardedForWindow(async (window): Promise<ChatStorageResult> => {",
+      "to": "    CHANNELS.historyDecrypt,\n    (async (): Promise<ChatStorageResult> => {\n      const window = null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

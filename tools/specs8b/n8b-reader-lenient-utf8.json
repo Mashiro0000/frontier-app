@@ -1,0 +1,14 @@
+{
+  "label": "n8b-reader-lenient-utf8",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "new TextDecoder('utf-8', { fatal: true })",
+      "to": "new TextDecoder('utf-8')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

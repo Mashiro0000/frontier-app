@@ -1,0 +1,16 @@
+{
+  "label": "n3-svc-confirm-always-yes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatEncryptionService.ts",
+      "from": "    if (!yes) return { ok: false, cancelled: true, error: 'Cancelled.' }",
+      "to": "    void yes"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

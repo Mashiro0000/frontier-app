@@ -1,0 +1,17 @@
+{
+  "label": "w8b-service-token-reusable",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "    pending = null // good for one use, whatever happens next\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-service-token-reusable"
+  }
+}

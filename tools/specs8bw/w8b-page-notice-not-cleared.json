@@ -1,0 +1,17 @@
+{
+  "label": "w8b-page-notice-not-cleared",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/HistoryDialog.tsx",
+      "from": "    clearNotice()\n    onClose()",
+      "to": "    onClose()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-page-notice-not-cleared"
+  }
+}

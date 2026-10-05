@@ -1,0 +1,16 @@
+{
+  "label": "n3-store-blocked-always-null",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "      return 'refused' in mode ? mode.refused : null",
+      "to": "      return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

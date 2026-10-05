@@ -1,0 +1,16 @@
+{
+  "label": "n8b-service-no-earlier-memory",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "      if (before !== undefined) return before === key ? 'same' : 'copy'\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-2.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

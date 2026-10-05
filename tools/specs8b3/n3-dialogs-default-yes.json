@@ -1,0 +1,16 @@
+{
+  "label": "n3-dialogs-default-yes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupDialogs.ts",
+      "from": "defaultId: 1, // the safe answer has the focus, and Escape is the same answer",
+      "to": "defaultId: 0, // the safe answer has the focus, and Escape is the same answer"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

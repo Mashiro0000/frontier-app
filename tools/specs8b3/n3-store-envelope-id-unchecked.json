@@ -1,0 +1,16 @@
+{
+  "label": "n3-store-envelope-id-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "    const checked = parseSavedFile(inner, id)",
+      "to": "    const checked = parseSavedFile(inner, (inner as { id?: string })?.id ?? id)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

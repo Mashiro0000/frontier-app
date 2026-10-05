@@ -1,0 +1,16 @@
+{
+  "label": "n3-env-isenvelope-loose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatFile.ts",
+      "from": "    (value as Record<string, unknown>).format === ENVELOPE_FORMAT\n",
+      "to": "    true\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

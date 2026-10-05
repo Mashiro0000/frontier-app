@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",
-      "from": "if (Buffer.byteLength(text) > HISTORY_LIMITS.maxFileBytes) {",
+      "from": "if (Buffer.byteLength(plain) > HISTORY_LIMITS.maxFileBytes) {",
       "to": "if (false) {"
     }
   ],

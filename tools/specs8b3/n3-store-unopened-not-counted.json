@@ -1,0 +1,16 @@
+{
+  "label": "n3-store-unopened-not-counted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "    if (wasEncrypted) unopened.add(id)\n    else unopened.delete(id)\n",
+      "to": "    unopened.delete(id)\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

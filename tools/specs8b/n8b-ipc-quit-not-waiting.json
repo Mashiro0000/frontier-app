@@ -1,0 +1,16 @@
+{
+  "label": "n8b-ipc-quit-not-waiting",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "Promise.all([history.whenIdle(), ledger.whenIdle(), backups.whenIdle()])",
+      "to": "Promise.all([history.whenIdle(), ledger.whenIdle()])"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-2.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

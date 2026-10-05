@@ -1,0 +1,16 @@
+{
+  "label": "n3-env-opensto-true",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatFile.ts",
+      "from": "  return opened.ok && opened.text === plain",
+      "to": "  return true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

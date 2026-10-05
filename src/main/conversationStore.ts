@@ -7,6 +7,17 @@ import {
   type SavedMessage
 } from '../shared/ipc'
 import { checkInstructions, checkSavedMessages, isConversationId } from '../shared/validate'
+import {
+  isEnvelope,
+  MAX_ENCRYPTED_FILE_BYTES,
+  opensTo,
+  openChat,
+  SEALED_PREFIX,
+  sealChat,
+  type FileForm,
+  type WriteMode
+} from './chatFile'
+import type { SecretBox } from './credentialStore'
 
 // The saved conversations: one small JSON file per conversation, all in one folder (D-016). No Electron
 // imports, so it can be checked under plain Node with any folder.
@@ -28,9 +39,18 @@ import { checkInstructions, checkSavedMessages, isConversationId } from '../shar
 // The file is "version": 3 since Stage 7.4 (D-027): it also holds the person's instructions for the chat ("" for none). Version 2
 // (Stages 5.4-7.3, D-021: each reply says which provider and model wrote it) is read as a version 3 one with no instructions, and
 // a version 1 file (Stages 2-4) as a version 2 one (its replies came from Anthropic, which model is not known) with no
-// instructions. Both stay as they are on disk, byte for byte, until the conversation is next saved. Nothing is converted in bulk,
-// so no crash can leave the history half-converted. A file of any other version was made by another version of the app and is
+// instructions. Both stay as they are on disk, byte for byte, until the conversation is next saved. Nothing is converted in bulk
+// (with ONE exception, below), so no crash can leave the history half-converted. A file of any other version was made by another version of the app and is
 // left alone.
+//
+// ENCRYPTION (Stage 8b.3 and 8b.4, D-035). A chat's file is either plain (the JSON above) or ENCRYPTED: the same name, holding an envelope that the secure
+// storage sealed the plain text into (chatFile.ts). Reading takes either (an envelope is opened first, and what it holds goes through the same strict
+// check), so a folder with both, which a conversion that was cut short leaves, is fine. HOW A WRITE IS MADE is not decided here: `writeMode` (from
+// chatProtection.ts) is asked before EVERY write, and either names the form or REFUSES, and then nothing is written (no plain fallback, no new key).
+// A file that cannot be opened is read as unreadable, left exactly as it is, and counted (`unopened` says how many of those are encrypted).
+// The exception to "nothing is converted in bulk": `conform()` rewrites every readable chat in the form the choice now says, one at a time, when the
+// person turns encryption on or off. Each file is rewritten by the same three steps, proved by opening what was written, and read again after; a chat
+// that cannot be rewritten is left as it was. A chat's dates, title and instructions are kept as they are, and a version 1 or 2 file comes out as version 3.
 
 // "<id>.json" or "<id>.json.tmp", with the id in the one spelling the app itself produces (lower case: Windows
 // treats upper and lower case as the same file, so two spellings of one id would be one file).
@@ -47,10 +67,53 @@ export type SaveOutcome = { ok: true; summary: ConversationSummary } | { ok: fal
 export type LoadOutcome =
   { ok: true; conversation: SavedConversation } | { ok: false; error: string }
 export type RemoveOutcome = { ok: true } | { ok: false; error: string }
+/**
+ * Why a chat brought in from a backup was not added (D-034): `occupied` = something is already saved under that id; `full` and `too-large` as for a save;
+ * `blocked` = nothing may be written now (D-035: the key that protects the chats cannot be used, or the choice cannot be read).
+ */
+export type AddOutcome =
+  | { ok: true; summary: ConversationSummary }
+  | { ok: false; why: 'occupied' | 'full' | 'too-large' | 'blocked'; error: string }
+/** What is saved under an id, for deciding what to do with a chat in a backup. `damaged`: a file is there (or was) that cannot be read. */
+export type Inspection =
+  { kind: 'free' } | { kind: 'here'; conversation: SavedConversation } | { kind: 'damaged' }
+
+/** How the saved chats are kept (D-035): the readable ones by the form of their file, and the files that could not be read. */
+export interface StoreCounts {
+  plain: number
+  encrypted: number
+  unreadable: number
+  /** Of `unreadable`: files that are encrypted and could not be opened (another key, a lost key, damage). */
+  unopened: number
+}
+
+/** What `conform` did: files rewritten, files already in the form, and files that could not be rewritten (left exactly as they were). */
+export interface ConformResult {
+  changed: number
+  already: number
+  failed: number
+}
+
+export interface ConversationStoreOptions {
+  /** The secure storage, to open encrypted files and to make them. Without it the store has only plain files: an encrypted file cannot be opened. */
+  box?: SecretBox
+  /** How the next write must be made, or why none may be (chatProtection.ts). Without it every write is plain. */
+  writeMode?: () => Promise<WriteMode>
+}
 
 export interface ConversationStore {
   /** Every readable conversation, newest first, and how many files could not be read (and were left alone). */
   list(): Promise<{ conversations: ConversationSummary[]; unreadable: number }>
+  /** How many chats are kept plain and how many encrypted, and how many files could not be read (D-035). */
+  counts(): Promise<StoreCounts>
+  /** Why nothing can be written right now (the key cannot be used, the choice cannot be read), or null (D-035). Looks at nothing on disk but the choice. */
+  blocked(): Promise<string | null>
+  /**
+   * Rewrites every readable chat in the form the choice says now (D-035): to encrypted after the person turned encryption on, to plain after they turned
+   * it off, or the rest of either after it was cut short. One chat at a time, so that saving goes on meanwhile; each is proved by opening what was written
+   * and reading it again. A chat that cannot be rewritten, and every file that could not be read, is left exactly as it was. Writes nothing while writing is refused.
+   */
+  conform(): Promise<ConformResult>
   load(id: string): Promise<LoadOutcome>
   /**
    * Saves the whole conversation (a snapshot, not a change). Throws if the disk refuses, and then the earlier
@@ -59,6 +122,16 @@ export interface ConversationStore {
    */
   save(input: { id: string; messages: SavedMessage[]; instructions?: string }): Promise<SaveOutcome>
   remove(id: string): Promise<RemoveOutcome>
+  /**
+   * Looks at what is saved under an id without changing anything (D-034).
+   */
+  inspect(id: string): Promise<Inspection>
+  /**
+   * Saves a chat that comes from a backup (D-034), exactly as it is: its id, its dates and its instructions are kept, only the title is worked out
+   * again. Unlike `save` it NEVER replaces anything: if a file, a half-written copy or a damaged file is already there under the id, it answers
+   * `occupied` and writes nothing. The file is written like any other (a ".tmp" first, read back, copied, read back).
+   */
+  add(conversation: SavedConversation): Promise<AddOutcome>
   /** Resolves when every save and removal asked for so far has finished. For quitting the app. */
   whenIdle(): Promise<void>
 }
@@ -116,11 +189,24 @@ export function parseSavedFile(raw: unknown, id: string): SavedConversation | st
 }
 
 type Read =
-  | { kind: 'ok'; conversation: SavedConversation }
+  | { kind: 'ok'; conversation: SavedConversation; form: FileForm }
   | { kind: 'missing' }
-  | { kind: 'bad'; why: string }
+  /** `unopened`: the file is an encrypted one that could not be opened (as opposed to a file that is damaged as text). */
+  | { kind: 'bad'; why: string; unopened?: true }
 
-async function readFileAt(path: string, id: string): Promise<Read> {
+/** True if the file begins like a sealed chat. Looks at its first few bytes and reads nothing else. */
+async function beginsSealed(path: string): Promise<boolean> {
+  const handle = await fs.open(path, 'r')
+  try {
+    const head = Buffer.alloc(Buffer.byteLength(SEALED_PREFIX))
+    const { bytesRead } = await handle.read(head, 0, head.length, 0)
+    return head.subarray(0, bytesRead).toString('utf8') === SEALED_PREFIX
+  } finally {
+    await handle.close().catch(() => undefined)
+  }
+}
+
+async function readFileAt(path: string, id: string, box: SecretBox | undefined): Promise<Read> {
   let size: number
   try {
     size = (await fs.stat(path)).size
@@ -128,8 +214,12 @@ async function readFileAt(path: string, id: string): Promise<Read> {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { kind: 'missing' }
     throw error
   }
-  // Looked at before reading, so a file of any size cannot fill the memory.
-  if (size > HISTORY_LIMITS.maxFileBytes) return { kind: 'bad', why: 'the file is too large' }
+  // Looked at before reading, so a file of any size cannot fill the memory. A sealed chat is bigger than the chat in it, so it has a bigger limit; a file between
+  // the two limits is read only if it BEGINS like a sealed chat (its first bytes are looked at, nothing else), and anything else that big is refused unread.
+  if (size > MAX_ENCRYPTED_FILE_BYTES) return { kind: 'bad', why: 'the file is too large' }
+  if (size > HISTORY_LIMITS.maxFileBytes && !(await beginsSealed(path))) {
+    return { kind: 'bad', why: 'the file is too large' }
+  }
   let text = await fs.readFile(path, 'utf8')
   if (text.charCodeAt(0) === 0xfeff) text = text.slice(1) // a byte-order mark, which some editors add
   let parsed: unknown
@@ -138,31 +228,86 @@ async function readFileAt(path: string, id: string): Promise<Read> {
   } catch {
     return { kind: 'bad', why: 'it is not valid JSON' }
   }
+  if (isEnvelope(parsed)) {
+    const opened = openChat(parsed, box)
+    if (!opened.ok) return { kind: 'bad', why: opened.why, unopened: true }
+    let inner: unknown
+    try {
+      inner = JSON.parse(opened.text)
+    } catch {
+      return { kind: 'bad', why: 'it is encrypted, and what it holds is not valid JSON' }
+    }
+    const checked = parseSavedFile(inner, id)
+    return typeof checked === 'string'
+      ? { kind: 'bad', why: checked }
+      : { kind: 'ok', conversation: checked, form: 'encrypted' }
+  }
+  if (size > HISTORY_LIMITS.maxFileBytes) return { kind: 'bad', why: 'the file is too large' }
   const result = parseSavedFile(parsed, id)
   return typeof result === 'string'
     ? { kind: 'bad', why: result }
-    : { kind: 'ok', conversation: result }
+    : { kind: 'ok', conversation: result, form: 'plain' }
 }
 
-/** Reads one conversation, applying the recovery rule above. `null` if neither file exists. */
+/**
+ * What reading a chat gives (`null` if neither file exists). `form` is "plain" if ANY readable copy of the chat is plain, the real file or a ".tmp": a plain
+ * copy on disk is exactly what encrypting is meant to get rid of, so it must not hide behind a newer encrypted ".tmp". `tmp`: a ".tmp" exists at all, whole
+ * or cut off. It is a leftover of a write that did not finish (and a cut-off one can hold part of a chat as text), and the next write of the chat removes it.
+ */
+type ReadOutcome =
+  | { conversation: SavedConversation; form: FileForm; tmp: boolean }
+  | { why: string; unopened: boolean }
+  | null
+
+/** Reads one conversation, applying the recovery rule above. */
 async function readConversation(
   dir: string,
-  id: string
-): Promise<{ conversation: SavedConversation } | { why: string } | null> {
+  id: string,
+  box: SecretBox | undefined
+): Promise<ReadOutcome> {
   const file = join(dir, `${id}.json`)
-  const copy = await readFileAt(`${file}.tmp`, id)
-  if (copy.kind === 'ok') return { conversation: copy.conversation }
-  const real = await readFileAt(file, id)
-  if (real.kind === 'ok') return { conversation: real.conversation }
-  if (real.kind === 'bad') return { why: real.why }
-  if (copy.kind === 'bad') return { why: copy.why }
+  const copy = await readFileAt(`${file}.tmp`, id, box)
+  if (copy.kind === 'ok') {
+    // The ".tmp" wins (it is at least as new), but the real file beside it may still be a plain copy of an older version of this chat.
+    const real = await readFileAt(file, id, box)
+    const plain = copy.form === 'plain' || (real.kind === 'ok' && real.form === 'plain')
+    return { conversation: copy.conversation, form: plain ? 'plain' : 'encrypted', tmp: true }
+  }
+  const real = await readFileAt(file, id, box)
+  if (real.kind === 'ok') {
+    return { conversation: real.conversation, form: real.form, tmp: copy.kind !== 'missing' }
+  }
+  if (real.kind === 'bad') return { why: real.why, unopened: real.unopened === true }
+  if (copy.kind === 'bad') return { why: copy.why, unopened: copy.unopened === true }
   return null
 }
 
-export function createConversationStore(dir: string): ConversationStore {
-  const index = new Map<string, { summary: ConversationSummary; createdAt: number }>()
+const alwaysPlain = async (): Promise<WriteMode> => ({ form: 'plain' })
+
+export function createConversationStore(
+  dir: string,
+  options: ConversationStoreOptions = {}
+): ConversationStore {
+  const { box } = options
+  const writeMode = options.writeMode ?? alwaysPlain
+  const index = new Map<
+    string,
+    { summary: ConversationSummary; createdAt: number; form: FileForm }
+  >()
   const unreadable = new Set<string>()
+  /** The part of `unreadable` that is encrypted files that could not be opened. */
+  const unopened = new Set<string>()
   let scanned: Promise<void> | null = null
+
+  const markUnreadable = (id: string, wasEncrypted: boolean): void => {
+    unreadable.add(id)
+    if (wasEncrypted) unopened.add(id)
+    else unopened.delete(id)
+  }
+  const markReadable = (id: string): void => {
+    unreadable.delete(id)
+    unopened.delete(id)
+  }
 
   // One thing at a time, in the order asked for, like the model choice (D-015): a save and a removal of the
   // same conversation, or two saves, must never cross. The page sends snapshots, so the last one must win.
@@ -184,16 +329,19 @@ export function createConversationStore(dir: string): ConversationStore {
     for (let start = 0; start < ids.length; start += SCAN_AT_A_TIME) {
       await Promise.all(
         ids.slice(start, start + SCAN_AT_A_TIME).map(async (id) => {
+          let wasEncrypted = false
           try {
-            const read = await readConversation(dir, id)
+            const read = await readConversation(dir, id, box)
             if (read === null) return
             if ('conversation' in read) {
               index.set(id, {
                 summary: summaryOf(read.conversation),
-                createdAt: read.conversation.createdAt
+                createdAt: read.conversation.createdAt,
+                form: read.form
               })
               return
             }
+            wasEncrypted = read.unopened
             console.warn(
               `The saved conversation ${id} could not be read (${read.why}); it was left as it is.`
             )
@@ -202,7 +350,7 @@ export function createConversationStore(dir: string): ConversationStore {
               `The saved conversation ${id} could not be read (${error instanceof Error ? error.message : error}); it was left as it is.`
             )
           }
-          unreadable.add(id)
+          markUnreadable(id, wasEncrypted)
         })
       )
     }
@@ -217,6 +365,78 @@ export function createConversationStore(dir: string): ConversationStore {
     return scanned
   }
 
+  // The three steps of D-016, for a conversation whose fields are all decided (a save decides the dates itself, a chat brought in from a
+  // backup keeps its own) and a form that `writeMode` named (never one the caller picked). Called only inside `inOrder`.
+  async function writeConversation(
+    conversation: SavedConversation,
+    form: FileForm
+  ): Promise<SaveOutcome> {
+    const plain = JSON.stringify({ version: 3, ...conversation })
+    // Whatever is written must be readable again, so the limit on reading is also a limit on writing.
+    if (Buffer.byteLength(plain) > HISTORY_LIMITS.maxFileBytes) {
+      return { ok: false, error: 'This conversation is too large to save.' }
+    }
+    if (form === 'encrypted' && box === undefined) {
+      throw new Error('this store has no secure storage to encrypt with')
+    }
+    const text = form === 'encrypted' && box !== undefined ? sealChat(plain, box) : plain
+    await fs.mkdir(dir, { recursive: true, mode: 0o700 })
+    const file = join(dir, `${conversation.id}.json`)
+    const copy = `${file}.tmp`
+    await fs.writeFile(copy, text, { mode: 0o600 })
+    const back = await fs.readFile(copy, 'utf8')
+    // An encrypted copy must also OPEN to the same chat: the same proof the API key gets ("the saved key could not be read back").
+    if (back !== text || (form === 'encrypted' && !opensTo(back, plain, box))) {
+      await fs.rm(copy, { force: true }).catch(() => undefined) // cut off: the real file is still the old copy
+      throw new Error('the new copy could not be read back')
+    }
+    // From here on the ".tmp" is whole and checked, so it is kept if anything below fails: reading uses it.
+    await fs.copyFile(copy, file)
+    if ((await fs.readFile(file, 'utf8')) !== text)
+      throw new Error('the saved file could not be read back')
+    await fs.rm(copy, { force: true }).catch(() => undefined) // if this fails the ".tmp" only repeats the file
+    const summary = summaryOf(conversation)
+    index.set(conversation.id, { summary, createdAt: conversation.createdAt, form })
+    markReadable(conversation.id)
+    return { ok: true, summary }
+  }
+
+  /** One chat's file brought into the form the choice says now. `null` if the chat has gone. Called only inside `inOrder`. */
+  async function conformOne(id: string): Promise<keyof ConformResult | null> {
+    try {
+      const mode = await writeMode()
+      if ('refused' in mode) return 'failed'
+      const read = await readConversation(dir, id, box)
+      if (read === null) {
+        index.delete(id)
+        return null
+      }
+      if (!('conversation' in read)) {
+        // Damaged (or its key gone) since it was listed: it is not touched, and the list says so.
+        index.delete(id)
+        markUnreadable(id, read.unopened)
+        return 'failed'
+      }
+      // A leftover ".tmp" is rewritten even when the form is right: it is removed by the write, and until then a half-finished copy sits beside the chat.
+      if (read.form === mode.form && !read.tmp) return 'already'
+      const written = await writeConversation(read.conversation, mode.form)
+      if (!written.ok) return 'failed'
+      // The proof does not rest on the write alone: the chat is read again from disk, in the form it was meant to have, and must be the same chat.
+      const again = await readConversation(dir, id, box)
+      const same =
+        again !== null &&
+        'conversation' in again &&
+        again.form === mode.form &&
+        JSON.stringify(again.conversation) === JSON.stringify(read.conversation)
+      return same ? 'changed' : 'failed'
+    } catch (error) {
+      console.error(
+        `Rewriting the saved conversation ${id} failed (${error instanceof Error ? error.message : error}); it was left as it was.`
+      )
+      return 'failed'
+    }
+  }
+
   return {
     list: () =>
       inOrder(async () => {
@@ -227,17 +447,50 @@ export function createConversationStore(dir: string): ConversationStore {
         return { conversations, unreadable: unreadable.size }
       }),
 
+    counts: () =>
+      inOrder(async (): Promise<StoreCounts> => {
+        await ensureScanned()
+        let encrypted = 0
+        for (const entry of index.values()) if (entry.form === 'encrypted') encrypted += 1
+        return {
+          plain: index.size - encrypted,
+          encrypted,
+          unreadable: unreadable.size,
+          unopened: unopened.size
+        }
+      }),
+
+    blocked: async () => {
+      const mode = await writeMode()
+      return 'refused' in mode ? mode.refused : null
+    },
+
+    conform: async (): Promise<ConformResult> => {
+      const ids = await inOrder(async () => {
+        await ensureScanned()
+        return [...index.keys()]
+      })
+      const result: ConformResult = { changed: 0, already: 0, failed: 0 }
+      // One chat per turn of the queue, not the whole folder in one: a save that is asked for meanwhile takes its turn between two chats and is never kept
+      // waiting for the length of a conversion (1000 chats took 109 s to write in this PC's EFS-encrypted data folder).
+      for (const id of ids) {
+        const outcome = await inOrder(() => conformOne(id))
+        if (outcome !== null) result[outcome] += 1
+      }
+      return result
+    },
+
     load: (id) =>
       inOrder(async (): Promise<LoadOutcome> => {
         assertId(id)
         await ensureScanned()
         if (!index.has(id)) return { ok: false, error: 'That conversation was not found.' }
-        const read = await readConversation(dir, id)
+        const read = await readConversation(dir, id, box)
         if (read !== null && 'conversation' in read)
           return { ok: true, conversation: read.conversation }
         index.delete(id) // gone, or damaged since it was listed: the list should say so too
         if (read === null) return { ok: false, error: 'That conversation was not found.' }
-        unreadable.add(id)
+        markUnreadable(id, read.unopened)
         console.warn(
           `The saved conversation ${id} could not be read (${read.why}); it was left as it is.`
         )
@@ -251,6 +504,9 @@ export function createConversationStore(dir: string): ConversationStore {
         // has checked them already; a chat that turned unreadable because of a bug elsewhere would be a loss).
         const checkedInstructions = checkInstructions(input.instructions)
         if (!checkedInstructions.ok) return { ok: false, error: checkedInstructions.error }
+        // How this write is made is not decided here (D-035): it is asked for, every time, and a refusal means nothing is written.
+        const mode = await writeMode()
+        if ('refused' in mode) return { ok: false, error: mode.refused }
         await ensureScanned()
         const known = index.get(input.id)
         if (!known && index.size >= HISTORY_LIMITS.maxConversations) {
@@ -260,36 +516,72 @@ export function createConversationStore(dir: string): ConversationStore {
           }
         }
         const now = Date.now()
-        const conversation: SavedConversation = {
-          id: input.id,
-          title: titleFor(input.messages),
-          createdAt: known?.createdAt ?? now,
-          updatedAt: now,
-          instructions: checkedInstructions.instructions,
-          messages: input.messages
+        return writeConversation(
+          {
+            id: input.id,
+            title: titleFor(input.messages),
+            createdAt: known?.createdAt ?? now,
+            updatedAt: now,
+            instructions: checkedInstructions.instructions,
+            messages: input.messages
+          },
+          mode.form
+        )
+      }),
+
+    inspect: (id) =>
+      inOrder(async (): Promise<Inspection> => {
+        assertId(id)
+        await ensureScanned()
+        if (unreadable.has(id)) return { kind: 'damaged' }
+        if (!index.has(id)) return { kind: 'free' }
+        const read = await readConversation(dir, id, box)
+        if (read !== null && 'conversation' in read)
+          return { kind: 'here', conversation: read.conversation }
+        // Gone or damaged since it was listed. A file that is still there (damaged) must not be written over; one that has gone is free.
+        index.delete(id)
+        if (read === null) return { kind: 'free' }
+        markUnreadable(id, read.unopened)
+        return { kind: 'damaged' }
+      }),
+
+    add: (conversation) =>
+      inOrder(async (): Promise<AddOutcome> => {
+        assertId(conversation.id)
+        const mode = await writeMode()
+        if ('refused' in mode) return { ok: false, why: 'blocked', error: mode.refused }
+        await ensureScanned()
+        const occupied = (why: string): AddOutcome => ({
+          ok: false,
+          why: 'occupied',
+          error: `A chat is already saved under that id (${why}).`
+        })
+        if (index.has(conversation.id)) return occupied('listed')
+        if (unreadable.has(conversation.id)) return occupied('a file that cannot be read')
+        // Not trusted to the list alone: whatever is on disk under this id, readable or not, is somebody's chat and is never written over.
+        const file = join(dir, `${conversation.id}.json`)
+        for (const path of [file, `${file}.tmp`]) {
+          const there = await fs.access(path).then(
+            () => true,
+            () => false
+          )
+          if (there) return occupied('a file that was not in the list')
         }
-        const text = JSON.stringify({ version: 3, ...conversation })
-        // Whatever is written must be readable again, so the limit on reading is also a limit on writing.
-        if (Buffer.byteLength(text) > HISTORY_LIMITS.maxFileBytes) {
-          return { ok: false, error: 'This conversation is too large to save.' }
+        if (index.size >= HISTORY_LIMITS.maxConversations) {
+          return {
+            ok: false,
+            why: 'full',
+            error: `There are already ${HISTORY_LIMITS.maxConversations} saved conversations. Delete some to add more.`
+          }
         }
-        await fs.mkdir(dir, { recursive: true, mode: 0o700 })
-        const file = join(dir, `${input.id}.json`)
-        const copy = `${file}.tmp`
-        await fs.writeFile(copy, text, { mode: 0o600 })
-        if ((await fs.readFile(copy, 'utf8')) !== text) {
-          await fs.rm(copy, { force: true }).catch(() => undefined) // cut off: the real file is still the old copy
-          throw new Error('the new copy could not be read back')
-        }
-        // From here on the ".tmp" is whole and checked, so it is kept if anything below fails: reading uses it.
-        await fs.copyFile(copy, file)
-        if ((await fs.readFile(file, 'utf8')) !== text)
-          throw new Error('the saved file could not be read back')
-        await fs.rm(copy, { force: true }).catch(() => undefined) // if this fails the ".tmp" only repeats the file
-        const summary = summaryOf(conversation)
-        index.set(input.id, { summary, createdAt: conversation.createdAt })
-        unreadable.delete(input.id)
-        return { ok: true, summary }
+        const written = await writeConversation(
+          {
+            ...conversation,
+            title: titleFor(conversation.messages) // worked out here, as for every save: a file's own title is not trusted
+          },
+          mode.form
+        )
+        return written.ok ? written : { ok: false, why: 'too-large', error: written.error }
       }),
 
     remove: (id) =>
@@ -309,7 +601,7 @@ export function createConversationStore(dir: string): ConversationStore {
         )
         if (left.some(Boolean)) throw new Error('the file could not be deleted')
         index.delete(id)
-        unreadable.delete(id)
+        markReadable(id)
         return { ok: true }
       }),
 

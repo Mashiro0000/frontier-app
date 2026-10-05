@@ -1,0 +1,16 @@
+{
+  "label": "n3-ipc-storage-unguarded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    CHANNELS.historyStorage,\n    guarded(async (): Promise<ChatStorageStatus> => {",
+      "to": "    CHANNELS.historyStorage,\n    (async (): Promise<ChatStorageStatus> => {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

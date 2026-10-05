@@ -1,0 +1,14 @@
+{
+  "label": "n8b-writer-in-place",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "const part = `${dest}.part`",
+      "to": "const part = dest"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,17 @@
+{
+  "label": "w8b-ipc-look-no-window",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "guardedForWindow((window): Promise<HistoryRestoreLookResult> => backups.restoreLook(window))",
+      "to": "guardedForWindow((): Promise<HistoryRestoreLookResult> => backups.restoreLook(null))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-ipc-look-no-window"
+  }
+}

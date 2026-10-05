@@ -1,0 +1,20 @@
+{
+  "label": "w8b3-page-no-blocked-alert",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/ChatStorageSection.tsx",
+      "from": "{status.blocked !== null && (",
+      "to": "{false && ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b3.mjs",
+    "dev",
+    "3"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b3-page-no-blocked-alert",
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 700000
+}

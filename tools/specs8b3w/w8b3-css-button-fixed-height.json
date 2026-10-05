@@ -1,0 +1,20 @@
+{
+  "label": "w8b3-css-button-fixed-height",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/assets/main.css",
+      "from": ".storage-button {\n  height: auto;",
+      "to": ".storage-button {\n  height: 36px;"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b3.mjs",
+    "dev",
+    "1"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b3-css-button-fixed-height",
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 300000
+}

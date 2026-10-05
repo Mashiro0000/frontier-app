@@ -1,0 +1,14 @@
+{
+  "label": "n8b-writer-copy-error-hides-part",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "could not be copied to where you chose. A whole copy is at ${part}.",
+      "to": "could not be copied to where you chose."
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

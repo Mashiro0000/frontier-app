@@ -1,0 +1,16 @@
+{
+  "label": "n3-backup-name-same",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "      name = beforeEncrypting\n        ? `frontier-chats-before-encrypting-${day}.jsonl`\n        : `frontier-chats-${day}.jsonl`",
+      "to": "      name = `frontier-chats-${day}.jsonl`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

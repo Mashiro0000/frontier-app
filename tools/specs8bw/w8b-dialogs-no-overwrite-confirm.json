@@ -1,0 +1,17 @@
+{
+  "label": "w8b-dialogs-no-overwrite-confirm",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupDialogs.ts",
+      "from": "properties: ['showOverwriteConfirmation' as const]",
+      "to": "properties: []"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-dialogs-no-overwrite-confirm"
+  }
+}

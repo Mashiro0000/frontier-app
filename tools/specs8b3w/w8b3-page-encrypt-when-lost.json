@@ -1,0 +1,20 @@
+{
+  "label": "w8b3-page-encrypt-when-lost",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/ChatStorageSection.tsx",
+      "from": "if (status.keyUsable !== true) return { encrypt: null, plain: 'Turn encryption off...' }",
+      "to": "if (status.keyUsable !== true) return { encrypt: 'Encrypt my saved chats...', plain: 'Turn encryption off...' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b3.mjs",
+    "dev",
+    "3"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b3-page-encrypt-when-lost",
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 700000
+}

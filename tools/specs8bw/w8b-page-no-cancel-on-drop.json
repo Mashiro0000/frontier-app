@@ -1,0 +1,17 @@
+{
+  "label": "w8b-page-no-cancel-on-drop",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/useBackup.ts",
+      "from": "    if (latestToken.current !== null && window.api)\n      window.api.history.restoreCancel(latestToken.current)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-page-no-cancel-on-drop"
+  }
+}

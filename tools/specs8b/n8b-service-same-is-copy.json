@@ -1,0 +1,16 @@
+{
+  "label": "n8b-service-same-is-copy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "return found.kind === 'here' && contentKey(found.conversation) === key ? 'same' : 'copy'",
+      "to": "return 'copy'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-2.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

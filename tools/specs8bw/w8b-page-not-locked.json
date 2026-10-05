@@ -1,0 +1,17 @@
+{
+  "label": "w8b-page-not-locked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/HistoryDialog.tsx",
+      "from": "const locked = busy || backup.working",
+      "to": "const locked = busy"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-page-not-locked"
+  }
+}

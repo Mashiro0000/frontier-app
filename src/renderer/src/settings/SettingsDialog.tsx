@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { SettingsStatus } from '../../../shared/ipc'
 import AskFirstSection from './AskFirstSection'
+import ChatStorageSection from './ChatStorageSection'
 import { formatPrice, formatTokens, providerName } from './format'
 import LimitsSection from './LimitsSection'
 import ProviderKeySection from './ProviderKeySection'
@@ -15,6 +16,8 @@ interface SettingsDialogProps {
   onClose: () => void
   /** The conversation on screen, so that Usage can say what it has cost (D-030). */
   conversationId: string
+  /** Called after the saved chats were encrypted or turned back to plain files, so that the History list looks again (D-035). */
+  onChatStorageChanged: () => void
 }
 
 function SettingsDialog({
@@ -23,7 +26,8 @@ function SettingsDialog({
   loadError,
   onStatusChange,
   onClose,
-  conversationId
+  conversationId,
+  onChatStorageChanged
 }: SettingsDialogProps): React.JSX.Element {
   const dialogRef = useRef<HTMLDialogElement>(null)
   // Each key section holds what the person is typing and what it last said. Closing the dialog gives them new keys, so
@@ -115,6 +119,13 @@ function SettingsDialog({
         key={`ask-first:${session}:${open}`}
         status={status}
         onStatusChange={onStatusChange}
+      />
+
+      {/* Fresh each time Settings is closed, so a notice about the last change is not still there the next time it opens. */}
+      <ChatStorageSection
+        key={`chat-storage:${session}`}
+        open={open}
+        onChanged={onChatStorageChanged}
       />
 
       <div className="settings-footer">

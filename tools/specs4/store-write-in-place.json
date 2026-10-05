@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",
-      "from": "const copy = `${file}.tmp`\n        await fs.writeFile(copy, text, { mode: 0o600 })",
-      "to": "const copy = file\n        await fs.writeFile(copy, text, { mode: 0o600 })"
+      "from": "const copy = `${file}.tmp`\n    await fs.writeFile(copy, text, { mode: 0o600 })",
+      "to": "const copy = file\n    await fs.writeFile(copy, text, { mode: 0o600 })"
     },
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",

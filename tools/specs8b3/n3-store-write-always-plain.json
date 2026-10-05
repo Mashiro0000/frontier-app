@@ -1,0 +1,16 @@
+{
+  "label": "n3-store-write-always-plain",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "    const text = form === 'encrypted' && box !== undefined ? sealChat(plain, box) : plain",
+      "to": "    const text = plain"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n8b-store-add-title-trusted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "title: titleFor(conversation.messages) // worked out here, as for every save: a file's own title is not trusted",
+      "to": "title: conversation.title"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-2.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

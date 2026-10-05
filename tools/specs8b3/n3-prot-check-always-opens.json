@@ -1,0 +1,16 @@
+{
+  "label": "n3-prot-check-always-opens",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatProtection.ts",
+      "from": "      return box.decrypt(Buffer.from(check, 'base64')) === CHECK_TEXT",
+      "to": "      return true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

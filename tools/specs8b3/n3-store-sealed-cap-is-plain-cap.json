@@ -1,0 +1,16 @@
+{
+  "label": "n3-store-sealed-cap-is-plain-cap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "  if (size > MAX_ENCRYPTED_FILE_BYTES) return { kind: 'bad', why: 'the file is too large' }",
+      "to": "  if (size > HISTORY_LIMITS.maxFileBytes) return { kind: 'bad', why: 'the file is too large' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

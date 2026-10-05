@@ -1,0 +1,16 @@
+{
+  "label": "n3-prot-shape-damage-is-off",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatProtection.ts",
+      "from": "  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return { choice: 'unreadable' }",
+      "to": "  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return { choice: 'off' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "label": "w8b-page-dismiss-adds",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/RestorePreviewPanel.tsx",
+      "from": "onClick={onDismiss}",
+      "to": "onClick={onAdd}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b.mjs",
+    "dev"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b-page-dismiss-adds"
+  }
+}

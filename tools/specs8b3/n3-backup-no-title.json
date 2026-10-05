@@ -1,0 +1,16 @@
+{
+  "label": "n3-backup-no-title",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "      beforeEncrypting ? BEFORE_ENCRYPTING_TITLE : undefined\n    )",
+      "to": "      undefined\n    )"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

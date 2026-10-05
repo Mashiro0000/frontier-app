@@ -1,0 +1,14 @@
+{
+  "label": "n8b-reader-complete-always",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "      !afterTheEnd\n    return result",
+      "to": "      !afterTheEnd\n    result.complete = true\n    return result"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

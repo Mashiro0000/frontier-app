@@ -1,0 +1,14 @@
+{
+  "label": "n8b-reader-reads-after-end",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "      if (ended) {\n        afterTheEnd = true\n        refuse(lineNumber, 'it comes after the end of the backup')\n        continue\n      }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

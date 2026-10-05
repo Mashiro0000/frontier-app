@@ -1,0 +1,14 @@
+{
+  "label": "n8b-reader-no-strict-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "const checked = parseSavedFile(chat, id)",
+      "to": "const checked = chat as unknown as SavedConversation"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-1.mjs"
+  ],
+  "env": {}
+}

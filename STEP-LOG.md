@@ -2182,3 +2182,87 @@ folder must lie outside anything a tool can reach.
    app, a very large ledger, a screen reader and other display settings, the installer, and the others).
 6. **Pushed:** the branch `stage-8-usage-limits` was pushed at your go, up to 8.3 (31b4f59); this slice is committed on it, **not pushed**, and `main` (Stage 7 merged) is not pushed either.
 7. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 8b - Slices 8b.1 and 8b.2: back up and restore chats (5 October 2026 session; D-034)
+
+**Your instruction.** "Stage 8b." Stage 8b is the optional encryption of saved chats, with **a tested backup path first** (your decision of 2 October). I read the roadmap, D-016 and the store, and asked three
+questions: how to encrypt (you had no idea), whether to stop after the backup (your call), and the format of an export (JSON only). **My choices:** the encryption, later, will be each chat file under Electron's
+`safeStorage` (the protection the API keys already have, no key or cryptography of my own); and I **stop after the backup** so you can try it on your real chats before anything is encrypted. 8b.3 and 8b.4 are not started.
+
+**Step by step.**
+
+1. **The backup file** (`src/main/backup.ts`): JSON Lines, a checksum on every chat, a last line with the count, so a cut-off file still gives back the chats before the cut. A reader that never holds more than one line, and a
+   writer that reads its file back with the same reader before it replaces anything. Under it, `conversationStore.ts` got `inspect` and `add` (a chat from a backup, keeping its dates, **never replacing**), the old
+   `save` unchanged but for the three-step write moving into one function both use.
+2. **The flow** (`backupService.ts`, `backupDialogs.ts`, five handlers in `ipc.ts`, four functions on `window.api.history`): the page asks for "all" or "one chat"; **the system's save dialog, opened by main, picks the place**, and the page never names
+   a path; a backup is refused inside the app's data folder; **a restore is a look (adds nothing) and then an add with a one-use token** for the file that was looked at.
+3. **The page**: an Export button on each row, "Back up all chats..." and "Restore from a backup..." in the History dialog's footer, a notice after each, a preview with the safe button focused. A screenshot at 280 px showed
+   the preview as a small scroll box inside the scrolling dialog and two buttons both called "Close"; fixed (the dialog scrolls as a whole; the preview's button is "Back to the list").
+4. **The proof.** Three suites: `verify-8b-1.mjs` (129 checks: the file cut at every one of its 4,827 lengths, a byte changed at each of its 4,826 places, nine disk faults, a 160 MB line read with 11 MB of memory),
+   `verify-8b-2.mjs` (254 checks, in a normal folder and the EFS one: the store, the flow with fake dialogs, the token, a changed file, 1000 chats out and back in **byte for byte**), and `verify-8b-w.mjs` (68 checks on the dev app and on
+   the built one, with the Windows dialogs replaced from main's inspector, down to 280 px). All 17 plain-Node suites of the regression pass on the new tree, and the Stage 4 history suites 7 of 7.
+5. **What it found.** (a) `isInside` compared a resolved path with an unresolved one; on this PC (which reaches `%APPDATA%` through a package folder for programs started by the Claude desktop app) a backup to a folder that did not
+   exist yet was judged outside the data folder: fixed. (b) Restoring 1000 chats took **109 s in the EFS data folder** (7 s elsewhere): the page shows only "buttons off"; in IDEAS. (c) Stale tests, none the app's fault:
+   `verify-4-2` (the bridge's exact list), `verify-4-4` (Tab stops per row: now three), and **five older negative-control specs** my refactor had broken, repaired.
+6. **Negative controls: 50 for the plain-Node suites and 18 for the window suite, every one caught, each file restored (hash identical).** Five were not caught the first time; each miss was a gap in a CHECK (a missing source check, a footer held by two layers, a short window, a notice on screen at closing, a token used twice) and was fixed there, not in the app. All 439 specs find their sabotage text.
+7. **The full regression `t8b`: 93 runs, 73 minutes, 92 clean.** The one that was not is the built app's Stage 8.1 usage suite (80 of 81), **which also fails sometimes on the untouched `main`** (a stashed copy, built the same way): the page's usage figures lag the ledger by one request. Cause not proven; I changed nothing for it (D-034 says more).
+
+## Stage 8b.1 and 8b.2 - Things to know (not problems, but worth your attention)
+
+1. **Please try it on your own chats before I build the encryption.** Open History > "Back up all chats...", pick a place, then "Restore from a backup..." on the same file: it should say every chat is "already here". Nothing in my tests ever touched your
+   profile or your real chats, and the real Windows dialogs were never shown (I replaced them from the main process), so how they look is unseen.
+2. **A backup is a plain text file**: whoever can read it can read every chat. It goes where you choose (not into the app's data folder; that is refused). The encryption I plan for 8b.3 would not cover backups unless you ask.
+3. **Only restore a backup you made or trust.** The checksum catches damage, not a person who rewrites the file, and the model takes a restored chat's messages and instructions as a conversation that really happened. The preview says so.
+4. **A restore is slow where the disk is slow** (109 s for 1000 chats in your EFS-encrypted data folder; a few seconds elsewhere). It is safe to repeat, and it never replaces a chat: the same chat is skipped, a different chat under the same id is added as a copy.
+5. **The History list has three Tab stops per row now** (open, Export, Delete); IDEAS has a shorter keyboard path.
+6. **Pushed to the branch `stage-8b-backup` only (your go), not merged**: `main` is still `origin/main` = 1eca723 (Stage 8).
+7. **One thing to know that is not from this stage**: the built app's Stage 8.1 usage suite is intermittently 1 to 3 checks short on this PC, on `main` too (D-034). It looks like a small race between the page's refresh of the sums and the ledger's last write; I have not proved it and did not touch it. Tell me if you want it chased.
+8. **Everything in the earlier stages' "Things to know" still applies**, including D-033's finding (a page can lift the limits) and the first real API call still to be made by you.
+
+## Stage 8b - Slices 8b.3 and 8b.4: encrypt the saved chats, and the key that cannot be read (5 October 2026 session; D-035)
+
+**Your instruction.** "go." After the backup (8b.1 and 8b.2) was pushed on the branch `stage-8b-backup`, I took it as the go for the encryption that D-034 and my notes had been waiting for (8b.3 and 8b.4, with 8b.5's threat note). I did not ask whether you had tried the backup on your real chats first;
+if you have not, please do before you rely on this. **The design was mine** (you had said "I don't have any idea" about the key): each chat file sealed by Electron's `safeStorage`, the protection your API keys already have, with no key and no cryptography of my own.
+
+**Step by step.**
+
+1. **The file and the one rule.** A chat keeps its name, `<id>.json`; sealed, it holds an envelope that the secure storage made of the chat's own text (`chatFile.ts`). The choice (`chat-encryption.json`: off, or on with a _check_) and **the one rule for how a chat may be written** are in `chatProtection.ts`;
+   `conversationStore.ts` asks it before every write (a save, a chat added from a backup, a conversion). With the key usable it says encrypted; **when the key cannot be used, the secure storage is missing, or the choice's own file cannot be read, it refuses, and nothing is written.**
+2. **Turning it on** (`chatEncryptionService.ts`): the system's save dialog asks where to put **a backup of every chat** (checked exactly like any backup) and nothing changes until it is made; then the choice is written, then every chat is rewritten as a sealed file, one at a time, each proved by opening it. **Going back to plain files is asked by the
+   system** (a message box, "Keep encryption" the default), not by the page. Three new bridge functions (`storage`, `encryptChats`, `decryptChats`) take no argument at all.
+3. **The page:** Settings > Saved chats (the state in words, the two buttons, a notice after each, an alert when the key is lost), and the History dialog says which way the files are kept and shows the sentence when nothing can be saved.
+4. **The proof.** `verify-8b-3.mjs` under plain Node, with a stand-in secure storage that can lose its key (276 checks, normal and EFS folders); `run8b3.mjs` in the real window on **this PC's real secure storage**, five launches (87 checks on the dev app and 87 on the built one): turn it on, off and on; a restart; **a real lost key** (the profile's `Local State` deleted while the app is not running); the original key put back; the choice's own file damaged.
+5. **What it found.** (a) A plain copy could hide behind a newer encrypted one after a failed copy (fixed before the first run; a leftover `.tmp` now always forces a rewrite). (b) My first size check read an 11 MB plain file before refusing it (`verify-4-1` caught it; the first bytes are looked at now). (c) After a real reset of the profile's key the secure storage still _works_, with a different key, and the app's check sees it. (d) My notice's long path widened the
+   Settings dialog at 320 px (I first blamed the spending-limits form; a probe showed I was wrong). (e) A longer History hint made `verify-4-3a` click the paragraph under the list instead of the last row; the list scrolls, so the harness now scrolls first. (f) Stale: `verify-4-2` (bridge list), `verify-8b-2` (four dialog handlers), and seven negative-control specs.
+6. **Negative controls: 54 for the plain-Node suite and 22 for the window suite, every one caught, each file restored (hash identical).** Four were not caught the first time (51 of 55 in the first pass of the plain-Node batch); each miss was read: one was dead code in the app (removed), three were gaps in the checks (a reason not looked at, a write that happened but was reported as a failure by accident, a save queued before the conversion began), fixed in the checks.
+7. **Re-run on the final tree** (not the full regression): the older Node suites (`verify-4-1` 389, `verify-8b-1` 129, `verify-8b-2` 131, the three Stage 8 suites, the two store suites), the 8b window suite 68 of 68, and the Stage 4 history suites 7 of 7 runs clean. The full regression (`node tools/regress.mjs t8b3`) was run in the next session: see 8b.5 below.
+
+## Stage 8b.3 and 8b.4 - Things to know (not problems, but worth your attention)
+
+1. **Nothing here has touched your own profile or chats.** Only scratch profiles, and the Windows dialogs (save, message box) were replaced from the main process, so how they look is unseen. Try it on a few real chats: Settings > Saved chats > "Encrypt my saved chats...".
+2. **Encryption protects the files, not the chats from the app or from a program running as you**, and **it does not cover a backup** (a plain file; the dialog says so). It is tied to your Windows account: **a copy of the files on another computer or account cannot be read, and neither can your own chats after a reset profile.** That is why the backup comes first, and why it is worth keeping it somewhere safe.
+3. **What a backup covers is the chats at the moment it was made.** A chat written after it is lost with the key. Make a new one (Back up all chats...) now and then.
+4. **The old plain text may still be on the disk after you turn encryption on** (a solid-state disk, EFS or a shadow copy can keep what was replaced); I cannot wipe it from inside the app (IDEAS).
+5. **Going back to plain files is asked in a Windows message box**, not in the page: that is D-033's recommendation, applied here, so a hostile page cannot quietly make your files readable. The page can still lift your spending limits (D-033), and that is unchanged.
+6. **"Another Windows account" was not made for real**: I deleted the profile's key container (a reset profile; the app got a different key) and put it back. A DPAPI failure should look the same to the app (the check does not open), but I did not see it.
+7. **The choices that are mine and may be changed** are listed in D-035 (the secure storage per file; a fresh backup every time; a damaged choice file refuses to save until you choose; the message box for going back).
+8. **Pushed, and not merged (you left the call to me).** I pushed the branch `stage-8b-backup` (a plain push that adds this slice to the 8b.1 and 8b.2 commit already there; nothing forced, no tag) and **did not merge it into `main`**: `main` is still `origin/main` = `1eca723`. The reason is the project's own rule that a stage ends with its full regression, and every earlier stage was merged only after it; the regression for 8b.3 and 8b.4 (`node tools/regress.mjs t8b3`, about 80 minutes) waits for a new session at your request. When it is clean, the merge follows the 7.6 procedure. (It was run, and the merge followed: see 8b.5 below.)
+9. **Everything in the earlier stages' "Things to know" still applies**, including the first real API call, which only you can make.
+
+## Stage 8b - Slice 8b.5: the full regression, and the merge (5 to 6 October 2026 session; D-035)
+
+**Your instruction.** "Run the full regression now: node tools/regress.mjs t8b3 ... When it finishes: read every BAD before believing it, record the result in D-035, STEP-LOG and ROADMAP (8b.5), then commit and push the branch. If it's clean (or the only BAD are explained stale tests or the known built-app 8.1 flake), merge Stage 8b into main with the 7.6 procedure and push main." No code of the app was changed.
+
+**Step by step.**
+
+1. **Before the run.** The tree was clean and no `electron` or `node` process was running; typecheck, lint and `prettier --check .` were clean; a hash was taken over every file of `src/` and `registry/`. The read-only window watcher was started (`tools/watch-windows.ps1 -Tag t8b3`), then `node tools/regress.mjs t8b3` (all six parts, the built app included).
+2. **The result: 96 runs in 79 minutes, 94 clean the first time.** The two others are **one stale check, run on the dev app and on the built one**: `verify-5-3` (64 of 66 each) counts the Settings dialog's action buttons at 420 and 320 px and expected exactly six. Since 8b.3 the Saved chats section's "Encrypt my saved chats..." is the seventh; the same check found no sideways scroll and every button inside the dialog (`{"overflowX":false,"buttonsInside":true,"count":7}`). The app was right; the count in the test is now seven (`tools/verify-5-3.mjs`), and the two launches were run again alone: **66 of 66 on the built app and 66 of 66 on the dev app.**
+3. **The rest:** every new 8b suite passed on both apps (`verify-8b-3` under Node; `run8b3` 40 + 8 + 20 + 9 + 10 in the window, the real lost key included), and the built app's Stage 8.1 suite, which failed sometimes before, passed (81 of 81). No launch was retried and none showed a slow mouse; the two `!!` lines in the logs are `verify-4-3b`'s window being closed on purpose. The watcher logged keyboard and mouse input and other windows over the app at times, and no launch failed from it.
+4. **After it:** the hash of `src/` and `registry/` was the same as before, no `electron` process was left, and the watcher stopped by itself.
+5. **Then:** this commit on the branch, pushed; then the merge of `stage-8b-backup` into `main` by the 7.6 procedure (`--no-ff`, the tag `stage-8b-done` kept local, the build, lint and prettier checked on `main` afterwards) and `main` pushed, as you asked.
+
+## Stage 8b.5 - Things to know (not problems, but worth your attention)
+
+1. **Stage 8b is checked on the whole tree.** Still not done: a try of the backup and the encryption on **your own chats**, the real Windows dialogs, another Windows account (D-035 "Not checked" has the full list).
+2. **No real API call has been made by me, in any stage.**
+3. **Everything in the earlier stages' "Things to know" still applies.**

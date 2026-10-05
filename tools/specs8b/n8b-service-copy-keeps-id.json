@@ -1,0 +1,21 @@
+{
+  "label": "n8b-service-copy-keeps-id",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "let outcome = await store.add(asCopy ? { ...chat, id: randomUUID() } : chat)",
+      "to": "let outcome = await store.add(chat)"
+    },
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "if (!outcome.ok && outcome.why === 'occupied') {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-2.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

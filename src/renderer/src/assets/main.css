@@ -991,6 +991,20 @@ body {
   margin-top: 4px;
 }
 
+/* Saved chats (D-035): the notice after turning encryption on names the place of the backup, a long path with no spaces, which wraps instead of widening the dialog */
+.storage-section p {
+  overflow-wrap: anywhere;
+}
+
+/* The labels are long ("Turn the encrypted chats back to plain files..."), so a button grows taller in a narrow window instead of its text spilling out */
+.storage-button {
+  height: auto;
+  min-height: 36px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  line-height: 1.3;
+}
+
 .settings-notice,
 .history-notice {
   font-size: 13px;
@@ -1182,6 +1196,60 @@ body {
 .history-folder {
   overflow-wrap: anywhere; /* a long folder path wraps instead of widening the dialog */
   color: var(--color-text);
+}
+
+/* Back up and Restore sit at the left of the footer, Close at the right; in a narrow window they wrap instead of squeezing (D-034). */
+.history-footer {
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.history-backup-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* The saved path of a backup can be long: it wraps instead of widening the dialog. */
+.backup-notice {
+  overflow-wrap: anywhere;
+}
+
+/* What a backup file holds, shown in place of the list until the person adds it or lets it go (D-034). */
+/* No scroll box of its own: in a small window the whole dialog scrolls (a scroll box inside a scrolling dialog leaves almost nothing to read). */
+.backup-preview {
+  flex: none;
+}
+
+.backup-preview-heading {
+  margin: 0 0 4px;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.backup-preview-file {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.backup-preview-facts,
+.backup-preview-why,
+.backup-preview-titles {
+  margin: 6px 0;
+  padding-left: 20px;
+  font-size: 13px;
+}
+
+.backup-preview-why {
+  color: var(--color-danger);
+}
+
+.backup-preview-titles li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* In a narrow window the row's buttons drop under the title instead of squeezing it. */

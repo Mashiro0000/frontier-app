@@ -3,12 +3,12 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",
-      "from": "if ((await fs.readFile(copy, 'utf8')) !== text) {",
+      "from": "if (back !== text || (form === 'encrypted' && !opensTo(back, plain, box))) {",
       "to": "if (false) {"
     },
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",
-      "from": "if ((await fs.readFile(file, 'utf8')) !== text)\n          throw new Error('the saved file could not be read back')",
+      "from": "if ((await fs.readFile(file, 'utf8')) !== text)\n      throw new Error('the saved file could not be read back')",
       "to": ""
     }
   ],

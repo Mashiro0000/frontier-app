@@ -58,8 +58,10 @@ The list of models is `registry/models.json`: edit it, then restart `npm run dev
 so it restarts by itself). See docs/DECISIONS.md D-012, D-014, D-015, D-020 and D-022.
 
 Chats are saved on your computer as you go, one plain file each, in a `conversations` folder next to the app's
-other data (the History dialog shows the path). They are not encrypted, unlike the API key. **New chat** starts an
-empty chat; **History** opens a saved one or deletes it. Each reply records which model wrote it (D-021), and the file holds the chat's
+other data (the History dialog shows the path). They are not encrypted unless you turn that on (**Settings > Saved chats**: it first asks where to
+save a backup of your chats, checks it, and only then encrypts them with this computer's secure storage, the protection your API key has; if that
+key is ever lost, encrypted chats cannot be opened, and the backup is how you get them back; D-035). **New chat** starts an
+empty chat; **History** opens a saved one or deletes it, and backs chats up to a file or restores them from one (D-034). Each reply records which model wrote it (D-021), and the file holds the chat's
 instructions (D-027; a chat saved by this version cannot be read by one from before Stage 7.4). See docs/DECISIONS.md D-016 and D-017.
 
 ### Checks

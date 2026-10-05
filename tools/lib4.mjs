@@ -91,13 +91,14 @@ export function h4(page, { userData, mockUrl }) {
     historyText: () => ev(`document.querySelector('dialog.history')?.innerText ?? ''`),
     /** Clicks a row's open button (by title). */
     clickRow: async (title) => {
-      await ev(`(() => { const r = [...document.querySelectorAll('dialog.history .history-row')].find((x) => x.querySelector('.history-title').textContent === ${JSON.stringify(title)}); r.querySelector('.history-open').setAttribute('data-click', '1') })()`)
+      // A click lands where the row is ON SCREEN, and the list scrolls when the rows and the notes under them do not all fit (8b.3's longer hint made six rows too many for a 634 px window).
+      await ev(`(() => { const r = [...document.querySelectorAll('dialog.history .history-row')].find((x) => x.querySelector('.history-title').textContent === ${JSON.stringify(title)}); r.querySelector('.history-open').scrollIntoView({ block: 'center' }); r.querySelector('.history-open').setAttribute('data-click', '1') })()`)
       await page.click('dialog.history .history-open[data-click="1"]')
       await ev(`document.querySelector('[data-click="1"]')?.removeAttribute('data-click')`)
     },
     /** Clicks a button inside a row: `which` is the button's text; `title` the row's title. Marks it, clicks it for real. */
     clickRowButton: async (title, which) => {
-      const marked = await ev(`(() => { const r = [...document.querySelectorAll('dialog.history .history-row')].find((x) => x.querySelector('.history-title').textContent === ${JSON.stringify(title)}); const b = r && [...r.querySelectorAll('button')].find((x) => x.textContent === ${JSON.stringify(which)}); if (!b) return false; b.setAttribute('data-click', '1'); return true })()`)
+      const marked = await ev(`(() => { const r = [...document.querySelectorAll('dialog.history .history-row')].find((x) => x.querySelector('.history-title').textContent === ${JSON.stringify(title)}); const b = r && [...r.querySelectorAll('button')].find((x) => x.textContent === ${JSON.stringify(which)}); if (!b) return false; b.scrollIntoView({ block: 'center' }); b.setAttribute('data-click', '1'); return true })()`)
       if (!marked) throw new Error(`no "${which}" button in the row "${title}"`)
       await page.click('[data-click="1"]')
       await ev(`document.querySelector('[data-click="1"]')?.removeAttribute('data-click')`)

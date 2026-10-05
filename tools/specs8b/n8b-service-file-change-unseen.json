@@ -1,0 +1,16 @@
+{
+  "label": "n8b-service-file-change-unseen",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "if (info === null || info.size !== plan.size || info.mtimeMs !== plan.mtimeMs) {",
+      "to": "if (info === null) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-2.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}
