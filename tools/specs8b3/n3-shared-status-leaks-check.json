@@ -1,0 +1,16 @@
+{
+  "label": "n3-shared-status-leaks-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/ipc.ts",
+      "from": "  blocked: string | null\n}\n\n/** What turning encryption on or off did",
+      "to": "  blocked: string | null\n  check: string\n}\n\n/** What turning encryption on or off did"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

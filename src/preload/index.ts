@@ -45,7 +45,10 @@ const api: FrontierApi = {
     exportChats: (request) => ipcRenderer.invoke(CHANNELS.historyExport, request),
     restoreLook: () => ipcRenderer.invoke(CHANNELS.historyRestoreLook),
     restoreApply: (token) => ipcRenderer.invoke(CHANNELS.historyRestoreApply, token),
-    restoreCancel: (token) => ipcRenderer.send(CHANNELS.historyRestoreCancel, token)
+    restoreCancel: (token) => ipcRenderer.send(CHANNELS.historyRestoreCancel, token),
+    storage: () => ipcRenderer.invoke(CHANNELS.historyStorage),
+    encryptChats: () => ipcRenderer.invoke(CHANNELS.historyEncrypt),
+    decryptChats: () => ipcRenderer.invoke(CHANNELS.historyDecrypt)
   }
 }
 

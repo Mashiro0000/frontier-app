@@ -991,6 +991,20 @@ body {
   margin-top: 4px;
 }
 
+/* Saved chats (D-035): the notice after turning encryption on names the place of the backup, a long path with no spaces, which wraps instead of widening the dialog */
+.storage-section p {
+  overflow-wrap: anywhere;
+}
+
+/* The labels are long ("Turn the encrypted chats back to plain files..."), so a button grows taller in a narrow window instead of its text spilling out */
+.storage-button {
+  height: auto;
+  min-height: 36px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  line-height: 1.3;
+}
+
 .settings-notice,
 .history-notice {
   font-size: 13px;

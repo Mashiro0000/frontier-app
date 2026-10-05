@@ -1,0 +1,20 @@
+{
+  "label": "w8b3-page-history-says-plain",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/HistoryDialog.tsx",
+      "from": "{history.storage?.choice === 'on'",
+      "to": "{history.storage?.choice === 'never'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b3.mjs",
+    "dev",
+    "1"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b3-page-history-says-plain",
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 300000
+}

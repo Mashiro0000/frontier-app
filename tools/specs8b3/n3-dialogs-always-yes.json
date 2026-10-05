@@ -1,0 +1,16 @@
+{
+  "label": "n3-dialogs-always-yes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupDialogs.ts",
+      "from": "    return result.response === 0",
+      "to": "    return true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

@@ -208,7 +208,48 @@ export interface HistoryList {
   unreadable: number
   /** Where the files are kept, for the person to see. */
   folder: string
+  /** How the files are kept (plain or encrypted), so the dialog can say so (D-035). */
+  storage: ChatStorageStatus
 }
+
+/**
+ * How the saved chats are kept, as main finds it now (D-035). The numbers are of what was read at the last look at the folder; the page only
+ * shows them, and never learns a key, a check or a path.
+ */
+export interface ChatStorageStatus {
+  /**
+   * What the person chose: 'off' (plain files, until they turn encryption on), 'on' (every chat is written encrypted), or 'unreadable' (the file
+   * that records the choice cannot be read: nothing new is saved until the person chooses again).
+   */
+  choice: 'off' | 'on' | 'unreadable'
+  /** False if this computer has no secure storage to encrypt with (the same one the API keys use). */
+  canEncrypt: boolean
+  /** With the choice 'on': whether the key that protects the chats can be used now. Null with any other choice. */
+  keyUsable: boolean | null
+  /** Saved chats that could be read, by how their file is kept. */
+  plain: number
+  encrypted: number
+  /** Saved files that could not be read, and, of those, the encrypted ones that could not be opened (another key, or damage). They are left as they are. */
+  unreadable: number
+  unopened: number
+  /** Why nothing new can be saved right now, as a sentence; null when saving works. */
+  blocked: string | null
+}
+
+/** What turning encryption on or off did, for the person to read (D-035). */
+export interface ChatStorageReport {
+  /** Chats whose file was rewritten in the form the choice says; chats that already were in it; chats that could not be rewritten and were left exactly as they were. */
+  changed: number
+  already: number
+  failed: number
+  /** The backup that was made first (turning encryption on, when there were chats), or null. */
+  backup: { count: number; leftOut: number; where: string } | null
+}
+
+/** `cancelled`: the person closed the system's dialog, which is not a failure and is not shown as one. */
+export type ChatStorageResult =
+  | { ok: true; status: ChatStorageStatus; report: ChatStorageReport }
+  | { ok: false; error: string; cancelled?: true }
 
 export type HistoryLoadResult =
   { ok: true; conversation: SavedConversation } | { ok: false; error: string }
@@ -348,6 +389,18 @@ export interface FrontierApi {
     restoreApply(token: string): Promise<HistoryRestoreApplyResult>
     /** Drops what `restoreLook` read, so its token can no longer be used. */
     restoreCancel(token: string): void
+    /** How the saved chats are kept now: plain or encrypted, and whether the encrypted ones can be opened (D-035). */
+    storage(): Promise<ChatStorageStatus>
+    /**
+     * Encrypts the saved chats and, from now on, every chat that is saved (D-035). Main first asks the person, in the system's save dialog, where to put a
+     * backup of the chats (a plain file), checks it, and only then changes anything. The page sends no path, and nothing is encrypted if the person closes the dialog.
+     */
+    encryptChats(): Promise<ChatStorageResult>
+    /**
+     * Goes back to plain files (D-035). Main asks the person in a system message box first, which the page cannot answer, because plain files protect less than
+     * encrypted ones.
+     */
+    decryptChats(): Promise<ChatStorageResult>
   }
 }
 
@@ -372,7 +425,10 @@ export const CHANNELS = {
   historyExport: 'history:export',
   historyRestoreLook: 'history:restore-look',
   historyRestoreApply: 'history:restore-apply',
-  historyRestoreCancel: 'history:restore-cancel'
+  historyRestoreCancel: 'history:restore-cancel',
+  historyStorage: 'history:storage',
+  historyEncrypt: 'history:encrypt',
+  historyDecrypt: 'history:decrypt'
 } as const
 
 /**

@@ -113,6 +113,7 @@ function App(): React.JSX.Element {
         onStatusChange={setStatus}
         onClose={() => setSettingsOpen(false)}
         conversationId={history.activeId}
+        onChatStorageChanged={history.reload}
       />
     </div>
   )

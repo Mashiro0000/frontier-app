@@ -1,0 +1,16 @@
+{
+  "label": "n3-env-availability-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatFile.ts",
+      "from": "if (box === undefined || !box.isAvailable()) {",
+      "to": "if (box === undefined) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

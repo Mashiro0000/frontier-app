@@ -2,6 +2,8 @@ import { app, BrowserWindow, ipcMain, type IpcMainInvokeEvent } from 'electron'
 import { join } from 'path'
 import {
   CHANNELS,
+  type ChatStorageResult,
+  type ChatStorageStatus,
   type HistoryExportResult,
   type HistoryList,
   type HistoryRestoreApplyResult,
@@ -38,12 +40,14 @@ import {
   checkProvider
 } from '../shared/validate'
 import { createAskFirstStore } from './askFirst'
-import { systemPickers } from './backupDialogs'
+import { systemAskers, systemPickers } from './backupDialogs'
 import { createBackupService } from './backupService'
 import { baseUrlOverride } from './baseUrl'
 import { registerChatIpc } from './chat'
+import { createChatEncryptionService } from './chatEncryptionService'
+import { createChatProtection } from './chatProtection'
 import { createConversationStore } from './conversationStore'
-import { canStoreKey, clearApiKey, readApiKey, saveApiKey } from './keyStore'
+import { canStoreKey, clearApiKey, readApiKey, saveApiKey, secureStorage } from './keyStore'
 import { createLimitsStore } from './limits'
 import { chooseEffort, chooseModel, currentModel, inOrder } from './models'
 import { adapterFor } from './providers'
@@ -270,14 +274,38 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   // what they ask. A failure is logged here with its real reason (which could name a path) and the page gets
   // a plain sentence.
   const folder = join(app.getPath('userData'), 'conversations')
-  const history = createConversationStore(folder)
+  // How the chats are kept (D-035): plain files until the person turns encryption on. chatProtection.ts alone says how a chat may be written, and the
+  // store asks it before every write; with the key unusable it says "no", and nothing new is saved.
+  const protection = createChatProtection({
+    box: secureStorage,
+    pathOf: () => join(app.getPath('userData'), 'chat-encryption.json')
+  })
+  const history = createConversationStore(folder, {
+    box: secureStorage,
+    writeMode: protection.writeMode
+  })
   const reason = (error: unknown): unknown => (error instanceof Error ? error.message : error)
+
+  // Backing up chats to a file and restoring them from one (D-034), and turning the encryption of the saved chats on and off (D-035): the same lock,
+  // so that never two of them run at once. The person chooses places and answers questions in the system's own dialogs, which main opens for the
+  // window that asked; the page sends "all", or "one" and an id, "add what you showed me", and never a path or an answer.
+  const backups = createBackupService({
+    store: history,
+    dataDir: app.getPath('userData'),
+    pickers: systemPickers
+  })
+  const encryption = createChatEncryptionService({
+    store: history,
+    protection,
+    backups,
+    asks: systemAskers
+  })
 
   ipcMain.handle(
     CHANNELS.historyList,
     guarded(async (): Promise<HistoryList> => {
       try {
-        return { ...(await history.list()), folder }
+        return { ...(await history.list()), folder, storage: await encryption.status() }
       } catch (error) {
         console.error('Listing the saved conversations failed:', reason(error))
         throw new Error('The saved conversations could not be listed.')
@@ -327,14 +355,6 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
-  // Backing up chats to a file and restoring them from one (D-034). The person chooses the place and the file in the system's own dialogs, which main
-  // opens for the window that asked; the page sends "all", or "one" and an id, and later "add what you showed me". It never sends a path.
-  const backups = createBackupService({
-    store: history,
-    dataDir: app.getPath('userData'),
-    pickers: systemPickers
-  })
-
   ipcMain.handle(
     CHANNELS.historyExport,
     guardedForWindow((window, input: unknown): Promise<HistoryExportResult> =>
@@ -356,6 +376,48 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     if (isTrustedSender(event, appUrl)) backups.restoreCancel(token)
   })
 
+  // How the saved chats are kept (D-035). The page asks how they are kept, and asks to turn encryption on or off; it sends nothing else (no path, no key,
+  // no answer to a question). On: main asks the person where to put a backup in the system's save dialog, and changes nothing unless it is made and checked.
+  // Off: main asks the person in the system's message box. Both answer with what was done.
+  ipcMain.handle(
+    CHANNELS.historyStorage,
+    guarded(async (): Promise<ChatStorageStatus> => {
+      try {
+        return await encryption.status()
+      } catch (error) {
+        console.error('Looking at how the chats are kept failed:', reason(error))
+        throw new Error('How the chats are kept could not be read.')
+      }
+    })
+  )
+
+  ipcMain.handle(
+    CHANNELS.historyEncrypt,
+    guardedForWindow(async (window): Promise<ChatStorageResult> => {
+      try {
+        return await encryption.encrypt(window)
+      } catch (error) {
+        console.error('Encrypting the chats failed:', reason(error))
+        return {
+          ok: false,
+          error: 'The chats could not be encrypted. Your chats are as they were.'
+        }
+      }
+    })
+  )
+
+  ipcMain.handle(
+    CHANNELS.historyDecrypt,
+    guardedForWindow(async (window): Promise<ChatStorageResult> => {
+      try {
+        return await encryption.decrypt(window)
+      } catch (error) {
+        console.error('Going back to plain files failed:', reason(error))
+        return { ok: false, error: 'The chats could not be turned back into plain files.' }
+      }
+    })
+  )
+
   // What was used and what it cost (D-030): one plain file, written by main alone. The page can ask for sums and nothing else.
   const ledger = createUsageLedger(join(app.getPath('userData'), 'usage', 'ledger.jsonl'))
 
@@ -372,6 +434,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   )
 
   registerChatIpc(appUrl, ledger, limitsStore, askFirstStore)
+  // The lock the encryption flows run in is the backup service's, so waiting for it waits for them too.
   return () =>
     Promise.all([history.whenIdle(), ledger.whenIdle(), backups.whenIdle()]).then(() => undefined)
 }

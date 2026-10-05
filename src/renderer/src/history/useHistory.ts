@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { ConversationSummary } from '../../../shared/ipc'
+import type { ChatStorageStatus, ConversationSummary } from '../../../shared/ipc'
 import type { ChatMessage } from '../chat/types'
 import type { UseChat } from '../chat/useChat'
 import { fromSavedMessages, toMessagesToSave } from './convert'
@@ -31,6 +31,8 @@ export interface UseHistory {
   unreadable: number
   /** Where the files are, for the person to see; null until the main process has answered. */
   folder: string | null
+  /** How the saved files are kept (plain or encrypted) and whether saving is possible now (D-035); null until the main process has answered. */
+  storage: ChatStorageStatus | null
   /** Set if the list could not be fetched. */
   loadError: string | null
   /** Why the last save failed, or null if it worked. */
@@ -62,6 +64,7 @@ export function useHistory(chat: UseChat): UseHistory {
   const [conversations, setConversations] = useState<ConversationSummary[] | null>(null)
   const [unreadable, setUnreadable] = useState(0)
   const [folder, setFolder] = useState<string | null>(null)
+  const [storage, setStorage] = useState<ChatStorageStatus | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [activeId, setActiveId] = useState<string>(() => crypto.randomUUID())
@@ -90,6 +93,7 @@ export function useHistory(chat: UseChat): UseHistory {
         setConversations(list.conversations)
         setUnreadable(list.unreadable)
         setFolder(list.folder)
+        setStorage(list.storage)
         setLoadError(null)
       },
       (error: unknown) => setLoadError(error instanceof Error ? error.message : String(error))
@@ -216,6 +220,7 @@ export function useHistory(chat: UseChat): UseHistory {
     conversations,
     unreadable,
     folder,
+    storage,
     loadError,
     saveError,
     activeId,

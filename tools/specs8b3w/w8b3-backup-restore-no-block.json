@@ -1,0 +1,20 @@
+{
+  "label": "w8b3-backup-restore-no-block",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "    if (refusal !== null) return { ok: false, error: `Nothing was added. ${refusal}` }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b3.mjs",
+    "dev",
+    "3"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b3-backup-restore-no-block",
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 700000
+}

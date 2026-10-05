@@ -1,0 +1,20 @@
+{
+  "label": "w8b3-ipc-store-no-writemode",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    box: secureStorage,\n    writeMode: protection.writeMode\n",
+      "to": "    box: secureStorage\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b3.mjs",
+    "dev",
+    "1"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b3-ipc-store-no-writemode",
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 300000
+}

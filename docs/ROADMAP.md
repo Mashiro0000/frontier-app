@@ -111,7 +111,7 @@ contract: each stage starts with a short written plan that the owner approves (a
 8. **Fakes before the real thing.** Each capability is built and tested against local fakes, with deliberate breakages ("negative controls")
    proving each check can fail, before any real call or real account is touched. The first real use is the owner's own.
 9. **Crash-safe and local.** Writes are copy-then-delete as now; history, memory and project data are plain files the owner can read, export and
-   delete (a backup and a restore exist since Stage 8b.1 and 8b.2); an option to encrypt them (Stage 8b.3). Deleting something asks first.
+   delete (a backup and a restore exist since Stage 8b.1 and 8b.2); an option to encrypt them (since Stage 8b.3). Deleting something asks first.
 10. **Few, vetted dependencies.** Each new package is justified in `docs/DECISIONS.md`, checked with `npm audit`, pinned, and preferably free of
     install scripts. Electron is kept current.
 11. **Every stage ends with:** a short threat note in `docs/DECISIONS.md` (what could go wrong, what stops it, what is left), the full
@@ -166,20 +166,23 @@ report, and replaced if a real report arrives.
       to raise a limit that the page cannot do alone is recommended before Stage 11 (IDEAS).
 - This is the safety foundation for everything that can loop or spend. Nothing in Stages 11 to 13 is built before it.
 
-## Stage 8b - Optional encrypted history (8b.1 backup and 8b.2 restore done; 8b.3 and 8b.4, the encryption, not started)
+## Stage 8b - Optional encrypted history (8b.1 backup, 8b.2 restore, 8b.3 the encryption and 8b.4 the key that cannot be read are built and checked; 8b.5, the full regression, waits for the owner's go)
 
 The riskiest part of the plan is that **losing the key means losing the chats**. So **a tested backup and restore path comes first**, before any encryption exists, and the owner is to try it on
-real chats before the encryption is built (my call, 5 October 2026, when the owner left it to me).
+real chats before the encryption is built (my call, 5 October 2026, when the owner left it to me). The owner's "go." of 5 October 2026 (after the backup was pushed) was taken as the go for 8b.3 to 8b.5; whether
+the backup has been tried on real chats is not known, and it is still the thing to do before relying on encryption.
 
 - [x] (8b.1, D-034) **Back up** one chat, or all of them, to **one plain file** (JSON Lines: a checksum on every chat, a last line that says how many) in a place the person
       chooses in the system's own save dialog. The page never names a path, and a backup is refused inside the app's data folder. The file is **read back and checked before it counts**, and again at its place;
       a disk fault leaves the old file as it was. Proved against a file cut at every length, a byte changed at every place, and nine disk faults.
 - [x] (8b.2, D-034) **Restore** from such a file: first a **look** that adds nothing (what is new, already here, shares an id, cannot be used and why, which chats carry instructions, whether the file is whole), then an add with a
       one-use token. **It never replaces a chat**: the same chat is skipped, a different chat under the same id is added as a copy. 1000 chats out and back in give a backup that is byte for byte the first.
-- [ ] (8b.3, planned) The option to **encrypt saved chats**: off until the owner turns it on, each chat file encrypted with Electron's `safeStorage` (the same protection as the API keys; no key or cryptography of my own), the
-      list built by decrypting, damaged or undecryptable files left exactly as they are and counted, a way back to plain files, and **turning it on makes a verified backup first**. The ledger (Stage 8) stays plain: it holds counts, times and ids, no message text.
-- [ ] (8b.4, planned) **When the key cannot be read** (another Windows account, a reset profile, no keyring): the app says so, saves nothing new, makes no new key behind the owner's back, and leaves every file untouched.
-- [ ] (8b.5, planned) The stage's threat note and the full regression for 8b.3 and 8b.4. (The notes for 8b.1 and 8b.2 are in D-034.)
+- [x] (8b.3, D-035) The option to **encrypt saved chats** (Settings > Saved chats): off until the owner turns it on, each chat file sealed by Electron's `safeStorage` (the same protection as the API keys; no key or cryptography of my own),
+      the list built by opening each file, damaged or unopenable files left exactly as they are and counted, a way back to plain files (the system asks the person first), and **turning it on makes a verified backup first**, in the place the person
+      chooses, before anything changes. The ledger (Stage 8) stays plain: it holds counts, times and ids, no message text. A backup stays a plain file.
+- [x] (8b.4, D-035) **When the key cannot be read** (a reset profile, another account, no keyring): one module (`chatProtection.ts`) says how a chat may be written, and when the key cannot be used it **refuses**: the app says so, saves nothing,
+      uses no key (the secure storage is never asked to encrypt), and leaves every file untouched. The way out is the backup (restored as copies) or turning encryption off; and if the key comes back, everything opens. Proved on this PC's real secure storage by deleting a scratch profile's `Local State`.
+- [ ] (8b.5, D-035 holds the threat note; the full regression is not run yet) The stage's threat note and the full regression for 8b.3 and 8b.4. (The notes for 8b.1 and 8b.2 are in D-034.)
 
 ## Stage 9 - Images and files in (not started)
 

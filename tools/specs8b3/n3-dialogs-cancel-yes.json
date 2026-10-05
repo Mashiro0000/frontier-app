@@ -1,0 +1,16 @@
+{
+  "label": "n3-dialogs-cancel-yes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupDialogs.ts",
+      "from": "      cancelId: 1,",
+      "to": "      cancelId: 0,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

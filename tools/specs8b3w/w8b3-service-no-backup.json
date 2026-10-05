@@ -1,0 +1,20 @@
+{
+  "label": "w8b3-service-no-backup",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatEncryptionService.ts",
+      "from": "    if (counts.plain + counts.encrypted > 0) {",
+      "to": "    if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b3.mjs",
+    "dev",
+    "1"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b3-service-no-backup",
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 300000
+}

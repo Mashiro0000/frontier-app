@@ -1,0 +1,16 @@
+{
+  "label": "n3-env-cap-small",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatFile.ts",
+      "from": "export const MAX_ENCRYPTED_FILE_BYTES = MAX_DATA_CHARS + 128",
+      "to": "export const MAX_ENCRYPTED_FILE_BYTES = HISTORY_LIMITS.maxFileBytes"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

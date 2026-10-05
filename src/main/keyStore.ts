@@ -17,7 +17,8 @@ function secureStorageAvailable(): boolean {
   return true
 }
 
-const secureStorage: SecretBox = {
+/** The operating system's secure storage, as the API keys use it and, since 8b.3, the saved chats when the person turns encryption on (D-035). */
+export const secureStorage: SecretBox = {
   isAvailable: secureStorageAvailable,
   encrypt: (plain) => safeStorage.encryptString(plain),
   decrypt: (blob) => safeStorage.decryptString(blob)

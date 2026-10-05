@@ -1,0 +1,20 @@
+{
+  "label": "w8b3-ipc-list-no-storage",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "return { ...(await history.list()), folder, storage: await encryption.status() }",
+      "to": "return { ...(await history.list()), folder, storage: { choice: 'off', canEncrypt: true, keyUsable: null, plain: 0, encrypted: 0, unreadable: 0, unopened: 0, blocked: null } }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run8b3.mjs",
+    "dev",
+    "1"
+  ],
+  "env": {
+    "LOG_LABEL": "nc-w8b3-ipc-list-no-storage",
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 300000
+}

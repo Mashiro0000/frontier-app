@@ -1,0 +1,16 @@
+{
+  "label": "n3-prot-damage-is-off",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatProtection.ts",
+      "from": "    raw = JSON.parse(text)\n  } catch {\n    return { choice: 'unreadable' }\n  }",
+      "to": "    raw = JSON.parse(text)\n  } catch {\n    return { choice: 'off' }\n  }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

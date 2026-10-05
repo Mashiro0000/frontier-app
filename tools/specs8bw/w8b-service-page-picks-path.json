@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/backupService.ts",
-      "from": "    const dest = await pickers.savePath(owner, name)",
-      "to": "    const dest = (request as { path?: string }).path ?? (await pickers.savePath(owner, name))"
+      "from": "    const dest = await pickers.savePath(\n      owner,\n      name,\n      beforeEncrypting ? BEFORE_ENCRYPTING_TITLE : undefined\n    )",
+      "to": "    const dest =\n      (request as { path?: string }).path ??\n      (await pickers.savePath(owner, name, beforeEncrypting ? BEFORE_ENCRYPTING_TITLE : undefined))"
     }
   ],
   "argv": [

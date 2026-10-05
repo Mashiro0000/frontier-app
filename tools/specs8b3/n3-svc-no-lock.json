@@ -1,0 +1,16 @@
+{
+  "label": "n3-svc-no-lock",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatEncryptionService.ts",
+      "from": "      backups.exclusive<ChatStorageResult>({ ok: false, error: BUSY }, () => encrypt(owner)),",
+      "to": "      encrypt(owner),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

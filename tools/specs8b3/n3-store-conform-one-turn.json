@@ -1,0 +1,16 @@
+{
+  "label": "n3-store-conform-one-turn",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "      for (const id of ids) {\n        const outcome = await inOrder(() => conformOne(id))\n        if (outcome !== null) result[outcome] += 1\n      }",
+      "to": "      await inOrder(async () => {\n        for (const id of ids) {\n          const outcome = await conformOne(id)\n          if (outcome !== null) result[outcome] += 1\n        }\n      })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

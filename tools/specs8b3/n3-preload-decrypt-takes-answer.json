@@ -1,0 +1,16 @@
+{
+  "label": "n3-preload-decrypt-takes-answer",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/preload/index.ts",
+      "from": "    decryptChats: () => ipcRenderer.invoke(CHANNELS.historyDecrypt)",
+      "to": "    decryptChats: (answer?: boolean) => ipcRenderer.invoke(CHANNELS.historyDecrypt, answer)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

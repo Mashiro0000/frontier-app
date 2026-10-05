@@ -1,0 +1,16 @@
+{
+  "label": "n3-store-tmp-leftover-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "      if (read.form === mode.form && !read.tmp) return 'already'",
+      "to": "      if (read.form === mode.form) return 'already'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n3-env-base64-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatFile.ts",
+      "from": "    data.length > MAX_DATA_CHARS ||\n    !BASE64.test(data) // which also refuses an empty string: the pattern needs at least one character\n",
+      "to": "    data.length > MAX_DATA_CHARS\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

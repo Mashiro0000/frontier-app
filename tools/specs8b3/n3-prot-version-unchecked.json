@@ -1,0 +1,16 @@
+{
+  "label": "n3-prot-version-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatProtection.ts",
+      "from": "  if (file.version !== FILE_VERSION) return { choice: 'unreadable' }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

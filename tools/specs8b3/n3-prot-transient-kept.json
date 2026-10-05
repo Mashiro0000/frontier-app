@@ -1,0 +1,16 @@
+{
+  "label": "n3-prot-transient-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatProtection.ts",
+      "from": "      return { setting: { choice: 'unreadable' }, keep: false }",
+      "to": "      return { setting: { choice: 'unreadable' }, keep: true }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

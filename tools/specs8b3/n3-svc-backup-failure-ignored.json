@@ -1,0 +1,16 @@
+{
+  "label": "n3-svc-backup-failure-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatEncryptionService.ts",
+      "from": "      if (!made.ok) {",
+      "to": "      if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

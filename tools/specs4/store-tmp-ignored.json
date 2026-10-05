@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",
-      "from": "if (copy.kind === 'ok') return { conversation: copy.conversation }",
-      "to": "if (false) return { conversation: (copy as any).conversation }"
+      "from": "if (copy.kind === 'ok') {\n    // The \".tmp\" wins",
+      "to": "if (copy.kind === 'ok' && false) {\n    // The \".tmp\" wins"
     }
   ],
   "argv": [

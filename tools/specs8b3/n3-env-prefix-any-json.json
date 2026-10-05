@@ -1,0 +1,16 @@
+{
+  "label": "n3-env-prefix-any-json",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatFile.ts",
+      "from": "export const SEALED_PREFIX = `{\"format\":\"${ENVELOPE_FORMAT}\"`",
+      "to": "export const SEALED_PREFIX = '{'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

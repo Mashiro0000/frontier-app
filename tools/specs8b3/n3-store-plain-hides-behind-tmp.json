@@ -1,0 +1,16 @@
+{
+  "label": "n3-store-plain-hides-behind-tmp",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "    const plain = copy.form === 'plain' || (real.kind === 'ok' && real.form === 'plain')",
+      "to": "    const plain = copy.form === 'plain'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

@@ -24,8 +24,8 @@ import { titleFor, type ConversationStore } from './conversationStore'
 // is skipped; a different chat under the same id (or a damaged file under it) is added as a copy under a new id.
 
 export interface Pickers {
-  /** Asks where to save, in the system's dialog. Null if the person closed it. `owner` is the window it belongs to. */
-  savePath(owner: unknown, suggestedName: string): Promise<string | null>
+  /** Asks where to save, in the system's dialog. Null if the person closed it. `owner` is the window it belongs to; `title` replaces the dialog's usual title. */
+  savePath(owner: unknown, suggestedName: string, title?: string): Promise<string | null>
   /** Asks which file to read, in the system's dialog. Null if the person closed it. */
   openPath(owner: unknown): Promise<string | null>
 }
@@ -35,7 +35,14 @@ export interface BackupService {
   restoreLook(owner: unknown): Promise<HistoryRestoreLookResult>
   restoreApply(token: unknown): Promise<HistoryRestoreApplyResult>
   restoreCancel(token: unknown): void
-  /** Resolves when a backup or a restore that is running has finished. For quitting the app. */
+  /**
+   * For turning encryption on (D-035), which runs inside `exclusive` and so must not take the lock a second time: the same backup of EVERY chat, with its own
+   * name and dialog title, written, read back and checked exactly as any backup is. Never called by the page.
+   */
+  backUpAllBeforeEncrypting(owner: unknown): Promise<HistoryExportResult>
+  /** Runs `task` unless a backup, a restore or a change of how chats are kept is running: then it answers `busy` at once and runs nothing. One long thing at a time. */
+  exclusive<T>(busy: T, task: () => Promise<T>): Promise<T>
+  /** Resolves when a backup, a restore or a change of how chats are kept that is running has finished. For quitting the app. */
   whenIdle(): Promise<void>
 }
 
@@ -50,6 +57,8 @@ export interface BackupServiceOptions {
 }
 
 export const TOKEN_LIFETIME_MS = 10 * 60 * 1000
+/** The save dialog's title when the backup is the first step of turning encryption on, so the person knows why a backup is asked for now. */
+export const BEFORE_ENCRYPTING_TITLE = 'Back up your chats before they are encrypted'
 const PREVIEW_TITLES = 10
 const BUSY = 'Another backup or restore is still going. Wait for it to finish.'
 const NOTHING_WAITING = 'Nothing is waiting to be added. Choose the backup file again.'
@@ -122,7 +131,11 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
     }
   }
 
-  async function exportChats(request: unknown, owner: unknown): Promise<HistoryExportResult> {
+  async function exportChats(
+    request: unknown,
+    owner: unknown,
+    beforeEncrypting = false
+  ): Promise<HistoryExportResult> {
     const checked = checkBackupRequest(request)
     if (!checked.ok) return checked
     const { conversations, unreadable } = await store.list()
@@ -134,7 +147,9 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
       ids = conversations.map((one) => one.id)
       leftOut = unreadable
       if (ids.length === 0) return { ok: false, error: 'There are no saved chats to back up yet.' }
-      name = `frontier-chats-${day}.jsonl`
+      name = beforeEncrypting
+        ? `frontier-chats-before-encrypting-${day}.jsonl`
+        : `frontier-chats-${day}.jsonl`
     } else {
       const { id } = checked.request
       if (!conversations.some((one) => one.id === id)) {
@@ -143,7 +158,11 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
       ids = [id]
       name = `frontier-chat-${day}-${id.slice(0, 8)}.jsonl`
     }
-    const dest = await pickers.savePath(owner, name)
+    const dest = await pickers.savePath(
+      owner,
+      name,
+      beforeEncrypting ? BEFORE_ENCRYPTING_TITLE : undefined
+    )
     if (dest === null) return { ok: false, cancelled: true, error: 'Cancelled.' }
     if (typeof dest !== 'string' || !isAbsolute(dest)) {
       return { ok: false, error: 'That place could not be used.' }
@@ -238,6 +257,9 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
     }
     pending = null // good for one use, whatever happens next
     if (now() - plan.at > lifetime) return { ok: false, error: NOTHING_WAITING }
+    // Nothing is added while writing is refused (D-035: the key that protects the chats cannot be used): said once, up front, not once for every chat.
+    const refusal = await store.blocked()
+    if (refusal !== null) return { ok: false, error: `Nothing was added. ${refusal}` }
     try {
       const info = await fs.stat(plan.path).catch(() => null)
       if (info === null || info.size !== plan.size || info.mtimeMs !== plan.mtimeMs) {
@@ -301,6 +323,8 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
     restoreCancel: (token) => {
       if (pending !== null && token === pending.token) pending = null
     },
+    backUpAllBeforeEncrypting: (owner) => exportChats({ scope: 'all' }, owner, true),
+    exclusive,
     whenIdle: () => (running ?? Promise.resolve()).then(() => undefined)
   }
 }

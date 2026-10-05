@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",
-      "from": "if ((await fs.readFile(copy, 'utf8')) !== text) {",
+      "from": "if (back !== text || (form === 'encrypted' && !opensTo(back, plain, box))) {",
       "to": "if (false) {"
     },
     {

@@ -1,0 +1,16 @@
+{
+  "label": "n3-prot-failed-save-stale",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatProtection.ts",
+      "from": "      current = null // what is on disk now is the truth: the next read looks at it\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

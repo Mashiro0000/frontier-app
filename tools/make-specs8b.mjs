@@ -51,7 +51,7 @@ const node = {
   'n8b-store-add-title-trusted': [FILE2, [[ST, "title: titleFor(conversation.messages) // worked out here, as for every save: a file's own title is not trusted", 'title: conversation.title']]],
   'n8b-store-add-full-ignored': [FILE2, [[ST, "        if (index.size >= HISTORY_LIMITS.maxConversations) {\n          return {\n            ok: false,\n            why: 'full',", "        if (false) {\n          return {\n            ok: false,\n            why: 'full',"]]],
   'n8b-store-inspect-damaged-is-free': [FILE2, [[ST, "if (unreadable.has(id)) return { kind: 'damaged' }", "if (unreadable.has(id)) return { kind: 'free' }"]]],
-  'n8b-store-add-dates-now': [FILE2, [[ST, '        const written = await writeConversation({\n          ...conversation,\n', '        const written = await writeConversation({\n          ...conversation,\n          updatedAt: Date.now(),\n']]],
+  'n8b-store-add-dates-now': [FILE2, [[ST, '          {\n            ...conversation,\n', '          {\n            ...conversation,\n            updatedAt: Date.now(),\n']]],
   // ---- the flow around the dialogs
   'n8b-service-no-inside-check': [FILE2, [[SV, 'if (await isInside(dataDir, dest)) {', 'if (false) {']]],
   'n8b-service-links-not-followed': [FILE2, [[SV, 'return join(await fs.realpath(current), ...[...missing].reverse())', 'return join(resolve(current), ...[...missing].reverse())']]],
@@ -68,7 +68,7 @@ const node = {
     [SV, 'let outcome = await store.add(asCopy ? { ...chat, id: randomUUID() } : chat)', 'let outcome = await store.add(chat)'],
     [SV, "if (!outcome.ok && outcome.why === 'occupied') {", 'if (false) {']
   ]],
-  'n8b-service-page-picks-path': [FILE2, [[SV, '    const dest = await pickers.savePath(owner, name)', '    const dest = (request as { path?: string }).path ?? (await pickers.savePath(owner, name))']]],
+  'n8b-service-page-picks-path': [FILE2, [[SV, '    const dest = await pickers.savePath(\n      owner,\n      name,\n      beforeEncrypting ? BEFORE_ENCRYPTING_TITLE : undefined\n    )', '    const dest =\n      (request as { path?: string }).path ??\n      (await pickers.savePath(owner, name, beforeEncrypting ? BEFORE_ENCRYPTING_TITLE : undefined))']]],
   'n8b-service-leftout-zero': [FILE2, [[SV, '      leftOut = unreadable\n', '      leftOut = 0\n']]],
   'n8b-service-room-ignored': [FILE2, [[SV, 'room: Math.max(0, HISTORY_LIMITS.maxConversations - conversations.length),', 'room: HISTORY_LIMITS.maxConversations,']]],
   // ---- what the page may ask, and the wiring in main
@@ -100,7 +100,7 @@ const win = {
   'w8b-service-no-inside-check': [[SV, 'if (await isInside(dataDir, dest)) {', 'if (false) {']],
   'w8b-ipc-look-no-window': [[IPC, 'guardedForWindow((window): Promise<HistoryRestoreLookResult> => backups.restoreLook(window))', 'guardedForWindow((): Promise<HistoryRestoreLookResult> => backups.restoreLook(null))']],
   'w8b-dialogs-no-overwrite-confirm': [[DLG, "properties: ['showOverwriteConfirmation' as const]", 'properties: []']],
-  'w8b-service-page-picks-path': [[SV, '    const dest = await pickers.savePath(owner, name)', '    const dest = (request as { path?: string }).path ?? (await pickers.savePath(owner, name))']],
+  'w8b-service-page-picks-path': [[SV, '    const dest = await pickers.savePath(\n      owner,\n      name,\n      beforeEncrypting ? BEFORE_ENCRYPTING_TITLE : undefined\n    )', '    const dest =\n      (request as { path?: string }).path ??\n      (await pickers.savePath(owner, name, beforeEncrypting ? BEFORE_ENCRYPTING_TITLE : undefined))']],
   'w8b-service-token-reusable': [[SV, '    pending = null // good for one use, whatever happens next\n', '']]
 }
 

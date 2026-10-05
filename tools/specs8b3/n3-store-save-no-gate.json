@@ -1,0 +1,16 @@
+{
+  "label": "n3-store-save-no-gate",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "        if ('refused' in mode) return { ok: false, error: mode.refused }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n3-preload-encrypt-takes-path",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/preload/index.ts",
+      "from": "    encryptChats: () => ipcRenderer.invoke(CHANNELS.historyEncrypt)",
+      "to": "    encryptChats: (path?: string) => ipcRenderer.invoke(CHANNELS.historyEncrypt, path)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-3.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

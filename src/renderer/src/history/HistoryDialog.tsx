@@ -80,6 +80,12 @@ function HistoryDialog({ open, history, onClose }: HistoryDialogProps): React.JS
         </p>
       )}
 
+      {history.storage?.blocked && (
+        <p className="history-notice history-notice-error" role="status">
+          {history.storage.blocked}
+        </p>
+      )}
+
       {backup.preview !== null ? (
         <RestorePreviewPanel
           preview={backup.preview}
@@ -194,6 +200,9 @@ function HistoryDialog({ open, history, onClose }: HistoryDialogProps): React.JS
                 ? '1 saved file could not be read'
                 : `${history.unreadable} saved files could not be read`}{' '}
               and was left as it is. The app&apos;s log says which.
+              {history.storage && history.storage.unopened > 0
+                ? ` ${history.storage.unopened === 1 ? '1 of them is' : `${history.storage.unopened} of them are`} encrypted and could not be opened with this computer's key; Restore from a backup brings such chats back as copies.`
+                : ''}
             </p>
           )}
           <p className="history-hint history-where">
@@ -203,9 +212,11 @@ function HistoryDialog({ open, history, onClose }: HistoryDialogProps): React.JS
                 , in <span className="history-folder">{history.folder}</span>,
               </>
             ) : null}{' '}
-            as plain files. Unlike your API key, the app does not encrypt them. Deleting a chat
-            deletes its file. A backup is one plain file you choose the place for; restoring from
-            one adds chats and never replaces a saved one.
+            {history.storage?.choice === 'on'
+              ? "as encrypted files, protected by this computer's secure storage like your API key (see Settings, Saved chats)."
+              : 'as plain files. Unlike your API key, the app does not encrypt them unless you turn that on in Settings, Saved chats.'}{' '}
+            Deleting a chat deletes its file. A backup is one plain file you choose the place for;
+            restoring from one adds chats and never replaces a saved one.
           </p>
         </>
       )}

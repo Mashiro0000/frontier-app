@@ -52,5 +52,10 @@
 - A mark on a chat that came from a backup (or from any file brought in), and a look at its messages in the preview, not only the titles: a made-up chat is read by the model as history (D-034; the same gap as D-027's)
 - Back up the settings, the usage ledger and the limits with the chats (D-034 backs up chats only), and a "restore everything" that asks about each part
 - A readable Markdown export of one chat or all of them, next to the JSON backup that restore reads (the owner chose JSON only for 8b.1)
-- Encrypt the backup file itself with a password the owner types, for a backup that is kept in a synced folder (D-034 says a backup is plain text, and 8b.3 will not cover it)
+- Encrypt the backup file itself with a password the owner types, for a backup that is kept in a synced folder (D-034 says a backup is plain text, and 8b.3 does not cover it, D-035)
+- A password-based key as a second way to encrypt the chats, for chats that must open on another computer or account: the secure storage ties them to this Windows account, so a copy elsewhere (and a reset profile) cannot open them (D-035)
+- A progress line while encryption is turned on or off, like the one for a restore above: it rewrites every chat one at a time (a few seconds for dozens; about two minutes for 1000 in this PC's EFS data folder), and the page shows only "buttons off" (D-035)
+- A way to tell the person which chats are still plain when a conversion was cut short (D-035 shows a count and "Encrypt the rest"; a list of titles would help)
+- Wiping the old plain bytes after encrypting: turning encryption on rewrites each file in place, but a solid-state disk, EFS, a shadow copy or a file-system journal may keep the plain text it replaced, and there is no reliable wipe from inside an app (D-035 says so; a note in Settings, or advice to turn on full-disk encryption)
+- Tell the person at start, before they type, when encryption is on and the key cannot be used (the Settings section and the History dialog say so today, and the "Not saved" badge appears after the first message; a notice in the chat bar would come sooner) (D-035)
 - A shorter keyboard path through a long History list: three Tab stops per row now (open, Export, Delete), and a person with 150 chats tabs 450 times to get past the list (D-034; where Shift+Tab goes from the first row was not measured)
