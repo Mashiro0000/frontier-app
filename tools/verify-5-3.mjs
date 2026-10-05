@@ -253,7 +253,7 @@ for (const width of [420, 320]) {
   await page.send('Emulation.setDeviceMetricsOverride', { width, height: 700, deviceScaleFactor: 1, mobile: false })
   await sleep(300)
   const fit = await ev(`(() => { const d = document.querySelector('dialog.settings'); const r = d.getBoundingClientRect(); const bs = [...d.querySelectorAll('.settings-actions button')].map((b) => b.getBoundingClientRect()); return { dialog: [Math.round(r.left), Math.round(r.right)], overflowX: d.scrollWidth > d.clientWidth, buttonsInside: bs.every((b) => b.left >= r.left - 1 && b.right <= r.right + 1), rows: new Set(bs.map((b) => Math.round(b.top))).size, count: bs.length } })()`)
-  check(`at ${width} px wide: no sideways scroll, and Save / Test / Remove (and the second provider's Save, since 8.2 Save limits, and since 8.3 the Save of Large requests) all stay inside the dialog`, !fit.overflowX && fit.buttonsInside && fit.count === 6, JSON.stringify(fit))
+  check(`at ${width} px wide: no sideways scroll, and Save / Test / Remove (and the second provider's Save, since 8.2 Save limits, and since 8.3 the Save of Large requests, and since 8b.3 Encrypt my saved chats) all stay inside the dialog`, !fit.overflowX && fit.buttonsInside && fit.count === 7, JSON.stringify(fit))
   await page.screenshot(`${shots}/5-3-narrow-${width}.png`)
 }
 await page.send('Emulation.clearDeviceMetricsOverride')

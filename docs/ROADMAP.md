@@ -166,7 +166,7 @@ report, and replaced if a real report arrives.
       to raise a limit that the page cannot do alone is recommended before Stage 11 (IDEAS).
 - This is the safety foundation for everything that can loop or spend. Nothing in Stages 11 to 13 is built before it.
 
-## Stage 8b - Optional encrypted history (8b.1 backup, 8b.2 restore, 8b.3 the encryption and 8b.4 the key that cannot be read are built and checked; 8b.5, the full regression, waits for the owner's go)
+## Stage 8b - Optional encrypted history (done: 8b.1 backup, 8b.2 restore, 8b.3 the encryption, 8b.4 the key that cannot be read, 8b.5 the threat note and the full regression)
 
 The riskiest part of the plan is that **losing the key means losing the chats**. So **a tested backup and restore path comes first**, before any encryption exists, and the owner is to try it on
 real chats before the encryption is built (my call, 5 October 2026, when the owner left it to me). The owner's "go." of 5 October 2026 (after the backup was pushed) was taken as the go for 8b.3 to 8b.5; whether
@@ -182,7 +182,8 @@ the backup has been tried on real chats is not known, and it is still the thing 
       chooses, before anything changes. The ledger (Stage 8) stays plain: it holds counts, times and ids, no message text. A backup stays a plain file.
 - [x] (8b.4, D-035) **When the key cannot be read** (a reset profile, another account, no keyring): one module (`chatProtection.ts`) says how a chat may be written, and when the key cannot be used it **refuses**: the app says so, saves nothing,
       uses no key (the secure storage is never asked to encrypt), and leaves every file untouched. The way out is the backup (restored as copies) or turning encryption off; and if the key comes back, everything opens. Proved on this PC's real secure storage by deleting a scratch profile's `Local State`.
-- [ ] (8b.5, D-035 holds the threat note; the full regression is not run yet) The stage's threat note and the full regression for 8b.3 and 8b.4. (The notes for 8b.1 and 8b.2 are in D-034.)
+- [x] (8b.5, D-035) The stage's threat note (in D-035; the notes for 8b.1 and 8b.2 are in D-034) and the full regression: **96 runs, 94 clean**; the two others were one stale check (`verify-5-3` counted six buttons in Settings, now
+      seven), fixed in the test and passed again on the dev and the built app.
 
 ## Stage 9 - Images and files in (not started)
 
