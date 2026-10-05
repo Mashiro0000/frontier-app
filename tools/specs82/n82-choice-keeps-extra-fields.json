@@ -1,0 +1,14 @@
+{
+  "label": "n82-choice-keeps-extra-fields",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "if (kind === 'none') return { kind: 'none' } // nothing else it carries is read",
+      "to": "if (kind === 'none') return input as LimitChoice"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n82-store-bom-not-stripped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/limits.ts",
+      "from": "    if (text.charCodeAt(0) === 0xfeff) text = text.slice(1) // a byte-order mark, which some editors add\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

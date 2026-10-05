@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "0.3",
+  "schemaVersion": "0.4",
   "updatedAt": "2026-10-01",
-  "source": "Anthropic's Claude API documentation (the models overview, the Models API's capability fields, and the effort and prompt-caching pages), read on 2026-10-01. OpenAI's model pages and pricing page (the GPT-6 family), read on 2026-10-01. Prices are list prices in US dollars per million tokens.",
+  "source": "Anthropic's Claude API documentation (models overview, capability fields, effort and prompt-caching pages), read on 2026-10-01; its pricing page and OpenAI's model and pricing pages (GPT-6 family), with the cache prices, read on 2026-10-02. List prices, US dollars per million tokens.",
   "defaultModelId": "claude-opus-5-5",
   "models": [
     {
@@ -13,6 +13,8 @@
       "maxOutputTokens": 128000,
       "pricing": {
         "inputPerMTok": 10,
+        "cacheReadPerMTok": 0.25,
+        "cacheWritePerMTok": 12.5,
         "outputPerMTok": 50
       },
       "capabilities": {
@@ -33,6 +35,8 @@
       "maxOutputTokens": 128000,
       "pricing": {
         "inputPerMTok": 4,
+        "cacheReadPerMTok": 0.2,
+        "cacheWritePerMTok": 5,
         "outputPerMTok": 20
       },
       "capabilities": {
@@ -53,6 +57,8 @@
       "maxOutputTokens": 128000,
       "pricing": {
         "inputPerMTok": 2,
+        "cacheReadPerMTok": 0.2,
+        "cacheWritePerMTok": 2.5,
         "outputPerMTok": 10
       },
       "capabilities": {
@@ -73,6 +79,8 @@
       "maxOutputTokens": 64000,
       "pricing": {
         "inputPerMTok": 1,
+        "cacheReadPerMTok": 0.1,
+        "cacheWritePerMTok": 1.25,
         "outputPerMTok": 5
       },
       "capabilities": {
@@ -93,6 +101,8 @@
       "maxOutputTokens": 128000,
       "pricing": {
         "inputPerMTok": 10,
+        "cacheReadPerMTok": 1,
+        "cacheWritePerMTok": 12.5,
         "outputPerMTok": 50
       },
       "capabilities": {
@@ -113,6 +123,8 @@
       "maxOutputTokens": 128000,
       "pricing": {
         "inputPerMTok": 2,
+        "cacheReadPerMTok": 0.1,
+        "cacheWritePerMTok": 2.5,
         "outputPerMTok": 10
       },
       "capabilities": {
@@ -133,6 +145,8 @@
       "maxOutputTokens": 128000,
       "pricing": {
         "inputPerMTok": 0.1,
+        "cacheReadPerMTok": 0.01,
+        "cacheWritePerMTok": 0.125,
         "outputPerMTok": 0.5
       },
       "capabilities": {

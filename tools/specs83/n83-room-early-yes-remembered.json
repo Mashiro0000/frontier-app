@@ -1,0 +1,24 @@
+{
+  "label": "n83-room-early-yes-remembered",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/confirmation.ts",
+      "from": "  const pending = new Map<string, (answer: Answer) => void>()\n",
+      "to": "  const pending = new Map<string, (answer: Answer) => void>()\n  const early = new Set<string>()\n"
+    },
+    {
+      "file": "{{REPO}}/src/main/confirmation.ts",
+      "from": "        if (signal.aborted || pending.has(key)) {\n          resolve('decline')\n          return\n        }\n",
+      "to": "        if (early.delete(key)) {\n          resolve('send')\n          return\n        }\n        if (signal.aborted || pending.has(key)) {\n          resolve('decline')\n          return\n        }\n"
+    },
+    {
+      "file": "{{REPO}}/src/main/confirmation.ts",
+      "from": "      if (finish === undefined) return false\n",
+      "to": "      if (finish === undefined) {\n        early.add(key)\n        return false\n      }\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

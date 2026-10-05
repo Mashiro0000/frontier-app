@@ -1,0 +1,14 @@
+{
+  "label": "n83-store-save-no-readback",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/askFirst.ts",
+      "from": "if (back.damaged || !sameAskFirst(back.setting, choice)) {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

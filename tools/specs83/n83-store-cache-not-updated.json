@@ -1,0 +1,14 @@
+{
+  "label": "n83-store-cache-not-updated",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/askFirst.ts",
+      "from": "        current = back.setting\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

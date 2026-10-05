@@ -140,11 +140,38 @@ note and the full regression (D-028); and a sixth after them, at the owner's req
 - [x] (7.6, D-029) The header stays ONE row at the default window width, whatever is showing: **New chat**, **History** and **Instructions** moved out of it
       into a slim row under the message box (the owner's decision of 2 October 2026, after D-027 had reported that the header wrapped).
 
-## Stage 8 - Usage, cost and spending limits, optional encrypted history (not started)
+## Stage 8 - Usage, cost and spending limits (done: 8.1 the ledger, 8.2 limits, 8.3 the question before a large request, 8.5 the stage's threat note and the full regression; 8.4 moved to Stage 8b)
 
-- Show tokens and cost per reply, chat and day; a **daily and monthly limit** that stops requests and says why; a confirmation before a
-  reply that would be very large. An option to **encrypt saved chats** (key held with the OS protection as the API keys are).
+The owner's decisions of 2 October 2026: **the limits are the owner's own, with no preset numbers**; **encrypted history is its own later stage
+(8b)**, with a tested backup and export before any encryption; **a guess marked "about" is counted** when a reply is stopped or fails with no usage
+report, and replaced if a real report arrives.
+
+- [x] (8.1, D-030) **The ledger and what it shows.** Every request to a provider is written to a plain file (`usage/ledger.jsonl`) by the main process, once
+      before it is sent (a request that cannot be written down is not sent) and once when it ends. Tokens in four buckets (input, cache read, cache write,
+      output including thinking), priced at the registry's four list prices per model (schema 0.4). Shown per reply, per chat, today and this month
+      (Settings > Usage). A guess marked "about" when there is no report. Regenerate, Edit, the instructions and the thinking are all counted, because
+      they are in the request or its report.
+- [x] (8.2, D-031) **Limits.** A daily and a monthly limit, **set by the owner with no preset numbers**: on first run the app asks for both before the first
+      send, and Settings has a deliberate "No limit" with a one-line warning. The main process checks before every request (send, Regenerate, Edit),
+      counting what is already on the ledger and what is in flight, and refuses with a plain sentence that says which limit and why. The page cannot
+      bypass it. Until both limits are chosen (an amount or "No limit") every request is refused; a missing or damaged `limits.json` counts as not chosen,
+      never as "No limit". A reply that starts under a limit can end over it by at most what one reply can write (D-031 gives the figure).
+- [x] (8.3, D-032) **A question before a very large request.** Before anything is written or sent, the main process works out the most the request could cost: what it
+      sends (at the dearer of the two input prices) and a reply as long as its ceiling. When **what it sends** could cost more than **an amount of the owner's** (Settings > Large
+      requests; $0.50 until chosen, or a deliberate "Never ask") it sends nothing, shows the figures ("Send this large request?": Send, Don't send, Escape is no) and waits for the
+      yes. Nothing is written to the ledger while it waits, a yes is heard only for a question that is waiting, and the limits of 8.2 are checked after the yes exactly as before
+      (a request they would refuse is not asked about). A damaged or unreadable `ask-first.json` means the default amount, never "Never ask".
+- [x] (8.5, D-033) The stage's threat note across the three slices, the full regression (89 runs, the built app included), and the list of what was not checked. **One finding for the owner:**
+      the page can raise or remove a limit, and choose "Never ask", with no answer from the person, so the limits stop a slip, a bug and a model's words but not a hostile page; a way
+      to raise a limit that the page cannot do alone is recommended before Stage 11 (IDEAS).
 - This is the safety foundation for everything that can loop or spend. Nothing in Stages 11 to 13 is built before it.
+
+## Stage 8b - Optional encrypted history (not started; its own stage, after Stage 8)
+
+- An option to **encrypt saved chats** (key held with the OS protection as the API keys are). The riskiest part of the plan: losing the key means
+  losing the chats. So **a tested backup and export path comes first**, before any encryption exists: export a chat, or all of them, to plain files
+  and read them back, proved against damaged and partly written files. Then the encryption, as an option that is off until the owner turns it on, with
+  a way back to plain files. The ledger (Stage 8) stays plain: it holds counts, times and ids, no message text.
 
 ## Stage 9 - Images and files in (not started)
 

@@ -1160,3 +1160,479 @@ made on the page).
 
 Status: accepted (Stage 7.6). Revisit: page zoom; asking before New chat discards a chat that could not be saved; a sidebar for these buttons and
 History in wide windows.
+
+## D-030 - Stage 8.1: every request is counted in a plain ledger the main process writes, priced at four list prices, and shown per reply, per chat, today and this month
+
+Stage 8 is the money stage (safety rule 6: usage and cost are shown, and a limit stops requests; nothing that can loop is built before it). The
+owner approved its plan on 2 October 2026 with three decisions: (1) **the limits are the owner's own, with no preset numbers** (I had proposed $5 a
+day and $50 a month, and was told to leave the numbers to the owner: on first run the app asks for a daily and a monthly limit before the first send,
+and Settings has a deliberate "No limit" with a one-line warning; that is 8.2); (2) **encrypted history is its own later stage, 8b**, with a tested
+backup and export before any encryption (ROADMAP); (3) **a guess marked "about" is counted** when a reply is stopped or fails with no usage report,
+and it is replaced if a real report arrives. This is slice 8.1, the counting. It adds no limit, and it counts what D-028 listed: the output
+including the thinking (at whatever Effort), every request that Regenerate and Edit make, the instructions inside each request, and the whole
+conversation that goes out again each time (they are all in the request, so they are all in the provider's report).
+
+- **The ledger.** One plain file, `usage/ledger.jsonl` in the app's data folder, written by the main process alone (`src/main/usageLedger.ts`).
+  One line of JSON per request, written twice under one id: when the request is about to be sent (state "sent", its input as a guess, marked
+  an estimate) and when it ends (state "done", "stopped", "failed" or "rejected", with the provider's report or a guess). When the file is read,
+  the later line replaces the earlier one with the same id. Why twice: a request that never ends (the app is killed while a reply is arriving) is
+  still on the books for what it had cost by then, and 8.2 needs the requests that are in flight. Why appended and never rewritten: a crash can
+  only cut off the last line, which is skipped when the file is read and counted (and the next write starts on a new line, so it cannot join the
+  cut one); no rename is used (D-010: renames fail with EXDEV in this project's own %APPDATA%). A line has the model, the effort, the chat, the time
+  the request began, the four token counts, the **four prices it was counted at** (the registry may change later; an old record keeps its prices) and,
+  beside them for a person who reads the file, the cost, which is not read back: the cost is always worked out again from the numbers. The file
+  holds no message text and no key. It is read whole at the first request or the first question, up to 64 MiB (the newest part, with a note in
+  the log, beyond that: about 100,000 requests).
+- **`begin` is awaited before the request goes out, and a request that cannot be written down is not sent.** The reply says "Nothing was sent: what
+  this request would use could not be recorded on this computer." This is the one place where the ledger fails closed, because it is what makes a
+  limit mean something. The end of a request (`finish`) never throws: the reply has happened, so a failed write is logged, the sums in memory are
+  right for as long as the app runs, and the file keeps the "sent" line (a guess of the input), which is what a later run counts.
+- **Four buckets, four prices (registry schema 0.4).** A reply's tokens are billed in four buckets that never overlap (D-018): ordinary input, input
+  read back from the provider's cache, input written to it, and output (which includes the thinking). D-019 left the cache prices out of the registry
+  because I could not confirm them; I read both providers' pricing pages on 2 October 2026 (Anthropic's `about-claude/pricing` page, and OpenAI's
+  pricing table), which also show that the input and output prices already in the file are right. Each model in `registry/models.json` now has
+  `cacheReadPerMTok` and `cacheWritePerMTok` beside `inputPerMTok` and `outputPerMTok`, all required (the file is hand-edited and checked as strictly as
+  input from the page): Fable 5.1 10 / 0.25 / 12.50 / 50; Opus 5.5 4 / 0.20 / 5 / 20; Sonnet 5.5 2 / 0.20 / 2.50 / 10; Haiku 4.5 1 / 0.10 / 1.25 / 5;
+  GPT-6 Astra 10 / 1 / 12.50 / 50; GPT-6.1 Sol 2 / 0.10 / 2.50 / 10; GPT-6 Luna 0.10 / 0.01 / 0.125 / 0.50 (in / cache read / cache write / out, dollars
+  per million tokens). Two things the pages say that a rule of thumb would get wrong: a cache hit costs 0.1 of the input price for most Claude models,
+  but 0.05 for Opus 5.5 and 0.025 for Fable 5.1; and the Claude cache write that the app's own request asks for (`cache_control` "ephemeral", the
+  5-minute cache) is 1.25 times the input price (the 1-hour write, 2 times, is not asked for). A cache read dearer than ordinary input is refused as a
+  typo. `updatedAt` stays "2026-10-01" (the other facts were not re-read); the `source` line says the prices were read on 2026-10-02.
+- **When a provider gives no report, a guess marked "about" is counted (the owner's decision 3).** The rule: input = the system prompt and every
+  message that was sent, in UTF-8 bytes divided by 3, rounded up, plus 4 for each message; output = the bytes of the text that arrived, divided by 3.
+  Three bytes to a token is on the high side for English (about four characters) and about right for Chinese, Japanese and Korean (about one token a
+  character); it knows no tokenizer. It **leaves out thinking that was never shown**, which cannot be seen, so a stopped reply from a model that thinks
+  can have cost more than its guess; the line under a reply and Settings say that. When it applies: a reply the person stopped, a request that failed
+  after the provider may have worked on it (a connection dropped in the middle, a timeout, a server error, an error that is none of the known kinds,
+  and any failure after some text had arrived), and a reply that ended normally but whose usage report was empty (all four numbers zero is read as "no
+  report"). A real report replaces a guess for the same request: the ledger takes the later line. In the running app that can happen when Stop is
+  pressed after the report has already arrived (the report is counted, as "stopped", not as a guess); a report that comes after the app has
+  stopped listening cannot, because there is nobody left to read it. **Nothing owed** ("rejected", zero tokens, not counted): the provider turned the
+  request away before doing any work, which is what these failures mean: the key, the permission, a model it does not have, the rate, the credit, a
+  request it could not take, a connection that never reached it, or a provider too busy to start, when no text had arrived.
+- **What the page sees.** One new event, `usage` (`{ tokens, costUsd, estimate }`), sent just before a reply's last event and only when something is owed;
+  one small line under a finished reply, "865 in, 300 out, $0.0065" (the whole input side added up; "about $..." for a guess; the four buckets, "the
+  thinking counts as writing" and "your provider's invoice decides" when hovered); and **Settings > Usage**, three rows (this chat, today, this month)
+  with their requests, tokens and cost, asked of main each time Settings opens. One new bridge function, `usage.summary(conversationId | null)`, and one
+  new optional field on the chat request, `conversationId`, which the page sets to the id the chat is saved under and which only decides which chat a
+  cost is shown under. The line under a reply is kept on the screen only: it is not saved with the message (the ledger is the record), so a chat opened
+  from History shows no line under its replies, and its sum in Settings is read from the ledger and is still there. Saving it would make the chat file
+  version 4, one more step a build cannot take back (IDEAS). A replaced reply (Regenerate, Edit) stays counted: it was billed.
+- **Where the sums are shown.** In Settings, not in the header (7.6 made it one row) or the chat bar (which has rules of its own). Today and this month
+  follow this computer's clock (midnight, the first of the month); a changed time zone or clock moves the edges.
+
+**Choices I made where things were unclear.** One file, not one per month (the sums are worked out from the records in memory, and a file per month
+would need records to cross files when a request ends in another month). Prices are stored in the record, not looked up later. The guess uses bytes,
+not characters, because that is what a token follows more closely. The failures that count were chosen by what a provider is likely to bill: the
+safe error is to count something that was not billed. "Rejected" records are written (not skipped) so the file shows every request. The ledger fails
+closed on `begin` and open on `finish`. A model name that is not in the registry any more still counts (the record carries its prices). The page's
+`conversationId` is refused when it is not an id, not quietly dropped (a page that sends one is ours and is wrong, or is not ours).
+
+**Threat note.** What could go wrong, what stops it, what is left.
+
+- _A hostile or broken page._ It has no function that writes the ledger; it cannot name a record's id, price, token count or state (main makes all of
+  them; fields a page adds to a request are not read, and a window check sends some); it can say which chat a cost is shown under, which changes only
+  the "This chat" row and not today's or the month's sums, and which is refused unless it is an id; `usage.summary` answers with sums, the count of
+  unreadable lines and a time, and no path, record or id. The summary of anything that is not a chat id is the summary with no chat.
+- _Spending that is not counted._ (1) Thinking that was never shown, in a guess (above). (2) A request the provider billed although it turned it away
+  (we assume it did not). (3) A request that was begun and whose line could not be written is refused, not counted. (4) A damaged line in the file is skipped
+  and its cost is missing from the sums; Settings says how many lines could not be read. (5) The ledger edited or deleted by the person: it is their file and
+  plain on purpose (safety rule 9); the limit of 8.2 stops the app, not a person who changes the file. (6) Two copies of the app at once: each reads the
+  file once, so each misses the other's lines until it is restarted; a line is written whole and the check after a write allows the file to have grown.
+  (7) Costs that are not tokens and not list prices: Fast mode, the Batch API, data residency (1.1 times), web search, an invoice's discounts or tax.
+  The app uses none of these now; the figure is **list prices, and the provider's invoice is what counts** (the Settings text says so).
+- _Prices that are wrong._ They are hand-edited facts with a date (Settings shows when they were checked); a price that has changed since is a wrong
+  cost. The registry file is checked at startup, a cache read dearer than input is refused, and `verify-8-1.mjs` compares each of the seven models'
+  four prices with what the pages said.
+- _The clock._ A clock set back or forward, or a changed time zone, moves "today" and "this month". A record dated in the future counts in both.
+- _Growth._ The file grows by two lines (about 600 bytes) a request for ever; nothing compacts it (IDEAS).
+- _Rule 1 (nothing leaves the PC unseen)._ Nothing new leaves it: the ledger is local, and nothing in a request changed (the golden requests are the
+  same bytes).
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only. A plain-Node suite, `verify-8-1.mjs` (194 checks, every file
+check in a normal folder and in the EFS-encrypted %APPDATA%): the cost of each bucket alone and together; the guess; the strict reader (a table of 40
+refused lines); the sums, with the edges of a day and a month (the last millisecond of yesterday, the first instant of the month, the turn of the year);
+the file (a second line replacing the first, a guess replaced by a real report, also after a restart, a cut-off last line, damaged and odd lines, 25
+requests at once, a request that cannot be written, a disk that refuses the end, the size cap); the registry's four prices for all seven models
+against the pages; and the request's new field. A window suite, `verify-8-1w.mjs` (81 checks, `run81.mjs`), against the fake Anthropic API, which now
+reports cache tokens ("cached") and nothing at all ("no-usage") on request: the file, the line under a reply, the sums in Settings against a second
+count made from the file, a guess after Stop, every kind of failure (eleven), Regenerate and Edit, chats kept apart and a chat's sum back after History, what
+a page cannot do, and a request refused when the ledger is read-only. A restart suite, `verify-8-1b.mjs`, on the same profile after a crash has been
+imitated in the file (a request that never ended, a cut-off line). **Negative controls** (`tools/specs81`, `specs81w`): 21 breakages under Node and 15 in the real window, **all caught**, each file proved restored by hash (and one hash over `src/` and `registry/` identical before and after the window batch). They cover: each bucket priced at the wrong price, a wrong guess rule, a reader that accepts a negative count or an unknown state, sums that count a refused request, start "today" a day early or leave out the first instant of the month, a file where the first line of an id wins or a cut-off line is joined by the next write or the size cap is off or `begin` swallows a failure, a registry that accepts a cache read dearer than input or does not require a price or has a wrong price, a chat id that is not checked (in the request, and in the summary), the refused and the failed counted the wrong way round, the report ignored, a guess not marked, a stopped reply not settled, no usage event, a request sent although it could not be recorded, the chat id dropped by main or not sent by the page or not told to the chat, the summary taking the page's id, "about" not said, and a line that carries an extra field or text that was sent. Three were caught by one check each (the unwritable ledger, the stopped reply, the summary of a non-id) and the rest by two or more (up to 18).
+**Not checked:** (1) **a real call to either provider**: no real usage report has been read by this app, so what a real Anthropic or OpenAI stream
+reports (the cache numbers, whether the thinking is in `output_tokens`, what a stopped reply is billed) is my reading of the documentation; the cost
+for a real reply is for you to compare with the provider's own usage page. (2) The OpenAI path through the window (its usage conversion is checked
+under Node, D-022, and the cost is the same function). (3) That `Page.bringToFront`, which the test client now calls when the test window reports
+"hidden", fixes the stall: it did not need to fire in the runs of this slice. (4) Daylight-saving changes and other time zones. (5) Two copies of the
+app. (6) A ledger near the 64 MiB cap in the real app (only with a small cap under Node). (7) A screen reader and the layout at 280 px for the new
+section. (8) The built app: `npm run build` passes, but the suites were not run against the built app (the `preview` part of the regression waits for your go-ahead), and neither was the full regression: what was run is the plain-Node part (all 13 suites), the new suites on the dev app, and the controls above.
+
+Status: accepted (Stage 8.1). Revisit: the first real replies (do the numbers match the provider's usage page?); 8.2's limits, which will read
+`summary` and the in-flight records, and must say in Settings that deleting the file resets the count; thinking that is not shown, in a guess; a ledger
+that is compacted; the per-reply line on a chat from History (a file version 4).
+
+## D-031 - Stage 8.2: spending limits, chosen by the owner, checked in the main process before every request
+
+Safety rule 6 (money has a hard stop) is what this slice makes true: 8.1 counted, 8.2 stops. It carries out the owner's decision of 2 October 2026 that
+**there are no preset numbers**: the app asks for a daily and a monthly limit before the first send, with nothing filled in, and Settings has a
+deliberate "No limit" with a one-line warning. Nothing that can loop or spend more (Stages 11 to 13) is built before this exists.
+
+- **What a limit is.** Two of them, a daily and a monthly one, each in US dollars in whole cents ($0.01 to $10,000), or **"No limit" chosen on purpose**.
+  "Not chosen yet" is a third state, kept apart from "No limit" everywhere (the file, the status the page gets, the check). Today runs midnight to midnight
+  and the month from the 1st, by this computer's clock (as the Usage sums do, D-030). They are kept in `limits.json` in the data folder, beside
+  `preferences.json`, as a line a person can read: `{"version":1,"daily":5,"monthly":"none"}` (a limit not chosen is left out). Written in place and read back (D-010:
+  no rename on this PC's EFS-encrypted %APPDATA%), read once and kept; a change made to the file while the app runs is heard at the next start.
+- **Until both are chosen, nothing is sent.** The page asks in a dialog before the first message ("Set your spending limits": two empty boxes with a "No
+  limit" tick each, what is billed and by whom, and that they can be changed in Settings). It can be put off ("Not now" or Escape); then the empty chat says "Set
+  your spending limits to start chatting" with a "Set limits" button, and **main refuses every request** with a sentence ("Nothing was sent: no spending limits are
+  set yet. Open Settings, set a daily and a monthly limit (or choose No limit), and try again."). The page cannot get round it: a request made straight through its
+  bridge is refused the same way (checked). A `limits.json` that is **missing, damaged or cut off holds no choice**, never a default and never "No limit": each field
+  is read on its own (a bad daily keeps a good monthly), a bad one is "not chosen", the app asks again, and what was chosen is filled in. A file that cannot be
+  read at all (a folder in its place, a disk error) refuses requests with "the spending limits could not be read on this computer", and Settings shows "not chosen" so
+  that the person can choose; saving then says it could not write (checked with a folder in the file's place).
+- **The check.** In `src/main/chat.ts`, for every request, **in the ledger's own turn** (`begin` is given the check; it runs after the ledger is read and before the
+  request's line is written, so what has been spent and the line that adds this request to it cannot be parted by another request: ten requests asked for at
+  once with money for three let exactly three through, checked). It takes today's and this month's spending as the ledger counts them (requests still on their way
+  included, at their input guess; a refused request owes nothing; the provider's own report replaces a guess), adds **this request's input at list price**
+  (the least it can cost), and refuses if that is **more than** a limit: an amount that lands exactly on the limit may go, a cent more may not, and a limit that is
+  already reached refuses anything. A refusal writes nothing to the ledger (nothing was sent) and reaches the page as the reply's error, in one plain sentence that
+  names the limit: "Nothing was sent: you have reached your daily limit of $5.00 ($6.00 so far today). You can raise the limit in Settings (today's count starts
+  again at midnight)." ("this would take this month's spending past your monthly limit of $50.00 ($49.50 so far)" when it has not been reached yet; both limits in
+  one sentence when both stop it).
+- **Every way to ask is covered, because there is one place a provider is called.** A new message, Regenerate ("Try again" after a failure), an edited message sent
+  again, and a call made through the bridge all reach `runReply` in `chat.ts`, which is the only caller of a provider's `stream` (a source check in `verify-8-2.mjs` says
+  so, and that the check comes before the call). "Test key" asks for the list of models, which costs nothing, and is not a request in this sense.
+- **The one way past a limit, and how far.** The length of a reply is not known before it ends, so **a request that starts under a limit can end over it**: by at most what
+  one reply can write (the ceiling is 16,000 tokens a reply, thinking included: $0.80 at the dearest output price in the registry, $50 a million; $0.32 at Opus 5.5's
+  $20; $0.08 at Haiku 4.5's $5), plus whatever the real input was above the app's guess of it (the guess is on the high side for English), plus the same again for each request
+  that is in flight at the same moment (the page lets one reply run at a time; a script calling the bridge could start several, and each would pass on the same money). The
+  limit is on **the app's own count at list prices, not on the invoice** (D-030), so a provider's own limit in its account remains the real backstop, which the "No limit" line
+  says. Settings says the first part ("can end a little over it, by at most that one reply"). 8.3 (the confirmation before a very large request) will show the
+  worst case before it is sent.
+- **What the page can do.** One new bridge function, `settings.setLimits({ daily, monthly })`, and one new field in the settings status, `limits`. Main checks what it is given
+  (both sides, each "none" or an amount in whole cents between $0.01 and $10,000; an amount as text, a fraction of a cent, zero, a negative number, NaN or a missing side is
+  refused) and **builds its own copy field by field**, so nothing else the page adds is kept. The page **cannot take a choice back to "not chosen"**, cannot read the file
+  or its path, and has no function that touches the ledger. In Settings: a "Spending limits" section (two boxes, "No limit", the warning when either is ticked, a hint when
+  the daily limit is above the monthly one, what the limit counts, the one-reply overshoot, and that **deleting the usage file starts the count again from zero**), and the
+  Usage rows say how much of each limit has gone ("$6.00 of $5.00").
+
+**Choices I made where things were unclear.** (1) The check adds only the request's own input, not the most the reply could cost: adding the ceiling would refuse
+requests while there is still room (a $50 limit would stop at $49.20 on the dearest model) and is what 8.3 shows the owner to decide on. (2) A reply is not stopped in the middle
+when its running cost passes a limit (IDEAS): the running figure of an unfinished reply is a guess, and a half reply is also billed. (3) The limits are in their own file, not in
+`preferences.json`: the two files are read and written in different directions of safety (a torn preferences file forgets a model, a torn limits file must forget nothing that
+lets money through). (4) The dialog can be put off, because a person who opens the app to read an old chat should not be forced to choose first; main is what refuses. (5) Whole cents
+and a ceiling of $10,000: a fraction of a cent cannot be typed, and "No limit" says what a larger number would mean. (6) A limit of zero is refused (it would be "pause the app", and
+"Not now" does that). (7) Today and this month follow the computer's clock, as the sums do. (8) The first-run dialog and the Settings section share one form
+(`LimitsForm`); the Settings section is rebuilt each time Settings opens, so its boxes show what is saved now (a first version showed empty boxes after the limits had been
+chosen in the dialog: found by the window suite, fixed, and the check stays).
+
+**Threat note.** What could go wrong, what stops it, what is left.
+
+- _A hostile or broken page._ It can only choose limits, in whole cents within bounds, and cannot unset them; every field is rebuilt by main; a refused choice leaves the file byte for
+  byte as it was (checked for nine kinds of bad choice); it cannot read `limits.json`, learn its path, or write the ledger; the check is in main, in the one place a provider is called,
+  and runs whatever the page says. A page that raised its own limit would be doing what the person's own Settings does; nothing in a reply (a model's output is text, never a call) can reach it.
+- _The person's own files._ `limits.json` and the ledger are plain files the owner can edit or delete (safety rule 9). Raising a limit in the file is the owner raising it; deleting the
+  ledger resets the count (Settings says so); damaging `limits.json` makes the app ask again, never lets money through. The limits stop the app, not a person who changes its files.
+- _Spending that is not stopped._ (1) The reply that passes the limit it started under (above). (2) Anything D-030 lists as not counted: thinking that was never shown in a guess,
+  a request the provider billed although it refused it, an unreadable ledger line (Settings says how many; the limit does not fail closed on them, because a cut-off last line is
+  what a crash leaves), two copies of the app each reading the file once, costs that are not tokens at list prices. (3) The clock: a clock set back, or a changed time zone, moves
+  "today" and "this month" and so can give back room that was used; it is the person's own computer. (4) Requests on their way when the app is killed count for their input only
+  (D-030). (5) A model whose price changed since the registry was checked (D-030): the limit counts at the price in the registry.
+- _A limit that is not there._ Not chosen is never "No limit": a missing, empty, cut-off, not-JSON or wrong-version file, a field that is not an amount this app could have
+  written, and a file that cannot be read all refuse requests; "No limit" is only what a person ticked (the file reads it only as `"none"`, in lower case).
+- _A refusal that costs something._ Nothing: a refused request is not sent and not written, and the limit is read from memory, so refusing does not touch the disk.
+- _Rule 1 (nothing leaves the PC unseen)._ Nothing new leaves it: the limits are local, and nothing in a request changed.
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only. A plain-Node suite, `verify-8-2.mjs` (215 checks, every file check in a normal folder and in the
+EFS-encrypted %APPDATA%): what an amount is and the 40 or so texts a person might type (a table of accepted and refused ones); what the page may hand over (a table of 25 bad choices, extra
+fields dropped); what `limits.json` holds and how each kind of damage is read (every one as "not chosen", a good field kept beside a bad one); the check itself (exactly at the limit may go,
+a cent more may not, a limit already reached, the daily alone, the monthly alone, both, "No limit", the sentences); the ledger running the check in its own turn (a refusal writes nothing, not even
+the folder; what the check is given, including requests on their way and a finished request's real report; yesterday's spending is in the month and not in the day, to the millisecond; **ten
+requests at once with money for three let exactly three through**; the limit still holds after a restart); the store (missing, damaged, empty, cut off, with a byte-order mark, unreadable, a save that
+fails, twenty saves at once, a read between two saves, an edit made while the app runs not heard); and two source checks (a provider is called from one place in main, and the check comes before
+the call). A window suite, `verify-8-2w.mjs` (62 checks, `run82.mjs`), on a profile that has never chosen limits, against the fake Anthropic API (which now has `[[mock:heavy]]`, a million
+tokens in and a hundred thousand out, $6 at Opus's prices): the first-run dialog (empty boxes, what is typed, "No limit", the warning, "Not now", Save), every way of asking refused while nothing is chosen
+(the message box, "Try again", the bridge), a request under the limits going, **a daily limit that is reached refusing a new message, "Try again", an edited message and a call through the bridge, each
+with the same sentence, nothing reaching the mock and nothing written to the ledger**, raising the limit in Settings and the retry going through, the monthly limit alone (with the day set to "No limit"),
+"No limit" for both, the limit passed by one reply that started under it (as the text says), nine kinds of bad choice from the page leaving the file byte for byte as it was, and extra fields dropped;
+a restart (`verify-8-2b.mjs`, 8 checks: the limits and the spending survive, the question does not come back, the daily limit is still reached with $12.00 counted from the file, and raising it lets
+the next request through); and three launches with a `limits.json` that is half there, not JSON, or a folder (`verify-8-2c.mjs`, 21 checks: asked again with what is known filled in, refused through
+the bridge, choosing repairs it, and with a folder in the file's place the request is refused with "could not be read" and Save says it could not write). **Negative controls: 32 breakages, all
+caught** (`tools/specs82`: 23 under Node; `tools/specs82w`: 9 in the real window), each file proved restored by hash. They cover: a limit that refuses at its own amount, a limit ignored (each of the two),
+the request's input not added, "not chosen" allowed or counted as chosen when only one is, an amount of zero or above the most accepted, three decimals accepted, extra fields or "unset" accepted from the
+page, a bad field or a file that is not JSON or a missing file read as "No limit", an unreadable file read as "not chosen", a byte-order mark, a cache that is not updated, the ledger skipping or ignoring
+its check or running it on yesterday's clock or with a request that costs nothing, the check not passed in `chat.ts`, a refusal treated as a write failure, the limits not read, a save of the page's choice
+without the check, a status that hides "not chosen", the dialog never opening, the amount used not shown, the "No limit" warning missing, and Save on while a limit is missing. Five of the nine window
+controls ended without a summary line because the suite waited for something that the breakage had made impossible (a dialog that never opened, a request that went through); each printed the failed
+checks that name the breakage first, so they are detections, but they are not counted as a clean pass-fail run. **What the suites found:** one real fault of mine, a Settings form that showed empty boxes
+after the limits had been chosen in the first-run dialog (the form was built before they existed); fixed, and the check stays. Everything else the first window run reported was my test (a click on a button
+below the fold of a dialog taller than the window; a limit of 7 that the profile's $12 of spending rightly refused). **Older suites made stale** by 8.1 or this slice and updated: the exact lists of the bridge
+and of the settings status in `verify-2-3`, `verify-3-4`, `verify-4-2`, `verify-4-3d` and `verify-5-3` (`usage` since 8.1, `setLimits` and `limits` now), the button count in `verify-5-3`'s check at 420 and 320
+px (which now also proves that "Save limits" stays inside the dialog), and one negative-control spec of 7.6 (`App.tsx` gained props). Re-run on this tree and clean: `verify-2-3` (64), `verify-2-3b` (5),
+`verify-3-4` (78), `verify-5-3` (66), `verify-7-6w` (46), `verify-8-1w` and `verify-8-1b` (81 and 12), and the plain-Node part of the regression (14 suites).
+**Not checked:** (1) **a real call to either provider**: nothing was sent to a real API, so a real usage report has still never been read by this app. (2) **The full regression** (about 54 minutes) and **the
+built app**: only the suites named above were run on this tree; the other window suites, the seeds, the scenarios, Stage 4 and the `preview` part wait for your go-ahead. (3) Daylight-saving changes, other time
+zones and a clock set back (the edges of a day and a month are checked under Node with the local clock). (4) Two copies of the app at once (each reads the ledger once). (5) A screen reader, and the limits
+form at 280 px (the older check at 320 and 420 px covers the Save button only). (6) A ledger near its size cap together with a limit. (7) A real reply that ends over a limit by more than the figure above
+(it is the registry's ceiling and prices, not a measurement).
+
+Status: accepted (Stage 8.2). Revisit: the first real replies (does the count the limit uses match the provider's usage page?); stopping a reply in the middle (IDEAS); 8.3, which shows the worst case before a
+very large request is sent; a warning when a limit is nearly used; a billing-day reset (IDEAS); what happens when the registry's prices change (the limit counts at the price in the registry).
+
+## D-032 - Stage 8.3: a question before a very large request, asked by the main process, with the figures shown
+
+The limits of 8.2 are the hard stop; they cannot tell the person what a request could cost before it goes, and they let a reply that starts under a limit end over it (D-031). This slice
+is the question that can come before the limit's check: when a request is large, the app shows what it could cost at the most, in dollars, and sends nothing until the person says yes.
+The plan said only "before a very large request, it shows the estimate and asks first", so **what "very large" means is my design, and the one number in it is mine**: see the choices.
+
+- **What is worked out, and by whom.** The main process, for every request, after the key is found and the request is built and **before anything is written or sent**. One guess at the
+  tokens the request sends (`estimateInputTokens`, D-030: the app's rules, the person's instructions and every message), made once and used three times, so the question, the limit's check
+  and the ledger's first line carry the same number (a check in the window suite compares the three). From it, `estimateRequest` (`src/shared/askFirst.ts`):
+  **what sending could cost at the most**, the tokens at the **dearer of the ordinary input price and the cache-write price** (the Anthropic request asks for caching, D-030, and the first
+  send of a conversation is written to the cache at a quarter more; a conversation the provider still holds from a message a few minutes ago costs far less, so the figure says "up to"
+  and the question says why), and **what the reply could cost at the most**: the request's own ceiling (`streamRequest.maxOutputTokens`: 16,000 tokens, thinking included, or less for a
+  model that cannot write that much) at the output price. The two added are the most the request could cost. All are guesses on the high side, at list prices; the provider's invoice decides.
+- **When it asks.** When **what the request sends** could cost **more than** the person's amount (exactly at the amount goes, as exactly at a limit does; the comparison is in millionths
+  of a dollar so that float noise cannot decide). **Not the reply**: its length is not known, and on the two dearest models a reply at its ceiling alone ($0.80) would make every request
+  "large". The amount is the person's: Settings > Large requests, in whole cents ($0.01 to $10,000) or a deliberate **"Never ask"**, kept in `ask-first.json` beside `limits.json`
+  (`{"version":1,"above":0.5}`, `"above":"never"`), written in place and read back (D-010), read once and kept. **Until the person chooses, $0.50 applies** (see the choices). Where $0.50
+  begins to ask, from the registry's prices (checked in `verify-8-3.mjs`): above **40,000 tokens** on Claude Fable 5.1 and GPT-6 Astra, **100,000** on Opus 5.5, **200,000** on Sonnet 5.5 and
+  GPT-6.1 Sol, **400,000** on Haiku 4.5, **4,000,000** on GPT-6 Luna. The dearest request the app can make today (the caps of `CHAT_LIMITS`: 600,000 characters of messages, 8,000 of
+  instructions) is about **$3.36** on Fable 5.1 or Astra: $2.56 to send and $0.80 to reply.
+- **A damaged file asks; it never turns the question off.** This is the opposite of the limits' file on purpose: a limit file that is damaged holds no choice and **refuses** requests (D-031),
+  and this one holds no choice and **asks at the default**. A file that is missing, damaged, cut off, in the wrong version, spelled in a way this app never writes (`"Never"` in capitals) or
+  unreadable (a folder in its place) reads as nothing chosen, and **never as "Never ask"**: every cut-off copy of the "Never ask" file reads as the default (checked). `read` never throws, so the
+  question cannot be skipped by a failure to read; an unreadable file is not remembered, so repairing it is heard.
+- **The question.** The main process sends the page a `confirm` event (the model, the figures, and the amount it asked above) **instead of sending the request**, and waits. The page shows
+  "Send this large request?" with three rows that add up (sending the conversation, the reply, the most it could cost), a line that these are guesses at list prices and a cached conversation
+  costs less, a line that the app asks above $X and that Settings changes it, and two buttons, **"Don't send" first and focused** (Enter alone cannot send a large request) and "Send". Escape is
+  no. It is a modal `<dialog>` with the role `alertdialog`, labelled by its title and described by its introduction. The page works out no figure of its own: it shows main's, each rounded **up** to the cent so that none is shown below what it could be, and the total is the sum of the rows as shown.
+  A request on the cheaper models almost never meets it (the most the app can send costs about $0.51 to send on Sonnet 5.5 and GPT-6.1 Sol, about $0.26 on Haiku 4.5); a request that is only
+  large because the conversation is long does meet it on the dearer ones (the whole conversation is what goes out again).
+- **Nothing is sent, and nothing is written, while it asks; and a yes means something.** The request waits in a small waiting room (`src/main/confirmation.ts`, no Electron imports) under the same
+  key as its running reply, "<window id>:<stream id>". **The ledger is not begun while the question is open**, so a request that is never answered counts nothing and an app that is killed
+  leaves nothing. A yes (`chat.confirm(streamId)`, a new bridge function) is **heard only for a question that is waiting**: one sent ahead of the question, twice, for another stream, for
+  a question already declined, or after a Stop is dropped (checked over the bridge, and with 100 questions at once under Node). A Stop, a reload, a closed window or a "no" **declines**: main
+  returns without a request. A question for a key that is already waiting is declined at once; a question that cannot be shown is declined; the question is shown only after it is waiting, so an
+  answer can never come too early to be heard. The request itself cannot carry an approval: `checkChatRequest` builds main's own copy, so a `confirmed` or `askFirst` field the page adds is
+  not read (checked, and a control breaks it).
+- **The limits come after the yes, never instead of it.** After a yes, main reads the limits **again** (they may have changed while the question was open) and `ledger.begin` runs the check of
+  8.2 in the ledger's own turn, exactly as before. A request that the limits would refuse anyway is **not asked about**: before asking, main looks at the sums and the limits, and if they refuse
+  the request it sends their sentence at once. That look only spares the person a question that cannot matter; the check that counts is the one inside `begin`.
+- **What the person sees afterwards.** "Don't send" (and Escape) ends the reply as an error line, **"Not sent: you chose not to send this request."**, with **Try again** (which asks again); the
+  page tells main (`chat.cancel`) so the question is gone from main and a later yes for it is dropped. It is saved in the chat like any failed reply. A Stop while the question is open ends the
+  reply as "Stopped". Regenerate, Try again and an edited message are asked about like a new message: all of them reach `runReply`, the one place a provider is called.
+- **What the page can do.** Two new bridge functions: `chat.confirm(streamId)` and `settings.setAskFirst(choice)` (an amount in whole cents, or "Never ask", checked again in main and rebuilt
+  field by field; the page cannot take a choice back to "nothing chosen", read the file or reach the ledger), one new event (`confirm`) and one new field in the settings status (`askFirst`).
+
+**Choices I made where things were unclear.**
+
+1. **What "very large" means: the input, not the worst case.** A trigger on the most the whole request could cost (input plus the reply ceiling) asks for every request on the dearest models, because
+   $0.80 of ceiling is always there; a trigger on the input alone is the part that grows with the conversation and is known. The figure for the reply is shown in the question, not part of the trigger.
+2. **An amount of my own, $0.50, until the person chooses.** The owner's decision of 2 October 2026 was that the spending **limits** have no numbers of the app's own. This is not a limit: it only
+   asks, the limits still decide, and it is the one place where I chose a number. I chose a default (instead of asking for a third number in the first-run dialog, or leaving the question off until
+   it was found) because a question that is off until someone finds it protects nobody, and a third box in the first-run dialog would be one more thing to answer before the first message. It is
+   shown in Settings ("You have not chosen an amount, so the app asks above $0.50") and in the question itself, changing it is one box, and "Never ask" is there on purpose. **This is the one
+   number to confirm or change.** I did not tie it to the limits (a fraction of the smaller limit): it would move whenever a limit is edited, and with a small budget it would ask on every message
+   to the dearest model.
+3. **The dearer of the two input prices.** For an Anthropic model the first send is billed at the cache-write price, so pricing the input at the ordinary price would show less than it can cost. The
+   question therefore says "up to", and says that a conversation still in the provider's cache costs much less. It overstates for an active chat; that is the safe way.
+4. **A question in the page, held by main, not an operating system dialog.** It is the same kind of dialog as the others, and the real window can be driven (an operating system dialog cannot be, by
+   the checks this project has). The cost is that the page can answer its own question: see the threat note.
+5. **It asks every time.** In a long chat on a dear model every message after the first asks, because the whole conversation goes out again. "Don't ask again in this chat" would weaken the question
+   (IDEAS); the amount in Settings is the way to ask less.
+6. **Figures rounded up, rows that add up.** A figure "up to $0.50" under an amount of $0.50 would look like a mistake when the request is a hair above it; so each figure is rounded up to the cent
+   and the total is the sum of the rows as shown (so the total can be a cent above the true total, never below).
+7. **`AmountField` is shared.** The amount box of the limits form was taken out into its own file and used by both forms; the page it draws is the same (the 8.2 suite re-run on it is clean).
+8. **The README was stale since 8.2** (it still said that nothing limits spending); it now says what 8.2 and 8.3 do.
+
+**Threat note.** What could go wrong, what stops it, what is left.
+
+- _A hostile or broken page._ **This question is not a defence against a hostile page, and says so:** a page that can call the bridge can call `chat.confirm` itself the moment it sees the `confirm`
+  event, and can choose "Never ask" in `settings.setAskFirst`, exactly as the person's own Settings can. What stops a hostile page spending is the limit (D-031), which the question never replaces
+  and which runs after any yes. What the page **cannot** do: give a yes ahead of time (dropped, checked), approve a request by a field on it (not read, checked), approve a question that was
+  declined or stopped (dropped, checked), approve another stream's question, make main skip the limit's check, read `ask-first.json` or its path, write the ledger, or turn the question off with
+  anything but the two choices main accepts. The question guards the person against their own slip and against a bug in the page.
+- _The person's own files._ `ask-first.json` is a plain file the person can edit or delete (rule 9). Damage to it asks at the default; a person who writes "never" into it has chosen "Never ask".
+- _Spending the question does not stop._ (1) A request under the amount, however many (a chat that grows in small steps asks the first time its input is over the amount, and every time after).
+  (2) Everything D-030 and D-031 list as not counted or not stopped: the figure is the app's own guess at list prices, on the high side for English and about right for Chinese, Japanese and Korean,
+  and it leaves out thinking that is not shown only in a guess made after the fact; a model whose price changed since the registry was checked. (3) "Never ask". (4) The reply, whose length is not
+  known: the question shows the most it could cost, and a reply that starts under a limit can still end over it (D-031).
+- _A question that is never answered._ It waits until the window closes, reloads or the person answers; nothing is written and nothing is sent meanwhile, so waiting costs nothing. If the app is
+  closed with a question open, the chat is saved with the reply as "stopped" (as any reply that was still arriving).
+- _A question that is wrong._ The figures are main's own guess, rounded up. A model changed while the question is open does not change what was asked about: the request was built with the model that
+  is shown, and that is the one that answers. The limits are read again after the yes. A key removed meanwhile does not stop a request already built (the key was read before the question).
+- _Rule 1 (nothing leaves the PC unseen)._ Nothing new leaves it, and nothing in a request changed (the golden requests are the same bytes). The `confirm` event carries a model id and numbers, no text.
+
+**What was checked, and what was not.** Against local mocks and scratch profiles only. A plain-Node suite, `verify-8-3.mjs` (288 checks, every file check in a normal folder and in the
+EFS-encrypted %APPDATA%): the estimate for all seven models in the registry (a million tokens in at the dearer input price, the 16,000-token ceiling out, the two added; the ceiling of the request
+that is really built, including a model that can only write 4,000), where the default begins to ask on each model (a table, and the first token count that asks), when the question is asked
+(16 cases: exactly at the amount, a millionth above it, float noise, "Never ask" for a request that could cost a million dollars, the input and not the reply deciding), what is typed (14 accepted and
+25 refused texts, and that the words are not the words of a limit), what the page may hand over (a table of 25 bad choices, extra fields dropped, the kind "default" refused), what `ask-first.json`
+holds (the exact texts; 26 damaged files, each read as the default and none as "Never ask"; every one of the 29 cut-off copies of the "Never ask" file; the whole file still reading as "Never ask"),
+the store (missing, damaged, with and without a byte-order mark, a folder in its place with `read` not throwing and the failure not remembered, a save that cannot be written, 20 saves at once,
+a read between two saves, an edit made while the app runs not heard), **the waiting room** (a yes the moment the question is shown, a yes before any question not remembered, a stop, a signal already
+aborted, the same key twice, a `show` that throws, other keys, a yes and a stop together in both orders, 100 questions at once, and no listener left on any signal), the way the amounts are written (ten
+cases and 20,000 random pairs: never below what it is, never more than a cent above, the rows adding up), and source checks (the question comes after the estimate and before the limits are read again,
+before the ledger and before the provider; nothing between touches the ledger but a look at the sums; one guess; the ceiling and the prices are the request's own; the provider is still called from
+one place; the yes handler checks who asks and answers only the sender's own stream; the page works out no estimate of its own; a chat request carries no field that approves it). A window suite,
+`verify-8-3w.mjs` (84 checks, `run83.mjs`) against the fake Anthropic API with Fable 5.1 chosen and **real 150,000-character requests**: a small request goes without a question; a large one opens the
+question with nothing sent and nothing written while it is open; the figures on screen against figures worked out in the suite from what the mock then received (**the same token count three times**: the
+question, the ledger's first line and an independent count of the request the provider got); Send, "Don't send", Escape, Try again, an edited message, the keyboard (focus on "Don't send", Enter
+declines, Tab then Enter sends), a Stop while the question is open, and **a yes sent afterwards by a script for each question that was declined or stopped, which sends nothing**; the limits coming first
+(a request a daily limit of $0.01 refuses is refused at once and not asked about); Settings (what it says, the box refusing "abc", 0 and 20000, Save, the sentence, the file, an amount of $5 letting the
+same request through, $0.10 asking for a conversation that is large only as a whole, "Never ask" with its warning); what the page cannot do (ten bad choices from the bridge leaving the file byte for byte
+as it was, extra fields dropped, **a yes sent twice the moment a request starts, and for other streams, and malformed, a field that claims approval, a yes after the end**, none of which sent anything,
+and a yes given to the question that is waiting sending exactly one request); narrow windows (420, 320 and 280 px); and a reload while the question is open. A restart suite, `verify-8-3b.mjs`
+(7 checks: $0.25 read back from the file and honoured by a request that the default would not ask about) and three launches with a damaged file, `verify-8-3c.mjs` (9, 9 and 10 checks: not JSON,
+`"Never"` in capitals, a folder: the default asks, saving repairs the file, and with a folder in its place Save says it could not write and the question is still asked). **Negative controls: 65
+breakages, all caught** (`tools/specs83`: 44 under Node; `tools/specs83w`: 21 in the real window), each file proved restored by hash, and the hash over `src/` and `registry/` identical before and
+after every batch. They cover: the estimate (the input at the plain price, or at the cache-write price alone; the reply priced as input; the total without the reply; the ceiling a constant
+instead of the request's own), when it asks (exactly at the amount asking; the reply counting in the trigger; "Never ask" still asking; no rounding to millionths; the default amount changed; the
+default read as "Never ask"), what is typed (three decimals, zero, no maximum), what the page may hand over ("default" accepted, extra fields kept, an amount not checked), the file (not JSON, a
+cut-off file, a bad amount, "never" in any case, each read as "Never ask"; the version ignored), the store (a missing file read as "Never ask", an unreadable one thrown or remembered, a
+byte-order mark, a cache not updated, a save not read back), the waiting room (an early yes remembered, a stop not heard, an answered question not removed, a second question replacing the first,
+a stopped reply still shown its question, the question shown before it waits, a `show` that throws), a request that keeps a field that approves it, the figures (rounded down, without the small
+subtraction, a total from unrounded figures), `chat.ts` (the guess made twice, the limits not read again after the wait, the yes handler not checking who asks, a yes keyed without the window, the
+answer ignored) and, in the window, the question never asked, the request sent whatever the answer, the ledger begun before the question, no look at the limits first, the saved choice ignored,
+Send saying no, "Don't send" saying yes, Escape saying yes, the keyboard starting on Send, a Stop not heard, the yes never sent, the no not told to main, a choice saved unchecked, the status hiding
+the choice, Save on for an invalid amount, the "Never ask" warning missing, the dialog's role missing, a field that approves a request (kept and honoured), and the waiting room not hearing a stop
+together with `chat.ts` not checking its signal. **What the controls taught me about the checks and the harness:** (1) The window suite cannot see the waiting room's own abort listener on its own:
+`chat.ts` also refuses to send when its signal was aborted, which stands behind the room, so nothing a person or a script can do shows the difference. The Node suite sees it; the window control
+removes both protections and is seen. (2) A field that is only kept and never read changes nothing in the window; the Node suite sees it kept, and the window control makes `chat.ts` honour it.
+(3) One window control first looked caught only because a step at the very start of the suite failed for an unrelated reason (a flake); a second run showed it was not caught, which is how (1) was
+found. A control that is caught at its first check is worth running twice. (4) The checks of the waiting room could hang on a sabotaged room; every awaited answer now has a timeout, so it is a FAIL
+line. (5) The window suite now records a step that waits for something that never comes as a failed check ("the suite stopped before its end: ..."), so a control that breaks the flow shows as a
+named detection with a summary and not as a crash. (6) **A real fault of the harness:** after one Node control `nc.mjs` did not put `chat.ts` back, and printed nothing about it (its copy-back step
+failed or never ran; the cause is not proven, a file held for a moment by another program on Windows is the likely one, and the same control ran clean when repeated). It was found only because the
+whole tree was hashed before and after the batch. The file was restored from its backup (the backup's hash checked against the one printed by the other controls), `nc.mjs` now retries the copy for
+several seconds, proves each file by hash and prints `RESTORE FAILED` if it cannot, and `nc-all.mjs` says when a control printed no "restored" line.
+**What the suites found:** one real fault of mine, found by the check that the page logs no console error: the new Settings section had the same React key as the section beside it (the first window
+run reported "two children with the same key"); fixed with its own key, and the check stays. A second, found by the narrow-window check: the question's table of three columns overflowed sideways
+at 280 px; it is now two columns with the tokens under each label. Everything else the first runs reported was my test (a wrong paragraph number in two checks; waiting for the Send button while the
+question was open; a millionth-of-a-dollar rounding that made "one more token" the wrong expectation on the cheapest model). **Older suites made stale** by this slice and updated: the exact lists of the
+bridge and of the settings status in `verify-2-3`, `verify-2-4`, `verify-3-4`, `verify-4-2`, `verify-5-3` and `verify-8-2w` (`setAskFirst`, `chat.confirm`, `askFirst`), the button count in
+`verify-5-3`'s check at 420 and 320 px (the Settings dialog has one more Save), and two negative controls of 8.1 and 8.2 whose target line had moved in `chat.ts`. Re-run on this tree and clean: `verify-2-3` (64; its first run had one failure, a status-shape line I had
+missed), `verify-2-3b` (5), `verify-2-4` (71), `verify-3-4` (78), `verify-4-2` (91), `verify-5-3` (66), `verify-7-3` (53), `verify-7-6w` (46), the 8.1 suites (81 and 12), the 8.2 suites (62, 8, 8, 6
+and 7), and the plain-Node part of the regression (15 suites).
+**Not checked:** (1) **a real call to either provider**: nothing was sent to a real API, so what a real request costs against these figures is unknown (compare the first real replies with the provider's
+usage page; the figure is a guess on the high side, and a cached conversation costs far less). (2) **The full regression** (about 55 minutes) and **the built app**: only the suites named above were run on
+this tree; the other window suites, the seeds, the scenarios, Stage 4 and the `preview` part wait for your go-ahead. (3) The question with an OpenAI model through the window (the code is provider-neutral and
+the estimate is checked for all seven models under Node; the window was driven with Fable 5.1 only). (4) A screen reader (the dialog is a modal `<dialog>` with the role `alertdialog`, a label and a description, and its rows are a table with row
+headers; only the attributes were checked), and a real keyboard rather than the test client's key events. (5) Another display scale, a right-to-left language, and a window zoomed to 200%. (6) A model whose `maxOutputTokens` is lower
+than 16,000 in the window (checked under Node). (7) Two windows (the app has one).
+
+Status: accepted (Stage 8.3). Revisit: the first real requests (is the figure about right against the provider's usage page, and is $0.50 the right amount to start from); "don't ask again in this chat"
+(IDEAS); the limits still left in the question (IDEAS); whether the question should be an operating system dialog once there is a way to check one; Stage 9's attachments, which will change the cap on a
+request and so how often this asks.
+
+## D-033 - Stage 8 as a whole (8.1 to 8.3): what it added to the app's surface, the threat note across its three slices, and what was not checked
+
+Stage 8 (D-030 to D-032) is the money stage (safety rule 6): every request is counted in a ledger, a daily and a monthly limit that the owner chose stop requests in the main
+process, and a question comes before a very large request. Each slice has its own threat note. This is the stage's: the surface the three slices added taken together, the risks
+that exist only where they meet, what the full regression of 8.5 showed, and what was not checked. It changes no code. **It corrects one sentence of D-032** (the first bullet
+of the threat note below). 8.4, encrypted history, is not part of Stage 8: it is Stage 8b (the owner's decision of 2 October 2026).
+
+**What the stage added, in one list.**
+
+- **Across the bridge:** four functions (`usage.summary`, `settings.setLimits`, `settings.setAskFirst`, `chat.confirm`; channels `usage:summary`, `settings:set-limits`,
+  `settings:set-ask-first`, `chat:confirm`), two events from main to the page (`usage`, `confirm`), one optional field on `chat:start` (`conversationId`, which decides only which chat
+  a cost is shown under) and two fields in the settings status (`limits`, `askFirst`). Main checks everything the page hands over and builds its own copy field by field. The page has
+  no function that writes the ledger, reads one of the files or learns a path.
+- **On disk:** three new plain files in the data folder: `usage/ledger.jsonl` (appended to, never rewritten), `limits.json` and `ask-first.json` (written in place and read back, no
+  rename: D-010). None holds message text or a key. Saved chats are still version 3 and `preferences.json` is unchanged. `registry/models.json` is schema 0.4 (four prices a model).
+- **One order, in one place.** `runReply` in `chat.ts` is the only place a provider is called, and every way to ask (a new message, Regenerate, Try again, an edited message, a call
+  made straight through the bridge) goes through it: the key is read and the request built; one guess of the input tokens; **only if what the request sends could cost more than the
+  person's amount**, a look at the limits (a request they would refuse is not asked about) and the question; the limits read again; `ledger.begin` runs the limit's check in the
+  ledger's own turn and writes the request's first line; the provider is called; the ledger's second line, however the request ends.
+- **Not added:** no package (`package.json` and the lock file are the same as at Stage 7), no network call (a search of the diff of `src/main`, `src/shared` and `src/preload` for
+  `fetch`, addresses, `net`, `http`, `shell` and `child_process` found only the pattern that reads a typed amount), and nothing in `src/main/index.ts`, `src/main/security.ts` or
+  `index.html`: the window's guards (sandbox, context isolation, navigation lock, window-open handler, Content-Security-Policy) were not touched since Stage 7.
+
+**Threat note across the slices (what could go wrong where they meet, what stops it, what is left).**
+
+- _Who can lift the three protections: a correction to D-032._ D-032, and `ARCHITECTURE.md` after it, said that what stops a hostile page spending is the limit. That is true of a slip
+  of the person's, of a bug in the page and of anything a model writes (a reply is drawn as text and can call nothing, D-025). **It is not true of a page that is itself hostile.** The
+  same page can call `settings.setLimits` with "No limit" for both (or $10,000), `settings.setAskFirst` with "Never ask", and `chat.confirm` for its own question, and then send as many
+  requests as it likes: main checks each call for its form and for who is asking, and does not ask the person. The regression shows it from the other side, since `verify-8-3w` lifts
+  both limits through the bridge to run its own requests. So the three protections stop the app from spending by accident and at a model's word; they do not stop code running in the
+  page. What keeps such code out is the window's own guards (no HTML from a reply, the policy, the navigation lock: D-025, D-028), not the limit. **Left, and my recommendation before
+  Stage 11:** raising a limit or choosing "No limit" should need the person's answer to a question that main asks outside the page (an operating system dialog, or a confirmation a
+  page cannot send). I did not build it: 8.5 is the check and the note, nothing in the app yet lets a model's words reach the bridge, and it is the owner's call. It is in IDEAS.
+- _The data folder, once a tool can write._ The ledger, `limits.json` and `ask-first.json` are plain files the owner can edit or delete (rule 9), and the limit stops the app, not
+  a program run as the person. Today nothing writes in the data folder but the app's own code. A command run on approval (Stage 13) is a program run as the person: it could raise a
+  limit in the file or delete the ledger (which resets the count). The app reads each file once and keeps it, so a limit edited on disk while the app runs is heard only at the next
+  start; that narrows the gap and does not close it. **Left, for Stages 12 and 13:** the data folder must lie outside every folder a tool can read or write, and a command's approval
+  must show the command in full. Stage 10's memory and Stage 12's folder choice must not be allowed to point at it.
+- _Money, the three layers together._ The ledger counts what the provider reports (8.1), the limit refuses when the spending so far plus this request's input is over it (8.2), the
+  question asks when the input alone could cost more than the person's amount (8.3). **Three things none of them stops:** (1) The reply, whose length is not known: one reply can end
+  over a limit by at most its ceiling ($0.80 at the dearest output price in the registry, 16,000 tokens with the thinking), plus whatever the real input was above the guess, plus the
+  same again for each request in flight at that moment. (2) A conversation that grows in small steps, or a request just under the amount: on a dear model every message after the first
+  asks, so the person may come to press Send each time; "Don't send" holds the focus so that Enter alone cannot send, and what stops it then is the limit. (3) "No limit" and "Never ask",
+  both chosen on purpose. The count is the app's own, at list prices; **the provider's own limit on its account is the real backstop**, which Settings says.
+- _The guess is used three times._ One guess of the input tokens (the bytes of the app's rules, the instructions and every message, divided by 3) is shown in the question, used by the
+  limit and written as the ledger's first line, so the three never disagree; a real report then replaces it in the ledger and the sums catch up afterwards. It is on the high side for
+  English and about right for Chinese, Japanese and Korean. **It has not been measured against a real tokenizer for text that tokenizes badly** (long random strings, minified code,
+  runs of digits), where it could be low, and so could the question and the check made before such a request. A guess made after the fact leaves out thinking that was never shown.
+- _Counted is not billed._ Fast mode, the Batch API, data residency, web search, an invoice's discounts and tax are not in the figure (the app uses none of them now); a price that
+  changed after 2 October 2026 is a wrong cost until the registry is updated; a request the provider billed although it turned it away is counted as nothing. The figure is list prices.
+- _Three files that fail in different directions, on purpose._ A first line that cannot be written: nothing is sent. A second line that cannot be written: logged, the request has
+  happened, and the first line (a guess of the input) is what a later run counts. `limits.json` missing, damaged, cut off or in the wrong version: "not chosen", and every request is
+  refused; unreadable (a folder in its place): refused with a sentence. `ask-first.json` damaged or unreadable: the default amount, so the question is still asked, and **never "Never
+  ask"**. Damage to these files can only make the app ask or refuse more. The exceptions are a damaged **line** of the ledger (skipped and counted, so the sums are smaller; Settings
+  says how many; the limit does not fail closed on it because a cut-off last line is what a crash leaves) and a ledger that has lost whole lines, which nothing can see.
+- _A question that waits._ It costs nothing and writes nothing; a Stop, a reload, a closed window or a "no" declines it, and a yes is heard only while it waits. A key removed
+  meanwhile does not stop a request already built, and a model changed meanwhile does not change which one answers (the request was built with the model that is shown).
+- _Rule 1 (nothing leaves the PC unseen)._ Nothing new leaves it: the ledger, the limits and the question are local, the request is the same bytes (the provider suite's golden-request check, taken from Stage 2, still passes), the
+  `confirm` event carries a model id and numbers and no text, and `usage:summary` answers with sums. (The providers' prices were read from their pages by me, on 2 October 2026,
+  not by the app.)
+- _Rules 2 and 4 (untrusted content is data; no chaining)._ Nothing in this stage acts on what a model says. A reply cannot call the bridge, no request begins without a click or a
+  key press of the person, and there are no tools, loops or agents. The question is the first place where the app waits for the person's decision before a request.
+- _Losing something._ "Don't send" ends as a saved error line and Try again asks again; a replaced reply stays counted because it was billed; nothing in the stage deletes anything.
+  Deleting the ledger resets the count, and Settings says so.
+
+**The roadmap's Stage 8 safety line (rule 6), claim by claim.**
+
+- _Usage and cost are shown._ Per reply, for this chat, today and this month (D-030); how much of each limit has gone; the question's figures; always as list prices ("about" for a
+  guess, "your provider's invoice decides").
+- _A limit stops requests._ Checked in main before every request, in the ledger's own turn, whichever way it was asked (D-031): exactly at the limit may go, a cent over may not, the
+  refusal is a sentence that names the limit, and a refused request writes nothing. **It holds against** a slip, a bug in the page, a model's words and a script that only reaches
+  `chat:start`; **it does not hold against a page that changes the limit** (the first bullet above).
+- _Anything that can loop comes after._ Nothing loops: no tool, search or agent exists, and every request begins with a click or a key press. Stages 11 to 13 are not built.
+- _It counts what D-028 listed._ The output including the thinking at any effort level, every Regenerate and Edit, the instructions inside each request's input and the whole
+  conversation that goes out again each time: all of it is in the request or in the provider's report, and the window suite sends each of them (D-030).
+
+**What the full regression of 8.5 showed (5 October 2026).** `node tools/regress.mjs t85`, all six parts, 69 minutes (15:21 to 16:30), on the tree of the 8.3 commit (`31b4f59`) with only
+`docs/` changed while it ran (a hash over every file of `src/` and `registry/` was the same before and after, and `git diff` of them is empty): **89 runs, 86 clean the first time, and
+the other three clean when run again after two fixes to the tests (below). No app was at fault.** Clean the first time: the 15 plain-Node suites (2,468 checks: the provider suite
+with its golden-request check, the registry, the store, the adapters, the credential store, the rankings, Effort, Markdown, Regenerate and Edit, Instructions, and the three of this
+stage: the ledger 194, the limits 215, the question 288); 17 of the 18 window launches against the dev app (Stages 1 to 3, 5, 6, 7 and 8, with their restarts: 111, 64, 5, 71, 78,
+66, 53, 27, 58, 53, 53, 84, **81, 62, 84** (the three of Stage 8, restarts and damaged files included), 46 and 13 checks); the 16 seeded `preferences.json` launches; 9 of the 10
+registry scenarios (each put `registry/models.json` back, proved by hash); all 7 Stage 4 history launches against the dev app and again against the built one; and 14 of the 15
+launches against the built app (`electron-vite build`, then the same suites on the compiled bundle, **the three Stage 8 suites included: 81, 62 and 84 checks, the same counts as in
+the dev app**). The three that failed were stale expectations in two test files that earlier slices had made out of date and nobody had run since: (1) `verify-5-4` (dev and built, 46
+of 47) expected a reply's events to be `start`, text, `done`, and since 8.1 a `usage` event comes just before `done` (D-030); the check now says `start`, text, one `usage`, `done`.
+(2) The `wrong-version` scenario (8 of 13) expected the message "this version of the app reads 0.3", and the registry has been schema 0.4 since 8.1; the expected text is now 0.4
+(`verify-5-2` already said so). Both were found by reading the failing line and checked against D-030 before the test was changed. After the fixes: the scenario 13 of 13 (and
+`registry/models.json` back, identical by hash), `verify-5-4` 47 of 47 on the dev app and 47 of 47 on a freshly built one. The changed `verify-5-4` check has no negative control of its
+own (it fails if the `usage` event is absent, by reading, and was not sabotaged). **There was no hidden-window stall, no lost window and no retry in these 89 runs**: the watcher
+(`tools/watch-windows.ps1`) logged five moments of keyboard or mouse input, none in a launch that failed, so the stalls of 2 October did not recur, and their cause is still not known.
+(In all this, the 8.1 to 8.3 negative controls were not run again: they were run when each slice was made, 65 + 32 + 36 breakages, each caught, and `src/` has not changed since; what
+this run re-proves is that the checks still pass on the whole tree.)
+
+**Not checked, for the stage as a whole.** (1) **A real call to either provider**: none has been made in any stage, so no real usage report has been read by this app. How a real
+API reports the cache numbers, whether the thinking is inside the output count, what a stopped reply is billed, and whether the app's figures match the provider's usage page are all
+unknown; the mock is my reading of the documentation. The first real use is the owner's: compare the figures with the provider's page. (2) **Whether $0.50 is a sensible amount to
+ask above** (D-032: the one number I chose); it is only a default and the owner decides. (3) **The owner's own profile**: nothing ran there, only scratch profiles; it will show the
+first-run limits question when this build first starts on it, because it has no `limits.json`. (4) **The OpenAI path through the window**: the ledger, the limits and the question
+were driven with Anthropic models only (the conversion of OpenAI's report and the estimate for all seven models are checked under Node). (5) **The guess against a real tokenizer**
+(above). (6) **Time**: daylight-saving changes, other time zones, a clock set back, and midnight passing while the app is open (the edges of a day and a month are checked under Node
+with the local clock). (7) **Two copies of the app at once** (each reads the ledger once), and a file edited while the app runs. (8) **A big ledger in the real app**: near its 64 MiB
+cap, and how long the first request takes to read it (only a small cap under Node). (9) **A screen reader**, a real keyboard (the test client sends key events), a zoom of 200%,
+another display scale, a right-to-left language, and window sizes other than 900, 420, 320 and 280 px (the limits form was measured at 320 and 420 for its Save button only). (10) **A model
+that can write less than 16,000 tokens, in the window** (checked under Node). (11) **A hostile page** lifting the protections: shown by code and by the suite's own use of the bridge,
+not attacked as a separate test. (12) **The packaged installer** (the built-app runs use `electron-vite preview` on the compiled bundle, and `app.isPackaged` is false there), and any
+system other than Windows. (13) **Why the test window sometimes reports "hidden"** (tools/README); not proven.
+
+Status: accepted (Stage 8 closed; 8.4 is Stage 8b). Revisit: the first real requests (the figures, and $0.50); a way to raise or remove a limit that the page cannot do alone, before
+Stage 11; the data folder kept out of reach of tools, before Stages 12 and 13; a measured guess; a ledger that is compacted; a warning when a limit is nearly used (IDEAS).

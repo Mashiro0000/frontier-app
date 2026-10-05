@@ -1,0 +1,14 @@
+{
+  "label": "n83-store-missing-is-never",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/askFirst.ts",
+      "from": "        return { setting: defaultAskFirst(), keep: true }\n",
+      "to": "        return { setting: { kind: 'never' }, keep: true }\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

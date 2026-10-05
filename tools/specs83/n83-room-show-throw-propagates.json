@@ -1,0 +1,14 @@
+{
+  "label": "n83-room-show-throw-propagates",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/confirmation.ts",
+      "from": "        try {\n          show()\n        } catch {\n          finish('decline') // the question could not be put in front of anyone: nothing is sent\n        }\n",
+      "to": "        show()\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

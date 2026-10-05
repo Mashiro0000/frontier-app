@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import type { SettingsStatus } from '../../../shared/ipc'
+import AskFirstSection from './AskFirstSection'
 import { formatPrice, formatTokens, providerName } from './format'
+import LimitsSection from './LimitsSection'
 import ProviderKeySection from './ProviderKeySection'
+import UsageSection from './UsageSection'
 
 interface SettingsDialogProps {
   open: boolean
@@ -10,6 +13,8 @@ interface SettingsDialogProps {
   loadError: string | null
   onStatusChange: (status: SettingsStatus) => void
   onClose: () => void
+  /** The conversation on screen, so that Usage can say what it has cost (D-030). */
+  conversationId: string
 }
 
 function SettingsDialog({
@@ -17,7 +22,8 @@ function SettingsDialog({
   status,
   loadError,
   onStatusChange,
-  onClose
+  onClose,
+  conversationId
 }: SettingsDialogProps): React.JSX.Element {
   const dialogRef = useRef<HTMLDialogElement>(null)
   // Each key section holds what the person is typing and what it last said. Closing the dialog gives them new keys, so
@@ -98,6 +104,18 @@ function SettingsDialog({
           </>
         )}
       </section>
+
+      <UsageSection open={open} conversationId={conversationId} limits={status?.limits ?? null} />
+
+      {/* Fresh each time Settings opens (and closes), so the boxes show the limits as they are saved NOW: they may have been chosen in the first-run question. */}
+      <LimitsSection key={`${session}:${open}`} status={status} onStatusChange={onStatusChange} />
+
+      {/* Its own key: the section above has `${session}:${open}`, and two children of one parent must not share a key. */}
+      <AskFirstSection
+        key={`ask-first:${session}:${open}`}
+        status={status}
+        onStatusChange={onStatusChange}
+      />
 
       <div className="settings-footer">
         <button

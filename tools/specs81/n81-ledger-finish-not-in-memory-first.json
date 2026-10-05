@@ -1,0 +1,14 @@
+{
+  "label": "n81-ledger-finish-not-in-memory-first",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/usageLedger.ts",
+      "from": "        // In memory first: the sums must be right even if the disk refuses.\n        records.set(id, record)\n        try {\n          await append(record)\n          return { record, saved: true }",
+      "to": "        try {\n          await append(record)\n          records.set(id, record)\n          return { record, saved: true }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

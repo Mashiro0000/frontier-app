@@ -1,4 +1,4 @@
-// Slice 5.2 (ported from 3.1): the registry file at schema 0.3 (capabilities, per-model effort levels), its validator, the
+// Slice 5.2 (ported from 3.1): the registry file at schema 0.4 (capabilities, per-model effort levels, four prices per model since 8.1), its validator, the
 // page-facing projection and the model-choice check, straight under Node (no window). Run: node verify-5-2.mjs
 import { REPO, REPO_URL } from './paths.mjs'
 import './ts-resolve.mjs'
@@ -32,7 +32,7 @@ check('effort per model: Fable high, Opus medium, Sonnet medium, Haiku none (it 
 check('context: 1M for three models, 200K for Haiku; max output 128K and 64K', [by['claude-fable-5-1'], by['claude-opus-5-5'], by['claude-sonnet-5-5']].every((m) => m?.contextWindow === 1_000_000 && m.maxOutputTokens === 128_000) && by['claude-haiku-4-5-20251001']?.contextWindow === 200_000 && by['claude-haiku-4-5-20251001']?.maxOutputTokens === 64_000)
 check('prices (USD per million tokens, in/out): 10/50, 4/20, 2/10, 1/5 (Anthropic), 10/50, 2/10, 0.1/0.5 (OpenAI)', JSON.stringify(Object.values(by).map((m) => [m.pricing.inputPerMTok, m.pricing.outputPerMTok])) === JSON.stringify([[10, 50], [4, 20], [2, 10], [1, 5], [10, 50], [2, 10], [0.1, 0.5]]))
 check('every entry is for a provider this app can call, and the first four are Anthropic\'s and the last three OpenAI\'s', Object.values(by).every((m, i) => m.provider === (i < 4 ? 'anthropic' : 'openai')))
-check('the file on disk and the schema constant agree on the version', fileJson.schemaVersion === REGISTRY_SCHEMA_VERSION && REGISTRY_SCHEMA_VERSION === '0.3')
+check('the file on disk and the schema constant agree on the version', fileJson.schemaVersion === REGISTRY_SCHEMA_VERSION && REGISTRY_SCHEMA_VERSION === '0.4')
 check('every supported provider has a display name', SUPPORTED_PROVIDERS.every((p) => typeof PROVIDER_NAMES[p] === 'string' && PROVIDER_NAMES[p] !== ''))
 
 // the result is a clean copy
@@ -55,9 +55,9 @@ for (const field of ['schemaVersion', 'updatedAt', 'source', 'defaultModelId', '
 }
 r = parseRegistry({ ...clone(fileJson), defaultModel: 'claude-opus-5-5' })
 check('refused: an unknown top-level field (a typo of defaultModelId is caught)', !r.ok && /unknown field "defaultModel"/.test(r.error), errOf(r))
-for (const v of ['0.1', '0.2', '1', 0.3, null, '']) {
+for (const v of ['0.1', '0.2', '0.3', '1', 0.4, null, '']) {
   r = parseRegistry({ ...clone(fileJson), schemaVersion: v })
-  check(`refused: schemaVersion ${JSON.stringify(v)}`, !r.ok && /schemaVersion is .*reads 0\.3/.test(r.error), errOf(r))
+  check(`refused: schemaVersion ${JSON.stringify(v)}`, !r.ok && /schemaVersion is .*reads 0\.4/.test(r.error), errOf(r))
 }
 for (const v of [null, '', '2026-13-01', '2026-02-30', '26-10-01', '2026-1-1', 20261001, '2026-10-01T00:00:00Z', ' 2026-10-01']) {
   r = parseRegistry({ ...clone(fileJson), updatedAt: v })
@@ -129,14 +129,15 @@ for (const [name, v] of [['zero', 0], ['negative', -1], ['fractional', 1.5], ['t
 skipped('maxOutputTokens larger than the context window', { contextWindow: 1000, maxOutputTokens: 1001 }, /maxOutputTokens must be .* at most contextWindow/)
 skipped('maxOutputTokens is zero', { maxOutputTokens: 0 }, /maxOutputTokens must be/)
 check('accepted: maxOutputTokens equal to the context window', parseRegistry({ ...clone(fileJson), models: [entry({ contextWindow: 1000, maxOutputTokens: 1000 })] }).ok)
-skipped('pricing is not an object', { pricing: 4 }, /pricing must have exactly inputPerMTok and outputPerMTok/)
+skipped('pricing is not an object', { pricing: 4 }, /pricing must have exactly "inputPerMTok", "cacheReadPerMTok", "cacheWritePerMTok", "outputPerMTok"/)
 skipped('pricing is an array', { pricing: [4, 20] }, /pricing must have exactly/)
 skipped('pricing lacks outputPerMTok', { pricing: { inputPerMTok: 4 } }, /pricing must have exactly/)
 skipped('pricing has an extra field', { pricing: { inputPerMTok: 4, outputPerMTok: 20, cachedPerMTok: 0.4 } }, /pricing must have exactly/)
-for (const [name, p] of [['negative', { inputPerMTok: -1, outputPerMTok: 20 }], ['NaN', { inputPerMTok: NaN, outputPerMTok: 20 }], ['Infinity', { inputPerMTok: 4, outputPerMTok: Infinity }], ['text', { inputPerMTok: '4', outputPerMTok: 20 }], ['10001', { inputPerMTok: 4, outputPerMTok: 10001 }], ['null', { inputPerMTok: null, outputPerMTok: 20 }]]) {
+const prices = (over) => ({ inputPerMTok: 4, cacheReadPerMTok: 0.4, cacheWritePerMTok: 5, outputPerMTok: 20, ...over })
+for (const [name, p] of [['negative', prices({ inputPerMTok: -1 })], ['NaN', prices({ inputPerMTok: NaN })], ['Infinity', prices({ outputPerMTok: Infinity })], ['text', prices({ inputPerMTok: '4' })], ['10001', prices({ outputPerMTok: 10001 })], ['null', prices({ inputPerMTok: null })], ['a negative cache read', prices({ cacheReadPerMTok: -1 })], ['a cache write as text', prices({ cacheWritePerMTok: '5' })], ['a cache write of 10001', prices({ cacheWritePerMTok: 10001 })]]) {
   skipped(`a price is ${name}`, { pricing: p }, /the prices must be numbers from 0 to 10000/)
 }
-check('accepted: free (0) and fractional prices', (() => { const x = parseRegistry({ ...clone(fileJson), models: [entry({ pricing: { inputPerMTok: 0, outputPerMTok: 0.25 } })] }); return x.ok && x.registry.models[0].pricing.outputPerMTok === 0.25 })())
+check('accepted: free (0) and fractional prices', (() => { const x = parseRegistry({ ...clone(fileJson), models: [entry({ pricing: { inputPerMTok: 0, cacheReadPerMTok: 0, cacheWritePerMTok: 0, outputPerMTok: 0.25 } })] }); return x.ok && x.registry.models[0].pricing.outputPerMTok === 0.25 })())
 for (const [name, v] of [['a word no provider has ("extreme")', 'extreme'], ['"minimal" (not a level this registry knows)', 'minimal'], ['upper case', 'MEDIUM'], ['a number', 5], ['undefined', undefined], ['an empty string', ''], ['false', false]]) {
   skipped(`effort is ${name}`, { effort: v }, /effort must be one of "none", "low", "medium", "high", "xhigh", "max" or null/)
 }
@@ -156,7 +157,7 @@ const hostile = JSON.parse(raw.replace('"provider": "anthropic",', '"provider": 
 const polluted = parseRegistry(hostile)
 check('a "__proto__" key in an entry is just an unknown field', polluted.ok && polluted.problems.some((p) => /unknown field "__proto__"/.test(p)) && polluted.registry.models.length === 6, polluted.ok ? probs(polluted) : errOf(polluted))
 check('...and nothing was polluted', ({}).polluted === undefined && Object.prototype.polluted === undefined)
-const rootHostile = parseRegistry(JSON.parse('{"__proto__": {"x": 1}, "schemaVersion": "0.3"}'))
+const rootHostile = parseRegistry(JSON.parse('{"__proto__": {"x": 1}, "schemaVersion": "0.4"}'))
 check('a "__proto__" key at the top level is refused', !rootHostile.ok)
 const t1 = Date.now()
 r = parseRegistry({ ...clone(fileJson), models: [entry({ label: 'x'.repeat(1_000_000), description: 'y'.repeat(1_000_000), id: 'z'.repeat(1_000_000) })] })

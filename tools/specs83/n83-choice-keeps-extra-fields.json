@@ -1,0 +1,14 @@
+{
+  "label": "n83-choice-keeps-extra-fields",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "if (kind === 'never') return { ok: true, choice: { kind: 'never' } } // nothing else it carries is read",
+      "to": "if (kind === 'never') return { ok: true, choice: input as AskFirstChoice }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

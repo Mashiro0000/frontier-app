@@ -1,0 +1,14 @@
+{
+  "label": "n81-month-edge-excluded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "if (record.at >= monthStart) addRecord(month, record)",
+      "to": "if (record.at > monthStart) addRecord(month, record)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

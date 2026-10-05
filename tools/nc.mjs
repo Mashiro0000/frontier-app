@@ -42,9 +42,29 @@ try {
   for (const f of fails) console.log('    ' + f.slice(0, 200))
   exit = 0
 } finally {
-  for (const f of files) copyFileSync(backups[f], f)
-  const ok = files.every((f) => sha(f) === before[f])
-  console.log(`[${label}] restored: ${files.map((f) => basename(f) + ' ' + sha(f)).join(', ')} -> ${ok ? 'ALL IDENTICAL to before' : '!!! SOME FILE DIFFERS FROM BEFORE'}`)
-  if (!ok) exit = 3
+  // Putting a file back must not depend on luck: Windows can hold a file for a moment (an indexer, an editor, a watcher), and one failed copy here once
+  // left a sabotage in the tree with no word about it (slice 8.3: caught only because the whole tree was hashed before and after the batch). So try
+  // again for a few seconds, prove each file by hash, and if one cannot be put back say so in a line that nc-all.mjs shows.
+  const failed = []
+  for (const f of files) {
+    let done = false
+    let last = null
+    for (let attempt = 1; attempt <= 30 && !done; attempt++) {
+      try {
+        copyFileSync(backups[f], f)
+        done = sha(f) === before[f]
+      } catch (error) {
+        last = error
+      }
+      if (!done) await new Promise((resolve) => setTimeout(resolve, 300))
+    }
+    if (!done) failed.push(`${basename(f)} (${last ? (last.code ?? last.message) : 'the hash differs'}; the original is ${backups[f]})`)
+  }
+  const ok = failed.length === 0
+  console.log(`[${label}] restored: ${files.map((f) => { try { return basename(f) + ' ' + sha(f) } catch { return basename(f) + ' (unreadable)' } }).join(', ')} -> ${ok ? 'ALL IDENTICAL to before' : '!!! SOME FILE DIFFERS FROM BEFORE'}`)
+  if (!ok) {
+    console.log(`[${label}] RESTORE FAILED for ${failed.join('; ')}: copy the original back by hand BEFORE anything else is run`)
+    exit = 3
+  }
 }
 process.exit(exit)

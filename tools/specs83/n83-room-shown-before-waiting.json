@@ -1,0 +1,14 @@
+{
+  "label": "n83-room-shown-before-waiting",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/confirmation.ts",
+      "from": "        pending.set(key, finish)\n        signal.addEventListener('abort', onAbort, { once: true })\n        try {\n          show()\n        } catch {\n          finish('decline') // the question could not be put in front of anyone: nothing is sent\n        }\n",
+      "to": "        try {\n          show()\n        } catch {\n          finish('decline') // the question could not be put in front of anyone: nothing is sent\n        }\n        pending.set(key, finish)\n        signal.addEventListener('abort', onAbort, { once: true })\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

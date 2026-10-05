@@ -542,6 +542,14 @@ body {
   color: var(--color-danger);
 }
 
+/* What a reply used and cost, under it (D-030) */
+.message-usage {
+  margin-top: 2px;
+  padding: 0 4px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
 /* ---------- what can be done with a message (D-026) ---------- */
 
 /* Shown when the pointer is over the message or the keyboard is in it, and always under the last message. */
@@ -839,7 +847,9 @@ body {
 
 .settings,
 .history,
-.instructions {
+.instructions,
+.limits-dialog,
+.large-request {
   /* The global reset removes the dialog's automatic centring margin, so put it back. */
   margin: auto;
   width: min(480px, calc(100vw - 32px));
@@ -854,8 +864,39 @@ body {
 
 .settings::backdrop,
 .history::backdrop,
-.instructions::backdrop {
+.instructions::backdrop,
+.limits-dialog::backdrop,
+.large-request::backdrop {
   background: rgba(0, 0, 0, 0.6);
+}
+
+/* The question before a large request (D-032): what it could cost at the most, in three rows that add up */
+.large-request-intro {
+  margin-bottom: 10px;
+}
+
+.large-request-table {
+  margin-bottom: 10px;
+}
+
+/* How many tokens a row is for, under its label (the label wraps, the amount beside it does not) */
+.large-request-tokens {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.large-request-total th,
+.large-request-total td {
+  padding-top: 8px;
+  font-weight: 600;
+  border-top: 1px solid var(--color-border);
+}
+
+.large-request-actions {
+  justify-content: flex-end;
+  margin-top: 14px;
 }
 
 .settings-title,
@@ -890,6 +931,36 @@ body {
 .history-status {
   font-size: 13px;
   color: var(--color-text-muted);
+}
+
+/* Usage (D-030): what this chat, today and this month have used and cost */
+.settings-usage {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.settings-usage th,
+.settings-usage td {
+  padding: 4px 0;
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.settings-usage th {
+  padding-right: 12px;
+  font-weight: 500;
+}
+
+.settings-usage td {
+  color: var(--color-text-muted);
+}
+
+.settings-usage .settings-usage-cost {
+  padding-left: 12px;
+  color: var(--color-text);
+  text-align: right;
+  white-space: nowrap;
 }
 
 .settings-label {
@@ -927,6 +998,50 @@ body {
 
 .settings-notice-error,
 .history-notice-error {
+  color: var(--color-danger);
+}
+
+/* Spending limits (D-031): two amounts, each with a "No limit" box */
+.limits-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.limits-intro {
+  margin-bottom: 12px;
+}
+
+.limit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.limit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.limit-currency {
+  color: var(--color-text-muted);
+}
+
+.limit-amount {
+  flex: 1;
+  min-width: 0;
+}
+
+.limit-none {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.limits-warning {
   color: var(--color-danger);
 }
 

@@ -1,0 +1,24 @@
+{
+  "label": "w83-chat-no-question",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "if (askAbove !== null && needsConfirmation(askFirst, estimate)) {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-8-3w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s83nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8799",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w83-chat-no-question"
+  }
+}

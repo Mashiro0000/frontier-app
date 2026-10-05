@@ -1,0 +1,14 @@
+{
+  "label": "n82-unset-allowed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "  if (!limitsAreSet(limits)) return LIMITS_UNSET_MESSAGE\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

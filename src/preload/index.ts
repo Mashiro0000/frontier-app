@@ -17,11 +17,14 @@ const api: FrontierApi = {
     testApiKey: (provider) => ipcRenderer.invoke(CHANNELS.settingsTestApiKey, provider),
     setModel: (modelId) => ipcRenderer.invoke(CHANNELS.settingsSetModel, modelId),
     setEffort: (modelId, level) =>
-      ipcRenderer.invoke(CHANNELS.settingsSetEffort, { modelId, level })
+      ipcRenderer.invoke(CHANNELS.settingsSetEffort, { modelId, level }),
+    setLimits: (choice) => ipcRenderer.invoke(CHANNELS.settingsSetLimits, choice),
+    setAskFirst: (choice) => ipcRenderer.invoke(CHANNELS.settingsSetAskFirst, choice)
   },
   chat: {
     start: (request) => ipcRenderer.send(CHANNELS.chatStart, request),
     cancel: (streamId) => ipcRenderer.send(CHANNELS.chatCancel, streamId),
+    confirm: (streamId) => ipcRenderer.send(CHANNELS.chatConfirm, streamId),
     onEvent: (listener) => {
       // Hand the page only the event's data, not Electron's event object around it.
       const handler = (_event: IpcRendererEvent, reply: ChatStreamEvent): void => listener(reply)
@@ -30,6 +33,9 @@ const api: FrontierApi = {
         ipcRenderer.removeListener(CHANNELS.chatEvent, handler)
       }
     }
+  },
+  usage: {
+    summary: (conversationId) => ipcRenderer.invoke(CHANNELS.usageSummary, conversationId)
   },
   history: {
     list: () => ipcRenderer.invoke(CHANNELS.historyList),

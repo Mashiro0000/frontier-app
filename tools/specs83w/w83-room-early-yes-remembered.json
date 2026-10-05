@@ -1,0 +1,34 @@
+{
+  "label": "w83-room-early-yes-remembered",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/confirmation.ts",
+      "from": "  const pending = new Map<string, (answer: Answer) => void>()\n",
+      "to": "  const pending = new Map<string, (answer: Answer) => void>()\n  const early = new Set<string>()\n"
+    },
+    {
+      "file": "{{REPO}}/src/main/confirmation.ts",
+      "from": "        if (signal.aborted || pending.has(key)) {\n          resolve('decline')\n          return\n        }\n",
+      "to": "        if (early.delete(key)) {\n          resolve('send')\n          return\n        }\n        if (signal.aborted || pending.has(key)) {\n          resolve('decline')\n          return\n        }\n"
+    },
+    {
+      "file": "{{REPO}}/src/main/confirmation.ts",
+      "from": "      if (finish === undefined) return false\n",
+      "to": "      if (finish === undefined) {\n        early.add(key)\n        return false\n      }\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-8-3w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s83nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8799",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w83-room-early-yes-remembered"
+  }
+}

@@ -1,4 +1,6 @@
+import type { RequestEstimate } from '../../../shared/askFirst'
 import type { ProviderId } from '../../../shared/registry'
+import type { ReplyUsage } from '../../../shared/usage'
 
 export type ChatRole = 'user' | 'assistant'
 
@@ -22,12 +24,28 @@ export interface ChatMessage {
    */
   provider?: ProviderId | null
   model?: string | null
+  /**
+   * What the reply used and cost (D-030), as main reported it when the reply ended. Kept on the screen only: it is not saved with the
+   * message (the ledger in the main process is the record), so a chat opened from history shows none, and a stopped reply none either
+   * (its guess is in the ledger and in the sums of Settings).
+   */
+  usage?: ReplyUsage
 }
 
 /** Which model is answering, as the main process reports it when a reply begins. */
 export interface Answerer {
   provider: ProviderId
   model: string
+}
+
+/**
+ * A large request that the main process is holding until the person says yes (D-032): which model would answer, what the request could cost
+ * at the most (the main process's own figures, shown as they are) and the amount above which the app asks.
+ */
+export interface LargeRequest {
+  model: string
+  estimate: RequestEstimate
+  askAboveUsd: number
 }
 
 /**
@@ -42,5 +60,14 @@ export type ReplyFn = (
   history: ChatMessage[],
   signal: AbortSignal,
   onAnswerer: (answerer: Answerer) => void,
-  instructions: string
+  instructions: string,
+  /** The id the chat is saved under, so the cost can be shown under that chat (D-030); null if there is none. */
+  conversationId: string | null,
+  /** Called once, just before the reply ends, with what it used and cost, when something is owed. */
+  onUsage: (usage: ReplyUsage) => void,
+  /**
+   * Called when the main process is holding a large request for the person's yes (D-032): it puts the question in front of them and answers
+   * true for yes, false for no (and false if the reply is stopped meanwhile). Nothing is sent until it says yes.
+   */
+  onLargeRequest: (request: LargeRequest) => Promise<boolean>
 ) => AsyncIterable<string>

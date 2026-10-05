@@ -1,0 +1,14 @@
+{
+  "label": "n82-no-maximum",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "  value <= LIMIT_MAX_USD &&\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

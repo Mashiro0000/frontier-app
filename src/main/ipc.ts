@@ -6,13 +6,18 @@ import {
   type HistoryLoadResult,
   type HistoryRemoveResult,
   type HistorySaveResult,
+  type SetAskFirstResult,
   type SetEffortResult,
   type SetKeyResult,
+  type SetLimitsResult,
   type SetModelResult,
   type SettingsStatus,
   type TestKeyResult
 } from '../shared/ipc'
+import type { UsageSummary } from '../shared/usage'
+import { checkAskFirstChoice } from '../shared/askFirst'
 import { effortStatusOf } from '../shared/effort'
+import { checkLimitsChoice, unsetLimits } from '../shared/limits'
 import { suggestionsFor, TASKS } from '../shared/rankings'
 import {
   PROVIDER_NAMES,
@@ -21,6 +26,7 @@ import {
   type ProviderId
 } from '../shared/registry'
 import {
+  chatForUsage,
   checkConversationId,
   checkConversationSave,
   checkEffortChoice,
@@ -28,16 +34,24 @@ import {
   checkModelChoice,
   checkProvider
 } from '../shared/validate'
+import { createAskFirstStore } from './askFirst'
 import { baseUrlOverride } from './baseUrl'
 import { registerChatIpc } from './chat'
 import { createConversationStore } from './conversationStore'
 import { canStoreKey, clearApiKey, readApiKey, saveApiKey } from './keyStore'
+import { createLimitsStore } from './limits'
 import { chooseEffort, chooseModel, currentModel, inOrder } from './models'
 import { adapterFor } from './providers'
 import { describeFailure, timeoutError } from './providers/errors'
 import { getRankings, reportRankingsProblems } from './rankings'
 import { getRegistry, reportRegistryProblems } from './registry'
 import { isTrustedSender } from './security'
+import { createUsageLedger } from './usageLedger'
+
+// The spending limits (D-031), in limits.json in the data folder. Main alone reads and writes them; the folder is asked for when first used.
+const limitsStore = createLimitsStore(() => join(app.getPath('userData'), 'limits.json'))
+// What the person chose for being asked before a very large request (D-032), in ask-first.json beside it. Damage to it never turns the question off.
+const askFirstStore = createAskFirstStore(() => join(app.getPath('userData'), 'ask-first.json'))
 
 /** "Test key" gives up after this long, so a provider that never answers cannot leave the button spinning for ever. */
 const TEST_KEY_TIMEOUT_MS = 20_000
@@ -67,7 +81,10 @@ async function currentStatus(): Promise<SettingsStatus> {
       registry.ok && rankings.ok
         ? suggestionsFor(rankings.rankings, registry.registry.models, hasKey)
         : [],
-    effort: choice.ok ? effortStatusOf(choice.entry, choice.effort) : null
+    effort: choice.ok ? effortStatusOf(choice.entry, choice.effort) : null,
+    // A file that cannot be read at all shows as "not chosen", which is also what refuses requests: the page still loads, and asks.
+    limits: await limitsStore.read().catch(() => unsetLimits()),
+    askFirst: await askFirstStore.read() // never throws: a file that cannot be read is "nothing chosen", and the question is still asked
   }
 }
 
@@ -196,6 +213,45 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     )
   )
 
+  // The spending limits (D-031): both together, as the person chose them. Checked again here; the page cannot take a choice back to "not
+  // chosen" and has no other way to change a limit. The request check that uses them is in chat.ts, in main.
+  ipcMain.handle(
+    CHANNELS.settingsSetLimits,
+    guarded(async (input: unknown): Promise<SetLimitsResult> => {
+      const check = checkLimitsChoice(input)
+      if (!check.ok) return check
+      try {
+        await limitsStore.save(check.limits)
+      } catch (error) {
+        // Logged here only; the message could name a file path.
+        console.error('Saving the limits failed:', error instanceof Error ? error.message : error)
+        return { ok: false, error: 'The limits could not be saved on this computer.' }
+      }
+      return { ok: true, status: await currentStatus() }
+    })
+  )
+
+  // The amount above which a large request is asked about first, or "Never ask" (D-032). Checked again here, and rebuilt field by field. The page
+  // cannot send "nothing chosen"; the question itself is asked in chat.ts, in main, whatever the page says.
+  ipcMain.handle(
+    CHANNELS.settingsSetAskFirst,
+    guarded(async (input: unknown): Promise<SetAskFirstResult> => {
+      const check = checkAskFirstChoice(input)
+      if (!check.ok) return check
+      try {
+        await askFirstStore.save(check.choice)
+      } catch (error) {
+        // Logged here only; the message could name a file path.
+        console.error(
+          'Saving the ask-first choice failed:',
+          error instanceof Error ? error.message : error
+        )
+        return { ok: false, error: 'The choice could not be saved on this computer.' }
+      }
+      return { ok: true, status: await currentStatus() }
+    })
+  )
+
   // Saved conversations (D-016, D-017). The store owns the files; these handlers only check who is asking and
   // what they ask. A failure is logged here with its real reason (which could name a path) and the page gets
   // a plain sentence.
@@ -257,6 +313,21 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
-  registerChatIpc(appUrl)
-  return () => history.whenIdle()
+  // What was used and what it cost (D-030): one plain file, written by main alone. The page can ask for sums and nothing else.
+  const ledger = createUsageLedger(join(app.getPath('userData'), 'usage', 'ledger.jsonl'))
+
+  ipcMain.handle(
+    CHANNELS.usageSummary,
+    guarded(async (input: unknown): Promise<UsageSummary> => {
+      try {
+        return await ledger.summary(chatForUsage(input)) // an id that is not one is read as none
+      } catch (error) {
+        console.error('Reading the usage ledger failed:', reason(error))
+        throw new Error('The usage could not be read.')
+      }
+    })
+  )
+
+  registerChatIpc(appUrl, ledger, limitsStore, askFirstStore)
+  return () => Promise.all([history.whenIdle(), ledger.whenIdle()]).then(() => undefined)
 }

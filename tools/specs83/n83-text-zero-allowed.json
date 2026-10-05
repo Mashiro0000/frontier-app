@@ -1,0 +1,14 @@
+{
+  "label": "n83-text-zero-allowed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "if (!(usd > 0)) return { ok: false, error: 'The amount must be more than $0.' }",
+      "to": "if (usd < 0) return { ok: false, error: 'The amount must be more than $0.' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

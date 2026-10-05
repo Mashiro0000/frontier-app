@@ -1,0 +1,14 @@
+{
+  "label": "n82-file-not-json-is-none",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "  } catch {\n    return { limits: unsetLimits(), damaged: true }",
+      "to": "  } catch {\n    return { limits: { daily: { kind: 'none' }, monthly: { kind: 'none' } }, damaged: true }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

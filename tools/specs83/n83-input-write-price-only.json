@@ -1,0 +1,14 @@
+{
+  "label": "n83-input-write-price-only",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "Math.max(prices.inputPerMTok, prices.cacheWritePerMTok)",
+      "to": "prices.cacheWritePerMTok"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

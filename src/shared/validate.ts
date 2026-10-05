@@ -150,13 +150,18 @@ export function checkChatRequest(input: unknown): ChatCheck {
   if (typeof input !== 'object' || input === null) {
     return { ok: false, error: 'The request was not understood.' }
   }
-  const { streamId, messages, instructions } = input as Record<string, unknown>
+  const { streamId, messages, instructions, conversationId } = input as Record<string, unknown>
   if (typeof streamId !== 'string' || !STREAM_ID.test(streamId)) {
     return { ok: false, error: 'The request was not understood.' }
   }
   const refuse = (error: string): ChatCheck => ({ ok: false, error, streamId })
   const checkedInstructions = checkInstructions(instructions)
   if (!checkedInstructions.ok) return refuse(checkedInstructions.error)
+  // The conversation the cost is shown under (D-030): absent, or exactly the spelling of an id the app makes. Anything else is a page
+  // that is not ours, or a bug, and is refused instead of being quietly dropped.
+  if (conversationId !== undefined && !isConversationId(conversationId)) {
+    return refuse('The request was not understood.')
+  }
 
   if (!Array.isArray(messages) || messages.length === 0) return refuse('There is nothing to send.')
   if (messages.length > CHAT_LIMITS.maxMessages) {
@@ -196,7 +201,8 @@ export function checkChatRequest(input: unknown): ChatCheck {
       messages: clean,
       ...(checkedInstructions.instructions === ''
         ? {}
-        : { instructions: checkedInstructions.instructions })
+        : { instructions: checkedInstructions.instructions }),
+      ...(conversationId === undefined ? {} : { conversationId })
     }
   }
 }
@@ -209,6 +215,13 @@ const CONVERSATION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
 export function isConversationId(value: unknown): value is string {
   return typeof value === 'string' && CONVERSATION_ID.test(value)
 }
+
+/**
+ * The chat a usage summary is asked for (D-030): a conversation id, or null for none. Anything else is read as none (the summary then has
+ * no chat sum), because the day's and the month's sums do not depend on it.
+ */
+export const chatForUsage = (input: unknown): string | null =>
+  isConversationId(input) ? input : null
 
 export type ConversationIdCheck = { ok: true; id: string } | { ok: false; error: string }
 

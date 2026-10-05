@@ -184,7 +184,7 @@ await sleep(1500)
 check('a chat request from about:blank is ignored: no API request', (await mockReqs()).length === 0, String((await mockReqs()).length))
 await page.send('Page.navigate', { url: appUrl })
 await sleep(1800)
-check('window.api.chat exposes exactly start / cancel / onEvent', (await ev(`JSON.stringify(Object.keys(window.api.chat))`)) === '["start","cancel","onEvent"]')
+check('window.api.chat exposes exactly start / cancel / confirm / onEvent (confirm since 8.3)', (await ev(`JSON.stringify(Object.keys(window.api.chat))`)) === '["start","cancel","confirm","onEvent"]')
 
 // ===================== G. removing the key =====================
 await page.click('.header-button@Settings')

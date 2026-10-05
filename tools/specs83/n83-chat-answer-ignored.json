@@ -1,0 +1,14 @@
+{
+  "label": "n83-chat-answer-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "if (answer !== 'send' || controller.signal.aborted) return",
+      "to": "void answer"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

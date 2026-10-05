@@ -1939,3 +1939,246 @@ shared checks changed. One new decision, **D-029**; new files `src/renderer/src/
    and `origin/main` is still c85242e. `main` now holds the merge commit, which carries the tag `stage-7-done`; the branch `stage-7-chat-polish` is
    kept. Pushing `main` and the tag is yours to do.
 9. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 8 - Slice 8.1: usage and cost, counted (3 October 2026 session; D-030)
+
+**Your decisions that shaped it.** No preset limit numbers (you set them; 8.2 asks on first run, with a deliberate "No limit" in Settings and a
+one-line warning); encrypted history becomes its own later stage, 8b, after 8.1 to 8.3 and 8.5, with a tested backup and export before any
+encryption; a guess marked "about" is counted when a reply is stopped or fails with no usage report, and replaced if a real report arrives.
+
+**What was built.**
+
+- **The ledger** (`src/main/usageLedger.ts`, `src/shared/usage.ts`): a plain file, `usage/ledger.jsonl` in the app's data folder, one line of JSON per
+  request, written when the request is about to be sent and again when it ends; the later line replaces the earlier one with the same id. A request that
+  cannot be written down is not sent. Tokens in four buckets, each priced at its own list price.
+- **The registry gained two prices per model** (`cacheReadPerMTok`, `cacheWritePerMTok`; schema 0.4). I read both providers' pricing pages for them
+  (Anthropic's, and OpenAI's table); the input and output prices already in the file matched.
+- **What you see:** a small line under each finished reply ("25 in, 12 out, $0.0003", "about $..." for a guess), and Settings > Usage with this
+  chat, today and this month. A reply you stop, or that fails after the provider may have worked on it, is counted as a guess marked "about"; a request
+  the provider turns away at once (a key, a credit, a rate, a model) costs nothing and is not counted.
+- **The main process does the counting** (`src/main/chat.ts`); the page can ask for sums (`usage.summary`) and tell main which chat is on screen
+  (`conversationId`), and nothing else.
+
+**Step by step.**
+
+1. **Where the plan stood.** I read the roadmap, D-028 (the list of what a limit must count) and the code that sends a request, and found that the
+   registry had no price for cached tokens (D-019 had left them out on purpose), although the app asks for prompt caching on every Claude request. So
+   8.1 needed those prices first.
+2. **The prices.** I fetched Anthropic's pricing page and OpenAI's pricing table (a first fetch of OpenAI's page was refused with a 403, a second
+   address worked). Anthropic's page also says that a cache hit costs 0.05 of the input price on Opus 5.5 and 0.025 on Fable 5.1 (not 0.1), and that the
+   5-minute cache write, which is what the app asks for, is 1.25 times the input price. All seven models now have four prices, and a test compares them
+   with what the pages said.
+3. **The ledger and the sums were written and checked under plain Node first** (`verify-8-1.mjs`, 194 checks, each file check in a normal folder and in
+   the EFS-encrypted %APPDATA%): the cost arithmetic, the guess, a strict reader of one line, the sums with the edges of a day and a month, and the file
+   (a cut-off line, damaged lines, 25 requests at once, a request that cannot be written, a disk that refuses the end, the size cap). It found nothing
+   wrong; two of my own checks were wrong (the registry's default model cannot be the one a test drops, and the registry's message for a bad price list is
+   one sentence naming all four fields, not "missing"/"unknown").
+4. **The earlier plain-Node suites** were run again on the new tree (`regress.mjs t81n node`): 11 of 12 clean; the registry suite had old fixtures (two
+   prices, schema 0.3) and was updated (232 checks now).
+5. **The window suite** (`verify-8-1w.mjs`, 81 checks) against the fake Anthropic API, which now also reports cache tokens (`[[mock:cached]]`) and nothing
+   at all (`[[mock:no-usage]]`). The first run found a mistake of mine in the test (Edit asks first when more than the last exchange would go, and the
+   test did not click "Send anyway"). A run that followed was lost to the hidden-window stall (below).
+6. **The hidden-window stall met again.** Three runs in a row ended with the test window reporting "hidden", every click taking 5 s and a Settings click
+   dropped. The window watcher (`watch-windows.ps1`) showed the test window behind the Claude desktop app and input events about every 2 s for the whole
+   run. The next run, with the window visible, passed. I added a guard to the test client (`cdp.mjs`): before an input, if the page says hidden, call
+   `Page.bringToFront` and say so. **It did not need to fire, so it is not proven to work.** I also cut the number of Settings clicks in the suite (the
+   sums are asked of main directly where the dialog itself is not the point).
+7. **Negative controls.** **36 breakages, all caught** (`tools/specs81`: 21 under Node; `tools/specs81w`: 15 in the real window), each file proved restored by hash, and `src/` and `registry/` proved identical by one hash after the window batch. The window batch took about an hour (each launch builds and runs the whole suite). Two controls I added late were for a claim D-030 makes (the ledger holds no message text and no key): a line with an extra field, and a line carrying text that was sent. The window check for that claim (the file contains none of the 174 texts and no system prompt, and not the key) was added after the first batch and is caught by the second of them.
+8. **The restart suite** (`verify-8-1b.mjs`, `run81.mjs`): 12 checks on the same profile after the ledger was given what a crash leaves behind (a request that began and never ended, and a last line cut off in the middle): the new process reads the file itself and its sums equal a second count made from it, reading does not change the file (by hash), the unfinished request counts as a guess ("about"), the cut-off line is said in Settings and costs nothing, a chat opened from History has its own sum from the file, and the next request is written whole on a line of its own. Passed the first time, with the window suite (81) before it: **93 of 93**, with no retry and no stall.
+9. **Older negative-control spec made stale by this slice** (`tools/specs/wrong-model-in-chat.json`, the indentation of one line in `chat.ts`), found by
+   the dry check (`check-specs.mjs`) and updated.
+10. **What was run, and what was not.** Run: the plain-Node part of the regression, lint, prettier, `npm run build`, the dry spec check (274 specs, 0 stale), the two window suites on the dev app. **Not run, waiting for your go-ahead: the full regression (about 54 minutes: the older window suites, the seeds, the scenarios, Stage 4, and the built app) and the new suites against the built app.** The older window suites were not re-run on this tree, so a check that the new line under a reply, the new Settings section or the changed chat request broke is not ruled out until that run; `regress.mjs` has the new suites in it.
+
+## Stage 8.1 - Choices I made where things were unclear ("pick the simplest option")
+
+- **One ledger file**, not one per month: the sums are worked out from the records in memory, and a request that ends in another month would need to
+  update a record in another file.
+- **The guess is bytes divided by 3**, on the high side for English, and knows no tokenizer. It leaves out thinking that was not shown.
+- **Which failures count** was decided by what a provider is likely to bill, with the safe error being to count something that was not billed.
+- **The ledger fails closed when a request begins** (nothing is sent that cannot be written down) **and open when it ends** (logged; the sums in
+  memory stay right).
+- **The sums are in Settings**, not in the header (one row since 7.6) or the chat bar.
+- **A reply's line is not saved with the message**, so a chat file stays at version 3 and a chat from History shows no line under its replies (its sum
+  in Settings is still there). Saving it would be a file version 4.
+- **Prices are stored in each record**, so an old record keeps the prices it was counted at.
+
+## Stage 8.1 - Things to know (not problems, but worth your attention)
+
+1. **Nothing limits spending yet.** 8.1 only counts. The limits are 8.2, and the numbers will be yours: the app will ask for a daily and a monthly
+   limit before the first send, and Settings will have a deliberate "No limit".
+2. **No real call has been made by me.** So no real usage report has been read by this app. Compare the first real replies' numbers with your
+   provider's own usage page; I would like to hear if they differ (the cache numbers in particular, and whether the thinking is in the output count).
+3. **The cost is list prices; your provider's invoice is what counts.** Fast mode, the Batch API, data residency, web search, discounts and tax are not
+   applied (the app uses none of them now).
+4. **A guess leaves out thinking that was never shown.** A stopped reply from a model that thinks can have cost more than the guess says.
+5. **The ledger is a plain file you can open** (`usage/ledger.jsonl` in the data folder, next to the `conversations` folder that History shows). It holds model
+   names, token counts, times and chat ids, no message text and no key. Deleting it resets the counts; 8.2's limit stops the app, not a person who
+   changes the file.
+6. **The registry changed shape** (schema 0.4: four prices per model). A build from before this slice cannot read this registry file; the file is part
+   of the build, so this only matters if you copy `registry/models.json` between versions.
+7. **Nothing was pushed when this was written.** Stage 7 is merged into `main` locally (tag `stage-7-done`), and this slice is on the branch `stage-8-usage-limits`. (At your go the branch has been pushed since; `main` has not: see Stage 8.5.)
+8. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 8 - Slice 8.2: spending limits (3 October 2026 session; D-031)
+
+**Your decisions that shaped it.** No preset limit numbers (the app asks for a daily and a monthly limit before the first send, with nothing filled in; "No limit" is a deliberate
+choice with a one-line warning); the limit is checked by the main process before every request, so the page cannot get round it.
+
+**What was built.**
+
+- **Two limits, chosen by you** (`src/shared/limits.ts`, `src/main/limits.ts`): a daily and a monthly one, each in dollars and cents ($0.01 to $10,000) or "No limit", kept in a small plain
+  file, `limits.json`, in the app's data folder. Until both are chosen **nothing is sent**: a dialog asks before the first message, and if you put it off ("Not now") every request is
+  refused with a sentence that says so. A missing or damaged file counts as "not chosen", never as "No limit".
+- **The check** (`src/main/chat.ts`, `src/main/usageLedger.ts`): before every request (a new message, Regenerate / Try again, an edited message), in the ledger's own turn, what has been spent
+  today and this month (requests on their way included) plus this request's input at list price is compared with each limit. Over it: the request is not sent and not written, and the reply
+  says which limit ("Nothing was sent: you have reached your daily limit of $5.00 ($6.00 so far today). You can raise the limit in Settings (today's count starts again at midnight).").
+- **What you see:** the first-run dialog; Settings > Spending limits (two boxes, "No limit", the warning, what the limit counts, and that deleting the usage file starts the count again from zero);
+  the Usage rows now say "$6.00 of $5.00"; the empty chat says "Set your spending limits to start chatting" with a button, if you put the question off.
+
+**Step by step.**
+
+1. **Where the plan stood.** I read the 8.1 ledger and the code that sends a request, and found that the ledger already serialises its writes, so the check could go **inside** `begin` and
+   not beside it: two requests cannot both pass on the same money (ten at once, money for three: three go).
+2. **The shared parts and the store were written and checked under plain Node first** (`verify-8-2.mjs`, 215 checks, in a normal folder and in the EFS-encrypted %APPDATA%). The first run found
+   one slip of my own: an edit script of mine turned `$$` into `$`, so the "most a limit can be" sentence lost its dollar sign. Fixed in the source and the check stays.
+3. **The page:** one form shared by the first-run dialog and the Settings section. **The first window run** (`run82.mjs`: a fresh profile with no limits, a restart, and three launches with a
+   damaged `limits.json`) found **one real fault of mine**: the Settings boxes showed empty after the limits had been chosen in the dialog (the form was built before they existed). Fixed (the
+   section is rebuilt each time Settings opens), and a check stays. The other failures of that run were my tests (a click below the fold of the Settings dialog, and a monthly limit of 7 that the
+   profile's $12 of spending rightly refused). The second run: **62, 8 and 8 + 6 + 7 checks, all clean**.
+4. **Older suites made stale** (some by 8.1, which had not re-run them): the exact lists of the bridge and of the settings status in five suites, a button count in `verify-5-3`, and one old
+   negative-control spec. Updated, and re-run clean on this tree: `verify-2-3`, `2-3b`, `3-4`, `5-3`, `7-6w`, both 8.1 window suites, and the plain-Node part of the regression (14 suites).
+   The test profiles now get "No limit" written by the harness (`run-with-app.mjs`), which is how the older suites keep testing what they always did; this is a file written in a scratch
+   profile, and there is no switch for it inside the app.
+5. **Negative controls: 32 breakages, all caught** (23 under Node, 9 in the real window), each file proved restored by hash. Five of the window ones ended without a summary line (the suite waited
+   for something the breakage made impossible) but printed the failed checks that name it. The Node suite now turns a throw into a failed check instead of a crash.
+6. **What was run, and what was not.** Run: lint, prettier, `npm run build`, the dry spec check (306 specs, 0 stale), the suites above. **Not run, waiting for your go-ahead: the full regression (about 54
+   minutes) and the built-app run, for 8.1 and 8.2 together.** No real call to a provider was made.
+
+## Stage 8.2 - Choices I made where things were unclear ("pick the simplest option")
+
+- **The check adds only the request's own input**, not the most the reply could cost: a reply can still end over a limit, by at most one reply's output (D-031 gives the figures). 8.3 shows the worst case
+  before a very large request.
+- **A reply is not stopped in the middle** when its cost passes a limit (it is in IDEAS).
+- **The limits have their own file**, not `preferences.json`: a torn write there must never let money through.
+- **The first-run question can be put off**; main refuses requests meanwhile.
+- **Whole cents, at most $10,000, never zero.** "No limit" says what a larger number would mean.
+
+## Stage 8.2 - Things to know (not problems, but worth your attention)
+
+1. **The app now asks for limits on first run.** In your own profile it will open the question the first time you start this build; nothing is sent until you choose.
+2. **A reply that starts under a limit can end over it**, by at most what one reply can write (16,000 tokens: $0.80 at the dearest model, $0.32 on Opus 5.5, $0.08 on Haiku 4.5). The limit counts what
+   the app counts at list prices; your provider's invoice and your provider's own limit in its account are what really count.
+3. **Deleting the usage file resets the count** (Settings says so), and a changed clock moves "today" and "this month".
+4. **`limits.json` is a plain file** (`{"version":1,"daily":5,"monthly":"none"}`). A change made to it while the app runs is heard at the next start.
+5. **No real call has been made by me**, still. Compare the first real replies with your provider's usage page.
+6. **Nothing was pushed when this was written.** This slice is committed on the branch `stage-8-usage-limits` (8.1 is committed there too); `main` has Stage 7. (The branch has been pushed since, at your go; `main` has not: see Stage 8.5.)
+7. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 8 - Slice 8.3: a question before a very large request (3 October 2026 session; D-032)
+
+**Your decisions that shaped it.** The plan you approved on 2 October 2026 said only "before a very large request, it shows the estimate and asks first". It did not say what "very large" is, and
+nothing in the notes or the earlier sessions does, so **what counts as very large, and the amount, are my choices** (below). Your rule that money has a hard stop is untouched: the limits of 8.2 are
+still checked, after any yes, exactly as before. This is the question that can come before them.
+
+**What was built.**
+
+- **The estimate** (`src/shared/askFirst.ts`): worked out by the main process, for every request, before anything is written or sent. What **sending** the conversation could cost at the most (its tokens
+  at the dearer of the two input prices, because the first send of a conversation is billed at the cache-write price) and what the **reply** could cost at the most (the request's own ceiling,
+  16,000 tokens, at the output price). Both are guesses on the high side, at list prices; the question says so.
+- **When it asks:** when **what the request sends** could cost **more than an amount of yours**. Settings has a new section, **Large requests**: an amount in dollars and cents, or a deliberate
+  **Never ask**, kept in `ask-first.json`. **Until you choose, $0.50 applies** (it begins to ask above 40,000 tokens on Fable 5.1, 100,000 on Opus 5.5, 200,000 on Sonnet 5.5).
+- **The question** (`LargeRequestDialog`): "Send this large request?" with what sending could cost, what the reply could cost, and the most the request could cost (three rows that add up, each rounded
+  up to the cent), **Don't send** (first, and where the keyboard starts, so Enter alone cannot send) and **Send**. Escape is no. **While the question is open nothing is sent and nothing is written to the
+  ledger.** "Don't send" ends the reply as "Not sent: you chose not to send this request." with **Try again**, which asks again. Regenerate and an edited message are asked about like a new message.
+- **The waiting room** (`src/main/confirmation.ts`): the request waits in the main process until you answer. A yes is heard only for a question that is waiting: one sent ahead of it, twice, for another
+  stream or after you said no is dropped. A Stop, a reload or a closed window says no.
+- **A damaged `ask-first.json` asks at the default; it never turns the question off.** (The opposite of the limits' file, which refuses when damaged.)
+
+**Step by step.**
+
+1. **Where the plan stood.** I read the notes, the roadmap and the earlier planning session: nothing says what "very large" means. I chose to ask on the **input** (what is sent, which grows with the
+   conversation and is known), not on the most the whole request could cost, because on the dearest models the reply ceiling alone ($0.80) would make every request "large".
+2. **The shared parts, the store and the waiting room were written and checked under plain Node first** (`verify-8-3.mjs`, 288 checks, files in a normal folder and in the EFS-encrypted %APPDATA%).
+   The first run had three failures, all in my expectations, none in the app: on the cheapest model one token is an eighth of a millionth of a dollar, which the comparison (in millionths) rightly does not
+   see; and a check that counted a wrong-version file containing the word "never" as "said never".
+3. **The page:** the dialog, the pending question in `useChat`, "Not sent" in `ipcReply`, and the Settings section. The amount box of the limits form was taken out into its own file and shared (same page
+   as before).
+4. **The first window run** (`run83.mjs`: 47 checks went through before it stopped) found **one real fault of mine**: the new Settings section had the same React key as the section beside it, and the check that
+   the page logs no console error reported "two children with the same key". Fixed (its own key). The rest of that run's failures were my test (a wrong paragraph number in two checks, and waiting for
+   the Send button while the question was open). The next run found a **second real fault, in the layout**: at 280 px wide the question's three-column table ran past the dialog; it is now two
+   columns with the number of tokens under each label. I also added the check that I had not thought of at first: after "Don't send", a yes sent later by a script for that same question sends nothing.
+5. **Result:** `run83.mjs` 84 + 7 + 9 + 9 + 10 = **119 checks, all clean**, with **real 150,000-character requests** on Fable 5.1 against the fake provider. The token count the question showed, the ledger's first
+   line and a count made in the test from the request the provider received are the same number.
+6. **Older suites made stale** and updated: the exact lists of the bridge and of the settings status (`setAskFirst`, `chat.confirm`, `askFirst`) in six suites, the button count in `verify-5-3` (the Settings
+   dialog has one more Save), and two negative controls of 8.1 and 8.2 whose target line had moved. Re-run on this tree and clean: `verify-2-3` (64; its first run had one failure, a status-shape line I
+   had missed), `2-3b`, `2-4` (71), `3-4` (78), `4-2` (91), `5-3` (66), `7-3` (53), `7-6w` (46), the 8.1 suites (81 and 12), the 8.2 suites (62, 8, 8, 6 and 7), and the plain-Node part (15 suites).
+7. **Negative controls: 65 breakages, all caught** (44 under Node, 21 in the real window), each file proved restored by hash, and the hash over `src/` and `registry/` identical before and after every
+   batch. They taught me things about the checks and the harness (D-032 lists them): the window suite cannot see the waiting room's abort listener on its own, because `chat.ts` has a second check behind it
+   (the Node suite sees it, and the window control now removes both); a field that is merely kept changes nothing in the window (the control now makes `chat.ts` honour it); one control first looked caught
+   only because of an unrelated flake at the first step, and a second run showed it was not; hangs became failed checks. And **one real fault in the harness**: after one control `nc.mjs` did not put
+   `chat.ts` back and said nothing. I found it only because I had hashed the whole tree before and after the batch; the file was restored from its backup, and `nc.mjs` now retries the copy, proves each
+   file by hash and prints `RESTORE FAILED` if it cannot.
+8. **What was run, and what was not.** Run: lint, prettier, typecheck, the dry spec check, the plain-Node part of the regression (15 suites), the suites above. **Not run, waiting for your go-ahead: the full
+   regression (about 55 minutes) and the built-app run, for 8.1, 8.2 and 8.3 together** (this is slice 8.5). No real call to a provider was made.
+
+## Stage 8.3 - Choices I made where things were unclear ("pick the simplest option")
+
+- **What "very large" means: the input, not the worst case** (see step 1).
+- **An amount of my own, $0.50, until you choose.** You decided that the spending **limits** have no numbers of the app's own. This is not a limit, it only asks, and it is the one place where I put a number.
+  I did it so the question is on from the start (a question that is off until someone finds it protects nobody) without a third box in the first-run dialog. **It is the number to confirm or change**: Settings >
+  Large requests, one box, and "Never ask" is there on purpose.
+- **The dearer of the two input prices**, so the figure is never lower than what the first send of a conversation can cost; the question says "up to" and that a conversation the provider still holds in its cache
+  costs much less.
+- **It asks every time**, including every message of a long chat on a dear model. "Don't ask again in this chat" is in IDEAS.
+- **The question is a dialog in the page, held by main**, not an operating system dialog (which the checks of this project cannot drive).
+- **The README** still said that nothing limits spending (it was stale since 8.2); it now says what 8.2 and 8.3 do.
+
+## Stage 8.3 - Things to know (not problems, but worth your attention)
+
+1. **The question is not a defence against a hostile page.** A page that can call the bridge can say yes to its own question. What stops spending is the limit (8.2), which runs after any yes. The question
+   protects you from your own slip and from a bug in the page; D-032's threat note says so.
+2. **$0.50 is mine.** It is the default until you pick an amount in Settings > Large requests (or "Never ask"). With it, the question will show up on Fable 5.1 and GPT-6 Astra once a chat passes about 40,000
+   tokens (every message after that), on Opus 5.5 past 100,000, and almost never on the cheaper models.
+3. **The figure says "up to".** It is on the high side: input at the cache-write price, a reply at its 16,000-token ceiling. A real reply is usually far shorter, and a conversation your provider still holds in
+   its cache costs far less to send.
+4. **A damaged or unreadable `ask-first.json` asks at the default.** A person who writes "never" into it (lower case, exactly) has chosen "Never ask".
+5. **While the question is open nothing is sent and nothing is written.** Closing the app then saves the chat with the reply as "stopped".
+6. **No real call has been made by me**, still. Compare the first real replies with your provider's usage page, and the figure in the question with them.
+7. **Nothing was pushed when this was written.** This slice is committed on the branch `stage-8-usage-limits` (8.1 and 8.2 are committed there too); `main` has Stage 7. (The branch has been pushed since, at your go, up to 8.3; `main` has not: see Stage 8.5.)
+8. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 8 - Slice 8.5: the stage's threat note and the full regression (5 October 2026 session; D-033)
+
+**Your instruction.** "Go 8.5. Run the full regression and the built-app run, then write the threat note for 8.1 to 8.3 and the list of what was not checked." No code of the app was changed.
+
+**Step by step.**
+
+1. **Before the run.** Checked that the tree was clean and that no `electron` or `node` process was running, then typecheck, lint and `prettier --check .` (all clean), and took a hash over every file of `src/` and
+   `registry/` to compare afterwards. Started the read-only window watcher (`tools/watch-windows.ps1 -Tag t85`), then `node tools/regress.mjs t85` in the background (all six parts, the built app included).
+2. **While it ran** I only edited `docs/` (safe: the dev launches build from `src/`, not from `docs/`), and read `src/main/chat.ts` and `src/main/ipc.ts` to check the claims of the threat note against the code.
+3. **The result: 89 runs in 69 minutes, 86 clean the first time.** The other three were two stale expectations in tests: `verify-5-4` (dev and built) expected a reply's events to end `text`, `done`, and since 8.1
+   a `usage` event comes before `done`; the `wrong-version` registry scenario expected "reads 0.3" and the registry has been schema 0.4 since 8.1. Both were fixed in the tests (`tools/verify-5-4.mjs`,
+   `tools/verify-3-6.mjs`), and the three launches were run again: 47 of 47 on the dev app, 47 of 47 on a freshly built one, and 13 of 13 for the scenario. The app was right in both.
+4. **After it:** the hash of `src/` and `registry/` was the same as before, `git status` showed only `docs/` and the two test files, no `electron` process was left, and the watcher had stopped by itself.
+   No hidden window, no lost window and no retry in the 89 runs.
+5. **The threat note** is D-033 in `docs/DECISIONS.md`: the stage's whole surface in one list, the risks that only exist where the three slices meet, the roadmap's safety line claim by claim, what the
+   regression showed, and the list of what was not checked.
+
+**What the threat note found that the slices' own notes did not.** D-032 and the architecture file said that what stops a hostile page spending is the limit. **It is not, quite: the same page can call
+`settings.setLimits` with "No limit" and `settings.setAskFirst` with "Never ask", and answer its own question, and main does not ask you.** (The regression itself does this through the bridge: `verify-8-3w` lifts both
+limits that way to run its requests.) So the limits stop you from spending by accident and stop anything a model writes, and they do not stop code running in the page; what keeps such code out is the window's guards.
+I did not change the app (8.5 is the check and the note), and I corrected the architecture file. **My recommendation, for you to decide: before Stage 11, raising a limit or choosing "No limit" should need an answer
+that the page cannot give by itself** (an operating system dialog, say). It is in IDEAS. The second thing: the ledger and the limits file are plain files, so from Stage 12 and 13 on (files, commands) the app's data
+folder must lie outside anything a tool can reach.
+
+## Stage 8.5 - Things to know (not problems, but worth your attention)
+
+1. **Stage 8 is checked on the whole tree**, with the one thing above to decide. The built app passes the same suites as the dev app, the three of Stage 8 included (81, 62 and 84 checks).
+2. **No real call has been made by me, in any stage.** The figures (the line under a reply, Settings > Usage, the question) have never been compared with a real provider's page. Please compare the first real
+   replies, and tell me if they differ, the cache numbers and the thinking in particular.
+3. **$0.50 is still mine** (Settings > Large requests): confirm it or change it.
+4. **Your own profile has never been run.** It has no `limits.json`, so the first start of this build on it asks for a daily and a monthly limit before the first send.
+5. **The full list of what was not checked** is at the end of D-033 (13 items: no real call, the guess against a real tokenizer, the OpenAI path in the window, time zones and daylight saving, two copies of the
+   app, a very large ledger, a screen reader and other display settings, the installer, and the others).
+6. **Pushed:** the branch `stage-8-usage-limits` was pushed at your go, up to 8.3 (31b4f59); this slice is committed on it, **not pushed**, and `main` (Stage 7 merged) is not pushed either.
+7. **Everything in the earlier stages' "Things to know" still applies.**

@@ -1,0 +1,19 @@
+{
+  "label": "n83-chat-no-limit-recheck",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "    const estimate = estimateRequest(",
+      "to": "    const limitsEarly = await readLimits()\n    if (limitsEarly === null) return\n    const estimate = estimateRequest("
+    },
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "    const limits = await readLimits()\n    if (limits === null) return\n",
+      "to": "    const limits = limitsEarly\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

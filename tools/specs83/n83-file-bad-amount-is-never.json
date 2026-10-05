@@ -1,0 +1,14 @@
+{
+  "label": "n83-file-bad-amount-is-never",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "damaged: false }\n  return nothing(true)\n}",
+      "to": "damaged: false }\n  return { setting: { kind: 'never' }, damaged: true }\n}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-3.mjs"
+  ],
+  "env": {}
+}

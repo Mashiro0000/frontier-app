@@ -1,0 +1,14 @@
+{
+  "label": "n81-request-bad-conversation-id-accepted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "if (conversationId !== undefined && !isConversationId(conversationId)) {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

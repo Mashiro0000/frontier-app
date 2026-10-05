@@ -1,0 +1,29 @@
+{
+  "label": "w83-request-field-approves",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "    request: {\n      streamId,\n      messages: clean,",
+      "to": "    request: {\n      streamId,\n      ...(typeof (input as Record<string, unknown>).confirmed === 'boolean' ? { confirmed: true } : {}),\n      messages: clean,"
+    },
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "if (askAbove !== null && needsConfirmation(askFirst, estimate)) {",
+      "to": "if (askAbove !== null && needsConfirmation(askFirst, estimate) && (request as { confirmed?: boolean }).confirmed !== true) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-8-3w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s83nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8799",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w83-request-field-approves"
+  }
+}

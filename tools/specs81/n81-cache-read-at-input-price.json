@@ -1,0 +1,14 @@
+{
+  "label": "n81-cache-read-at-input-price",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "tokens.cacheRead * prices.cacheReadPerMTok",
+      "to": "tokens.cacheRead * prices.inputPerMTok"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

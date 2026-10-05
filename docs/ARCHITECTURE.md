@@ -26,40 +26,50 @@ The renderer should never touch Node.js or the network for model calls directly.
 through the preload bridge (IPC).
 
 Stage 1 changed only `src/renderer`. Stage 2 added the files below (see Security notes), Stage 3 added or
-changed the ones marked (3), Stage 4 the ones marked (4), Stage 5 the ones marked (5), Stage 6 the ones marked (6), and Stage 7 the ones
-marked (7):
+changed the ones marked (3), Stage 4 the ones marked (4), Stage 5 the ones marked (5), Stage 6 the ones marked (6), Stage 7 the ones
+marked (7), and Stage 8 the ones marked (8):
 
-| File                              | Job                                                                                                                                                                                                                                                       |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/main/index.ts`               | Creates the sandboxed window, wires the navigation lock, registers the message handlers. (4) Holds the quit until saves finish                                                                                                                            |
-| `src/main/security.ts`            | Plain functions: is this URL the app's own page? may it be opened in the browser?                                                                                                                                                                         |
-| `src/main/ipc.ts`                 | The message handlers. Each one first checks that the app's own page is calling. (4) The four `history:` handlers                                                                                                                                          |
-| `src/main/keyStore.ts`            | Saves, reads and deletes the API keys: the Electron side (the secure storage and the data folder) of the credential store. (5) One key per provider                                                                                                       |
-| `src/main/credentialStore.ts`     | (5) One encrypted file per provider (`credentials.<provider>.json`), tied to its provider; reads the old `credentials.json` as Anthropic's key. No Electron imports                                                                                       |
-| `src/main/baseUrl.ts`             | (5) The test-only address override (`FRONTIER_API_BASE_URL`), for replies and for Test key; never in an installed app                                                                                                                                     |
-| `src/main/chat.ts`                | Runs each reply: reads the key, asks the model's provider adapter, sends text to the page as events. (5) Provider-neutral                                                                                                                                 |
-| `src/main/providers/types.ts`     | (5) The provider layer's vocabulary: `ProviderAdapter` (`listModels`, `stream`, `usage`, `normalizeError`), the neutral message and request, usage and errors. No Electron imports                                                                        |
-| `src/main/providers/openai.ts`    | (5) The OpenAI adapter (D-022): the Responses API through OpenAI's own SDK, `store: false`, environment pinned; usage with cached tokens taken out of the input                                                                                           |
-| `src/main/providers/anthropic.ts` | (5) The Anthropic adapter: the one place that calls Anthropic's API, through the official SDK. It was `provider.ts`                                                                                                                                       |
-| `src/main/providers/request.ts`   | (5) The app's own rules for a reply, applied once for every provider: system prompt, reply ceiling, joining consecutive turns (D-013). (7) The person's instructions for the chat are added to the system prompt AFTER the app's rules (D-027)            |
-| `src/main/providers/errors.ts`    | (5) The sentences for a failure, shared by every provider; adds the request id and scrubs the key                                                                                                                                                         |
-| `src/main/providers/usage.ts`     | (5) Reading token counts out of a provider's usage report                                                                                                                                                                                                 |
-| `src/main/providers/index.ts`     | (5) The adapter for each provider: a table that must be complete, or it does not compile                                                                                                                                                                  |
-| `src/main/registry.ts`            | (3) The registry file, embedded in the build and checked once at startup                                                                                                                                                                                  |
-| `src/main/rankings.ts`            | (6) The rankings file, embedded in the build and checked once at startup; optional: if it is broken the app only loses its suggestions                                                                                                                    |
-| `src/main/models.ts`              | (3) Which model answers: the saved choice (`preferences.json`) or the registry's default; changes run one at a time. (7) Also the effort kept per model, written with the model in one file                                                               |
-| `src/shared/effort.ts`            | (7) The effort levels: sorting a model's levels, reading the saved `efforts` forgivingly, resolving the level a reply asks for (the saved one if the model still lists it), and what the page is told (D-024)                                             |
-| `src/preload/index.ts`            | Builds `window.api`, the only thing the page can ask main for. (4) Gained `history`                                                                                                                                                                       |
-| `src/preload/index.d.ts`          | Tells the renderer's TypeScript what `window.api` looks like                                                                                                                                                                                              |
-| `src/shared/ipc.ts`               | Every message that crosses the boundary: types, channel names. (4) The history types and `HISTORY_LIMITS`                                                                                                                                                 |
-| `src/shared/validate.ts`          | `checkApiKey`, `checkChatRequest`, `checkModelChoice`: the page may use them for feedback, main runs them again. (4) `checkConversationId`, `checkConversationSave`, `checkSavedMessages`                                                                 |
-| `src/shared/registry.ts`          | (3) The shape of the registry file, `parseRegistry` (the strict check), and `toModelOption` (what the page may know about a model)                                                                                                                        |
-| `src/shared/rankings.ts`          | (6) The task list, the shape of the rankings file, `parseRankings` (the strict check) and `suggestionsFor` (which rows can be used now)                                                                                                                   |
-| `src/renderer/src/settings/`      | (3) The Settings dialog, the model menu in the header, and the hook that asks main for the settings status. (5) One key section per provider (`ProviderKeySection`: add, test, remove) . (6) The Task menu, and the "(suggested)" marks in the model menu |
-| `src/main/conversationStore.ts`   | (4) The saved conversations: one JSON file each, saved copy-then-delete, read with a recovery rule, listed from memory. No Electron imports. (7) Version 3 holds the chat's instructions; versions 1 and 2 are still read (D-027)                         |
-| `src/renderer/src/history/`       | (4) `useHistory` (autosave and the list), `HistoryDialog` (open and delete), and the conversions between the chat and what is saved                                                                                                                       |
-| `src/renderer/src/markdown/`      | (7) A reply as Markdown (D-025): `parse.ts` (the reader), `Markdown.tsx` (a closed set of elements), `CodeBlock.tsx` (Copy), `LinkConfirm.tsx` (a link asks first)                                                                                        |
-| `src/renderer/src/instructions/`  | (7) The Instructions dialog (D-027): the person's own text for one chat, a draft until Save, with the count, the limit and what it is for, who gets it and where it is kept                                                                               |
+| File                                         | Job                                                                                                                                                                                                                                                                                               |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/main/index.ts`                          | Creates the sandboxed window, wires the navigation lock, registers the message handlers. (4) Holds the quit until saves finish                                                                                                                                                                    |
+| `src/main/security.ts`                       | Plain functions: is this URL the app's own page? may it be opened in the browser?                                                                                                                                                                                                                 |
+| `src/main/ipc.ts`                            | The message handlers. Each one first checks that the app's own page is calling. (4) The four `history:` handlers. (8) `usage:summary`, and the one ledger                                                                                                                                         |
+| `src/main/keyStore.ts`                       | Saves, reads and deletes the API keys: the Electron side (the secure storage and the data folder) of the credential store. (5) One key per provider                                                                                                                                               |
+| `src/main/credentialStore.ts`                | (5) One encrypted file per provider (`credentials.<provider>.json`), tied to its provider; reads the old `credentials.json` as Anthropic's key. No Electron imports                                                                                                                               |
+| `src/main/baseUrl.ts`                        | (5) The test-only address override (`FRONTIER_API_BASE_URL`), for replies and for Test key; never in an installed app                                                                                                                                                                             |
+| `src/main/chat.ts`                           | Runs each reply: reads the key, asks the model's provider adapter, sends text to the page as events. (5) Provider-neutral. (8) Writes each request to the usage ledger before it is sent and again when it ends, and tells the page what the reply cost. (8.3) Asks first before a large request  |
+| `src/main/providers/types.ts`                | (5) The provider layer's vocabulary: `ProviderAdapter` (`listModels`, `stream`, `usage`, `normalizeError`), the neutral message and request, usage and errors. No Electron imports                                                                                                                |
+| `src/main/providers/openai.ts`               | (5) The OpenAI adapter (D-022): the Responses API through OpenAI's own SDK, `store: false`, environment pinned; usage with cached tokens taken out of the input                                                                                                                                   |
+| `src/main/providers/anthropic.ts`            | (5) The Anthropic adapter: the one place that calls Anthropic's API, through the official SDK. It was `provider.ts`                                                                                                                                                                               |
+| `src/main/providers/request.ts`              | (5) The app's own rules for a reply, applied once for every provider: system prompt, reply ceiling, joining consecutive turns (D-013). (7) The person's instructions for the chat are added to the system prompt AFTER the app's rules (D-027)                                                    |
+| `src/main/providers/errors.ts`               | (5) The sentences for a failure, shared by every provider; adds the request id and scrubs the key                                                                                                                                                                                                 |
+| `src/main/providers/usage.ts`                | (5) Reading token counts out of a provider's usage report                                                                                                                                                                                                                                         |
+| `src/main/providers/index.ts`                | (5) The adapter for each provider: a table that must be complete, or it does not compile                                                                                                                                                                                                          |
+| `src/main/registry.ts`                       | (3) The registry file, embedded in the build and checked once at startup                                                                                                                                                                                                                          |
+| `src/main/rankings.ts`                       | (6) The rankings file, embedded in the build and checked once at startup; optional: if it is broken the app only loses its suggestions                                                                                                                                                            |
+| `src/main/models.ts`                         | (3) Which model answers: the saved choice (`preferences.json`) or the registry's default; changes run one at a time. (7) Also the effort kept per model, written with the model in one file                                                                                                       |
+| `src/shared/effort.ts`                       | (7) The effort levels: sorting a model's levels, reading the saved `efforts` forgivingly, resolving the level a reply asks for (the saved one if the model still lists it), and what the page is told (D-024)                                                                                     |
+| `src/preload/index.ts`                       | Builds `window.api`, the only thing the page can ask main for. (4) Gained `history`                                                                                                                                                                                                               |
+| `src/preload/index.d.ts`                     | Tells the renderer's TypeScript what `window.api` looks like                                                                                                                                                                                                                                      |
+| `src/shared/ipc.ts`                          | Every message that crosses the boundary: types, channel names. (4) The history types and `HISTORY_LIMITS`. (8) `usage.summary`, the `usage` event, `conversationId`. (8.3) The `confirm` event, `chat.confirm`, `settings.setAskFirst`                                                            |
+| `src/shared/validate.ts`                     | `checkApiKey`, `checkChatRequest`, `checkModelChoice`: the page may use them for feedback, main runs them again. (4) `checkConversationId`, `checkConversationSave`, `checkSavedMessages`                                                                                                         |
+| `src/shared/registry.ts`                     | (3) The shape of the registry file, `parseRegistry` (the strict check), and `toModelOption` (what the page may know about a model). (8) Four prices per model                                                                                                                                     |
+| `src/shared/rankings.ts`                     | (6) The task list, the shape of the rankings file, `parseRankings` (the strict check) and `suggestionsFor` (which rows can be used now)                                                                                                                                                           |
+| `src/renderer/src/settings/`                 | (3) The Settings dialog, the model menu in the header, and the hook that asks main for the settings status. (5) One key section per provider (`ProviderKeySection`: add, test, remove) . (6) The Task menu, and the "(suggested)" marks in the model menu                                         |
+| `src/main/conversationStore.ts`              | (4) The saved conversations: one JSON file each, saved copy-then-delete, read with a recovery rule, listed from memory. No Electron imports. (7) Version 3 holds the chat's instructions; versions 1 and 2 are still read (D-027)                                                                 |
+| `src/renderer/src/history/`                  | (4) `useHistory` (autosave and the list), `HistoryDialog` (open and delete), and the conversions between the chat and what is saved                                                                                                                                                               |
+| `src/renderer/src/markdown/`                 | (7) A reply as Markdown (D-025): `parse.ts` (the reader), `Markdown.tsx` (a closed set of elements), `CodeBlock.tsx` (Copy), `LinkConfirm.tsx` (a link asks first)                                                                                                                                |
+| `src/renderer/src/instructions/`             | (7) The Instructions dialog (D-027): the person's own text for one chat, a draft until Save, with the count, the limit and what it is for, who gets it and where it is kept                                                                                                                       |
+| `src/main/usageLedger.ts`                    | (8) The usage ledger (D-030): one plain file of JSON lines, appended to, a later line replacing an earlier one with the same id; a cut-off or damaged line skipped and counted; a request that cannot be written down is refused. No Electron imports                                             |
+| `src/shared/usage.ts`                        | (8) Cost from four buckets and four prices, the guess when a provider gives no report, the strict reader of one ledger line, and the sums (this chat, today, this month). No Electron imports                                                                                                     |
+| `src/renderer/src/settings/UsageSection.tsx` | (8) Settings > Usage: this chat, today and this month, asked of main each time Settings opens. (8.2) Says how much of each limit has gone ("of $5.00")                                                                                                                                            |
+| `src/shared/limits.ts`                       | (8.2) What a spending limit is (an amount in whole cents, "No limit" on purpose, or not chosen), how an amount is typed, what the page may hand over, what `limits.json` holds and how a damaged one is read, and `checkAgainstLimits` (the sentence that refuses a request). No Electron imports |
+| `src/main/limits.ts`                         | (8.2) The store of the limits: `limits.json`, written in place and read back, read once and kept; a missing or damaged file is "not chosen". No Electron imports                                                                                                                                  |
+| `src/renderer/src/settings/Limits*.tsx`      | (8.2) `LimitsForm` (two amounts, each with "No limit"), `LimitsDialog` (asked before the first message, can be put off) and `LimitsSection` (in Settings). (8.3) The amount box is `AmountField`, shared with `AskFirstSection`                                                                   |
+| `src/shared/askFirst.ts`                     | (8.3) The question before a large request, the pure part: the estimate (`estimateRequest`), when to ask (`needsConfirmation`), how an amount is typed, what the page may hand over, and what `ask-first.json` holds (damage reads as the default, never as "Never ask"). No Electron imports      |
+| `src/main/askFirst.ts`                       | (8.3) The store of the choice: `ask-first.json`, written in place and read back, read once and kept; `read` never throws (damage and an unreadable file mean the default). No Electron imports                                                                                                    |
+| `src/main/confirmation.ts`                   | (8.3) The waiting room: a large request waits under "<window id>:<stream id>" until the person says yes; only a waiting question hears a yes; a Stop, a reload or a closed window declines. No Electron imports                                                                                   |
+| `src/renderer/src/chat/LargeRequest*.tsx`    | (8.3) `LargeRequestDialog`: what the request could cost at the most (main's figures, rounded up), "Don't send" first and focused, Escape is no. `settings/AskFirstSection.tsx` chooses the amount                                                                                                 |
 
 ### Settings and the API keys
 
@@ -146,11 +156,69 @@ Composer -> useChat.send
 ```
 
 Stop, reloading the window and closing it all abort the network request in main. The reply comes back as
-four kinds of event: `start` (always first: which provider and model answer, sent before the key is looked up, so even a reply
-that fails at once says which model was asked, D-021), `text`, `done` and `error` (see `src/shared/ipc.ts`). The page keeps what `start`
+six kinds of event: `start` (always first: which provider and model answer, sent before the key is looked up, so even a reply
+that fails at once says which model was asked, D-021), `confirm` (only for a very large request: it has NOT been sent, and main waits for the person's yes, D-032), `text`, `usage` (what the reply used and cost, only when something is owed, just before
+the last event, D-030), `done` and `error` (see `src/shared/ipc.ts`). The page keeps what `start`
 says on the reply, and the list shows the model's name above a reply when it is the first one or the model changed. When a reply
 has finished, main logs once what it used (provider/model and the four token counts). What the model is told about
 earlier turns is D-013.
+
+### Usage and cost
+
+```
+chat.ts (main)                                             usage/ledger.jsonl
+  key found, request built
+  ledger.begin(chat, model, effort, prices, input guess) -> line 1: state "sent", an estimate      (awaited: if it cannot be written, nothing is sent)
+  adapter.stream()  ...text arrives (its bytes are counted)...
+  the provider's report (four buckets)?
+      yes -> ledger.finish(done, the report)             -> line 2, same id: replaces line 1 when the file is read
+      no  -> ledger.finish(stopped | failed, a guess)    -> line 2: input as sent + output from the text that arrived, marked "estimate"
+      a refusal before any work (key, credit, rate, model) -> line 2: "rejected", nothing owed
+  send(usage event) -> page: the line under the reply
+```
+
+### Spending limits
+
+```
+chat.ts (main), for EVERY request: a new message, Regenerate / Try again, an edited message, or a call made straight through the bridge
+  limitsStore.read()                 -> limits.json: daily + monthly, each an amount or "No limit"; a missing or damaged file is "not chosen"
+  ledger.begin(request, check)       -> in the ledger's own turn: today's and this month's spending (requests on their way included)
+                                        + this request's input at list price  ->  checkAgainstLimits(limits, spend)
+       a sentence -> RequestRefused: nothing is written, nothing is sent, the page gets the sentence as the reply's error
+       null       -> the line is written (as in 8.1) and the request goes out
+```
+
+Both limits must be chosen before anything is sent: the page asks for them in a dialog before the first message (it can be put off, and main
+refuses meanwhile). The page can only choose (`settings.setLimits`, checked again in main); it cannot take a choice back, read the file or touch the ledger.
+A reply that starts under a limit can end over it, by at most what one reply can write (D-031). Deleting the ledger resets the count, and Settings says so.
+
+### The question before a very large request
+
+```
+chat.ts (main), for EVERY request, after the key is found and the request is built
+  inputTokens = estimateInputTokens(...)            ONE guess, used for the question, for the limit's check and for the ledger's first line
+  estimate = estimateRequest(inputTokens, streamRequest.maxOutputTokens, the model's prices)
+  askFirstStore.read()                -> ask-first.json: an amount, "Never ask", or nothing chosen (then $0.50); damage = nothing chosen, never "Never ask"
+  needsConfirmation(...)?             what the request SENDS could cost MORE than that amount (the input, not the reply)
+     no  -> straight on
+     yes -> a look at the limits and the sums: a request they would refuse anyway is refused now, with their sentence, and NOT asked about
+            confirmations.ask(key, signal, show)   show = send({ type: 'confirm', model, estimate, askAboveUsd }) to the page, AFTER the question is waiting
+                  page: LargeRequestDialog  -- Send --> window.api.chat.confirm(streamId) --> chat:confirm --> confirmations.send(key)
+                                            -- Don't send / Escape --> chat.cancel(streamId) --> the reply ends "Not sent" on the page
+            no yes (a no, a Stop, a reload, a closed window) -> runReply returns: nothing was written, nothing was sent
+  limitsStore.read() AGAIN, then ledger.begin(request, check)   the limit's check of 8.2, in the ledger's own turn, exactly as before
+  adapter.stream()
+```
+
+The question comes before the limit's check, never instead of it: a yes only lets the request go on to `ledger.begin`, which refuses it if a limit says so. Nothing is
+begun in the ledger while the question is open, so a request that is never answered counts nothing. A yes means something only for a question that is waiting: one sent
+ahead of it, twice, or for another stream is dropped, and a request cannot carry a field that approves it (`checkChatRequest` builds its own copy). The page works out no
+figure of its own: the amounts it shows are main's. The page can choose the amount (`settings.setAskFirst`, checked again in main); it cannot read the file.
+
+The page asks `usage.summary(conversationId | null)` and gets this chat's sum, today's and this month's, worked out by main from the
+records in memory (read from the file once, at the first request or the first question). It cannot write the ledger, choose an id, a price or a token
+count, or learn the file's path. The ledger holds model names, token counts, times and chat ids: no message text and no key. See D-030 for the
+rule for a guess, which failures count, and what is not counted.
 
 ### Instructions for a chat
 
@@ -230,10 +298,10 @@ not have to change. See DECISIONS.md D-008.
 
 `registry/` holds plain JSON data about models (D-005, D-014).
 
-- `registry/models.json` - the models the app offers. **In use since Stage 3.** Envelope: `schemaVersion` ("0.3"),
+- `registry/models.json` - the models the app offers. **In use since Stage 3.** Envelope: `schemaVersion` ("0.4"),
   `updatedAt` and `source` (when and where the facts and prices were checked), `defaultModelId` and `models`. Each model:
   `provider`, `id`, `label`, `description`, `contextWindow`, `maxOutputTokens`, `pricing` (US dollars per million
-  tokens, `inputPerMTok` and `outputPerMTok`), `capabilities` (facts: `imageInput`, `toolUse`, `reasoning`,
+  tokens: `inputPerMTok`, `cacheReadPerMTok`, `cacheWritePerMTok` and `outputPerMTok`, since 8.1), `capabilities` (facts: `imageInput`, `toolUse`, `reasoning`,
   `promptCaching`, and `effortLevels`, the effort levels its API accepts) and `effort` (the level the app asks for: one
   of the model's own `effortLevels`, or `null` for a model that takes none, such as Haiku 4.5). Every object must have
   exactly these fields, and `effort` and `effortLevels` must agree (D-019). Ids are unique across providers.
@@ -280,6 +348,17 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
   require `electron`, `events`, `timers` and `url`: no npm packages, no other files at run time (the
   build tool bundles files the preload imports). If it breaks that rule the preload fails to load and
   the page silently gets no `window.api`; check the console for "Unable to load preload script".
+- The usage ledger (D-030) is written by the main process alone, in the data folder, as plain text: the page can ask for sums and nothing else, and
+  cannot name an id, a price or a token count for a record. A request that cannot be recorded is not sent. It is a plain file the owner can read, and
+  can edit or delete: the limit of Stage 8.2 stops the app, not a person who changes the file.
+- The spending limits (D-031) are chosen by the person and enforced by the main process, in the one place a provider is called: before every request, in
+  the ledger's own turn, so two requests cannot both pass on the same money. Nothing is sent until both limits are chosen. A `limits.json` that is missing,
+  damaged or cut off means "not chosen", never "No limit"; one that cannot be read at all refuses requests. The page can choose limits and cannot take a choice back.
+- The question before a very large request (D-032) is asked by the main process, in the same place, and holds the request until the person says yes: nothing is written
+  to the ledger and nothing is sent while it waits. It guards the person against their own slip and a bug in the page; it is not a defence against a hostile page, which can
+  answer its own question. The limits above stop a slip, a bug and a model's words, and a hostile page could also change them (`settings.setLimits` needs no answer from the person: D-033),
+  so they are not a defence against one either: what keeps hostile code out of the page is the window's own guards. A yes is heard only for a question that is waiting (not ahead of it, not twice, not for another stream), and the
+  request carries no field that approves it. A damaged or unreadable `ask-first.json` means the default amount, so the question is still asked; it never means "Never ask".
 - Saved conversations are plain text on disk, not encrypted like the key (D-016): the History dialog says so and
   names the folder. The id of a conversation becomes part of a file name, so it is checked twice (in
   `ipc.ts` and inside the store) against the one spelling the app makes; the title and dates are never the
@@ -304,6 +383,6 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
 
 ## Not built yet
 
-A cost display, renaming or searching saved chats, a check against the real API (Stages 2 to 4 were tested
+Encrypted history (Stage 8b), renaming or searching saved chats, a check against the real API (Stages 2 to 4 were tested
 against a mock, which covers four models), a single suggested model per task (D-023 says why not), other providers. See
 ROADMAP.md.

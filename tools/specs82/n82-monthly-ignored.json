@@ -1,0 +1,14 @@
+{
+  "label": "n82-monthly-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "if (monthly.kind === 'usd' && spend.month + spend.request > monthly.usd) {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

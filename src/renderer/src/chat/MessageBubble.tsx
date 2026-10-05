@@ -1,5 +1,6 @@
 import { memo, useState } from 'react'
 import Markdown from '../markdown/Markdown'
+import { replyUsageText, replyUsageTitle } from '../settings/format'
 import MessageActions from './MessageActions'
 import MessageEdit from './MessageEdit'
 import type { ChatMessage } from './types'
@@ -83,6 +84,11 @@ function MessageBubble({
           }
         >
           {note}
+        </p>
+      )}
+      {message.usage && message.status !== 'streaming' && (
+        <p className="message-usage" title={replyUsageTitle(message.usage)}>
+          {replyUsageText(message.usage)}
         </p>
       )}
       {!editing && (

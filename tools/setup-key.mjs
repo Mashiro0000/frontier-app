@@ -20,6 +20,15 @@ await page.waitFor(READY, { timeoutMs: 20000, label: 'the page to be ready after
 const key = 'test-' + randomBytes(24).toString('hex')
 if (mockPort) await fetch(`http://127.0.0.1:${mockPort}/__expect-key`, { method: 'POST', body: JSON.stringify({ key }) })
 
+// Since 8.2 (D-031) a profile with no limits.json is asked for its spending limits before anything else, in a modal dialog that covers the page.
+// Put it off ("Not now", the same as Escape) so that Settings can be reached; the suites that test limits run after this and expect it back
+// after the reload below. (The other suites' profiles get "No limit" from run-with-app.mjs and never see it.)
+if (await page.evaluate(`!!document.querySelector('dialog.limits-dialog')?.open`)) {
+  await page.press('Escape')
+  await page.waitFor(`!document.querySelector('dialog.limits-dialog')?.open`, { timeoutMs: 4000, label: 'the first-run limits dialog to close' })
+  console.log('setup-key: the first-run limits question was open and was put off with Escape')
+}
+
 let opened = false
 let firstLook = null
 for (let attempt = 1; attempt <= 2 && !opened; attempt++) {

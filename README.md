@@ -43,6 +43,17 @@ The **Instructions** button under the message box (next to **New chat** and **Hi
 write, what to leave out). They are added to the app's own rules and sent with every message of that chat, to the company that runs the model
 that answers, so they are billed and, like the chat, saved as plain text on your computer; do not put passwords in them. The button says "on"
 while they are set, a new chat starts without them, and a chat opened from History brings its own back (D-027).
+Every request is counted (Stage 8.1, D-030): under each finished reply a small line says what it used and cost ("25 in, 12 out, $0.0003"), and
+**Settings > Usage** shows the sums for the chat you are in, for today and for this month. The numbers are the provider's own report, priced at list
+prices (cached input at its own, lower price); when there is no report (a reply you stopped, a connection that dropped) the app guesses from the
+text and marks it **about**. The record is a plain file, `usage/ledger.jsonl`, in the app's data folder, written by the app alone. Your provider's
+invoice is what counts.
+Spending is limited by you (Stage 8.2, D-031): nothing is sent until you have chosen a **daily and a monthly limit** (the app asks before your first message; there are
+no preset amounts, and "No limit" is a choice you make on purpose). A request that would take today's or this month's spending past a limit is not sent, whatever
+the page says: the main process checks every request, including Regenerate and Edit. **Settings > Spending limits** changes them. A reply that starts under a limit
+can end a little over it, by at most that one reply. Before a **very large request** the app asks first (Stage 8.3, D-032): when sending the conversation so far
+could cost more than an amount of yours (**Settings > Large requests**; $0.50 until you choose, or "Never ask"), it shows what the request could cost at the most,
+input and reply, and sends nothing until you press **Send**; **Don't send** (or Escape) ends the reply as "Not sent", and **Try again** asks again.
 The list of models is `registry/models.json`: edit it, then restart `npm run dev` (or run `npm run dev -- --watch`
 so it restarts by itself). See docs/DECISIONS.md D-012, D-014, D-015, D-020 and D-022.
 

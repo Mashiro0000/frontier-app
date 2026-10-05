@@ -1,0 +1,14 @@
+{
+  "label": "n81-reader-accepts-negative-tokens",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "  Number.isSafeInteger(value) &&\n  value >= 0 &&\n  value <= MAX_TOKENS_PER_BUCKET",
+      "to": "  Number.isSafeInteger(value) &&\n  value <= MAX_TOKENS_PER_BUCKET"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

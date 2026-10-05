@@ -15,7 +15,9 @@ for (const name of names) {
   const lines = out.split('\n')
   console.log(`--- ${name}`)
   for (const l of lines) {
-    if (/ABORT|WITH the sabotage|restored:/.test(l)) console.log('  ' + l.replace(/^\[[^\]]+\] /, '').slice(0, 220))
+    if (/ABORT|WITH the sabotage|restored:|RESTORE FAILED/.test(l)) console.log('  ' + l.replace(/^\[[^\]]+\] /, '').slice(0, 400))
     else if (/^    FAIL/.test(l)) console.log('  ' + l.trim().slice(0, 200))
   }
+  // A control that printed no "restored:" line did not reach its restore step (it was killed, or it crashed): the tree may still hold its sabotage.
+  if (!/restored:|ABORT/.test(out)) console.log('  !!! RESTORE NOT CONFIRMED: nc.mjs printed no "restored:" line for this control; hash the tree before going on')
 }

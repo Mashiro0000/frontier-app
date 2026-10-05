@@ -1,0 +1,14 @@
+{
+  "label": "n82-file-bad-field-is-none",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "damaged = true\n    return { kind: 'unset' }",
+      "to": "damaged = true\n    return { kind: 'none' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n81-guess-four-bytes-a-token",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "const BYTES_PER_TOKEN = 3",
+      "to": "const BYTES_PER_TOKEN = 4"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n81-guess-without-framing",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "const TOKENS_PER_MESSAGE = 4",
+      "to": "const TOKENS_PER_MESSAGE = 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}

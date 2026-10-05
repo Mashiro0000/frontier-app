@@ -1,0 +1,14 @@
+{
+  "label": "n82-store-cache-not-updated",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/limits.ts",
+      "from": "        current = back.limits\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,24 @@
+{
+  "label": "w83-page-decline-answers-yes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/LargeRequestDialog.tsx",
+      "from": "onClick={() => onAnswer(false)}",
+      "to": "onClick={() => onAnswer(true)}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-8-3w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s83nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8799",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w83-page-decline-answers-yes"
+  }
+}

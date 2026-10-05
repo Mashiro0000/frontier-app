@@ -1,0 +1,14 @@
+{
+  "label": "n81-reader-accepts-unknown-state",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "if (knownState === undefined || typeof estimate !== 'boolean') return null",
+      "to": "if (typeof estimate !== 'boolean') return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8-1.mjs"
+  ],
+  "env": {}
+}
