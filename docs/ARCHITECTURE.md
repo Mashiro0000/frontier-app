@@ -350,7 +350,7 @@ not have to change. See DECISIONS.md D-008.
   `provider`, `id`, `label`, `description`, `contextWindow`, `maxOutputTokens`, `pricing` (US dollars per million
   tokens: `inputPerMTok`, `cacheReadPerMTok`, `cacheWritePerMTok` and `outputPerMTok`, since 8.1), `capabilities` (facts: `imageInput`, `toolUse`, `reasoning`,
   `promptCaching`, and `effortLevels`, the effort levels its API accepts) and `effort` (the level the app asks for: one
-  of the model's own `effortLevels`, or `null` for a model that takes none, such as Haiku 4.5). Every object must have
+  of the model's own `effortLevels`, or `null` for a model that takes none, as Haiku 4.5 did until D-036 removed it). Every object must have
   exactly these fields, and `effort` and `effortLevels` must agree (D-019). Ids are unique across providers.
 - `registry/rankings.json` - which models the providers' own pages name for which task (D-023). Schema 0.2: `updatedAt`,
   `source` and `rankings`, a list of rows `{ task, modelId, note, source, asOf }` with `task` one of chat, coding, writing, quick.

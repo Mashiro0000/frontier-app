@@ -34,7 +34,8 @@
 - Update the registry without a new release: a checked copy in the data folder, written in place (D-010, D-014)
 - Remember an effort level per chat instead of per model, or let a message ask for one (D-024 keeps one level per model)
 - Show what the thinking of a high effort level cost on its own (8.1 counts it, in the output, but no provider reports it apart; D-024, D-030)
-- When a model answers "not found" (for example once Haiku 4.5 is retired), offer to switch to another
+- When a model answers "not found" (a retired model, as Haiku 4.5 will be; it was removed from the registry first, D-036), offer to switch to another
+- A documented model for "Quick answer" (its only row was Haiku 4.5's; it now says "No suggestion", D-036)
 - Show the retirement date of a model in Settings (needs a field in the registry)
 - Rename a saved conversation (the title is the first message; editing the file by hand already works)
 - Search saved conversations, and group them by day
