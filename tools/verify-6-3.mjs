@@ -5,7 +5,7 @@
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
-import { helpers } from './lib3.mjs'
+import { helpers, readRegistry } from './lib3.mjs'
 import { randomBytes } from 'node:crypto'
 
 const port = Number(process.argv[3] ?? 9222)
@@ -31,7 +31,7 @@ await page.waitFor(READY, { timeoutMs: 20000 })
 await page.waitFor(`!!document.querySelector('.task-select')`, { timeoutMs: 10000, label: 'the Task menu' })
 
 const st = await ev(`window.api.settings.getStatus()`)
-check(`[${VARIANT}] the app started and the models are fine: no models error, seven models, one selected`, st.modelsError === null && st.models.length === 7 && st.selectedModelId !== null, JSON.stringify([st.modelsError, st.models.length, st.selectedModelId]))
+check(`[${VARIANT}] the app started and the models are fine: no models error, every model of the registry, one selected`, st.modelsError === null && st.models.length === readRegistry().models.length && st.selectedModelId !== null, JSON.stringify([st.modelsError, st.models.length, st.selectedModelId]))
 check(`[${VARIANT}] the four tasks are still offered`, st.tasks.length === 4)
 check(`[${VARIANT}] with both keys, ${EXPECT} suggestion(s) survive`, st.suggestions.length === EXPECT, `${st.suggestions.length}: ${JSON.stringify(st.suggestions.map((s) => `${s.modelId}:${s.task}`))}`)
 if (VARIANT === 'row') {

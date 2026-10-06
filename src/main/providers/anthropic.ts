@@ -90,7 +90,7 @@ async function* stream(request: StreamRequest): AsyncGenerator<StreamEvent> {
       system: request.system,
       messages: request.messages,
       // `effort` is the dial for how much the model thinks and writes. Its default differs between models, so it is
-      // written out for the ones that take it, and left out for the ones that reject it outright (Haiku 4.5). The
+      // written out for the ones that take it, and left out for the ones that reject it outright (Haiku 4.5 did; D-036). The
       // registry says which (D-014), and the person's own choice may change the level (D-024). There is no `thinking`
       // setting: the models that think always do, and the others are not asked to.
       ...(effort ? { output_config: { effort } } : {}),

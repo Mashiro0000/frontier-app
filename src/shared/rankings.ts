@@ -152,7 +152,7 @@ export function parseRankings(input: unknown): RankingsResult {
 /**
  * The rows that can be used now: for a model that is in the registry, and whose provider has a key saved (a model
  * that cannot be called is no use to suggest). In the registry's order, then the task list's. A row for a model the
- * registry no longer has (Haiku 4.5 may be retired) is skipped without a word: that is not an error. With no
+ * registry no longer has (a retired model, as Haiku 4.5 is, D-036) is skipped without a word: that is not an error. With no
  * rankings, nothing is suggested.
  */
 export function suggestionsFor(

@@ -18,7 +18,7 @@ const H = helpers(page, { userData, mockUrl })
 const { ev } = H
 const good = JSON.parse(readFileSync(ORIGINAL_REGISTRY, 'utf8'))
 const L = (id) => good.models.find((m) => m.id === id).label
-const OPUS = 'claude-opus-5-5', SONNET = 'claude-sonnet-5-5', HAIKU = 'claude-haiku-4-5-20251001', FABLE = 'claude-fable-5-1'
+const OPUS = 'claude-opus-5-5', SONNET = 'claude-sonnet-5-5', FABLE = 'claude-fable-5-1' // the entry the scenarios break (Haiku 4.5's until D-036)
 const all = good.models.map((m) => m.id)
 const OPENAI = good.models.filter((m) => m.provider === 'openai').map((m) => m.id) // OpenAI's models stay on offer when an Anthropic entry is left out
 const tag = `[${SCENARIO}]`
@@ -28,11 +28,11 @@ const EXPECT = {
   'no-usable-models': { available: false, error: /none of the entries in models is usable/, logMore: [/unknown field "effrot"/] },
   'default-missing': { available: false, error: /defaultModelId "claude-nope" is not one of the usable models/ },
   'default-is-broken-entry': { available: false, error: /defaultModelId "claude-opus-5-5" is not one of the usable models/, logMore: [/models\[1\] \("claude-opus-5-5"\): effort must be one of "none", "low", "medium", "high", "xhigh", "max" or null/] },
-  'one-bad-entry': { available: true, ids: [FABLE, OPUS, SONNET, ...OPENAI], selected: OPUS, logMore: [/models\[3\] \("claude-haiku-4-5-20251001"\): effort is set, but capabilities\.effortLevels is empty: this model takes no effort setting/] },
-  'unknown-provider': { available: true, ids: [FABLE, OPUS, SONNET, ...OPENAI], selected: OPUS, logMore: [/models\[3\] \("claude-haiku-4-5-20251001"\): provider "gemini" is not one this version of the app can call/] },
+  'one-bad-entry': { available: true, ids: [OPUS, SONNET, ...OPENAI], selected: OPUS, logMore: [/models\[0\] \("claude-fable-5-1"\): effort is set, but capabilities\.effortLevels is empty: this model takes no effort setting/] },
+  'unknown-provider': { available: true, ids: [OPUS, SONNET, ...OPENAI], selected: OPUS, logMore: [/models\[0\] \("claude-fable-5-1"\): provider "gemini" is not one this version of the app can call/] },
   reordered: { available: true, ids: [...all].reverse(), selected: OPUS, logMore: [] },
   'default-sonnet': { available: true, ids: all, selected: SONNET, logMore: [] },
-  'saved-skipped': { available: true, ids: [FABLE, OPUS, SONNET, ...OPENAI], selected: OPUS, logMore: [/models\[3\] \("claude-haiku-4-5-20251001"\)/, /The saved model "claude-haiku-4-5-20251001" is not in the registry any more, so the default is used\./] }
+  'saved-skipped': { available: true, ids: [OPUS, SONNET, ...OPENAI], selected: OPUS, logMore: [/models\[0\] \("claude-fable-5-1"\)/, /The saved model "claude-fable-5-1" is not in the registry any more, so the default is used\./] }
 }[SCENARIO]
 if (!EXPECT) throw new Error('unknown scenario ' + SCENARIO)
 
@@ -85,8 +85,8 @@ if (!EXPECT.available) {
   check(`${tag} the selected model is ${L(EXPECT.selected)}`, menu?.value === EXPECT.selected && status.selectedModelId === EXPECT.selected, `${menu?.value} / ${status.selectedModelId}`)
   if (SCENARIO === 'reordered') check(`${tag} the default is the registry's defaultModelId, NOT the first entry`, menu.values[0] !== EXPECT.selected && menu.value === OPUS, JSON.stringify(menu.values))
   check(`${tag} no registry error is reported to the page`, status.modelsError === null && status.models.length === EXPECT.ids.length)
-  check(`${tag} the left-out entries are not offered to the page at all`, EXPECT.ids.length === all.length || !JSON.stringify(status).includes(HAIKU))
-  check(`${tag} nothing is saved just because a default applies`, H.prefs() === (SCENARIO === 'saved-skipped' ? '{"version":1,"modelId":"claude-haiku-4-5-20251001"}' : null), String(H.prefs()))
+  check(`${tag} the left-out entries are not offered to the page at all`, EXPECT.ids.length === all.length || !JSON.stringify(status).includes(FABLE))
+  check(`${tag} nothing is saved just because a default applies`, H.prefs() === (SCENARIO === 'saved-skipped' ? '{"version":1,"modelId":"claude-fable-5-1"}' : null), String(H.prefs()))
   await H.sendAndWait('hello with this registry')
   const req = (await H.mockReqs()).at(-1)
   check(`${tag} a chat works, and goes to ${EXPECT.selected}`, (await H.bubbleText()) === 'Echo: hello with this registry' && req?.body.model === EXPECT.selected && req.problems.length === 0, JSON.stringify([req?.body.model, req?.problems]))

@@ -1822,3 +1822,27 @@ restore preview panel rendered to text by React's server renderer after esbuild 
 another account; the built app was not run again for the wording.
 
 Status: accepted (8b.3, 8b.4 and 8b.5; the full regression: 94 of 96 runs clean, the two others one stale check, fixed and passed again; after the merge, the owner's own profile with the real dialogs, and the count wording fixed). Revisit: another Windows account for real; a password-based key for chats that must open elsewhere; a progress line for a long conversion; where old plain bytes may linger (IDEAS).
+
+## D-036 - Claude Haiku 4.5 removed from the registry ahead of its retirement
+
+The project's notes from the documentation read on 2026-10-01 say Claude Haiku 4.5 may be retired from 2026-10-15. **The owner asked on 6 October 2026: "Remove the haiku 4.5".**
+
+**What changed.** `registry/models.json` lists six models: Claude Fable 5.1, Opus 5.5 (the default) and Sonnet 5.5, and OpenAI's GPT-6 Astra, GPT-6.1 Sol and GPT-6 Luna. `registry/rankings.json` loses Haiku's only row, the one for "Quick answer", which now says
+"No suggestion for quick answer" (the page's own empty case: nothing is guessed). **Both files keep their `updatedAt` and `source`**: no fact was read again, and the tests define `updatedAt` as the day the facts were checked. (My first edit added a note to the registry's `source`; reading the validator
+before running anything showed the line is capped at 300 characters, which the note passed, so the whole registry would have been refused as "Models unavailable". The removal is recorded here instead.) **No code changed** apart from four comments that named Haiku as the example of a model with no effort setting.
+
+**What happens to what people already have.**
+
+- **A saved choice of Haiku 4.5**: the default, Opus 5.5, is shown, and the log says "The saved model ... is not in the registry any more, so the default is used" (D-015). The file keeps the saved id until the person chooses a model, and a level saved for Haiku is kept as well. New seeds check both: `retired-haiku` (`verify-3-5`) and `eff-retired-model-has-a-level` (`verify-7-1c`).
+- **Saved chats with replies from Haiku** open as before; the caption above such a reply shows the id `claude-haiku-4-5-20251001` instead of the name (D-021's rule for a model the registry no longer lists).
+- **The usage ledger** keeps the prices each record was written with (D-030), so past costs do not change. Backups (D-034) and encrypted chats (D-035) hold text and are not affected.
+- **The owner's own profile** has Sonnet 5.5 chosen, so nothing changes there.
+
+**A model with no effort setting** (the page hides the Effort menu, main sends no effort, D-024) stays in the code for a model that may come. With no such model in the registry it cannot be reached in the window any more; it is checked under Node against the fixed registry, `tools/registry-good.json`, which keeps Haiku's last entry and must otherwise hold every live entry unchanged (a check in `verify-7-1`). The mock still knows Haiku 4.5: it imitates the provider, which serves the model until it retires, not the registry.
+
+**The tests.** Every check that took Haiku from the live registry now uses a listed model with the same meaning: Fable as the valid saved choice, the choice left for the restart test (`verify-3-4b`) and the entry the registry scenarios break (with the same faults: an effort set with no levels, an unknown provider); Sonnet's id inside the damaged preference files (wrong case, wrong version, a byte-order mark, an object), so each still tests what it did; Opus and Sonnet for the switches in the middle of a reply and of a chat; and the counts (seven models, four Anthropic ones, the prices, the large-request thresholds) say six. **Found on the way:** the regression reused a seed manifest whenever one existed, so it would have run the old seeds; it now rewrites them for every run, as `run71.mjs` already did.
+
+**The full regression: 97 runs, 94 clean the first time** (`h45`, 66 runs, stopped after the registry scenarios when the session that had started it ended; `h45b`, the rest as a process of its own: 31 of 31). The three others: two more stale counts (`verify-5-3` expected at least seven models, `verify-6-3` exactly seven;
+both now read the registry's count) and, in `verify-7-4w`, the Edit-and-send-again check while the window watcher logged eight keyboard or mouse inputs in 16 seconds; all three passed when run again alone (66/66, 6/6 and 7/7 with 6-2's 27/27, 84/84). `verify-5-5`'s "the OpenAI ones last" had become blind to GPT-6 Astra (it began at the fifth model): fixed and run again (53/53). `src/` and `registry/` had the same hash before and after.
+
+Status: accepted. Revisit: a documented model for "Quick answer" (IDEAS); a "retires on" field in the registry (IDEAS).

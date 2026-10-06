@@ -19,7 +19,7 @@ const HINT =
 
 /**
  * The menu in the header that says how hard the model thinks (D-024). It offers only the levels main says the chosen model takes,
- * and is not shown for a model that takes none (Haiku 4.5). The choice is kept per model by the main process, which checks it
+ * and is not shown for a model that takes none (there is none in the registry since Haiku 4.5 went, D-036). The choice is kept per model by the main process, which checks it
  * again; the level the registry picks stays in force until the person chooses another.
  */
 function EffortPicker({

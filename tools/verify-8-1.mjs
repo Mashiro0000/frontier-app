@@ -122,10 +122,10 @@ check('ledgerLine: a cost written into the file is NOT read (a line cannot claim
   check('registry: the schema is 0.4', reg.REGISTRY_SCHEMA_VERSION === '0.4' && file.schemaVersion === '0.4')
   // What the providers' pricing pages said on 2026-10-02 (the Anthropic page and OpenAI's pricing table): input, cache read, cache write, output.
   const PAGES = {
-    'claude-fable-5-1': [10, 0.25, 12.5, 50], 'claude-opus-5-5': [4, 0.2, 5, 20], 'claude-sonnet-5-5': [2, 0.2, 2.5, 10], 'claude-haiku-4-5-20251001': [1, 0.1, 1.25, 5],
+    'claude-fable-5-1': [10, 0.25, 12.5, 50], 'claude-opus-5-5': [4, 0.2, 5, 20], 'claude-sonnet-5-5': [2, 0.2, 2.5, 10],
     'gpt-6-astra': [10, 1, 12.5, 50], 'gpt-6.1-sol': [2, 0.1, 2.5, 10], 'gpt-6-luna': [0.1, 0.01, 0.125, 0.5]
   }
-  check('registry: it lists exactly the seven models the pages were read for', same([...Object.keys(PAGES)].sort(), (parsed.ok ? parsed.registry.models : []).map((m) => m.id).sort()))
+  check('registry: it lists exactly the six models the pages were read for (Claude Haiku 4.5 was removed on 2026-10-06, D-036)', same([...Object.keys(PAGES)].sort(), (parsed.ok ? parsed.registry.models : []).map((m) => m.id).sort()))
   for (const m of parsed.ok ? parsed.registry.models : []) {
     const p = m.pricing
     check(`registry: ${m.id} is priced as the pages said (in / cache read / cache write / out)`, same([p.inputPerMTok, p.cacheReadPerMTok, p.cacheWritePerMTok, p.outputPerMTok], PAGES[m.id]), JSON.stringify(p))

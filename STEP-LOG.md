@@ -2285,6 +2285,24 @@ if you have not, please do before you rely on this. **The design was mine** (you
 2. **A probe session may be waiting for you:** to see whether a new session could carry on alone, I started a one-off scheduled task, "Frontier: probe a new session (model, permissions)". It came up on Opus 5.5 at medium effort and stopped at its first file write, asking for your approval (your sessions start in the "ask" permission mode). The app would not let me stop it, so please deny that write and close the session. I deleted the task itself.
 3. **Everything in the earlier stages' "Things to know" still applies.**
 
+## Claude Haiku 4.5 removed from the registry (6 October 2026 session; D-036)
+
+**Your instructions.** "Remove the haiku 4.5", and then "don't ask me to commit, merge or push again you do it on your own ok."
+
+**Step by step.**
+
+1. **The registry.** Haiku's entry is gone from `registry/models.json` (six models now) and its only ranking row ("Quick answer") from `registry/rankings.json`. Both files keep their dates and sources: no fact was read again. My first edit put a note in the registry's `source` line; reading the validator before running anything showed that line is capped at 300 characters, which the note passed, so the app would have refused the whole registry. The note is in D-036 instead.
+2. **The app needed no code change** (four comments only): a saved Haiku choice falls back to Opus 5.5 with a warning in the log (D-015), an old reply by Haiku shows the model's id above it (D-021), the ledger keeps the prices it recorded, and "Quick answer" says "No suggestion for quick answer". **Your own profile has Sonnet 5.5 chosen, so nothing changes for you.**
+3. **The tests:** about twenty suites took Haiku from the live registry. Each now uses a listed model with the same meaning (Fable, Sonnet or Opus, as the check needs). The case of a model with no effort setting cannot be reached in the window any more (no listed model is like that); it stays checked under Node against the fixed registry in `tools/`, which keeps Haiku's last entry. Two new seeds check what happens to someone who had Haiku saved. On the way I found that the regression reused an old seed manifest whenever one existed; it now rewrites the seeds every time.
+4. **The full regression: 97 runs, 94 clean the first time.** It stopped after the registry scenarios when the session that had started it ended (66 runs); I ran the rest as a process of its own (31 of 31 clean). The three others: two more stale counts (`verify-5-3`, `verify-6-3` expected seven models; they now read the registry's count) and one check in `verify-7-4w` that failed while someone used the keyboard or mouse (eight inputs in 16 seconds); all three passed when run again alone. `src/` and `registry/` hashed the same before and after.
+5. **Merged into `main` and pushed** (your standing instruction).
+
+## Claude Haiku 4.5 removed - Things to know
+
+1. **"Quick answer" has no suggested model now.** Its only row was Haiku's; a documented replacement would need a page that names one (IDEAS).
+2. **The mock still knows Haiku 4.5**, as the provider does until it retires; only the app's list dropped it.
+3. **Everything in the earlier stages' "Things to know" still applies.**
+
 ## Stage 9 - The plan (6 October 2026; waiting for your yes, nothing built)
 
 **Your instruction.** "After this start the new stage in new session on your own, I'm going out. And keep the OPUS 5.5 Max."
