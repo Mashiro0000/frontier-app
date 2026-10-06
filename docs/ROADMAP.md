@@ -187,7 +187,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 - [x] (after 8b.5, D-035) Run once on the **owner's own profile with the real Windows dialogs** (backup, the restore preview, encrypt, a restart, the question, back to plain; the original file put back byte for byte afterwards); the
       sentences that carry a count now agree with it ("1 chat will be rewritten as a plain file"), checked by `verify-8b-wording.mjs` and 13 negative controls.
 
-## Stage 9 - Images and files in (plan approved 6 October 2026, the owner's answers: "your picks"; done: 9.1 the store)
+## Stage 9 - Images and files in (plan approved 6 October 2026, the owner's answers: "your picks"; done: 9.1 the store, 9.2 getting files in)
 
 - Attach or paste images, PDFs and text or code files; the models that accept them get them; a preview of exactly what will be sent.
 - Safety: type checked by content, size and count caps, no path tricks, files copied into the app's data folder (the original is never
@@ -209,7 +209,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 **Slices** (each with its own Node and window suites, negative controls and decision entry, as before):
 
 - [x] (9.1, D-037) The attachment store in main, no window: the checks by content, the header check before any decoding, the caps, metadata removal (and photos turned upright: Electron's decoder ignores their orientation), the copy read back, names by hash, sealing when encryption is on, deleting what no chat uses (wired to the chats in 9.3). 185 checks under Node, 14 with Electron's real image tools, 79 negative controls.
-- [ ] (9.2) Getting files in: the bridge (the open dialog in main; paste and drop as bytes), the chips and their preview, removing one before sending. The dialogs stood in from main in the suites, and run once for real with `tools/real-dialogs.ps1`.
+- [x] (9.2, D-037) Getting files in: "Attach..." (the system's open dialog, opened by main; one filter, "All files", after the real dialog opened on "Images" and hid PDFs), paste and drop as bytes (a paste that carries text pastes the text), the chips (a small picture, what it is, what was done to it, where it goes), removing one before sending. 30 checks under Node, 36 in the window (dev and built), the real dialog once, 33 negative controls.
 - [ ] (9.3) Sending and saving: both providers' forms (the mock learns them), the golden check with no attachment, the registry's `documentInput`, the chat file version 4, History.
 - [ ] (9.4) Costs and limits: the guess for images and pages, the limits, the question.
 - [ ] (9.5) Backups with attachments (format 2), and the folder's caps.

@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { ATTACHMENT_LIMITS } from '../../shared/attachments'
 import { limitsAreSet } from '../../shared/limits'
 import type { TaskId } from '../../shared/rankings'
 import ChatBar from './chat/ChatBar'
 import ChatView from './chat/ChatView'
 import { ipcReply } from './chat/ipcReply'
+import { useAttachments } from './chat/useAttachments'
 import { useChat } from './chat/useChat'
 import HistoryDialog from './history/HistoryDialog'
 import { useHistory } from './history/useHistory'
@@ -32,6 +34,9 @@ function App(): React.JSX.Element {
   const chat = useChat(ipcReply)
   // Saves the conversation on screen as it goes, and keeps the list of saved ones (D-016, D-017).
   const history = useHistory(chat)
+  // The files on the message being written (D-037): copies kept by main, attached with "Attach...", a paste or a drop.
+  const attachments = useAttachments()
+  const attachFull = attachments.files.length >= ATTACHMENT_LIMITS.perMessage
   // The key that matters is the one of the provider that will answer (D-020).
   const missingKey = providerMissingKey(status)
   // No limits chosen yet: asked for before the first message, and until they are chosen nothing is sent (D-031).
@@ -80,6 +85,7 @@ function App(): React.JSX.Element {
         needsLimits={needsLimits}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenLimits={() => setLimitsPutOff(false)}
+        attachments={attachments}
       />
       {/* New chat, History and Instructions live under the message box, not in the header, so the header stays one row (D-029). */}
       <ChatBar
@@ -90,6 +96,15 @@ function App(): React.JSX.Element {
         onNewChat={history.startNew}
         onOpenHistory={() => setHistoryOpen(true)}
         onOpenInstructions={() => setInstructionsOpen(true)}
+        onAttach={attachments.pick}
+        attachDisabled={attachments.busy || attachFull}
+        attachTitle={
+          attachments.busy
+            ? 'Files are being attached.'
+            : attachFull
+              ? `A message can carry at most ${ATTACHMENT_LIMITS.perMessage} files.`
+              : 'Attach images, PDFs or text files to your message. You choose them in a Windows dialog; the app keeps a copy and sends it to the model.'
+        }
       />
       <HistoryDialog open={historyOpen} history={history} onClose={() => setHistoryOpen(false)} />
       <InstructionsDialog

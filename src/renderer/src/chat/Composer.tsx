@@ -6,9 +6,23 @@ interface ComposerProps {
   isReplying: boolean
   onSend: (text: string) => void
   onStop: () => void
+  /** The chips of the files on this message (D-037), drawn above the box. */
+  attachments?: React.ReactNode
+  /** Files are on the message. (Until slice 9.3 they cannot be sent yet, so Send waits.) */
+  hasFiles?: boolean
+  /** Files pasted into the box (an image copied to the clipboard): they are attached, not typed. */
+  onPasteFiles?: (files: File[]) => void
 }
 
-function Composer({ focusKey, isReplying, onSend, onStop }: ComposerProps): React.JSX.Element {
+function Composer({
+  focusKey,
+  isReplying,
+  onSend,
+  onStop,
+  attachments,
+  hasFiles = false,
+  onPasteFiles
+}: ComposerProps): React.JSX.Element {
   const [text, setText] = useState('')
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -18,7 +32,7 @@ function Composer({ focusKey, isReplying, onSend, onStop }: ComposerProps): Reac
     inputRef.current?.focus()
   }, [focusKey])
   // You can type the next message while a reply streams in, but not send it until the reply ends.
-  const canSend = text.trim() !== '' && !isReplying
+  const canSend = text.trim() !== '' && !isReplying && !hasFiles
 
   function submit(): void {
     if (!canSend) return
@@ -35,6 +49,7 @@ function Composer({ focusKey, isReplying, onSend, onStop }: ComposerProps): Reac
         submit()
       }}
     >
+      {attachments}
       <div className="composer-inner">
         <textarea
           ref={inputRef}
@@ -45,6 +60,19 @@ function Composer({ focusKey, isReplying, onSend, onStop }: ComposerProps): Reac
           aria-label="Message"
           autoFocus
           onChange={(event) => setText(event.target.value)}
+          onPaste={(event) => {
+            // A pasted image (or file) is attached, not typed. When the clipboard also holds text (copied cells, a page), the text is pasted as
+            // usual and nothing is attached, so a copy that happens to carry a picture never sends one by surprise.
+            const files = [...event.clipboardData.files]
+            if (
+              files.length > 0 &&
+              event.clipboardData.getData('text/plain') === '' &&
+              onPasteFiles
+            ) {
+              event.preventDefault()
+              onPasteFiles(files)
+            }
+          }}
           onKeyDown={(event) => {
             // Enter sends, Shift+Enter adds a new line. Enter that only confirms an
             // input-method candidate (for example Japanese or Chinese typing) must not send.
@@ -69,7 +97,13 @@ function Composer({ focusKey, isReplying, onSend, onStop }: ComposerProps): Reac
             Stop
           </button>
         ) : (
-          <button key="send" type="submit" className="composer-button" disabled={!canSend}>
+          <button
+            key="send"
+            type="submit"
+            className="composer-button"
+            disabled={!canSend}
+            title={hasFiles ? 'Sending files is not ready yet in this version.' : undefined}
+          >
             Send
           </button>
         )}

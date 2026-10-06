@@ -3,6 +3,7 @@
 // only: this file is bundled into the preload, which runs sandboxed (see D-004).
 
 import type { AskFirstChoice, AskFirstSetting, RequestEstimate } from './askFirst'
+import type { AttachedFile } from './attachments'
 import type { Limits, LimitsChoice } from './limits'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
@@ -316,6 +317,17 @@ export type HistoryRestoreApplyResult =
     }
   | { ok: false; error: string }
 
+/**
+ * What came of "Attach..." (D-037): the files kept (each a copy in the app's data folder, checked by its bytes) and, for each file that was not, a sentence
+ * naming it and saying why. `cancelled`: the person closed the system's dialog, which is not a failure and is not shown as one.
+ */
+export type AttachPickResult =
+  | { ok: true; files: AttachedFile[]; refused: string[] }
+  | { ok: false; error: string; cancelled?: true }
+
+/** What came of a pasted or dropped file (D-037): kept (a copy, checked by its bytes), or a sentence that names it and says why not. */
+export type AttachBytesResult = { ok: true; file: AttachedFile } | { ok: false; error: string }
+
 /** Everything the preload hands to the page as `window.api`. Nothing else is reachable. */
 export interface FrontierApi {
   settings: {
@@ -402,6 +414,17 @@ export interface FrontierApi {
      */
     decryptChats(): Promise<ChatStorageResult>
   }
+  attachments: {
+    /**
+     * Opens the system's own open dialog (main opens it, for the window that asked: the page never names a path) and keeps a checked copy of each
+     * file the person chooses, at most `ATTACHMENT_LIMITS.perMessage` at a time (D-037).
+     */
+    pick(): Promise<AttachPickResult>
+    /** A pasted or dropped file: its name (a label) and its bytes, never a path. Main checks it by its bytes and keeps a copy. */
+    addBytes(name: string, bytes: Uint8Array): Promise<AttachBytesResult>
+    /** The person took a file off the message before sending it: main stops keeping it for this message (a copy no chat uses is deleted). */
+    discard(id: string): void
+  }
 }
 
 export const CHANNELS = {
@@ -428,7 +451,10 @@ export const CHANNELS = {
   historyRestoreCancel: 'history:restore-cancel',
   historyStorage: 'history:storage',
   historyEncrypt: 'history:encrypt',
-  historyDecrypt: 'history:decrypt'
+  historyDecrypt: 'history:decrypt',
+  attachmentsPick: 'attachments:pick',
+  attachmentsAddBytes: 'attachments:add-bytes',
+  attachmentsDiscard: 'attachments:discard'
 } as const
 
 /**

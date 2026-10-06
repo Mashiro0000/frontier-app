@@ -1,0 +1,14 @@
+{
+  "label": "n92-svc-no-cap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentService.ts",
+      "from": "        for (const path of paths.slice(0, max)) {",
+      "to": "        for (const path of paths) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

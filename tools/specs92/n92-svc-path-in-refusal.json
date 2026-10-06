@@ -1,0 +1,14 @@
+{
+  "label": "n92-svc-path-in-refusal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentService.ts",
+      "from": "            refused.push(`${cleanFileName(path, 'A file')} was not attached: ${read.why}.`)",
+      "to": "            refused.push(`${path} was not attached: ${read.why}.`)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

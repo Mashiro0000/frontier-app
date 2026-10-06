@@ -1,0 +1,18 @@
+{
+  "label": "w92-paste-with-text-attaches",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/Composer.tsx",
+      "from": "              event.clipboardData.getData('text/plain') === '' &&\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run92.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 420000
+}

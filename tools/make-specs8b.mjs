@@ -75,7 +75,8 @@ const node = {
   'n8b-validate-scope-loose': [FILE2, [[VAL, "if (scope === 'all') return { ok: true, request: { scope: 'all' } }", "if (typeof scope === 'string' && scope.toLowerCase() === 'all') return { ok: true, request: { scope: 'all' } }"]]],
   'n8b-ipc-window-calls-unguarded': [FILE2, [[IPC, '      guarded((...rest: A) => handler(BrowserWindow.fromWebContents(event.sender), ...rest))(\n        event,\n        ...args\n      )', '      handler(BrowserWindow.fromWebContents(event.sender), ...args)']]],
   'n8b-ipc-look-no-window': [FILE2, [[IPC, 'guardedForWindow((window): Promise<HistoryRestoreLookResult> => backups.restoreLook(window))', 'guardedForWindow((): Promise<HistoryRestoreLookResult> => backups.restoreLook(null))']]],
-  'n8b-ipc-quit-not-waiting': [FILE2, [[IPC, 'Promise.all([history.whenIdle(), ledger.whenIdle(), backups.whenIdle()])', 'Promise.all([history.whenIdle(), ledger.whenIdle()])']]],
+  // (9.2, D-037: the list of what quitting waits for gained the attachments and is written one per line)
+  'n8b-ipc-quit-not-waiting': [FILE2, [[IPC, '      ledger.whenIdle(),\n      backups.whenIdle(),\n', '      ledger.whenIdle(),\n']]],
   'n8b-ipc-cancel-untrusted': [FILE2, [[IPC, 'if (isTrustedSender(event, appUrl)) backups.restoreCancel(token)', 'backups.restoreCancel(token)']]],
   'n8b-preload-path-param': [FILE2, [[PRE, 'exportChats: (request) => ipcRenderer.invoke(CHANNELS.historyExport, request),', 'exportChats: (request, path?: string) => ipcRenderer.invoke(CHANNELS.historyExport, { ...request, path }),']]]
 }

@@ -774,6 +774,122 @@ body {
   background: var(--ev-c-gray-1);
 }
 
+/* ---------- files on the message being written (D-037) ---------- */
+
+/* As wide as the message box, right above it. The chips wrap in a narrow window; a long name is cut with "..." (the whole name is in the tooltip). */
+.attachments {
+  max-width: var(--chat-width);
+  margin: 0 auto 8px;
+}
+
+.attachment-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attachment-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: min(100%, 320px);
+  padding: 4px 4px 4px 4px;
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.attachment-thumb,
+.attachment-icon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+}
+
+.attachment-thumb {
+  object-fit: cover;
+  background: var(--ev-c-gray-3);
+}
+
+.attachment-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  background: var(--ev-c-gray-3);
+}
+
+.attachment-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.attachment-name {
+  overflow: hidden;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.attachment-facts,
+.attachment-notes {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.attachment-remove {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.attachment-remove:hover {
+  color: var(--ev-c-text-1);
+  background: var(--ev-c-gray-2);
+}
+
+.attachment-remove:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.attachment-destination {
+  margin: 6px 2px 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.attachment-notices {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--color-danger);
+  overflow-wrap: anywhere;
+}
+
+.attachment-notices p {
+  margin: 2px 2px 0;
+}
+
 /* ---------- the chat's own buttons, under the message box (D-029) ---------- */
 
 /* As wide as the message box above it (its edges line up with the box's), and wrapping instead of overflowing in a narrow window. */

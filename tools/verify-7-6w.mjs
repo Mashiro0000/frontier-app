@@ -40,7 +40,8 @@ const layout = () => ev(`(() => {
   return { vw: innerWidth, vh: innerHeight, header: r('.app-header'), list: r('.message-list'), composer: r('.composer'), box: r('.composer-inner'), bar: r('.chat-bar'), first: r('.chat-bar .chat-button'),
     scroll: document.documentElement.scrollHeight > innerHeight || document.documentElement.scrollWidth > innerWidth }
 })()`)
-const chatBtns = () => ev(`[...document.querySelectorAll('.chat-bar .chat-button')].map((b) => ({ text: b.textContent, disabled: b.disabled, title: b.title, mark: b.querySelector('.chat-mark')?.textContent ?? null, focused: document.activeElement === b }))`)
+// Since 9.2 (D-037) the bar begins with "Attach...", which verify-9-2w checks; this suite keeps checking the three buttons of 7.6.
+const chatBtns = () => ev(`[...document.querySelectorAll('.chat-bar .chat-button')].filter((b) => b.textContent !== 'Attach...').map((b) => ({ text: b.textContent, disabled: b.disabled, title: b.title, mark: b.querySelector('.chat-mark')?.textContent ?? null, focused: document.activeElement === b }))`)
 const btn = async (text) => (await chatBtns()).find((b) => b.text.startsWith(text))
 const setSel = (cls, value) => ev(`(() => { const s = document.querySelector('${cls}'); const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set; set.call(s, ${JSON.stringify(value)}); s.dispatchEvent(new Event('change', { bubbles: true })); return s.value })()`)
 const addProbes = () => ev(`(() => { const a = document.querySelector('.app-header-actions'); const settings = [...a.children].at(-1); for (const [tag, cls, text] of [['button', 'app-badge app-badge-warn app-badge-button', 'Not saved'], ['span', 'app-badge app-badge-warn', 'No API key']]) { const e = document.createElement(tag); e.className = cls + ' probe'; e.textContent = text; a.insertBefore(e, settings) } return a.querySelectorAll('.probe').length })()`)
@@ -165,10 +166,10 @@ try {
   check('in the order the keyboard goes: the header (Task, model, Effort, Settings), then the messages, the box, Send, and last New chat, History, Instructions', at('task-select') < at('header-select') && at('header-select') < at('effort-select') && at('effort-select') < at('settings') && at('settings') < at('input') && at('input') < at('send') && at('send') < at('chat:New chat') && at('chat:New chat') + 1 === at('chat:History') && at('chat:History') + 1 === at('chat:Instructions') && at('chat:Instructions') === domOrder.length - 1, JSON.stringify(domOrder))
   const walk = []
   for (let i = 0; i < 4; i++) { await page.press('Tab'); walk.push(await active()) }
-  check('Tab from the message box goes Send, New chat, History, Instructions', JSON.stringify(walk) === JSON.stringify(['Send', 'New chat', 'History', 'Instructions on']), JSON.stringify(walk))
+  check('Tab from the message box goes Send, then (since 9.2) Attach..., New chat, History', JSON.stringify(walk) === JSON.stringify(['Send', 'Attach...', 'New chat', 'History']), JSON.stringify(walk))
   const back = []
   for (let i = 0; i < 3; i++) { await page.press('Tab', { shift: true }); back.push(await active()) }
-  check('and Shift+Tab goes back the same way', JSON.stringify(back) === JSON.stringify(['History', 'New chat', 'Send']), JSON.stringify(back))
+  check('and Shift+Tab goes back the same way', JSON.stringify(back) === JSON.stringify(['New chat', 'Attach...', 'Send']), JSON.stringify(back))
   await page.click('.chat-button@New chat')
   await page.waitFor(`document.querySelectorAll('.message-list-inner > .message').length === 0`, { timeoutMs: 6000 })
   await sleep(300)

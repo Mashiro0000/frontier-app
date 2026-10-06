@@ -1,0 +1,14 @@
+{
+  "label": "n92-text-pages-plural",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/attachmentText.ts",
+      "from": "    parts.push(`${count(info.pages)} ${info.pages === 1 ? 'page' : 'pages'}`)",
+      "to": "    parts.push(`${count(info.pages)} pages`)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

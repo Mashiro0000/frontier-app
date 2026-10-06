@@ -2335,3 +2335,20 @@ if you have not, please do before you rely on this. **The design was mine** (you
 3. **A PDF's pages are counted from its structure, not drawn**: an unusual PDF could be counted wrong (the provider then has the last word). A PDF with a password is refused.
 4. **A photo is made smaller and its metadata removed before it is kept**: the copy in the app's folder is what is sent, and your original is never changed (only read).
 5. **Everything in the earlier stages' "Things to know" still applies**, including the first real API call, which only you can make.
+
+## Stage 9 - Slice 9.2: getting files in (6 October 2026 session; D-037)
+
+**Step by step.**
+
+1. **"Attach..." is the first button under the message box.** It opens Windows' own open dialog (main opens it; the page never names a path). You can also **paste an image** into the message box, or **drop files** on the chat: the page reads their bytes and hands them over, never their place on disk.
+2. **Each file becomes a chip** above the box: a small picture (or "PDF" / "TXT"), its name, what it is ("JPEG image, 32 x 64"), what was done to it ("metadata removed; turned upright"), a PDF's note that it goes as it is, and a button to take it off. Under the chips: **where they go** ("These files go to Anthropic with this message, and again with each later message of this chat."). A file that cannot be attached gets one sentence saying why.
+3. **Sending them comes in 9.3**: until then Send waits while files are on the message.
+4. **The real Windows dialog, once, on a scratch profile** (window messages only, nothing else on your desktop): it works, one file or several. **It found a real problem**: Windows opened the dialog on the "Images" filter although "All files" was listed first, which would have hidden your PDFs and text files. The dialog now has only "All files".
+5. **Something you should know about that run:** Windows opened the dialog in your Downloads folder (the folder it remembers), and my script took a screenshot of the dialog. **I deleted that screenshot at once** (it was only in the test output folder, never committed or sent anywhere) and the script no longer takes one.
+6. **Checked:** 30 checks under Node, 36 in the window on the dev app and on the built one (a real paste through the system clipboard and a real file drop included), and 33 negative controls, all caught in the end. Three older checks counted the chat bar's buttons or the bridge's functions and were updated; four older negative-control specs were repointed and run again.
+
+## Stage 9.2 - Things to know (not problems, but worth your attention)
+
+1. **A paste that carries text pastes the text.** Copying cells from a spreadsheet also puts a picture of them on the clipboard; the app pastes the text and attaches nothing, so a picture is never sent by surprise. To attach an image, copy just the image.
+2. **Attach... works while a reply is arriving** (you can prepare the next message), unlike New chat, History and Instructions.
+3. **Everything in the earlier stages' "Things to know" still applies.**

@@ -238,6 +238,28 @@ export function checkBackupRequest(input: unknown): BackupRequestCheck {
   return bad
 }
 
+export type AttachmentBytesCheck =
+  { ok: true; name: string; bytes: Uint8Array } | { ok: false; error: string }
+
+/**
+ * Checks a pasted or dropped file from the page (D-037): `{ name, bytes }`, the bytes a Uint8Array of at most `maxBytes` (looked at before anything is
+ * copied) and the name text of at most 1,000 characters (it is a label: main cleans it). Nothing else is read from it, so it can never carry a path that
+ * main would open.
+ */
+export function checkAttachmentBytes(input: unknown, maxBytes: number): AttachmentBytesCheck {
+  const bad = { ok: false, error: 'The file was not understood.' } as const
+  if (typeof input !== 'object' || input === null) return bad
+  const { name, bytes } = input as Record<string, unknown>
+  if (typeof name !== 'string' || name.length > 1000 || !(bytes instanceof Uint8Array)) return bad
+  if (bytes.byteLength > maxBytes) {
+    return {
+      ok: false,
+      error: `The file was not attached: it is larger than ${Math.round(maxBytes / (1024 * 1024))} MB.`
+    }
+  }
+  return { ok: true, name, bytes }
+}
+
 /** Checks an id from the page, for loading or deleting a saved conversation. */
 export function checkConversationId(input: unknown): ConversationIdCheck {
   return isConversationId(input)

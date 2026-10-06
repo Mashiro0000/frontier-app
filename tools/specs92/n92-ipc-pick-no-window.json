@@ -1,0 +1,14 @@
+{
+  "label": "n92-ipc-pick-no-window",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    CHANNELS.attachmentsPick,\n    guardedForWindow(async (window): Promise<AttachPickResult> => {",
+      "to": "    CHANNELS.attachmentsPick,\n    guarded(async (): Promise<AttachPickResult> => {\n      const window = null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

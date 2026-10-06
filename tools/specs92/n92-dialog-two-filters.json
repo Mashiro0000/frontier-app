@@ -1,0 +1,14 @@
+{
+  "label": "n92-dialog-two-filters",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupDialogs.ts",
+      "from": "    filters: [ANY_FILTER],",
+      "to": "    filters: [ANY_FILTER, { name: 'Images', extensions: ['png', 'jpg'] }],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

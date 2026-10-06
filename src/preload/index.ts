@@ -49,6 +49,11 @@ const api: FrontierApi = {
     storage: () => ipcRenderer.invoke(CHANNELS.historyStorage),
     encryptChats: () => ipcRenderer.invoke(CHANNELS.historyEncrypt),
     decryptChats: () => ipcRenderer.invoke(CHANNELS.historyDecrypt)
+  },
+  attachments: {
+    pick: () => ipcRenderer.invoke(CHANNELS.attachmentsPick),
+    addBytes: (name, bytes) => ipcRenderer.invoke(CHANNELS.attachmentsAddBytes, { name, bytes }),
+    discard: (id) => ipcRenderer.send(CHANNELS.attachmentsDiscard, id)
   }
 }
 

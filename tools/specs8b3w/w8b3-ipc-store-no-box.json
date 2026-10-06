@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "    box: secureStorage,\n    writeMode: protection.writeMode\n",
-      "to": "    writeMode: protection.writeMode\n"
+      "from": "  const history = createConversationStore(folder, {\n    box: secureStorage,\n    writeMode: protection.writeMode\n",
+      "to": "  const history = createConversationStore(folder, {\n    writeMode: protection.writeMode\n"
     }
   ],
   "argv": [

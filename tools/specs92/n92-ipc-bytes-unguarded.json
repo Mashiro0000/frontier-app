@@ -1,0 +1,14 @@
+{
+  "label": "n92-ipc-bytes-unguarded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    CHANNELS.attachmentsAddBytes,\n    guarded(async (input: unknown): Promise<AttachBytesResult> => {",
+      "to": "    CHANNELS.attachmentsAddBytes,\n    (async (_event: unknown, input: unknown): Promise<AttachBytesResult> => {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

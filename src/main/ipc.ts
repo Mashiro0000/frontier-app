@@ -2,6 +2,8 @@ import { app, BrowserWindow, ipcMain, type IpcMainInvokeEvent } from 'electron'
 import { join } from 'path'
 import {
   CHANNELS,
+  type AttachBytesResult,
+  type AttachPickResult,
   type ChatStorageResult,
   type ChatStorageStatus,
   type HistoryExportResult,
@@ -40,7 +42,10 @@ import {
   checkProvider
 } from '../shared/validate'
 import { createAskFirstStore } from './askFirst'
-import { systemAskers, systemPickers } from './backupDialogs'
+import { electronImageTools } from './attachmentImages'
+import { createAttachmentService } from './attachmentService'
+import { createAttachmentStore } from './attachmentStore'
+import { pickAttachmentPaths, systemAskers, systemPickers } from './backupDialogs'
 import { createBackupService } from './backupService'
 import { baseUrlOverride } from './baseUrl'
 import { registerChatIpc } from './chat'
@@ -285,6 +290,20 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     writeMode: protection.writeMode
   })
   const reason = (error: unknown): unknown => (error instanceof Error ? error.message : error)
+  // The attachments (D-037): main's own copies of the files the person attaches, in attachments/ beside the chats, checked by their bytes and sealed
+  // like the chats (the same rule for how a file may be written). The page hands over bytes (a paste, a drop) or asks main to open the system's dialog;
+  // it never names a path.
+  const attachments = createAttachmentStore(join(app.getPath('userData'), 'attachments'), {
+    images: electronImageTools,
+    box: secureStorage,
+    writeMode: protection.writeMode
+  })
+  const attaching = createAttachmentService({
+    store: attachments,
+    pickPaths: pickAttachmentPaths,
+    // No saved chat names an attachment before 9.3 (sending and saving them): a file taken off the message is used by nothing.
+    referenced: async () => new Set<string>()
+  })
 
   // Backing up chats to a file and restoring them from one (D-034), and turning the encryption of the saved chats on and off (D-035): the same lock,
   // so that never two of them run at once. The person chooses places and answers questions in the system's own dialogs, which main opens for the
@@ -418,6 +437,39 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
+  // Attaching files (D-037). "Attach..." opens the system's open dialog for the window that asked; a paste or a drop hands over bytes and a name. Every
+  // file is checked by its bytes and kept as a copy; the page learns what it is (and a small picture), never a path.
+  ipcMain.handle(
+    CHANNELS.attachmentsPick,
+    guardedForWindow(async (window): Promise<AttachPickResult> => {
+      try {
+        return await attaching.pick(window)
+      } catch (error) {
+        console.error('Attaching files failed:', reason(error))
+        return { ok: false, error: 'The files could not be attached.' }
+      }
+    })
+  )
+
+  ipcMain.handle(
+    CHANNELS.attachmentsAddBytes,
+    guarded(async (input: unknown): Promise<AttachBytesResult> => {
+      try {
+        return await attaching.addBytes(input)
+      } catch (error) {
+        console.error('Attaching a pasted or dropped file failed:', reason(error))
+        return { ok: false, error: 'The file could not be attached.' }
+      }
+    })
+  )
+
+  ipcMain.on(CHANNELS.attachmentsDiscard, (event, id: unknown) => {
+    if (!isTrustedSender(event, appUrl)) return
+    attaching.discard(id).catch((error: unknown) => {
+      console.error('Letting go of an attachment failed:', reason(error))
+    })
+  })
+
   // What was used and what it cost (D-030): one plain file, written by main alone. The page can ask for sums and nothing else.
   const ledger = createUsageLedger(join(app.getPath('userData'), 'usage', 'ledger.jsonl'))
 
@@ -436,5 +488,10 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   registerChatIpc(appUrl, ledger, limitsStore, askFirstStore)
   // The lock the encryption flows run in is the backup service's, so waiting for it waits for them too.
   return () =>
-    Promise.all([history.whenIdle(), ledger.whenIdle(), backups.whenIdle()]).then(() => undefined)
+    Promise.all([
+      history.whenIdle(),
+      ledger.whenIdle(),
+      backups.whenIdle(),
+      attachments.whenIdle()
+    ]).then(() => undefined)
 }

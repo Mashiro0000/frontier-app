@@ -1,5 +1,5 @@
 param(
-  [Parameter(Mandatory = $true)][ValidateSet('find', 'setname', 'ok', 'tdclick', 'shot', 'gone')][string]$Op,
+  [Parameter(Mandatory = $true)][ValidateSet('find', 'setname', 'ok', 'cancel', 'filetype', 'tdclick', 'shot', 'gone')][string]$Op,
   [string]$Value = '',
   [string]$Out = '',
   [int]$WaitSec = 15,
@@ -11,6 +11,9 @@ param(
 #   find               the dialog's title, texts, buttons and the File name box
 #   setname -Value P   put P (a full path) in the File name box (Edit 1001 in a save dialog, 1148 in an open dialog)
 #   ok                 press Save / Open (WM_COMMAND IDOK from that button)
+#   cancel             close the dialog as Cancel does (WM_COMMAND IDCANCEL)
+#   filetype           the file type box's selected text (the filter Windows shows first); prints nothing about the files in the folder
+#   (shot captures the folder the dialog shows, which may be the person's own: do not use it on a dialog that opens in a personal folder)
 #   tdclick -Value N   press a message box button: Electron gives noLink buttons the ids 100, 101, ... in order; 2 (IDCANCEL) is the Escape answer
 #   shot -Out F.png    capture just the dialog's window (PrintWindow), whatever is in front of it
 #   gone               say whether a dialog is still open
@@ -101,6 +104,22 @@ switch ($Op) {
     Own $btn
     "PRESS [$(TextOf $btn)] in [$($d.Current.Name)]"
     [void][W]::PostMessage($dh, 0x0111, [IntPtr]1, $btn)          # WM_COMMAND, IDOK, BN_CLICKED from that button
+  }
+  'cancel' {
+    "CANCEL [$($d.Current.Name)]"
+    [void][W]::PostMessage($dh, 0x0111, [IntPtr]2, [IntPtr]::Zero)   # WM_COMMAND, IDCANCEL
+  }
+  'filetype' {
+    $box = $null
+    foreach ($e in $d.FindAll($T::Descendants, [System.Windows.Automation.Condition]::TrueCondition)) {
+      if ($e.Current.ClassName -eq 'ComboBox' -and $e.Current.AutomationId -eq '1136') { $box = $e; break }
+    }
+    if ($null -eq $box) { 'NO file type box'; exit 2 }
+    $h = [IntPtr]$box.Current.NativeWindowHandle
+    Own $h
+    $sb = New-Object System.Text.StringBuilder 512
+    [void][W]::SendMessage($h, 0x000D, [IntPtr]512, $sb)   # WM_GETTEXT
+    "FILETYPE [$($sb.ToString())]"
   }
   'tdclick' {
     "TASK DIALOG [$($d.Current.Name)]: click button id $Value"

@@ -1,0 +1,14 @@
+{
+  "label": "n92-text-no-metadata-note",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/attachmentText.ts",
+      "from": "  if (changes.metadataRemoved) notes.push('metadata removed')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}
