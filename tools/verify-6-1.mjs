@@ -111,22 +111,22 @@ const both = () => true
 const key = (list) => (p) => list.includes(p)
 const tag = (list) => list.map((s) => `${s.modelId}:${s.task}`)
 let s = suggestionsFor(rankings, models, both)
-check('with both keys: seven suggestions, in the registry\'s order and then the task list\'s', JSON.stringify(tag(s)) === JSON.stringify(['claude-opus-5-5:coding', 'claude-sonnet-5-5:coding', 'claude-sonnet-5-5:writing', 'claude-haiku-4-5-20251001:quick', 'gpt-6-astra:coding', 'gpt-6-astra:writing', 'gpt-6.1-sol:coding']), JSON.stringify(tag(s)))
+check('with both keys: six suggestions, in the registry\'s order and then the task list\'s', JSON.stringify(tag(s)) === JSON.stringify(['claude-opus-5-5:coding', 'claude-sonnet-5-5:coding', 'claude-sonnet-5-5:writing', 'gpt-6-astra:coding', 'gpt-6-astra:writing', 'gpt-6.1-sol:coding']), JSON.stringify(tag(s)))
 check('each suggestion has exactly task, modelId, note, source, asOf, copied from its row', s.every((x) => Object.keys(x).sort().join() === 'asOf,modelId,note,source,task' && rankings.rows.some((y) => y.task === x.task && y.modelId === x.modelId && y.note === x.note && y.source === x.source && y.asOf === x.asOf)))
-check('only an Anthropic key: only Anthropic models are suggested', JSON.stringify(tag(suggestionsFor(rankings, models, key(['anthropic'])))) === JSON.stringify(['claude-opus-5-5:coding', 'claude-sonnet-5-5:coding', 'claude-sonnet-5-5:writing', 'claude-haiku-4-5-20251001:quick']))
+check('only an Anthropic key: only Anthropic models are suggested', JSON.stringify(tag(suggestionsFor(rankings, models, key(['anthropic'])))) === JSON.stringify(['claude-opus-5-5:coding', 'claude-sonnet-5-5:coding', 'claude-sonnet-5-5:writing']))
 check('only an OpenAI key: only OpenAI models are suggested', JSON.stringify(tag(suggestionsFor(rankings, models, key(['openai'])))) === JSON.stringify(['gpt-6-astra:coding', 'gpt-6-astra:writing', 'gpt-6.1-sol:coding']))
 check('no key at all: nothing is suggested', suggestionsFor(rankings, models, () => false).length === 0)
 check('no rankings (the file could not be loaded): nothing is suggested, and nothing throws', suggestionsFor(null, models, both).length === 0)
 check('an empty list of rows: nothing is suggested', suggestionsFor({ ...rankings, rows: [] }, models, both).length === 0)
 check('"chat" has no suggestion (nothing fetched names a model for it)', s.every((x) => x.task !== 'chat'))
 {
-  // Haiku 4.5 may be retired (2026-10-15 at the earliest): the registry entry is deleted, the row stays, and nothing breaks.
-  const noHaiku = models.filter((m) => m.id !== 'claude-haiku-4-5-20251001')
+  // A row for a model the registry no longer has is skipped without a word (Haiku 4.5's row would have been: both were removed on 2026-10-06, D-036).
+  const stranger = { task: 'quick', modelId: 'claude-haiku-4-5-20251001', note: '"The lowest latency and price, with extended thinking"', source: 'https://platform.claude.com/docs/en/about-claude/models/choosing-a-model', asOf: '2026-10-01' }
   let t
   let threw = false
-  try { t = suggestionsFor(rankings, noHaiku, both) } catch { threw = true }
-  check('Haiku 4.5 removed from the registry: its row is skipped without an error, the rest is unchanged', !threw && t.length === 6 && !t.some((x) => x.modelId.includes('haiku')) && JSON.stringify(tag(t)) === JSON.stringify(tag(s).filter((x) => !x.includes('haiku'))), JSON.stringify(t && tag(t)))
-  check('...and "quick" then has no suggestion at all', !threw && !t.some((x) => x.task === 'quick'))
+  try { t = suggestionsFor({ ...rankings, rows: [...rankings.rows, stranger] }, models, both) } catch { threw = true }
+  check('a row for a model the registry no longer has is skipped without an error, and the rest is unchanged', !threw && JSON.stringify(tag(t)) === JSON.stringify(tag(s)), JSON.stringify(t && tag(t)))
+  check('"quick" has no suggestion now: its only row was Haiku 4.5\'s, removed with the model (D-036)', !s.some((x) => x.task === 'quick') && !rows.some((x) => x.task === 'quick'))
 }
 {
   const strange = { ...rankings, rows: [...rankings.rows, { task: 'coding', modelId: 'model-nobody-has', note: 'n', source: 'https://x.example/y', asOf: '2026-10-01' }] }

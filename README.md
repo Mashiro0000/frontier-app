@@ -27,12 +27,12 @@ The first time, click **Settings** and paste your own API key for the provider y
 (GPT). There is one section per provider, each with **Save key**, **Test key** (a free call that asks the provider for its
 models) and **Remove key**. A key is stored encrypted on your computer, and replies are billed to your account with that
 provider. The default model is Claude Opus 5.5; the menu in the header chooses another (Claude Fable 5.1, Sonnet 5.5,
-Haiku 4.5, or OpenAI's GPT-6 Astra, GPT-6.1 Sol and GPT-6 Luna), and Settings shows what each one costs. A chat can move
+or OpenAI's GPT-6 Astra, GPT-6.1 Sol and GPT-6 Luna; Claude Haiku 4.5 was removed ahead of its retirement, D-036), and Settings shows what each one costs. A chat can move
 between providers: the whole conversation is sent to whichever model answers next. The **Task** menu next to the model
 menu (chat, coding, writing, quick answer) marks the models the providers' own pages name for a task with "(suggested)";
 it chooses nothing, and the list is `registry/rankings.json` (D-023). The **Effort** menu (Faster to Smarter) says how hard the chosen model
 thinks before it answers: it offers the levels the registry lists for that model, remembers your choice per model, and is not shown for a
-model that takes none (Haiku 4.5). A higher level is slower and billed as more output (D-024).
+model that takes none (none of the listed models since Haiku 4.5 was removed). A higher level is slower and billed as more output (D-024).
 Replies are shown as Markdown (headings, lists, tables, quotes, code blocks with a **Copy** button) by a small reader of the app's
 own; raw HTML and images in a reply are shown as text and nothing is loaded. A link in a reply asks first: you see the whole address,
 and only **Open** sends it to your browser (D-025). What you type is shown as typed.

@@ -14,12 +14,18 @@ const E = await import(`${REPO_URL}/src/shared/effort.ts`)
 const { buildStreamRequest } = await import(`${REPO_URL}/src/main/providers/request.ts`)
 const { adapterFor } = await import(`${REPO_URL}/src/main/providers/index.ts`)
 
-const parsed = R.parseRegistry(JSON.parse(readFileSync(`${REPO}/registry/models.json`, 'utf8')))
-if (!parsed.ok) throw new Error('the registry is unusable: ' + parsed.error)
+// The effort logic is checked against the FIXED registry (tools/registry-good.json): it still holds Claude Haiku 4.5's last entry, the one model
+// that takes no effort, which the live registry no longer lists (removed on 2026-10-06, D-036). Every model the live registry lists must be in
+// the fixed one exactly as it is live (the first check), so the two cannot drift apart.
+const parsed = R.parseRegistry(JSON.parse(readFileSync(`${REPO}/tools/registry-good.json`, 'utf8')))
+if (!parsed.ok) throw new Error('the fixed registry is unusable: ' + parsed.error)
+const live = R.parseRegistry(JSON.parse(readFileSync(`${REPO}/registry/models.json`, 'utf8')))
+if (!live.ok) throw new Error('the registry is unusable: ' + live.error)
 const models = parsed.registry.models
 const by = Object.fromEntries(models.map((m) => [m.id, m]))
 const OPUS = 'claude-opus-5-5', HAIKU = 'claude-haiku-4-5-20251001', FABLE = 'claude-fable-5-1', SONNET = 'claude-sonnet-5-5'
 const ASTRA = 'gpt-6-astra', SOL = 'gpt-6.1-sol', LUNA = 'gpt-6-luna'
+check('the fixed registry holds every model the live one lists, exactly as it is listed there, plus Claude Haiku 4.5 (no effort levels; no longer in the live one, D-036)', live.registry.models.every((m) => JSON.stringify(m) === JSON.stringify(by[m.id])) && models.length === live.registry.models.length + 1 && by[HAIKU]?.capabilities.effortLevels.length === 0 && !live.registry.models.some((m) => m.id === HAIKU), JSON.stringify(live.registry.models.map((m) => m.id)))
 const clone = (v) => JSON.parse(JSON.stringify(v))
 const choose = (input) => V.checkEffortChoice(input, models)
 const refusedWith = (r, re) => !r.ok && re.test(r.error)

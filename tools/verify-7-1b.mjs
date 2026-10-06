@@ -20,7 +20,7 @@ const page = await connect(port)
 await assertScratchProfile()
 const H = helpers(page, { userData, mockUrl })
 const { ev } = H
-const OPUS = 'claude-opus-5-5', SONNET = 'claude-sonnet-5-5', HAIKU = 'claude-haiku-4-5-20251001', ASTRA = 'gpt-6-astra', LUNA = 'gpt-6-luna'
+const OPUS = 'claude-opus-5-5', SONNET = 'claude-sonnet-5-5', FABLE = 'claude-fable-5-1', ASTRA = 'gpt-6-astra', LUNA = 'gpt-6-luna'
 const sha = () => createHash('sha256').update(readFileSync(H.prefFile)).digest('hex').slice(0, 16)
 const effortMenu = () => ev(`(() => { const s = document.querySelector('.effort-select'); return s && { values: [...s.options].map((o) => o.value), value: s.value, disabled: s.disabled } })()`)
 const effortSent = (req) => (req.provider === 'openai' ? req.body.reasoning?.effort : req.body.output_config?.effort) ?? null
@@ -50,10 +50,11 @@ const rA = (await H.askMock('hello astra after restart')) ?? { provider: null, b
 check('...and its reply asks reasoning { effort: "xhigh" }', rA.provider === 'openai' && effortSent(rA) === 'xhigh' && rA.problems.length === 0)
 await H.chooseInPage(LUNA); await H.settle(LUNA)
 check('GPT-6 Luna shows None', (await effortMenu()).value === 'none')
-await H.chooseInPage(HAIKU); await H.settle(HAIKU)
-check('Haiku still has no Effort menu', (await ev(`document.querySelector('.effort-select') === null`)) === true)
+// (This step chose Claude Haiku 4.5, which had no Effort menu, until the model was removed on 2026-10-06, D-036; Fable has no level of its own saved.)
+await H.chooseInPage(FABLE); await H.settle(FABLE)
+check('Fable shows High, its registry pick (no level was ever chosen for it)', (await effortMenu()).value === 'high')
 const file = JSON.parse(H.prefs())
-check('the file still holds every level (choosing models rewrote it, and kept them): Opus max, Sonnet low, Astra xhigh, Luna none; the model is Haiku', file.modelId === HAIKU && file.efforts[OPUS] === 'max' && file.efforts[SONNET] === 'low' && file.efforts[ASTRA] === 'xhigh' && file.efforts[LUNA] === 'none', H.prefs())
+check('the file still holds every level (choosing models rewrote it, and kept them): Opus max, Sonnet low, Astra xhigh, Luna none; the model is Fable, which has none of its own', file.modelId === FABLE && file.efforts[OPUS] === 'max' && file.efforts[SONNET] === 'low' && file.efforts[ASTRA] === 'xhigh' && file.efforts[LUNA] === 'none' && !(FABLE in file.efforts), H.prefs())
 
 // removing a key must not forget the choices (they are separate files)
 await H.chooseInPage(OPUS); await H.settle(OPUS)

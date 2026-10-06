@@ -19,7 +19,8 @@ await assertScratchProfile()
 const H = helpers(page, { userData })
 const { ev } = H
 
-const OPUS = 'claude-opus-5-5', SONNET = 'claude-sonnet-5-5', HAIKU = 'claude-haiku-4-5-20251001', FABLE = 'claude-fable-5-1'
+const OPUS = 'claude-opus-5-5', SONNET = 'claude-sonnet-5-5', FABLE = 'claude-fable-5-1'
+// "Quick answer" had one row, Claude Haiku 4.5's; the model and its row were removed on 2026-10-06 (D-036), so it has no suggestion with any key.
 const ASTRA = 'gpt-6-astra', SOL = 'gpt-6.1-sol', LUNA = 'gpt-6-luna'
 const READY = `document.readyState === 'complete' && !!document.querySelector('.header-select, .app-badge')`
 const reload = async () => {
@@ -65,7 +66,7 @@ const saved = await ev(`window.api.settings.setApiKey('anthropic', ${JSON.string
 check('(setup) an invented Anthropic key was saved on the scratch profile', saved === true)
 await reload()
 const st1 = await status()
-check('getStatus: with an Anthropic key, exactly the four Anthropic rows (Opus coding; Sonnet coding and writing; Haiku quick)', JSON.stringify(st1.suggestions.map((s) => `${s.modelId}:${s.task}`)) === JSON.stringify([`${OPUS}:coding`, `${SONNET}:coding`, `${SONNET}:writing`, `${HAIKU}:quick`]), JSON.stringify(st1.suggestions.map((s) => `${s.modelId}:${s.task}`)))
+check('getStatus: with an Anthropic key, exactly the three Anthropic rows (Opus coding; Sonnet coding and writing)', JSON.stringify(st1.suggestions.map((s) => `${s.modelId}:${s.task}`)) === JSON.stringify([`${OPUS}:coding`, `${SONNET}:coding`, `${SONNET}:writing`]), JSON.stringify(st1.suggestions.map((s) => `${s.modelId}:${s.task}`)))
 check('...each carries what the documentation said, an https page and a date (the page is shown where it came from)', st1.suggestions.every((s) => s.note.includes('"') && /^https:\/\//.test(s.source) && /^\d{4}-\d{2}-\d{2}$/.test(s.asOf)))
 check('a reload forgets the task: back on "Any task", nothing marked', (await taskMenu()).value === '' && (await marked()).length === 0)
 await chooseTask('coding')
@@ -76,7 +77,7 @@ check('...no note (there IS a suggestion), and the tooltip lists both with their
 await chooseTask('writing')
 check('Writing: only Sonnet 5.5', sameSet(await marked(), [SONNET]), JSON.stringify(await marked()))
 await chooseTask('quick')
-check('Quick answer: only Haiku 4.5', sameSet(await marked(), [HAIKU]), JSON.stringify(await marked()))
+check('Quick answer: nothing is marked (its only row was Haiku 4.5\'s, removed with the model), and the page says so', (await marked()).length === 0 && (await note()) === 'No suggestion for quick answer', String(await note()))
 await chooseTask('chat')
 check('Chat: nothing is marked, and the page says there is no suggestion for chat (no source names one)', (await marked()).length === 0 && (await note()) === 'No suggestion for chat', String(await note()))
 await chooseTask('')
@@ -90,11 +91,11 @@ check('...and nothing was written to preferences.json (no model was saved)', H.p
 await ev(`window.api.settings.setApiKey('openai', ${JSON.stringify(fakeKey())}).then((r) => r.ok)`)
 await reload()
 await chooseTask('coding')
-check('with both keys, Coding: Opus, Sonnet, Astra and Sol are marked; Fable, Haiku and Luna are not', sameSet(await marked(), [OPUS, SONNET, ASTRA, SOL]) && !(await marked()).some((id) => [FABLE, HAIKU, LUNA].includes(id)), JSON.stringify(await marked()))
+check('with both keys, Coding: Opus, Sonnet, Astra and Sol are marked; Fable and Luna are not', sameSet(await marked(), [OPUS, SONNET, ASTRA, SOL]) && !(await marked()).some((id) => [FABLE, LUNA].includes(id)), JSON.stringify(await marked()))
 await chooseTask('writing')
 check('Writing: Sonnet and Astra', sameSet(await marked(), [SONNET, ASTRA]), JSON.stringify(await marked()))
 await chooseTask('quick')
-check('Quick answer: Haiku only (OpenAI states no latency, so no GPT model is named)', sameSet(await marked(), [HAIKU]), JSON.stringify(await marked()))
+check('Quick answer, with both keys: still nothing (OpenAI states no latency, so no GPT model is named either), and the page says so', (await marked()).length === 0 && (await note()) === 'No suggestion for quick answer', String(await note()))
 const choice = await ev(`(() => { const s = document.querySelector('.task-select'); s.focus(); return document.activeElement === s })()`)
 check('the Task menu can take the keyboard focus', choice === true)
 await page.screenshot(join(SHOTS, 'verify-6-2-quick.png'))
@@ -105,7 +106,7 @@ await reload()
 await chooseTask('coding')
 check('Anthropic key removed (after a reload): Coding marks only Astra and Sol', sameSet(await marked(), [ASTRA, SOL]), JSON.stringify(await marked()))
 await chooseTask('quick')
-check('...and Quick answer, whose only row was Haiku, now has no suggestion, which the page says', (await marked()).length === 0 && (await note()) === 'No suggestion for quick answer', String(await note()))
+check('...and Quick answer still has no suggestion, which the page says', (await marked()).length === 0 && (await note()) === 'No suggestion for quick answer', String(await note()))
 await page.screenshot(join(SHOTS, 'verify-6-2-none.png'))
 
 // ============ 6. the page does not break ============

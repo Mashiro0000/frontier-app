@@ -70,7 +70,7 @@ export interface SettingsStatus {
    * saved. Never a choice: the app only shows it. Empty if the registry or the rankings could not be loaded.
    */
   suggestions: Suggestion[]
-  /** How hard the model that answers thinks (D-024). Null if that model takes no such setting (Haiku 4.5), or none is selected. */
+  /** How hard the model that answers thinks (D-024). Null if that model takes no such setting (a registry entry with no effort levels), or none is selected. */
   effort: EffortStatus | null
   /**
    * The daily and the monthly spending limit (D-031). Each is an amount, "No limit" chosen on purpose, or not chosen yet; until both are chosen

@@ -1,4 +1,4 @@
-// Slice 3.3, second launch on the SAME scratch profile that verify-3-4.mjs left behind (key saved, Haiku chosen):
+// Slice 3.3, second launch on the SAME scratch profile that verify-3-4.mjs left behind (key saved, Fable chosen; Haiku until D-036):
 // does the choice survive a real restart, does reading it leave the file alone, and does removing the key forget it?
 // Needs: MOCK_PORT, USER_DATA_DIR, EXPECT_MODEL (the id chosen last time), PREFS_MTIME_MS (the file's mtime after launch 1).
 import './ts-resolve.mjs'

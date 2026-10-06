@@ -62,7 +62,10 @@ const settleEffort = async (level, timeoutMs = 6000) => {
   throw new Error(`timed out waiting for the effort to become ${level}`)
 }
 const chooseEffort = async (level) => { await setEffortInPage(level); await settleEffort(level) }
-const chooseModel = async (id) => { await H.chooseInPage(id); await H.settle(id); await page.waitFor(`document.querySelector('.effort-select') ? true : ${id === HAIKU ? 'true' : 'false'}`) }
+// A model that lists no effort levels has no Effort menu: wait for the menu only where the registry says there is one (no listed model is
+// without one since Claude Haiku 4.5 was removed, D-036, but the helper stays right for one that comes later).
+const takesEffort = (id) => (registry.models.find((m) => m.id === id)?.capabilities.effortLevels.length ?? 0) > 0
+const chooseModel = async (id) => { await H.chooseInPage(id); await H.settle(id); await page.waitFor(`document.querySelector('.effort-select') ? true : ${takesEffort(id) ? 'false' : 'true'}`) }
 const lastReq = async () => (await H.mockReqs()).at(-1)
 /** Sends one message to whatever model is selected and returns the request the mock received for it (a stub that fails the checks if none came). */
 const ask = async (text) => {
@@ -127,15 +130,11 @@ await chooseModel(FABLE)
 menu = await effortMenu()
 check('Fable has its own pick, high, and the same five levels', menu.value === 'high' && JSON.stringify(menu.values) === '["low","medium","high","xhigh","max"]' && menu.labels[2] === 'Effort: High (default)', JSON.stringify(menu.labels))
 
-// ============ D. a model that takes no effort: no menu, nothing sent ============
-await chooseModel(HAIKU)
-check('Haiku 4.5 takes no effort: the Effort menu is not in the page at all', await ev(`document.querySelector('.effort-select') === null`))
-const stH = await status()
-check('...and main says so: effort is null', stH.effort === null && stH.selectedModelId === HAIKU)
-const rH = await ask('hello haiku')
-check('...its request carries no output_config at all, and the mock (which refuses effort on Haiku) accepts it', rH.body.model === HAIKU && !('output_config' in rH.body) && rH.problems.length === 0)
-check('...the levels chosen for the other models are still in the file', JSON.stringify(prefsJson().efforts) === JSON.stringify({ [OPUS]: 'high', [SONNET]: 'low' }) && prefsJson().modelId === HAIKU, H.prefs())
-await page.screenshot(`${shots}/7-1-header-haiku.png`)
+// ============ D. a model that takes no effort (none is listed now) ============
+// Claude Haiku 4.5 was the only one, and it was removed from the registry on 2026-10-06 (D-036): with this registry the "no menu, nothing sent"
+// case cannot be reached in the window. It is checked under Node against the fixed registry, which still holds Haiku (verify-7-1.mjs).
+check('every model the registry lists takes an effort setting now (Haiku 4.5, which took none, was removed: D-036)', registry.models.every((m) => m.capabilities.effortLevels.length > 0), JSON.stringify(registry.models.map((m) => m.id)))
+check('...choosing Fable kept the levels chosen for the other models in the file', JSON.stringify(prefsJson().efforts) === JSON.stringify({ [OPUS]: 'high', [SONNET]: 'low' }) && prefsJson().modelId === FABLE, H.prefs())
 
 // ============ E. OpenAI models: their own levels, and "none" for Luna ============
 await chooseModel(ASTRA)
@@ -182,7 +181,7 @@ const abuse = await ev(`(async () => {
   const cases = [
     ['unknown model', ['claude-opus-9', 'high']], ['upper-case model', [${JSON.stringify(OPUS.toUpperCase())}, 'high']], ['model with trailing space', [${JSON.stringify(OPUS + ' ')}, 'high']],
     ['a level Opus does not take ("none")', [${JSON.stringify(OPUS)}, 'none']], ['a level that does not exist', [${JSON.stringify(OPUS)}, 'extreme']], ['wrong case', [${JSON.stringify(OPUS)}, 'HIGH']], ['padded', [${JSON.stringify(OPUS)}, ' high']],
-    ['Haiku, which takes none', [${JSON.stringify(HAIKU)}, 'low']], ['Sonnet with Luna\\'s level', [${JSON.stringify(SONNET)}, 'none']],
+    ['a model no longer listed (Haiku 4.5, D-036)', [${JSON.stringify(HAIKU)}, 'low']], ['Sonnet with Luna\\'s level', [${JSON.stringify(SONNET)}, 'none']],
     ['__proto__ as the model', ['__proto__', 'high']], ['constructor as the model', ['constructor', 'high']], ['a path as the model', ['..\\\\..\\\\x', 'high']],
     ['numbers', [5, 7]], ['nulls', [null, null]], ['undefineds', [undefined, undefined]], ['objects', [{}, {}]], ['arrays', [[${JSON.stringify(OPUS)}], ['high']]], ['2 MB level', [${JSON.stringify(OPUS)}, 'x'.repeat(2000000)]]
   ]
