@@ -1,0 +1,16 @@
+{
+  "label": "n91-prep-decode-first",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "  const header = imageHeader(bytes, imageType)\n  if (!header.ok) return refuse(header.why)",
+      "to": "  if (imageType === 'image/png' || imageType === 'image/jpeg') images.decodedSize(bytes)\n  const header = imageHeader(bytes, imageType)\n  if (!header.ok) return refuse(header.why)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n91-seal-no-hash-after-open",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "  return sha256(bytes) === id\n    ? { ok: true, bytes, form: 'encrypted' }",
+      "to": "  return true\n    ? { ok: true, bytes, form: 'encrypted' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

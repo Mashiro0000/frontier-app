@@ -1,0 +1,16 @@
+{
+  "label": "n91-store-no-tmp-recovery",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "    const copy = await readAt(`${file}.tmp`, id)\n    if (copy !== null && copy.ok) return copy",
+      "to": "    const copy = null as Opened | null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

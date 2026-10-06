@@ -1,0 +1,15 @@
+{
+  "label": "e91-no-turn",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentImages.ts",
+      "from": "      if (orientation !== 1) {\n        const turned",
+      "to": "      if (false as boolean) {\n        const turned"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run91.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

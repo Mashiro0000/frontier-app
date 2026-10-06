@@ -1,0 +1,16 @@
+{
+  "label": "n91-webp-keeps-xmp",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "  const keep = new Set(['VP8X', 'VP8 ', 'VP8L', 'ALPH', 'ICCP'])",
+      "to": "  const keep = new Set(['VP8X', 'VP8 ', 'VP8L', 'ALPH', 'ICCP', 'XMP '])"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

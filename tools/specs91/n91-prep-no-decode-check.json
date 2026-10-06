@@ -1,0 +1,16 @@
+{
+  "label": "n91-prep-no-decode-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "  if (decoded === null) return refuse('it could not be read as an image')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

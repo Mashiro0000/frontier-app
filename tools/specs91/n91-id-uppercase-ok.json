@@ -1,0 +1,16 @@
+{
+  "label": "n91-id-uppercase-ok",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/attachments.ts",
+      "from": "const ATTACHMENT_ID = /^[0-9a-f]{64}$/",
+      "to": "const ATTACHMENT_ID = /^[0-9a-fA-F]{64}$/"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

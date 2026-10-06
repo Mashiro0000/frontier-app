@@ -1,0 +1,16 @@
+{
+  "label": "n91-png-apng-still",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "    animated: chunks.some((chunk) => chunk.type === 'acTL'),",
+      "to": "    animated: false,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

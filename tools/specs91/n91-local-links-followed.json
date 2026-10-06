@@ -1,0 +1,16 @@
+{
+  "label": "n91-local-links-followed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "    if (link.isSymbolicLink()) return refuse('it is a link to another file')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

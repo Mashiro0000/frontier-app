@@ -1,0 +1,16 @@
+{
+  "label": "n91-seal-conform-refused-writes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "            const mode = await writeMode()\n            if ('refused' in mode) return 'failed'",
+      "to": "            const mode0 = await writeMode()\n            const mode = 'refused' in mode0 ? { form: 'plain' as const } : mode0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

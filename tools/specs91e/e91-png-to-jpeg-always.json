@@ -1,0 +1,15 @@
+{
+  "label": "e91-png-to-jpeg-always",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentImages.ts",
+      "from": "              ...(opaque(bitmap)",
+      "to": "              ...(true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run91.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

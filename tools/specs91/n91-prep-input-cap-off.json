@@ -1,0 +1,16 @@
+{
+  "label": "n91-prep-input-cap-off",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "  if (bytes.length > MAX_INPUT_BYTES) return refuse(`it is larger than ${mb(MAX_INPUT_BYTES)}`)",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

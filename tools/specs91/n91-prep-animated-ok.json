@@ -1,0 +1,16 @@
+{
+  "label": "n91-prep-animated-ok",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "  if (header.animated) return refuse('it is animated, and only still images can be sent')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

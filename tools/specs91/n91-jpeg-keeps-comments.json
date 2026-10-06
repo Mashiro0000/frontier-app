@@ -1,0 +1,16 @@
+{
+  "label": "n91-jpeg-keeps-comments",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "  if (marker === 0xfe) return 'drop'",
+      "to": "  if (marker === 0xfe) return 'keep'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

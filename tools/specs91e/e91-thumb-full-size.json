@@ -1,0 +1,15 @@
+{
+  "label": "e91-thumb-full-size",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentImages.ts",
+      "from": "      scale < 1\n        ? image.resize({",
+      "to": "      false\n        ? image.resize({"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run91.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

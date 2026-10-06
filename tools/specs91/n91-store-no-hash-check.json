@@ -1,0 +1,16 @@
+{
+  "label": "n91-store-no-hash-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "  if (sha256(data) === id) return { ok: true, bytes: data, form: 'plain' }\n  if (",
+      "to": "  if (!data.subarray(0, SEALED_MAGIC.length).equals(SEALED_MAGIC)) return { ok: true, bytes: data, form: 'plain' }\n  if ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

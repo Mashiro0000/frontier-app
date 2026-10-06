@@ -1,0 +1,16 @@
+{
+  "label": "n91-name-no-cap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/attachments.ts",
+      "from": "    letters.length > ATTACHMENT_LIMITS.maxNameChars\n",
+      "to": "    letters.length > 100000\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n91-seal-refusal-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "        if ('refused' in mode)\n          return {",
+      "to": "        if (false as boolean)\n          return {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

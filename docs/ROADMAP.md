@@ -187,13 +187,13 @@ the backup has been tried on real chats is not known, and it is still the thing 
 - [x] (after 8b.5, D-035) Run once on the **owner's own profile with the real Windows dialogs** (backup, the restore preview, encrypt, a restart, the question, back to plain; the original file put back byte for byte afterwards); the
       sentences that carry a count now agree with it ("1 chat will be rewritten as a plain file"), checked by `verify-8b-wording.mjs` and 13 negative controls.
 
-## Stage 9 - Images and files in (plan written 6 October 2026, waiting for the owner's yes; nothing built)
+## Stage 9 - Images and files in (plan approved 6 October 2026, the owner's answers: "your picks"; done: 9.1 the store)
 
 - Attach or paste images, PDFs and text or code files; the models that accept them get them; a preview of exactly what will be sent.
 - Safety: type checked by content, size and count caps, no path tricks, files copied into the app's data folder (the original is never
   modified), a clear note that attachments go to the provider, EXIF and metadata shown or stripped, history size limits kept.
 
-**The plan** (mine; the owner approves it before anything is built, and every choice marked _mine_ may be changed):
+**The plan** (mine; approved by the owner on 6 October 2026 with "your picks" for the five questions below; every choice marked _mine_ may still be changed). The caps were checked against the providers' own pages in 9.1 and changed where they had to be (D-037): an image is **sent at most 2000 px a side** (Anthropic refuses any image over that in a request with more than 20), a PNG or JPEG may come in at up to 20 MB and is made smaller, a GIF or WebP goes as it is (at most 5 MB and 2000 px), animated images are refused, and the folder holds at most 5,000 files and 2 GB.
 
 - **How a file gets in** (_mine_). "Attach..." under the message box opens the **system's own** open dialog from main, so the page never names a path (as for backups, D-034). An image can also be **pasted**, and files **dropped** on the message box; then the page hands main the bytes and a name, never a path. Only paths on a local drive; a network share, a device path or a link is refused, not followed.
 - **Checked by content** (rule 7). Main decides what a file is from its first bytes: PNG, JPEG, GIF or WebP; PDF; or text (valid UTF-8, no control characters but tab and line breaks; the name's extension only labels the language). Anything else is refused with a sentence. An image's width and height are read from its header **before anything decodes it**.
@@ -208,7 +208,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 
 **Slices** (each with its own Node and window suites, negative controls and decision entry, as before):
 
-- [ ] (9.1) The attachment store in main, no window: the checks by content, the header check before any decoding, the caps, metadata removal, the copy read back, names by hash, sealing when encryption is on, deleting what no chat uses.
+- [x] (9.1, D-037) The attachment store in main, no window: the checks by content, the header check before any decoding, the caps, metadata removal (and photos turned upright: Electron's decoder ignores their orientation), the copy read back, names by hash, sealing when encryption is on, deleting what no chat uses (wired to the chats in 9.3). 185 checks under Node, 14 with Electron's real image tools, 79 negative controls.
 - [ ] (9.2) Getting files in: the bridge (the open dialog in main; paste and drop as bytes), the chips and their preview, removing one before sending. The dialogs stood in from main in the suites, and run once for real with `tools/real-dialogs.ps1`.
 - [ ] (9.3) Sending and saving: both providers' forms (the mock learns them), the golden check with no attachment, the registry's `documentInput`, the chat file version 4, History.
 - [ ] (9.4) Costs and limits: the guess for images and pages, the limits, the question.

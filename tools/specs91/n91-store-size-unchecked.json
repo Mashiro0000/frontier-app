@@ -1,0 +1,16 @@
+{
+  "label": "n91-store-size-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "    if (size > MAX_COPY_BYTES) return { ok: false, why: 'damaged' } // looked at before it is read: no file can fill the memory",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

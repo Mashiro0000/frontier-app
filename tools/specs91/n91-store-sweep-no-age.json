@@ -1,0 +1,16 @@
+{
+  "label": "n91-store-sweep-no-age",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "          if (stat !== null && stat.isFile() && stat.mtimeMs < cutoff) ids.add(id)",
+      "to": "          if (stat !== null && stat.isFile()) ids.add(id)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

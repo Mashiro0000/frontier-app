@@ -1,0 +1,16 @@
+{
+  "label": "n91-pdf-no-eof-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "  if (!raw.slice(-1024).includes('%%EOF'))",
+      "to": "  if (false as boolean)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

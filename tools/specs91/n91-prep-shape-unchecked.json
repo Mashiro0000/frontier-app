@@ -1,0 +1,16 @@
+{
+  "label": "n91-prep-shape-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "      Math.abs(shapeOf(made.width, made.height) - shapeOf(upright.width, upright.height)) >",
+      "to": "      -1 >"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

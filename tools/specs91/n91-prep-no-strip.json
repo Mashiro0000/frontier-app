@@ -1,0 +1,16 @@
+{
+  "label": "n91-prep-no-strip",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "  const stripped = stripMetadata(bytes, imageType)",
+      "to": "  const stripped = { bytes, removed: false }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

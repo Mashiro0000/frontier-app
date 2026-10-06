@@ -1,0 +1,16 @@
+{
+  "label": "n91-prep-never-turn",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "    Math.max(width, height) > L.sendLongEdge ||\n    orientation !== 1 ||",
+      "to": "    Math.max(width, height) > L.sendLongEdge ||"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

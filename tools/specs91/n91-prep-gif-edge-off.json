@@ -1,0 +1,16 @@
+{
+  "label": "n91-prep-gif-edge-off",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "    if (Math.max(width, height) > L.sendLongEdge) {\n      return refuse(\n        `a GIF",
+      "to": "    if (false as boolean) {\n      return refuse(\n        `a GIF"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

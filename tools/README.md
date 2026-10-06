@@ -19,7 +19,7 @@ tree), and keep the machine idle: `verify-4-3c` (quit with 60 queued saves) fail
 
 | Part        | What it runs                                                                        | About   |
 | ----------- | ----------------------------------------------------------------------------------- | ------- |
-| `node`      | Plain-Node suites: provider, registry, rankings, store, adapters, credential store, usage ledger, limits, the question before a large request, the backup file and restoring (8b; the last takes about 3 min with its EFS pass), encrypting the saved chats and the lost key (8b.3, 8b.4) | 5 min |
+| `node`      | Plain-Node suites: provider, registry, rankings, store, adapters, credential store, usage ledger, limits, the question before a large request, the backup file and restoring (8b; the last takes about 3 min with its EFS pass), encrypting the saved chats and the lost key (8b.3, 8b.4), the attachment store (9.1, with Electron's real image tools in an Electron that opens no window) | 5 min |
 | `window`    | The window suites of Stages 1-3, 5, 6, 7.1 to 7.4, 7.6, 8.1 to 8.3 and 8b (backup, and since 8b.3 four launches on this PC's real secure storage, one of them with its key lost), each on its own scratch profile | 22 min |
 | `seeds`     | One launch per damaged `preferences.json` (`make-seeds.mjs` makes them; 16 of them) | 7 min   |
 | `scenarios` | The registry file deliberately broken in ten ways, restored after each (`run-scenario.mjs`) | 5 min   |
@@ -48,6 +48,9 @@ node tools/verify-8b-3.mjs                the encryption under plain Node (the e
 node tools/verify-8b-1.mjs                the backup file under plain Node (its shape, a cut at every length, a changed byte at every place, caps, a 160 MB line, nine disk faults)
 QUICK=1 node tools/verify-8b-2.mjs        restoring under plain Node (the store's add and inspect, the flow with fake dialogs, the token, a changed file, 1000 chats out and back); without QUICK it also runs in the EFS folder with the real 1000 (about 3 min)
 node tools/verify-8b-wording.mjs          the sentences that carry a count agree with it (after 8b): the question before going back to plain files, two notices, and the restore preview panel rendered to text (esbuild and React's server renderer), at 0, 1 and 2 chats; the plural ones are exactly what they were
+node tools/verify-9-1.mjs                 the attachment store (9.1) under plain Node: what a file is from its bytes, image headers, metadata taken out, PDFs and text, prepare() with stand-in image tools, readLocalFile, the folder (hash names, damage, disk faults, caps, hold/deleteUnused/sweep), sealed copies; QUICK=1 for the normal folder only (the controls)
+node tools/run91.mjs                      the same store with Electron's REAL image tools (nativeImage): an Electron main script with no window (verify-9-1-images.cjs), the modules bundled by esbuild; the eight EXIF orientations, shrinking, PNG to JPEG, the same pixels after the metadata goes
+node_modules\electron\dist\electron.exe tools\make-fixtures-9.cjs --user-data-dir=<scratch>   remakes tools/fixtures9/ (a JPEG, PNGs, WebPs from Chromium's canvas, PDFs from Chromium's print); the suites read the committed copies
 powershell -File tools\real-dialogs.ps1 -Op find     reads (setname, ok, tdclick, shot) the REAL Windows dialog of a test app started with a debug port, instead of replacing it from the main inspector (see the script's header)
 node tools/run-one.mjs w81 dev setup-key.mjs,verify-8-1w.mjs USER_DATA_DIR=s81 MOCK_PORT=8790      just the first launch of the usage suite
 node tools/run-scenario.mjs <scenario>    one registry scenario

@@ -1,0 +1,16 @@
+{
+  "label": "n91-png-no-iend-ok",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "  return null // no IEND: cut off",
+      "to": "  return chunks"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}
