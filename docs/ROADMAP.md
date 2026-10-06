@@ -187,11 +187,35 @@ the backup has been tried on real chats is not known, and it is still the thing 
 - [x] (after 8b.5, D-035) Run once on the **owner's own profile with the real Windows dialogs** (backup, the restore preview, encrypt, a restart, the question, back to plain; the original file put back byte for byte afterwards); the
       sentences that carry a count now agree with it ("1 chat will be rewritten as a plain file"), checked by `verify-8b-wording.mjs` and 13 negative controls.
 
-## Stage 9 - Images and files in (not started)
+## Stage 9 - Images and files in (plan written 6 October 2026, waiting for the owner's yes; nothing built)
 
 - Attach or paste images, PDFs and text or code files; the models that accept them get them; a preview of exactly what will be sent.
 - Safety: type checked by content, size and count caps, no path tricks, files copied into the app's data folder (the original is never
   modified), a clear note that attachments go to the provider, EXIF and metadata shown or stripped, history size limits kept.
+
+**The plan** (mine; the owner approves it before anything is built, and every choice marked _mine_ may be changed):
+
+- **How a file gets in** (_mine_). "Attach..." under the message box opens the **system's own** open dialog from main, so the page never names a path (as for backups, D-034). An image can also be **pasted**, and files **dropped** on the message box; then the page hands main the bytes and a name, never a path. Only paths on a local drive; a network share, a device path or a link is refused, not followed.
+- **Checked by content** (rule 7). Main decides what a file is from its first bytes: PNG, JPEG, GIF or WebP; PDF; or text (valid UTF-8, no control characters but tab and line breaks; the name's extension only labels the language). Anything else is refused with a sentence. An image's width and height are read from its header **before anything decodes it**.
+- **Copied in, never changed.** The file is copied into the app's data folder (`attachments/`, named by its SHA-256, so the same file is kept once), read back and checked; the original is only read. **Image metadata is removed** (_mine_): EXIF and XMP from a JPEG (where a phone keeps the place a photo was taken) and the text chunks of a PNG, by rewriting the bytes, with no new package; the chip says so. **A PDF goes as it is**, its metadata included, and the chip says that too (removing it needs a PDF library, a new dependency: the owner's call).
+- **Caps** (_mine_; the numbers are checked against the providers' own pages in 9.1): an image at most 5 MB and 8,000 px a side, a PDF at most 10 MB and 100 pages, a text file at most 200,000 characters (one message, `CHAT_LIMITS`); at most 10 files on a message and 20 MB in one request; a chat and the whole folder have caps (the "history size limits"), and a full folder refuses with a sentence, it never deletes anything to make room. A big PNG or JPEG is made smaller with Electron's own image tools before it is stored (_mine_; the provider would shrink it anyway, and it costs less), and the chip says so.
+- **Shown before it goes** (rule 1). Each file is a chip on the message box (name, kind, size; a thumbnail for an image, the pages of a PDF, the first lines of a text) with "goes to Anthropic" or "goes to OpenAI" for the chosen model, and can be removed before sending. A model that cannot take a kind of file (the registry's `imageInput`, and a new `documentInput` for PDFs: schema 0.5) is not sent it: Send says why, and nothing is dropped silently.
+- **Sent.** The request names attachments by id; main reads them from its own folder (the page cannot point at any other file) and builds each provider's form (Anthropic's image and document blocks; OpenAI's `input_image` and `input_file`). Text goes as text, marked as the content of a named file. **With no attachment a request is byte for byte what it is today** (a golden check, as in 7.4).
+- **Saved and kept.** The chat file becomes version 4, with each message's list of attachments (a build from before cannot read it, as in 7.4). **When encryption is on (D-035), attachment files are sealed like the chats.** Deleting a chat deletes the files no other chat uses. A backup (D-034) holds the attachments too (backup format 2; a format 1 backup still restores).
+- **Costs and limits** (rule 6). The guess made before a request counts images and PDF pages (an over-estimate, marked "about"), so the daily and monthly limits and the question before a large request (8.3) see them. The whole conversation is sent again with each message (D-028), attachments included, and the question says so.
+- **Untrusted** (rule 2). What a file says is data for the model. Nothing in this stage can act on it (there are no tools before Stage 11).
+- **Not in this stage:** images made by a model, audio, Office files (they need a converter), folders, web addresses, the providers' own file storage (everything goes inline).
+
+**Slices** (each with its own Node and window suites, negative controls and decision entry, as before):
+
+- [ ] (9.1) The attachment store in main, no window: the checks by content, the header check before any decoding, the caps, metadata removal, the copy read back, names by hash, sealing when encryption is on, deleting what no chat uses.
+- [ ] (9.2) Getting files in: the bridge (the open dialog in main; paste and drop as bytes), the chips and their preview, removing one before sending. The dialogs stood in from main in the suites, and run once for real with `tools/real-dialogs.ps1`.
+- [ ] (9.3) Sending and saving: both providers' forms (the mock learns them), the golden check with no attachment, the registry's `documentInput`, the chat file version 4, History.
+- [ ] (9.4) Costs and limits: the guess for images and pages, the limits, the question.
+- [ ] (9.5) Backups with attachments (format 2), and the folder's caps.
+- [ ] (9.6) The stage's threat note and the full regression.
+
+**Questions for the owner** (each changes the plan): (1) remove image metadata always (my pick), or show it and let you choose for each file? (2) PDF metadata: send it as it is with a note (my pick, no new package), or add a PDF library to remove it? (3) Are the caps above right for you? (4) Make big images smaller before sending (my pick)? (5) Backups with the attachments in them (bigger files; my pick), or without them and a count?
 
 ## Stage 10 - Projects, custom instructions and memory (not started)
 

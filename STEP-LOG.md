@@ -2284,3 +2284,15 @@ if you have not, please do before you rely on this. **The design was mine** (you
 1. **What this does not prove:** the dialogs with other Windows settings, a screen reader, another account. The two 8b window suites were run again on the dev app with the new wording (68 of 68, 87 of 87); the built app was not.
 2. **A probe session may be waiting for you:** to see whether a new session could carry on alone, I started a one-off scheduled task, "Frontier: probe a new session (model, permissions)". It came up on Opus 5.5 at medium effort and stopped at its first file write, asking for your approval (your sessions start in the "ask" permission mode). The app would not let me stop it, so please deny that write and close the session. I deleted the task itself.
 3. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 9 - The plan (6 October 2026; waiting for your yes, nothing built)
+
+**Your instruction.** "After this start the new stage in new session on your own, I'm going out. And keep the OPUS 5.5 Max."
+
+**What I did, and why only this.**
+
+1. **A new session could not carry on alone.** I can open a session only as a scheduled task, and the one I tried came up at medium effort (not Max) and stopped at its first file write to ask you (new sessions start in the "ask" permission mode; changing that is a security setting, yours). When I looked into another way (a prompt scheduled into this session after clearing it), the app's own safety check refused the look, so I dropped that idea.
+2. **So I started the stage in this session, with its first step:** the roadmap says each stage "starts with a short written plan that the owner approves", so the plan is in `docs/ROADMAP.md` (Stage 9), with five questions for you. Nothing is built. It is committed on the branch `stage-9-attachments` (not pushed).
+3. **To go on:** answer the five questions (or say "your picks"), then start a new session on Opus 5.5 at Max effort and say "Stage 9: read your notes (stage-9-state), my answers are ...". I also left a one-click suggestion in this session that starts it.
+
+**The plan in one paragraph.** Files come in through the system's own open dialog (the page never names a path), or as pasted or dropped bytes; main decides what a file is from its first bytes (images, PDF, text), checks an image's size from its header before decoding it, copies it into the app's data folder named by its hash, removes image metadata, and keeps caps on size and count. Each file shows as a chip that says which provider it goes to; the request names files by id and main builds each provider's form; with no attachment a request is byte for byte what it is today. Attachments are sealed when encryption is on, deleted with the last chat that uses them, and included in backups; the cost guess counts them, so the limits and the question before a large request see them. Six slices, 9.1 to 9.6.
