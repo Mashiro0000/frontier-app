@@ -38,7 +38,7 @@ export function describePlain(report: ChatStorageReport, status: ChatStorageStat
   const parts = [
     report.changed === 0 && report.failed === 0
       ? 'Chats you save from now on are plain files.'
-      : `Rewrote ${chats(report.changed)} as plain files. Chats you save from now on are plain files too.`
+      : `Rewrote ${chats(report.changed)} as ${report.changed === 1 ? 'a plain file' : 'plain files'}. Chats you save from now on are plain files too.`
   ]
   if (report.failed > 0) {
     parts.push(

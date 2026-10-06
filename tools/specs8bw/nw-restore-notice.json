@@ -1,0 +1,14 @@
+{
+  "label": "nw-restore-notice",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/useBackup.ts",
+      "from": "left as ${result.same === 1 ? 'it is' : 'they are'}.",
+      "to": "left as they are."
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-wording.mjs"
+  ],
+  "env": {}
+}

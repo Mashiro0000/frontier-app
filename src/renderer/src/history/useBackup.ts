@@ -26,7 +26,10 @@ export function describeRestore(result: Extract<HistoryRestoreApplyResult, { ok:
   if (result.copies > 0)
     parts[0] += ` (${result.copies === 1 ? '1 as a copy' : `${result.copies} as copies`})`
   parts[0] += '.'
-  if (result.same > 0) parts.push(`${chats(result.same)} already here, left as they are.`)
+  if (result.same > 0)
+    parts.push(
+      `${chats(result.same)} already here, left as ${result.same === 1 ? 'it is' : 'they are'}.`
+    )
   const notAdded = result.refused + result.noRoom + result.failed
   if (notAdded > 0) {
     const why: string[] = []

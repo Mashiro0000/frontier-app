@@ -1,0 +1,14 @@
+{
+  "label": "nw-panel-space",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/RestorePreviewPanel.tsx",
+      "from": "new, to be added as{' '}",
+      "to": "new, to be added as"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-wording.mjs"
+  ],
+  "env": {}
+}

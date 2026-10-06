@@ -45,14 +45,17 @@ function RestorePreviewPanel({
       )}
       <ul className="backup-preview-facts" aria-label="What is in the file">
         <li>
-          <strong>{chats(preview.fresh)}</strong> new, to be added as they are
+          <strong>{chats(preview.fresh)}</strong> new, to be added as{' '}
+          {preview.fresh === 1 ? 'it is' : 'they are'}
         </li>
         <li>
-          <strong>{chats(preview.same)}</strong> already here, left as they are
+          <strong>{chats(preview.same)}</strong> already here, left as{' '}
+          {preview.same === 1 ? 'it is' : 'they are'}
         </li>
         <li>
-          <strong>{chats(preview.copies)}</strong> share an id with a different chat that is here,
-          to be added as copies
+          <strong>{chats(preview.copies)}</strong> {preview.copies === 1 ? 'shares' : 'share'} an id
+          with a different chat that is here, to be added as{' '}
+          {preview.copies === 1 ? 'a copy' : 'copies'}
         </li>
         {preview.refusedCount > 0 && (
           <li>
@@ -96,8 +99,9 @@ function RestorePreviewPanel({
           {preview.withInstructions === 1
             ? '1 of these chats has'
             : `${preview.withInstructions} of these chats have`}{' '}
-          instructions of its own, which are sent to the model with every message of that chat. Look
-          at them under Instructions after opening one.
+          instructions of {preview.withInstructions === 1 ? 'its' : 'their'} own, which are sent to
+          the model with every message of that chat. Look at them under Instructions after opening
+          one.
         </p>
       )}
       {toAdd > 0 && (

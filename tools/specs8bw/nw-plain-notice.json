@@ -1,0 +1,14 @@
+{
+  "label": "nw-plain-notice",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/useChatStorage.ts",
+      "from": "as ${report.changed === 1 ? 'a plain file' : 'plain files'}.",
+      "to": "as plain files."
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-wording.mjs"
+  ],
+  "env": {}
+}

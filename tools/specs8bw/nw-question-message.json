@@ -1,0 +1,14 @@
+{
+  "label": "nw-question-message",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatEncryptionService.ts",
+      "from": "will be rewritten as ${one ? 'a plain file' : 'plain files'}.",
+      "to": "will be rewritten as plain files."
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-wording.mjs"
+  ],
+  "env": {}
+}
