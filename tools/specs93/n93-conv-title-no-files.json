@@ -1,0 +1,14 @@
+{
+  "label": "n93-conv-title-no-files",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "        : (firstMessage.attachments ?? []).map((file) => file.name).join(', ')",
+      "to": "        : ''"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

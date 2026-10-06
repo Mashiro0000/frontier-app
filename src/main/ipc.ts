@@ -3,6 +3,7 @@ import { join } from 'path'
 import {
   CHANNELS,
   type AttachBytesResult,
+  type AttachmentPreview,
   type AttachPickResult,
   type ChatStorageResult,
   type ChatStorageStatus,
@@ -301,8 +302,11 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   const attaching = createAttachmentService({
     store: attachments,
     pickPaths: pickAttachmentPaths,
-    // No saved chat names an attachment before 9.3 (sending and saving them): a file taken off the message is used by nothing.
-    referenced: async () => new Set<string>()
+    // The files saved chats use (D-037): a file taken off a message is deleted only if no chat uses it, and only if every chat could be read.
+    referenced: async () => {
+      const refs = await history.attachmentRefs()
+      return refs.complete ? refs.ids : null
+    }
   })
 
   // Backing up chats to a file and restoring them from one (D-034), and turning the encryption of the saved chats on and off (D-035): the same lock,
@@ -317,7 +321,8 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     store: history,
     protection,
     backups,
-    asks: systemAskers
+    asks: systemAskers,
+    files: attachments
   })
 
   ipcMain.handle(
@@ -352,7 +357,15 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       const check = checkConversationSave(input) // the title and dates are not the page's to choose
       if (!check.ok) return check
       try {
-        return await history.save(check.conversation)
+        const saved = await history.save(check.conversation)
+        // A file attached in this run is held (kept from deletion) while it is on a message being written. Once a saved chat names it, the chat keeps
+        // it instead: it is let go of, so that deleting the chat can delete it (D-037).
+        if (saved.ok) {
+          for (const message of check.conversation.messages) {
+            for (const file of message.attachments ?? []) attachments.release(file.id)
+          }
+        }
+        return saved
       } catch (error) {
         console.error('Saving a conversation failed:', reason(error))
         return { ok: false, error: 'The conversation could not be saved on this computer.' }
@@ -366,7 +379,15 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       const check = checkConversationId(input)
       if (!check.ok) return check
       try {
-        return await history.remove(check.id)
+        // The chat's files are deleted with it when no other chat uses them (D-037), and only when every chat could be read (else what uses them is
+        // not known). A file that cannot be deleted is left; the chat is still deleted.
+        const files = await history.attachmentsOf(check.id)
+        const removed = await history.remove(check.id)
+        if (removed.ok && files.length > 0) {
+          const refs = await history.attachmentRefs()
+          if (refs.complete) await attachments.deleteUnused(files, refs.ids)
+        }
+        return removed
       } catch (error) {
         console.error('Deleting a saved conversation failed:', reason(error))
         return { ok: false, error: 'The conversation could not be deleted.' }
@@ -463,6 +484,11 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
+  ipcMain.handle(
+    CHANNELS.attachmentsDescribe,
+    guarded(async (input: unknown): Promise<AttachmentPreview[]> => attaching.describe(input))
+  )
+
   ipcMain.on(CHANNELS.attachmentsDiscard, (event, id: unknown) => {
     if (!isTrustedSender(event, appUrl)) return
     attaching.discard(id).catch((error: unknown) => {
@@ -485,7 +511,19 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
-  registerChatIpc(appUrl, ledger, limitsStore, askFirstStore)
+  // At start, the copies left by messages that were never sent (D-037): deleted when no chat uses them, they are over an hour old, and every chat could
+  // be read (otherwise what uses them is not known, and nothing is deleted). It runs in the stores' own turns, after the folder has been read.
+  void history
+    .attachmentRefs()
+    .then((refs) => (refs.complete ? attachments.sweep(refs.ids, 3_600_000) : undefined))
+    .catch((error: unknown) => console.error('Clearing unused attachments failed:', reason(error)))
+
+  registerChatIpc(appUrl, {
+    ledger,
+    limitsStore,
+    askFirstStore,
+    readAttachment: (id) => attachments.read(id)
+  })
   // The lock the encryption flows run in is the backup service's, so waiting for it waits for them too.
   return () =>
     Promise.all([

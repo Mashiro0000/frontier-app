@@ -890,6 +890,41 @@ body {
   margin: 2px 2px 0;
 }
 
+.composer-blocked {
+  margin: 6px 2px 0;
+  font-size: 12px;
+  color: var(--color-danger);
+  overflow-wrap: anywhere;
+}
+
+/* The files on a sent message of the person's, above its text (D-037): the chips without a Remove button. */
+.message-files {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 100%;
+  margin: 0 0 6px;
+  padding: 0;
+  list-style: none;
+}
+
+.message-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: min(100%, 280px);
+  padding: 4px 10px 4px 4px;
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.message-file-missing {
+  border-style: dashed;
+}
+
 /* ---------- the chat's own buttons, under the message box (D-029) ---------- */
 
 /* As wide as the message box above it (its edges line up with the box's), and wrapping instead of overflowing in a narrow window. */

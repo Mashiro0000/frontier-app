@@ -1,0 +1,19 @@
+{
+  "label": "w93-chips-stay",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ChatView.tsx",
+      "from": "      attachments.clear() // the files are the message's now; main keeps them for the chat\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run93.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "RUN93_ONLY": "w"
+  },
+  "timeoutMs": 600000
+}

@@ -2,8 +2,10 @@ import { useCallback, useState } from 'react'
 import type { SettingsStatus } from '../../../shared/ipc'
 import LinkConfirm from '../markdown/LinkConfirm'
 import { providerMissingKey } from '../settings/format'
+import { filesBlock } from './attachmentText'
 import AttachmentChips from './AttachmentChips'
 import Composer from './Composer'
+import { PreviewsContext, useAttachmentPreviews } from './previews'
 import LargeRequestDialog from './LargeRequestDialog'
 import MessageList from './MessageList'
 import type { UseAttachments } from './useAttachments'
@@ -85,6 +87,17 @@ function ChatView({
 
   // Where the files go: the provider of the model that will answer (D-037, rule 1).
   const chosen = status?.models.find((model) => model.id === status.selectedModelId)
+  // The pictures of a saved chat's files, made by main from its copies (kept apart from the messages, so the chat is not saved again for them).
+  const previews = useAttachmentPreviews(messages, conversationId)
+  // Why the message cannot go as it is: the whole chat is sent again with every message, its earlier files too (D-028).
+  const blocked = filesBlock(messages, attachments.files, chosen ?? null)
+  const sendWithFiles = useCallback(
+    (text: string): void => {
+      send(text, attachments.files)
+      attachments.clear() // the files are the message's now; main keeps them for the chat
+    },
+    [send, attachments]
+  )
   const destination =
     chosen === undefined
       ? null
@@ -106,22 +119,25 @@ function ChatView({
         attachments.addFiles([...event.dataTransfer.files])
       }}
     >
-      <LinkConfirm>
-        <MessageList
-          messages={messages}
-          isReplying={isReplying}
-          emptyHint={emptyHint}
-          modelName={modelName}
-          onRegenerate={onRegenerate}
-          onResend={onResend}
-        />
-      </LinkConfirm>
+      <PreviewsContext.Provider value={previews}>
+        <LinkConfirm>
+          <MessageList
+            messages={messages}
+            isReplying={isReplying}
+            emptyHint={emptyHint}
+            modelName={modelName}
+            onRegenerate={onRegenerate}
+            onResend={onResend}
+          />
+        </LinkConfirm>
+      </PreviewsContext.Provider>
       <Composer
         focusKey={`${conversationId}:${asked}`}
         isReplying={isReplying}
-        onSend={send}
+        onSend={sendWithFiles}
         onStop={stop}
         hasFiles={attachments.files.length > 0}
+        blocked={blocked}
         onPasteFiles={attachments.addFiles}
         attachments={
           <AttachmentChips

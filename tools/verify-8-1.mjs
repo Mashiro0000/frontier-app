@@ -119,7 +119,7 @@ check('ledgerLine: a cost written into the file is NOT read (a line cannot claim
   const file = JSON.parse(readFileSync(`${REPO}/registry/models.json`, 'utf8'))
   const parsed = parseRegistry(file)
   check('registry: the file in the repo is read, with no problem', parsed.ok && parsed.problems.length === 0, JSON.stringify(parsed.problems ?? parsed.error))
-  check('registry: the schema is 0.4', reg.REGISTRY_SCHEMA_VERSION === '0.4' && file.schemaVersion === '0.4')
+  check('registry: the schema is 0.5 (documentInput since 9.3; the prices are what 8.1 made them)', reg.REGISTRY_SCHEMA_VERSION === '0.5' && file.schemaVersion === '0.5')
   // What the providers' pricing pages said on 2026-10-02 (the Anthropic page and OpenAI's pricing table): input, cache read, cache write, output.
   const PAGES = {
     'claude-fable-5-1': [10, 0.25, 12.5, 50], 'claude-opus-5-5': [4, 0.2, 5, 20], 'claude-sonnet-5-5': [2, 0.2, 2.5, 10],

@@ -2,7 +2,7 @@ import { createHash } from 'crypto'
 import { promises as fs } from 'fs'
 import { HISTORY_LIMITS, type SavedConversation } from '../shared/ipc'
 import { isConversationId } from '../shared/validate'
-import { parseSavedFile } from './conversationStore'
+import { fileVersion, parseSavedFile } from './conversationStore'
 
 // The backup file (D-034): saved chats written out to ONE plain text file the person keeps wherever they like, and read back in. No Electron
 // imports, so it can be checked under plain Node with any folder.
@@ -43,8 +43,12 @@ const sha256 = (text: string): string => createHash('sha256').update(text, 'utf8
 const isCount = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
 
-/** The text of a chat as written in a backup: its own file's text (version 3), which is also what the checksum is of. */
-export const chatText = (chat: SavedConversation): string => JSON.stringify({ version: 3, ...chat })
+/**
+ * The text of a chat as written in a backup: its own file's text (version 3, or 4 for a chat with files, D-037), which is also what the checksum is of.
+ * A chat with files is backed up with its files' descriptions; the files themselves are not in a backup of this version.
+ */
+export const chatText = (chat: SavedConversation): string =>
+  JSON.stringify({ version: fileVersion(chat), ...chat })
 
 /** Whether two chats are the same chat: the same dates, instructions and messages (the title follows from the messages). */
 export const contentKey = (chat: SavedConversation): string =>

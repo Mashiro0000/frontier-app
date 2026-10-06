@@ -1,0 +1,14 @@
+{
+  "label": "n93-merge-drops-files",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "      if (message.attachments !== undefined) {\n        last.attachments = [...(last.attachments ?? []), ...message.attachments]\n      }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

@@ -8,8 +8,10 @@ interface ComposerProps {
   onStop: () => void
   /** The chips of the files on this message (D-037), drawn above the box. */
   attachments?: React.ReactNode
-  /** Files are on the message. (Until slice 9.3 they cannot be sent yet, so Send waits.) */
+  /** Files are on the message (D-037): it can be sent with no text. */
   hasFiles?: boolean
+  /** Why the message cannot be sent as it is (a model that cannot read a kind of file, too many files in the chat), or null. */
+  blocked?: string | null
   /** Files pasted into the box (an image copied to the clipboard): they are attached, not typed. */
   onPasteFiles?: (files: File[]) => void
 }
@@ -21,6 +23,7 @@ function Composer({
   onStop,
   attachments,
   hasFiles = false,
+  blocked = null,
   onPasteFiles
 }: ComposerProps): React.JSX.Element {
   const [text, setText] = useState('')
@@ -32,7 +35,7 @@ function Composer({
     inputRef.current?.focus()
   }, [focusKey])
   // You can type the next message while a reply streams in, but not send it until the reply ends.
-  const canSend = text.trim() !== '' && !isReplying && !hasFiles
+  const canSend = (text.trim() !== '' || hasFiles) && !isReplying && blocked === null
 
   function submit(): void {
     if (!canSend) return
@@ -102,12 +105,18 @@ function Composer({
             type="submit"
             className="composer-button"
             disabled={!canSend}
-            title={hasFiles ? 'Sending files is not ready yet in this version.' : undefined}
+            title={blocked ?? undefined}
           >
             Send
           </button>
         )}
       </div>
+      {/* Why Send is off while files are in the way (D-037), said on screen and not only in the button's tooltip. */}
+      {blocked !== null && (
+        <p className="composer-blocked" role="status">
+          {blocked}
+        </p>
+      )}
     </form>
   )
 }

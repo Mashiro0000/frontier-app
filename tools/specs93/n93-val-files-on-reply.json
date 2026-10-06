@@ -1,0 +1,14 @@
+{
+  "label": "n93-val-files-on-reply",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "      const checked = role === 'user' ? checkWireAttachments(attachments) : null",
+      "to": "      const checked = checkWireAttachments(attachments)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

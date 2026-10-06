@@ -53,7 +53,8 @@ const api: FrontierApi = {
   attachments: {
     pick: () => ipcRenderer.invoke(CHANNELS.attachmentsPick),
     addBytes: (name, bytes) => ipcRenderer.invoke(CHANNELS.attachmentsAddBytes, { name, bytes }),
-    discard: (id) => ipcRenderer.send(CHANNELS.attachmentsDiscard, id)
+    discard: (id) => ipcRenderer.send(CHANNELS.attachmentsDiscard, id),
+    describe: (ids) => ipcRenderer.invoke(CHANNELS.attachmentsDescribe, ids)
   }
 }
 

@@ -17,6 +17,8 @@ import {
 } from '../shared/usage'
 import { checkChatRequest } from '../shared/validate'
 import type { AskFirstStore } from './askFirst'
+import { resolveAttachments } from './attachmentRequest'
+import type { ReadResult } from './attachmentStore'
 import { baseUrlOverride } from './baseUrl'
 import { createConfirmations } from './confirmation'
 import { readApiKey } from './keyStore'
@@ -110,14 +112,21 @@ function endEvent(streamId: string, end: ReplyEnd): ChatStreamEvent {
   }
 }
 
+/** What a reply needs besides the request: the stores it counts and checks against, and the reader of the attachments' copies (D-037). */
+interface ReplyContext {
+  ledger: UsageLedger
+  limitsStore: LimitsStore
+  askFirstStore: AskFirstStore
+  readAttachment: (id: string) => Promise<ReadResult>
+}
+
 async function runReply(
   windowId: number,
   request: ChatRequest,
   send: (event: ChatStreamEvent) => void,
-  ledger: UsageLedger,
-  limitsStore: LimitsStore,
-  askFirstStore: AskFirstStore
+  context: ReplyContext
 ): Promise<void> {
+  const { ledger, limitsStore, askFirstStore } = context
   const { streamId } = request
   const key = `${windowId}:${streamId}`
   if (running.has(key)) {
@@ -185,12 +194,19 @@ async function runReply(
       return
     }
     apiKey = saved
+    // The files of the conversation (D-037): read from main's own copies and checked, every time, before anything is counted or sent. A file that cannot be
+    // read, a kind of file the model cannot read, or files over the caps of one request: nothing is sent, and the person is told why.
+    const resolved = await resolveAttachments(request.messages, entry, context.readAttachment)
+    if (!resolved.ok) {
+      send({ streamId, type: 'error', message: resolved.error })
+      return
+    }
     const streamRequest = buildStreamRequest({
       credentials: { apiKey, baseURL: baseUrlOverride(entry.provider) },
       model: entry,
       effort,
       instructions: request.instructions, // the person's own, already checked (D-027): added after the app's rules
-      messages: request.messages,
+      messages: resolved.messages,
       signal: controller.signal
     })
     // One guess at what this request sends, used three times and the same each time: for the question below (D-032), for the limit's check
@@ -326,12 +342,7 @@ async function runReply(
 }
 
 /** Registers the chat messages. Called from registerIpc, after the app is ready. */
-export function registerChatIpc(
-  appUrl: string,
-  ledger: UsageLedger,
-  limitsStore: LimitsStore,
-  askFirstStore: AskFirstStore
-): void {
+export function registerChatIpc(appUrl: string, context: ReplyContext): void {
   ipcMain.on(CHANNELS.chatStart, (event, raw: unknown) => {
     if (!isTrustedSender(event, appUrl)) return // nobody to answer: it is not our page
     const sender = event.sender
@@ -344,7 +355,7 @@ export function registerChatIpc(
       return
     }
     stopWhenPageGoes(sender)
-    void runReply(sender.id, check.request, send, ledger, limitsStore, askFirstStore)
+    void runReply(sender.id, check.request, send, context)
   })
 
   ipcMain.on(CHANNELS.chatCancel, (event, streamId: unknown) => {

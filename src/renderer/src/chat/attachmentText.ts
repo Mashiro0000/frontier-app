@@ -1,4 +1,9 @@
-import type { AttachmentInfo } from '../../../shared/attachments'
+import {
+  ATTACHMENT_LIMITS,
+  type AttachedFile,
+  type AttachmentInfo
+} from '../../../shared/attachments'
+import type { ModelOption } from '../../../shared/ipc'
 
 // How an attachment is described on its chip (D-037): its type, size and the notes about what was done to it. Plain functions, so the wording can be
 // checked without a window.
@@ -56,4 +61,39 @@ export function notesOf(info: AttachmentInfo): string[] {
   }
   if (info.kind === 'pdf') notes.push('sent as it is, with any metadata it holds')
   return notes
+}
+
+/** Every file the conversation would send with the next message: those of its earlier messages (sent again each time, D-028) and those on the new one. */
+export function chatFiles(
+  messages: readonly { files?: AttachedFile[] }[],
+  draft: readonly AttachedFile[]
+): AttachedFile[] {
+  const seen = new Map<string, AttachedFile>()
+  for (const file of [...messages.flatMap((message) => message.files ?? []), ...draft]) {
+    if (!seen.has(file.info.id)) seen.set(file.info.id, file)
+  }
+  return [...seen.values()]
+}
+
+/**
+ * Why the next message cannot be sent as it is (D-037), or null: the model chosen cannot read a kind of file the chat holds (they would all be sent
+ * again), or the chat would hold more files than one may. The main process checks the same again.
+ */
+export function filesBlock(
+  messages: readonly { files?: AttachedFile[] }[],
+  draft: readonly AttachedFile[],
+  model: Pick<ModelOption, 'label' | 'imageInput' | 'documentInput'> | null
+): string | null {
+  const all = chatFiles(messages, draft)
+  if (all.length > ATTACHMENT_LIMITS.perChat) {
+    return `A chat can hold at most ${ATTACHMENT_LIMITS.perChat} files. Start a new chat for more.`
+  }
+  if (model === null) return null
+  if (!model.imageInput && all.some((file) => file.info.kind === 'image')) {
+    return `${model.label} cannot read images, and this chat has one. Choose a model that can.`
+  }
+  if (!model.documentInput && all.some((file) => file.info.kind === 'pdf')) {
+    return `${model.label} cannot read PDFs, and this chat has one. Choose a model that can.`
+  }
+  return null
 }

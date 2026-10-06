@@ -2352,3 +2352,22 @@ if you have not, please do before you rely on this. **The design was mine** (you
 1. **A paste that carries text pastes the text.** Copying cells from a spreadsheet also puts a picture of them on the clipboard; the app pastes the text and attaches nothing, so a picture is never sent by surprise. To attach an image, copy just the image.
 2. **Attach... works while a reply is arriving** (you can prepare the next message), unlike New chat, History and Instructions.
 3. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 9 - Slice 9.3: sending and saving files (6 and 7 October 2026 sessions; D-037)
+
+**Step by step.**
+
+1. **Files are sent.** Send is on with files on the message (even with nothing typed). Main reads its own copy of each file again for every message (the whole chat is sent each time) and sends it in each provider's own form: to Anthropic an image block, a PDF and a text file as titled documents, then your words; to OpenAI an image, a PDF file and the text file led by a line that names it, then your words.
+2. **A message without files is sent exactly as before.** I recorded 70 requests before changing anything (every model, several kinds of chat) and compared them after: byte for byte the same.
+3. **Nothing is sent when a file cannot go**, and one sentence says why: a file whose copy is gone or damaged, a model that cannot read a kind of file in the chat, or a chat whose files are too big for one request. The registry now says which models read PDFs (all six do); if one could not, Send would be off with the reason written under the message box.
+4. **Saved and shown.** A chat with files is saved as version 4 (with each file's description, never a picture or a path); a chat without files is saved exactly as before. A sent message shows its files; a chat opened from History shows their pictures again, made from the copies, without saving the chat again. A chat that starts with only files is named after them.
+5. **Deleting a chat deletes its files** (those no other chat uses). At start, copies no chat uses and older than an hour are removed. Encrypting your chats encrypts the files too, and going back to plain files turns them back.
+6. **The window tests found two real faults, both fixed:** (a) a file you had attached and sent was kept from deletion until the app restarted, so deleting its chat left the copy behind; (b) a backup could not hold a chat with files (it read the chat back and refused it), so turning encryption on, which makes a backup first, stopped. A third (a picture shown for a file deleted since) I found while writing the tests.
+7. **Checked:** 74 checks under Node; in the window 42 on the dev app and the built one, 6 after a restart, and 10 with a changed list of models (one that cannot read images or PDFs; the real list put back and checked). 54 negative controls, all caught the first time. Six older checks and seven older negative-control specs pointed at text I moved, and were updated with the same meaning (each run again: all pass, and the controls are all caught).
+
+## Stage 9.3 - Things to know (not problems, but worth your attention)
+
+1. **Every file in a chat is sent again with every message**, as the chat's text is. A chat with big files costs more with each message; the cost guess for files comes in 9.4. To stop sending a file, start a new chat.
+2. **A backup holds a chat's files' descriptions, not the files** until 9.5. Restoring such a chat on another computer shows its files as "cannot be read any more".
+3. **The forms sent to the providers are my reading of their documentation**, checked by a mock written from the same reading; only a real request (yours to make) proves them.
+4. **Everything in the earlier stages' "Things to know" still applies.**

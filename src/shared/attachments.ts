@@ -83,6 +83,8 @@ export const ATTACHMENT_LIMITS = {
   /** Everything attached to one request (the whole conversation's attachments), in bytes before base64, and in PDF pages. */
   maxRequestBytes: 20 * 1024 * 1024,
   maxRequestPages: 100,
+  /** The text of attached text files in one request, in characters (as much again as the conversation's own text may be, CHAT_LIMITS.maxTotalChars). */
+  maxRequestTextChars: 600_000,
   /** The attachments folder as a whole. When it is full, a new file is refused; nothing is ever deleted to make room. */
   folderMaxBytes: 2 * 1024 * 1024 * 1024,
   folderMaxFiles: 5000,

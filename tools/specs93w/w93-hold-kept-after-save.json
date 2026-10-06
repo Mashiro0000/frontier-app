@@ -1,0 +1,19 @@
+{
+  "label": "w93-hold-kept-after-save",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "            for (const file of message.attachments ?? []) attachments.release(file.id)",
+      "to": "            void message"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run93.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "RUN93_ONLY": "w"
+  },
+  "timeoutMs": 600000
+}

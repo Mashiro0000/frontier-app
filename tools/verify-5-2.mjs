@@ -1,4 +1,4 @@
-// Slice 5.2 (ported from 3.1): the registry file at schema 0.4 (capabilities, per-model effort levels, four prices per model since 8.1), its validator, the
+// Slice 5.2 (ported from 3.1): the registry file at schema 0.5 (capabilities, per-model effort levels, four prices per model since 8.1, documentInput since 9.3), its validator, the
 // page-facing projection and the model-choice check, straight under Node (no window). Run: node verify-5-2.mjs
 import { REPO, REPO_URL } from './paths.mjs'
 import './ts-resolve.mjs'
@@ -32,7 +32,7 @@ check('effort per model: Fable high, Opus medium, Sonnet medium', by['claude-fab
 check('context: 1M for the three Anthropic models; max output 128K', [by['claude-fable-5-1'], by['claude-opus-5-5'], by['claude-sonnet-5-5']].every((m) => m?.contextWindow === 1_000_000 && m.maxOutputTokens === 128_000))
 check('prices (USD per million tokens, in/out): 10/50, 4/20, 2/10 (Anthropic), 10/50, 2/10, 0.1/0.5 (OpenAI)', JSON.stringify(Object.values(by).map((m) => [m.pricing.inputPerMTok, m.pricing.outputPerMTok])) === JSON.stringify([[10, 50], [4, 20], [2, 10], [10, 50], [2, 10], [0.1, 0.5]]))
 check('every entry is for a provider this app can call, and the first three are Anthropic\'s and the last three OpenAI\'s', Object.values(by).every((m, i) => m.provider === (i < 3 ? 'anthropic' : 'openai')))
-check('the file on disk and the schema constant agree on the version', fileJson.schemaVersion === REGISTRY_SCHEMA_VERSION && REGISTRY_SCHEMA_VERSION === '0.4')
+check('the file on disk and the schema constant agree on the version', fileJson.schemaVersion === REGISTRY_SCHEMA_VERSION && REGISTRY_SCHEMA_VERSION === '0.5')
 check('every supported provider has a display name', SUPPORTED_PROVIDERS.every((p) => typeof PROVIDER_NAMES[p] === 'string' && PROVIDER_NAMES[p] !== ''))
 
 // the result is a clean copy
@@ -55,9 +55,9 @@ for (const field of ['schemaVersion', 'updatedAt', 'source', 'defaultModelId', '
 }
 r = parseRegistry({ ...clone(fileJson), defaultModel: 'claude-opus-5-5' })
 check('refused: an unknown top-level field (a typo of defaultModelId is caught)', !r.ok && /unknown field "defaultModel"/.test(r.error), errOf(r))
-for (const v of ['0.1', '0.2', '0.3', '1', 0.4, null, '']) {
+for (const v of ['0.1', '0.2', '0.3', '0.4', '1', 0.5, null, '']) {
   r = parseRegistry({ ...clone(fileJson), schemaVersion: v })
-  check(`refused: schemaVersion ${JSON.stringify(v)}`, !r.ok && /schemaVersion is .*reads 0\.4/.test(r.error), errOf(r))
+  check(`refused: schemaVersion ${JSON.stringify(v)}`, !r.ok && /schemaVersion is .*reads 0\.5/.test(r.error), errOf(r))
 }
 for (const v of [null, '', '2026-13-01', '2026-02-30', '26-10-01', '2026-1-1', 20261001, '2026-10-01T00:00:00Z', ' 2026-10-01']) {
   r = parseRegistry({ ...clone(fileJson), updatedAt: v })
@@ -157,7 +157,7 @@ const hostile = JSON.parse(raw.replace('"provider": "anthropic",', '"provider": 
 const polluted = parseRegistry(hostile)
 check('a "__proto__" key in an entry is just an unknown field', polluted.ok && polluted.problems.some((p) => /unknown field "__proto__"/.test(p)) && polluted.registry.models.length === 5, polluted.ok ? probs(polluted) : errOf(polluted))
 check('...and nothing was polluted', ({}).polluted === undefined && Object.prototype.polluted === undefined)
-const rootHostile = parseRegistry(JSON.parse('{"__proto__": {"x": 1}, "schemaVersion": "0.4"}'))
+const rootHostile = parseRegistry(JSON.parse('{"__proto__": {"x": 1}, "schemaVersion": "0.5"}'))
 check('a "__proto__" key at the top level is refused', !rootHostile.ok)
 const t1 = Date.now()
 r = parseRegistry({ ...clone(fileJson), models: [entry({ label: 'x'.repeat(1_000_000), description: 'y'.repeat(1_000_000), id: 'z'.repeat(1_000_000) })] })
@@ -167,7 +167,7 @@ check('an object with no prototype is handled like any other', parseRegistry(Obj
 
 // ============ 5. what the page is told ============
 const opt = toModelOption(by['claude-opus-5-5'] ?? entry())
-check('toModelOption: exactly id, label, provider, description, contextWindow, pricing', Object.keys(opt).sort().join() === 'contextWindow,description,id,label,pricing,provider', Object.keys(opt).join())
+check('toModelOption: exactly id, label, provider, description, contextWindow, pricing, and (since 9.3) whether it reads images and PDFs', Object.keys(opt).sort().join() === 'contextWindow,description,documentInput,id,imageInput,label,pricing,provider', Object.keys(opt).join())
 check('toModelOption: the provider is its id ("anthropic"); the page takes the name from the settings status (D-020)', opt.provider === 'anthropic')
 check('toModelOption: nothing about how the model is called (no effort, no output limit, no provider id)', !/effort|maxOutputTokens/.test(JSON.stringify(opt)) && !('effort' in opt) && !('maxOutputTokens' in opt))
 const e1 = entry(); const o1 = toModelOption(e1); o1.pricing.inputPerMTok = 777
@@ -196,9 +196,9 @@ const left = (name, over, pattern) => {
 const FIVE = ['low', 'medium', 'high', 'xhigh', 'max']
 check('the real file: Fable, Opus and Sonnet list all five levels (low to max), and think by themselves', ['claude-fable-5-1', 'claude-opus-5-5', 'claude-sonnet-5-5'].every((id) => JSON.stringify(by[id]?.capabilities.effortLevels) === JSON.stringify(FIVE) && by[id].capabilities.reasoning === true))
 check('the real file: Claude Haiku 4.5 is no longer listed (D-036), so every model in it lists effort levels; an entry with none is still accepted (the fixture checks above)', !('claude-haiku-4-5-20251001' in by) && Object.values(by).every((m) => m.capabilities.effortLevels.length > 0))
-check('the real file: every model reads images, calls tools and can cache the start of a conversation', Object.values(by).every((m) => m.capabilities.imageInput && m.capabilities.toolUse && m.capabilities.promptCaching))
+check('the real file: every model reads images and PDFs, calls tools and can cache the start of a conversation', Object.values(by).every((m) => m.capabilities.imageInput && m.capabilities.documentInput && m.capabilities.toolUse && m.capabilities.promptCaching))
 check('the real file: every picked effort is one of the model\'s own levels, and null exactly when there are none', Object.values(by).every((m) => (m.effort === null) === (m.capabilities.effortLevels.length === 0) && (m.effort === null || m.capabilities.effortLevels.includes(m.effort))))
-check('capabilities has exactly five fields', Object.values(by).every((m) => Object.keys(m.capabilities).sort().join() === 'effortLevels,imageInput,promptCaching,reasoning,toolUse'))
+check('capabilities has exactly six fields (documentInput since 9.3)', Object.values(by).every((m) => Object.keys(m.capabilities).sort().join() === 'documentInput,effortLevels,imageInput,promptCaching,reasoning,toolUse'))
 check('a clean copy: changing the input\'s effortLevels afterwards changes nothing', (() => { const f = clone(fileJson); const x = parseRegistry(f); f.models[1].capabilities.effortLevels.push('none'); f.models[1].capabilities.imageInput = false; return x.ok && x.registry.models[1].capabilities.effortLevels.length === 5 && x.registry.models[1].capabilities.imageInput === true })())
 check('the provider has its own effort words, and "none" is not an Anthropic one', JSON.stringify(R.PROVIDER_EFFORTS.anthropic) === JSON.stringify(FIVE) && R.EFFORT_LEVELS.includes('none') && Object.keys(R.PROVIDER_EFFORTS).join() === R.SUPPORTED_PROVIDERS.join())
 
@@ -210,7 +210,7 @@ for (const [name, v] of [['null', null], ['a number', 5], ['a string', 'all'], [
   const x = parseRegistry({ ...clone(fileJson), models: [entry(), e] })
   check('entry left out: capabilities missing altogether is reported as a missing field', x.ok && /field "capabilities" missing/.test(x.problems[0] ?? ''), x.ok ? probs(x) : errOf(x))
 }
-for (const flag of ['imageInput', 'toolUse', 'reasoning', 'promptCaching', 'effortLevels']) {
+for (const flag of ['imageInput', 'documentInput', 'toolUse', 'reasoning', 'promptCaching', 'effortLevels']) {
   const c = caps(); delete c[flag]
   left(`capabilities lacks "${flag}"`, { capabilities: c }, /capabilities must have exactly/)
 }
@@ -238,12 +238,12 @@ left('the model lists effort levels but is said not to think', { capabilities: c
 check('accepted: levels in any order, and a subset of what the provider knows', (() => { const x = parseRegistry({ ...clone(fileJson), models: [entry({ capabilities: caps({ effortLevels: ['max', 'low'] }), effort: 'max' })] }); return x.ok && JSON.stringify(x.registry.models[0].capabilities.effortLevels) === '["max","low"]' })())
 check('accepted: a model that thinks by itself but takes no effort setting', parseRegistry({ ...clone(fileJson), models: [entry({ capabilities: caps({ effortLevels: [] }), effort: null })] }).ok)
 check('accepted: a model that does not think and takes no effort', parseRegistry({ ...clone(fileJson), models: [entry({ capabilities: caps({ effortLevels: [], reasoning: false }), effort: null })] }).ok)
-check('accepted: every flag false (a plain text model)', parseRegistry({ ...clone(fileJson), models: [entry({ capabilities: { imageInput: false, toolUse: false, reasoning: false, promptCaching: false, effortLevels: [] }, effort: null })] }).ok)
+check('accepted: every flag false (a plain text model)', parseRegistry({ ...clone(fileJson), models: [entry({ capabilities: { imageInput: false, documentInput: false, toolUse: false, reasoning: false, promptCaching: false, effortLevels: [] }, effort: null })] }).ok)
 {
   const x = parseRegistry({ ...clone(fileJson), models: [entry(), entry({ id: 'second-model', capabilities: caps({ effortLevels: ['low', 'bad'] }), effort: 'low' }), entry({ id: 'third-model' })] })
   check('one entry with bad capabilities is left out and the others stay, named by position and id', x.ok && x.registry.models.length === 2 && x.problems.length === 1 && x.problems[0].startsWith('models[1] ("second-model"): capabilities.effortLevels'), x.ok ? probs(x) : errOf(x))
 }
-check('toModelOption still tells the page nothing about capabilities or effort', !/capabilit|effortLevels|imageInput|toolUse/.test(JSON.stringify(toModelOption(by['claude-opus-5-5'] ?? entry()))))
+check('toModelOption tells the page nothing about capabilities or effort but the two flags it needs for files (9.3): imageInput and documentInput, as booleans', (() => { const o = toModelOption(by['claude-opus-5-5'] ?? entry()); return !/capabilit|effortLevels|toolUse|reasoning|promptCaching/.test(JSON.stringify(o)) && o.imageInput === true && o.documentInput === true })())
 
 const passed = check.summary()
 process.exit(passed ? 0 : 1)

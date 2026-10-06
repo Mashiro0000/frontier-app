@@ -1,0 +1,14 @@
+{
+  "label": "n93-req-no-pages-cap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentRequest.ts",
+      "from": "  if (files.pdfPages > L.maxRequestPages) {",
+      "to": "  if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

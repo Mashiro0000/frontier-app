@@ -1,0 +1,14 @@
+{
+  "label": "n93-chatfiles-twice",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/attachmentText.ts",
+      "from": "    if (!seen.has(file.info.id)) seen.set(file.info.id, file)",
+      "to": "    seen.set(`${file.info.id}${seen.size}`, file)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

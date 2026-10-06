@@ -5,6 +5,7 @@ import type { TaskId } from '../../shared/rankings'
 import ChatBar from './chat/ChatBar'
 import ChatView from './chat/ChatView'
 import { ipcReply } from './chat/ipcReply'
+import { chatFiles } from './chat/attachmentText'
 import { useAttachments } from './chat/useAttachments'
 import { useChat } from './chat/useChat'
 import HistoryDialog from './history/HistoryDialog'
@@ -36,7 +37,10 @@ function App(): React.JSX.Element {
   const history = useHistory(chat)
   // The files on the message being written (D-037): copies kept by main, attached with "Attach...", a paste or a drop.
   const attachments = useAttachments()
-  const attachFull = attachments.files.length >= ATTACHMENT_LIMITS.perMessage
+  // A message carries at most ten files, and a chat (whose files are sent again with every message) at most fifty.
+  const attachFull =
+    attachments.files.length >= ATTACHMENT_LIMITS.perMessage ||
+    chatFiles(chat.messages, attachments.files).length >= ATTACHMENT_LIMITS.perChat
   // The key that matters is the one of the provider that will answer (D-020).
   const missingKey = providerMissingKey(status)
   // No limits chosen yet: asked for before the first message, and until they are chosen nothing is sent (D-031).
@@ -102,7 +106,9 @@ function App(): React.JSX.Element {
           attachments.busy
             ? 'Files are being attached.'
             : attachFull
-              ? `A message can carry at most ${ATTACHMENT_LIMITS.perMessage} files.`
+              ? attachments.files.length >= ATTACHMENT_LIMITS.perMessage
+                ? `A message can carry at most ${ATTACHMENT_LIMITS.perMessage} files.`
+                : `A chat can hold at most ${ATTACHMENT_LIMITS.perChat} files. Start a new chat for more.`
               : 'Attach images, PDFs or text files to your message. You choose them in a Windows dialog; the app keeps a copy and sends it to the model.'
         }
       />

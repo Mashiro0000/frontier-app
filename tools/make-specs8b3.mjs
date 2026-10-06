@@ -59,9 +59,9 @@ const node = {
   'n3-svc-no-backup': [FILE3, [[ES, '    if (counts.plain + counts.encrypted > 0) {', '    if (false as boolean) {']]],
   'n3-svc-backup-failure-ignored': [FILE3, [[ES, '      if (!made.ok) {', '      if (false as boolean) {']]],
   'n3-svc-confirm-always-yes': [FILE3, [[ES, '    if (!yes) return { ok: false, cancelled: true, error: \'Cancelled.\' }', '    void yes']]],
-  'n3-svc-asks-when-nothing-to-weaken': [FILE3, [[ES, "  if (before.choice === 'off' && counts.encrypted === 0) {", '  if (false as boolean) {']]],
+  'n3-svc-asks-when-nothing-to-weaken': [FILE3, [[ES, "  if (before.choice === 'off' && counts.encrypted === 0 && sealedFiles === 0) {", '  if (false as boolean) {']]],
   'n3-svc-key-lost-encrypts': [FILE3, [[ES, "    if (before.choice === 'on' && before.keyUsable !== true) {", '    if (false as boolean) {']]],
-  'n3-svc-noop-asks-backup': [FILE3, [[ES, "    if (before.choice === 'on' && counts.plain === 0) {", '    if (false as boolean) {']]],
+  'n3-svc-noop-asks-backup': [FILE3, [[ES, "    if (before.choice === 'on' && counts.plain === 0 && plainFiles === 0) {", '    if (false as boolean) {']]],
   'n3-svc-no-lock': [FILE3, [[ES, '      backups.exclusive<ChatStorageResult>({ ok: false, error: BUSY }, () => encrypt(owner)),', '      encrypt(owner),']]],
   // ---- the backup service
   'n3-backup-no-title': [FILE3, [[SV, '      beforeEncrypting ? BEFORE_ENCRYPTING_TITLE : undefined\n    )', '      undefined\n    )']]],

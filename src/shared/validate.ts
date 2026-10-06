@@ -2,11 +2,19 @@
 // them again, because it must never trust what the page sends. Plain functions, no Electron.
 
 import {
+  ATTACHMENT_LIMITS,
+  cleanFileName,
+  isAttachmentId,
+  type AttachmentInfo,
+  type AttachmentMediaType
+} from './attachments'
+import {
   CHAT_LIMITS,
   HISTORY_LIMITS,
   type BackupRequest,
   type ChatRequest,
   type SavedMessage,
+  type WireAttachment,
   type WireMessage
 } from './ipc'
 import { SUPPORTED_PROVIDERS, type Effort, type ProviderId } from './registry'
@@ -134,6 +142,136 @@ export function checkInstructions(input: unknown): InstructionsCheck {
   return { ok: true, instructions }
 }
 
+/**
+ * The files named on one message of a request (D-037): a list of at most `ATTACHMENT_LIMITS.perMessage` `{ id, name }`, each id the spelling of a copy's
+ * name and named once. The names come back cleaned (they are labels the model reads). Null when anything is not so.
+ */
+export function checkWireAttachments(input: unknown): WireAttachment[] | null {
+  if (!Array.isArray(input) || input.length > ATTACHMENT_LIMITS.perMessage) return null
+  const seen = new Set<string>()
+  const files: WireAttachment[] = []
+  for (const item of input) {
+    if (typeof item !== 'object' || item === null) return null
+    const { id, name } = item as Record<string, unknown>
+    if (!isAttachmentId(id) || seen.has(id) || typeof name !== 'string' || name.length > 1000)
+      return null
+    seen.add(id)
+    files.push({ id, name: cleanFileName(name, 'file') })
+  }
+  return files
+}
+
+const MEDIA_KIND: Record<AttachmentMediaType, AttachmentInfo['kind']> = {
+  'image/png': 'image',
+  'image/jpeg': 'image',
+  'image/gif': 'image',
+  'image/webp': 'image',
+  'application/pdf': 'pdf',
+  'text/plain': 'text'
+}
+const isCount = (value: unknown, max: number): value is number =>
+  typeof value === 'number' && Number.isSafeInteger(value) && value >= 1 && value <= max
+
+/**
+ * What a saved message says about one of its files (D-037), from the page or from a file: every field of `AttachmentInfo` and nothing else, each of its
+ * kind (the type agrees with the kind; an image has its size, a PDF its pages, a text its characters and lines; the notes about what was done). It is a
+ * description for the person; the copy itself is checked again when it is read. Null when anything is not so.
+ */
+export function checkAttachmentInfo(input: unknown): AttachmentInfo | null {
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) return null
+  const x = input as Record<string, unknown>
+  const { id, name, kind, mediaType, bytes, changes } = x
+  if (
+    !isAttachmentId(id) ||
+    typeof name !== 'string' ||
+    name === '' ||
+    cleanFileName(name, '') !== name
+  )
+    return null
+  if (typeof mediaType !== 'string' || !(mediaType in MEDIA_KIND)) return null
+  const type = mediaType as AttachmentMediaType
+  if (kind !== MEDIA_KIND[type] || !isCount(bytes, ATTACHMENT_LIMITS.maxPdfBytes)) return null
+  if (typeof changes !== 'object' || changes === null || Array.isArray(changes)) return null
+  const c = changes as Record<string, unknown>
+  const shrunk = c.shrunkFrom
+  if (
+    typeof c.metadataRemoved !== 'boolean' ||
+    typeof c.turned !== 'boolean' ||
+    !(
+      shrunk === null ||
+      (typeof shrunk === 'object' &&
+        isCount((shrunk as Record<string, unknown>).width, ATTACHMENT_LIMITS.maxImageSide) &&
+        isCount((shrunk as Record<string, unknown>).height, ATTACHMENT_LIMITS.maxImageSide))
+    ) ||
+    !(
+      c.convertedFrom === null ||
+      (typeof c.convertedFrom === 'string' && c.convertedFrom in MEDIA_KIND)
+    )
+  ) {
+    return null
+  }
+  // What a file of this kind has besides the common fields, in the order `prepare` writes them (so a description reads back exactly as it was written).
+  const kindOf = MEDIA_KIND[type]
+  const facts: Partial<AttachmentInfo> = {}
+  if (kindOf === 'image') {
+    if (
+      !isCount(x.width, ATTACHMENT_LIMITS.maxImageSide) ||
+      !isCount(x.height, ATTACHMENT_LIMITS.maxImageSide)
+    ) {
+      return null
+    }
+    facts.width = x.width
+    facts.height = x.height
+  } else if (kindOf === 'pdf') {
+    if (!isCount(x.pages, ATTACHMENT_LIMITS.maxPdfPages)) return null
+    facts.pages = x.pages
+  } else {
+    if (
+      !isCount(x.chars, ATTACHMENT_LIMITS.maxTextChars) ||
+      !isCount(x.lines, ATTACHMENT_LIMITS.maxTextChars)
+    ) {
+      return null
+    }
+    facts.chars = x.chars
+    facts.lines = x.lines
+  }
+  const info: AttachmentInfo = {
+    id,
+    name,
+    kind: kindOf,
+    mediaType: type,
+    bytes,
+    ...facts,
+    changes: {
+      metadataRemoved: c.metadataRemoved,
+      shrunkFrom:
+        shrunk === null
+          ? null
+          : {
+              width: (shrunk as { width: number }).width,
+              height: (shrunk as { height: number }).height
+            },
+      turned: c.turned,
+      convertedFrom: c.convertedFrom as AttachmentMediaType | null
+    }
+  }
+  const known = [
+    'id',
+    'name',
+    'kind',
+    'mediaType',
+    'bytes',
+    'changes',
+    'width',
+    'height',
+    'pages',
+    'chars',
+    'lines'
+  ]
+  if (Object.keys(x).some((key) => !known.includes(key))) return null
+  return info
+}
+
 const STREAM_ID = /^[A-Za-z0-9_-]{8,64}$/
 
 export type ChatCheck =
@@ -172,20 +310,32 @@ export function checkChatRequest(input: unknown): ChatCheck {
   }
   const clean: WireMessage[] = []
   let totalChars = 0
+  // Every file the conversation names (each is sent again with every message, D-028): a chat may hold at most `perChat` of them (D-037).
+  const files = new Set<string>()
   for (const item of messages) {
     if (typeof item !== 'object' || item === null) return refuse('The request was not understood.')
-    const { role, content } = item as Record<string, unknown>
-    if (
-      (role !== 'user' && role !== 'assistant') ||
-      typeof content !== 'string' ||
-      content === ''
-    ) {
+    const { role, content, attachments } = item as Record<string, unknown>
+    if ((role !== 'user' && role !== 'assistant') || typeof content !== 'string') {
       return refuse('The request was not understood.')
     }
+    // Files belong to the person's own messages only; an empty list is the same as none, and a message of the person's may have files and no text.
+    let named: WireAttachment[] = []
+    if (attachments !== undefined) {
+      const checked = role === 'user' ? checkWireAttachments(attachments) : null
+      if (checked === null) return refuse('The request was not understood.')
+      named = checked
+    }
+    if (content === '' && named.length === 0) return refuse('The request was not understood.')
     if (content.length > CHAT_LIMITS.maxMessageChars)
       return refuse('A message is too long to send.')
     totalChars += content.length
-    clean.push({ role, content })
+    for (const file of named) files.add(file.id)
+    clean.push(named.length === 0 ? { role, content } : { role, content, attachments: named })
+  }
+  if (files.size > ATTACHMENT_LIMITS.perChat) {
+    return refuse(
+      `This chat has more than ${ATTACHMENT_LIMITS.perChat} files, which is too many to send. Start a new chat.`
+    )
   }
   if (totalChars > CHAT_LIMITS.maxTotalChars) {
     return refuse(
@@ -319,7 +469,12 @@ export type MessagesCheck = { ok: true; messages: SavedMessage[] } | { ok: false
  * be the person's, as it is in every conversation the app makes. A reply says which model wrote it (`answererOf`);
  * the person's own messages never carry those fields, and whatever the page claims on one is dropped.
  */
-export function checkSavedMessages(input: unknown, source: MessageSource = 'page'): MessagesCheck {
+export function checkSavedMessages(
+  input: unknown,
+  source: MessageSource = 'page',
+  /** Files are read on the person's messages (D-037): from the page, and from a file of version 4. An older file's messages are read without them. */
+  filesAllowed: boolean = source === 'page'
+): MessagesCheck {
   const refuse = (error: string): MessagesCheck => ({ ok: false, error })
   if (!Array.isArray(input) || input.length === 0) return refuse('There is nothing to save.')
   // The count is looked at before the items, so a huge list costs nothing to refuse.
@@ -330,15 +485,37 @@ export function checkSavedMessages(input: unknown, source: MessageSource = 'page
   }
   const messages: SavedMessage[] = []
   let totalChars = 0
+  const chatFiles = new Set<string>()
   for (const item of input) {
     if (typeof item !== 'object' || item === null)
       return refuse('The conversation was not understood.')
-    const { role, content, status, error } = item as Record<string, unknown>
+    const { role, content, status, error, attachments } = item as Record<string, unknown>
+    // The files of a message of the person's (D-037): each described in full and named once; at most `perMessage`. A message may have files and no text.
+    let files: AttachmentInfo[] | null = null
+    if (attachments !== undefined && filesAllowed) {
+      if (
+        role !== 'user' ||
+        !Array.isArray(attachments) ||
+        attachments.length === 0 ||
+        attachments.length > ATTACHMENT_LIMITS.perMessage
+      ) {
+        return refuse('The conversation was not understood.')
+      }
+      files = []
+      for (const one of attachments) {
+        const info = checkAttachmentInfo(one)
+        if (info === null || files.some((there) => there.id === info.id)) {
+          return refuse('The conversation was not understood.')
+        }
+        files.push(info)
+        chatFiles.add(info.id)
+      }
+    }
     if (
       (role !== 'user' && role !== 'assistant') ||
       typeof content !== 'string' ||
       (status !== 'done' && status !== 'stopped' && status !== 'error' && status !== 'streaming') ||
-      (role === 'user' && content.trim() === '')
+      (role === 'user' && content.trim() === '' && files === null)
     ) {
       return refuse('The conversation was not understood.')
     }
@@ -364,7 +541,13 @@ export function checkSavedMessages(input: unknown, source: MessageSource = 'page
       message.provider = answerer.provider
       message.model = answerer.model
     }
+    if (files !== null) message.attachments = files
     messages.push(message)
+  }
+  if (chatFiles.size > ATTACHMENT_LIMITS.perChat) {
+    return refuse(
+      `This conversation has more than ${ATTACHMENT_LIMITS.perChat} files, which is too many to save.`
+    )
   }
   if (messages[0].role !== 'user') return refuse('The conversation was not understood.')
   return { ok: true, messages }

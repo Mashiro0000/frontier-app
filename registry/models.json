@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.4",
+  "schemaVersion": "0.5",
   "updatedAt": "2026-10-01",
   "source": "Anthropic's Claude API documentation (models overview, capability fields, effort and prompt-caching pages), read on 2026-10-01; its pricing page and OpenAI's model and pricing pages (GPT-6 family), with the cache prices, read on 2026-10-02. List prices, US dollars per million tokens.",
   "defaultModelId": "claude-opus-5-5",
@@ -19,6 +19,7 @@
       },
       "capabilities": {
         "imageInput": true,
+        "documentInput": true,
         "toolUse": true,
         "reasoning": true,
         "promptCaching": true,
@@ -41,6 +42,7 @@
       },
       "capabilities": {
         "imageInput": true,
+        "documentInput": true,
         "toolUse": true,
         "reasoning": true,
         "promptCaching": true,
@@ -63,6 +65,7 @@
       },
       "capabilities": {
         "imageInput": true,
+        "documentInput": true,
         "toolUse": true,
         "reasoning": true,
         "promptCaching": true,
@@ -85,6 +88,7 @@
       },
       "capabilities": {
         "imageInput": true,
+        "documentInput": true,
         "toolUse": true,
         "reasoning": true,
         "promptCaching": true,
@@ -107,6 +111,7 @@
       },
       "capabilities": {
         "imageInput": true,
+        "documentInput": true,
         "toolUse": true,
         "reasoning": true,
         "promptCaching": true,
@@ -129,6 +134,7 @@
       },
       "capabilities": {
         "imageInput": true,
+        "documentInput": true,
         "toolUse": true,
         "reasoning": true,
         "promptCaching": true,

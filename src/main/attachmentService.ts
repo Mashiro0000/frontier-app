@@ -1,5 +1,10 @@
-import { ATTACHMENT_LIMITS, cleanFileName, type AttachedFile } from '../shared/attachments'
-import type { AttachBytesResult, AttachPickResult } from '../shared/ipc'
+import {
+  ATTACHMENT_LIMITS,
+  cleanFileName,
+  isAttachmentId,
+  type AttachedFile
+} from '../shared/attachments'
+import type { AttachBytesResult, AttachmentPreview, AttachPickResult } from '../shared/ipc'
 import { checkAttachmentBytes } from '../shared/validate'
 import { MAX_INPUT_BYTES } from './attachmentFormats'
 import { readLocalFile, type AttachmentStore } from './attachmentStore'
@@ -20,6 +25,8 @@ export interface AttachmentService {
   pick(owner: unknown): Promise<AttachPickResult>
   addBytes(input: unknown): Promise<AttachBytesResult>
   discard(id: unknown): Promise<void>
+  /** The small pictures and first lines of kept copies, for a chat opened from History; at most `perChat` ids, each checked. */
+  describe(input: unknown): Promise<AttachmentPreview[]>
 }
 
 export function createAttachmentService(options: {
@@ -71,6 +78,14 @@ export function createAttachmentService(options: {
       const bytes = Buffer.from(check.bytes.buffer, check.bytes.byteOffset, check.bytes.byteLength)
       const added = await store.add({ bytes: Buffer.from(bytes), name: check.name })
       return added.ok ? { ok: true, file: added.file } : added
+    },
+
+    describe: async (input) => {
+      if (!Array.isArray(input) || input.length > ATTACHMENT_LIMITS.perChat) return []
+      const ids = [...new Set(input.filter((id): id is string => isAttachmentId(id)))]
+      const out: AttachmentPreview[] = []
+      for (const id of ids) out.push(await store.preview(id))
+      return out
     },
 
     discard: async (id) => {

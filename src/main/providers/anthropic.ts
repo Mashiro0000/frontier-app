@@ -3,6 +3,7 @@ import { PROVIDER_NAMES, type Effort } from '../../shared/registry'
 import { isInterrupted, normalizedError, rawMessage, type ErrorFacts } from './errors'
 import type {
   Credentials,
+  NeutralMessage,
   NormalizedError,
   ProviderAdapter,
   ProviderModel,
@@ -80,6 +81,32 @@ function usage(report: unknown): Usage {
   }
 }
 
+/**
+ * One turn in Anthropic's form. With no files it is `{ role, content }` with the text, exactly as before files existed. With files (D-037): the files first
+ * (Anthropic's guide: a picture or a document before the question reads best), an image as an `image` block, a PDF as a `document` block of base64, a text
+ * file as a `document` block of plain text, each document titled with its name; then the person's text, if there is any.
+ */
+function anthropicMessage(message: NeutralMessage): Anthropic.MessageParam {
+  if (message.attachments === undefined) return { role: message.role, content: message.content }
+  const blocks: Anthropic.ContentBlockParam[] = message.attachments.map((file) =>
+    file.kind === 'image'
+      ? { type: 'image', source: { type: 'base64', media_type: file.mediaType, data: file.data } }
+      : file.kind === 'pdf'
+        ? {
+            type: 'document',
+            source: { type: 'base64', media_type: 'application/pdf', data: file.data },
+            title: file.name
+          }
+        : {
+            type: 'document',
+            source: { type: 'text', media_type: 'text/plain', data: file.text },
+            title: file.name
+          }
+  )
+  if (message.content !== '') blocks.push({ type: 'text', text: message.content })
+  return { role: message.role, content: blocks }
+}
+
 async function* stream(request: StreamRequest): AsyncGenerator<StreamEvent> {
   const { model } = request
   const effort = effortOf(request.effort)
@@ -88,7 +115,7 @@ async function* stream(request: StreamRequest): AsyncGenerator<StreamEvent> {
       model: model.id,
       max_tokens: request.maxOutputTokens,
       system: request.system,
-      messages: request.messages,
+      messages: request.messages.map(anthropicMessage),
       // `effort` is the dial for how much the model thinks and writes. Its default differs between models, so it is
       // written out for the ones that take it, and left out for the ones that reject it outright (Haiku 4.5 did; D-036). The
       // registry says which (D-014), and the person's own choice may change the level (D-024). There is no `thinking`

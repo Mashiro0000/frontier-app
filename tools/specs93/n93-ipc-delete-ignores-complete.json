@@ -1,0 +1,14 @@
+{
+  "label": "n93-ipc-delete-ignores-complete",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "          if (refs.complete) await attachments.deleteUnused(files, refs.ids)",
+      "to": "          await attachments.deleteUnused(files, refs.ids)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

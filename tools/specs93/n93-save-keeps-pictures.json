@@ -1,0 +1,14 @@
+{
+  "label": "n93-save-keeps-pictures",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/convert.ts",
+      "from": "      ? { attachments: files.map((file) => file.info) }",
+      "to": "      ? { attachments: files }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

@@ -1,6 +1,7 @@
 import { createHash } from 'crypto'
 import { promises as fs } from 'fs'
 import { basename, join } from 'path'
+import type { AttachmentPreview } from '../shared/ipc'
 import {
   ATTACHMENT_LIMITS,
   cleanFileName,
@@ -397,6 +398,8 @@ export interface AttachmentStore {
   add(input: { bytes: Buffer; name: unknown }): Promise<AddResult>
   /** Reads a kept copy and checks it against its name. */
   read(id: string): Promise<ReadResult>
+  /** A kept copy's small picture (an image) or first lines (a text), for a chat opened from History; or why it cannot be read. */
+  preview(id: string): Promise<AttachmentPreview>
   /** Keeps a copy from being deleted in this run (a file on a message not yet sent). `add` holds what it adds. */
   hold(id: string): void
   release(id: string): void
@@ -598,7 +601,7 @@ export function createAttachmentStore(
     return true
   }
 
-  return {
+  const store: AttachmentStore = {
     add: async (input) => {
       const prepared = prepare(input, images)
       const name = cleanFileName(input.name, 'The file')
@@ -692,6 +695,20 @@ export function createAttachmentStore(
           }
         return { ok: true, bytes: opened.bytes, facts, form: opened.form }
       }),
+
+    preview: async (id) => {
+      const copy = await store.read(id)
+      if (!copy.ok) return { id, missing: copy.error }
+      const { facts, bytes } = copy
+      if (facts.kind === 'text')
+        return { id, thumbnail: null, firstLines: firstLinesOf(facts.text) }
+      if (facts.kind === 'pdf') return { id, thumbnail: null, firstLines: null }
+      const thumbnail =
+        facts.mediaType === 'image/png' || facts.mediaType === 'image/jpeg'
+          ? images.thumbnail(bytes, THUMBNAIL_EDGE)
+          : `data:${facts.mediaType};base64,${bytes.toString('base64')}`
+      return { id, thumbnail, firstLines: null }
+    },
 
     hold: (id) => {
       if (isAttachmentId(id)) held.add(id)
@@ -798,4 +815,5 @@ export function createAttachmentStore(
 
     whenIdle: () => queue.then(() => undefined)
   }
+  return store
 }

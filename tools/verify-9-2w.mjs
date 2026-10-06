@@ -102,7 +102,7 @@ try {
   await page.click('.composer-input')
   await page.type('Here are my files')
   const s2 = await sendButton()
-  check('while files are on the message Send waits (sending them comes in 9.3), and says why', s1.disabled && s2.disabled && /not ready yet/.test(s2.title), show(s2))
+  check('with files on the message Send is on (since 9.3 they are sent), with or without words typed, and nothing says it is in the way', !s1.disabled && !s2.disabled && s2.title === '' && (await ev(`document.querySelector('.composer-blocked')`)) === null, show({ s1, s2 }))
   await page.screenshot(join(shots, 'v92-three-chips.png'))
 
   // ============ 3. taking one off ============

@@ -1,3 +1,4 @@
+import { describeOpenAI, openaiPartProblems } from './mock-files.mjs'
 // A stand-in for OpenAI's Responses API (POST /v1/responses, streaming) and GET /v1/models, for testing Frontier App without a real
 // key or any network. It is MY READING of OpenAI's documentation (developers.openai.com, read 2026-10-01) and of the `openai` SDK's
 // own types, not the real API: its job is to refuse a request shape the documentation says is refused, and to behave on demand.
@@ -34,10 +35,19 @@ export function createOpenAIMock({ json, readBody, requests, expectedKey, models
     if (!Number.isInteger(body.max_output_tokens) || body.max_output_tokens < 16) problems.push('max_output_tokens must be an integer of at least 16')
     else if (spec && body.max_output_tokens > spec.maxOutput) problems.push(`max_output_tokens ${body.max_output_tokens} is above the maximum of ${spec.maxOutput} for ${body.model}`)
     if (!Array.isArray(body.input) || body.input.length === 0) problems.push('input must be a non-empty array')
-    else body.input.forEach((m, i) => {
-      if (!m || !['user', 'assistant', 'system', 'developer'].includes(m.role)) problems.push(`input[${i}].role is not valid`)
-      if (typeof m?.content !== 'string' || m.content.trim() === '') problems.push(`input[${i}].content must be non-empty text`)
-    })
+    else {
+      // 9.3 (D-037): an input's content is text, or a list of parts (input_text, input_image, input_file); the files of a request are 50 MB at most.
+      let fileBytes = 0
+      body.input.forEach((m, i) => {
+        if (!m || !['user', 'assistant', 'system', 'developer'].includes(m.role)) problems.push(`input[${i}].role is not valid`)
+        if (Array.isArray(m?.content)) {
+          const parts = openaiPartProblems(m, i)
+          problems.push(...parts.problems)
+          fileBytes += parts.bytes
+        } else if (typeof m?.content !== 'string' || m.content.trim() === '') problems.push(`input[${i}].content must be non-empty text`)
+      })
+      if (fileBytes > 50 * 1024 * 1024) problems.push('The total size of the files in this request exceeds the 50 MB limit.')
+    }
     if (body.reasoning !== undefined) {
       if (typeof body.reasoning !== 'object' || body.reasoning === null) problems.push('reasoning must be an object')
       else {
@@ -50,7 +60,8 @@ export function createOpenAIMock({ json, readBody, requests, expectedKey, models
 
   const lastUserText = (body) => {
     const m = [...(body.input ?? [])].reverse().find((x) => x.role === 'user')
-    return typeof m?.content === 'string' ? m.content : ''
+    // with files (9.3), the person's own text is the last input_text part
+    return typeof m?.content === 'string' ? m.content : Array.isArray(m?.content) ? (m.content.filter((p) => p.type === 'input_text').at(-1)?.text ?? '') : ''
   }
 
   // ---- the events of one reply, in the order the real API sends them (the SDK's accumulator checks ids and indexes) ----
@@ -73,7 +84,7 @@ export function createOpenAIMock({ json, readBody, requests, expectedKey, models
     try { body = JSON.parse(raw) } catch { return send(res, err(400, 'We could not parse the JSON body of your request.', null)) }
     const directive = [...lastUserText(body).matchAll(/\[\[mock:([a-z0-9-]+)\]\]/g)].at(-1)?.[1] ?? 'echo'
     const problems = problemsWith(req.headers, body)
-    const record = { provider: 'openai', headers: req.headers, body, directive, problems, closedEarly: false, startedAt: Date.now(), finishedAt: null }
+    const record = { provider: 'openai', headers: req.headers, url: req.url, raw, body, directive, problems, closedEarly: false, startedAt: Date.now(), finishedAt: null }
     requests.push(record)
     let alive = true
     res.on('close', () => { alive = false; record.finishedAt = Date.now(); if (!res.writableFinished) record.closedEarly = true })
@@ -124,7 +135,7 @@ export function createOpenAIMock({ json, readBody, requests, expectedKey, models
     const part = (text) => (refusing ? { type: 'refusal', refusal: text } : { type: 'output_text', text, annotations: [], logprobs: [] })
     emit('response.content_part.added', { item_id: itemId, output_index: 1, content_index: 0, part: part('') })
 
-    const reply = `Echo: ${lastUserText(body).replace(/\[\[mock:[a-z0-9-]+\]\]\s*/g, '')}`
+    const reply = directive === 'files' ? describeOpenAI(body) : `Echo: ${lastUserText(body).replace(/\[\[mock:[a-z0-9-]+\]\]\s*/g, '')}`
     let said = ''
     const say = (piece) => {
       said += piece

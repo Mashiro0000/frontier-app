@@ -40,11 +40,12 @@ const node = {
   'n74-build-drops-instructions': [[R, 'system: systemPromptFor(model.provider, input.instructions),', 'system: systemPromptFor(model.provider),']],
   'n74-anthropic-adapter-drops-instructions': [[AN, 'system: request.system,', "system: request.system.split('\\n\\n')[0],"]],
   'n74-openai-adapter-drops-instructions': [[OA, 'instructions: request.system,', "instructions: request.system.split('\\n\\n')[0],"]],
-  'n74-store-writes-version-2': [[S, 'JSON.stringify({ version: 3, ...conversation })', 'JSON.stringify({ version: 2, ...conversation })']],
+  // 9.3 (D-037): the version is worked out by fileVersion; the sabotage still writes version 2
+  'n74-store-writes-version-2': [[S, '    const version = fileVersion(conversation)', '    const version = 2']],
   'n74-store-v3-refused': [[S, VERSIONS, 'file.version !== 1 && file.version !== 2']],
   'n74-store-v2-refused': [[S, VERSIONS, 'file.version !== 1 && file.version !== 3']],
   'n74-store-v3-instructions-optional': [[S, "    if (checked === null || !checked.ok) return 'its instructions are not usable'\n    instructions = checked.instructions", "    instructions = checked !== null && checked.ok ? checked.instructions : ''"]],
-  'n74-store-old-files-instructions-read': [[S, "  let instructions = ''\n  if (file.version === 3) {", "  let instructions = typeof file.instructions === 'string' ? file.instructions : ''\n  if (file.version === 3) {"]],
+  'n74-store-old-files-instructions-read': [[S, "  let instructions = ''\n  if (file.version === 3 || file.version === 4) {", "  let instructions = typeof file.instructions === 'string' ? file.instructions : ''\n  if (file.version === 3 || file.version === 4) {"]],
   'n74-store-writes-unchecked': [[S, "        if (!checkedInstructions.ok) return { ok: false, error: checkedInstructions.error }\n", '']],
   'n74-store-writes-untrimmed': [[S, 'instructions: checkedInstructions.instructions,', "instructions: input.instructions ?? '',"]],
   'n74-store-reading-rewrites': [[S, "if ('conversation' in read) {\n              index.set(id, {", `if ('conversation' in read) {\n              ${UTIMES}\n              index.set(id, {`]]
@@ -63,7 +64,7 @@ const win = {
   'w74-prompt-instructions-first': [[R, PROMPT, '`${own}\\n\\n${INSTRUCTIONS_LEAD}\\n\\n${rules}`']],
   'w74-prompt-replaces-rules': [[R, ': ' + PROMPT, ': own']],
   'w74-save-without-instructions': [[UH, 'window.api.history.save({ id, messages: toMessagesToSave(messages), instructions }).then(', 'window.api.history.save({ id, messages: toMessagesToSave(messages) }).then(']],
-  'w74-ipc-save-drops-instructions': [[IPC, 'return await history.save(check.conversation)', 'return await history.save({ id: check.conversation.id, messages: check.conversation.messages })']],
+  'w74-ipc-save-drops-instructions': [[IPC, 'const saved = await history.save(check.conversation)', 'const saved = await history.save({ id: check.conversation.id, messages: check.conversation.messages })']],
   'w74-change-not-saved': [[UH, 'a.messages === b.messages && a.instructions === b.instructions', 'a.messages === b.messages']],
   'w74-open-ignores-instructions': [[UH, 'chat.load(messages, instructions)', 'chat.load(messages)']],
   'w74-new-chat-keeps-instructions': [[UC, 'setInstructionsState(nextInstructions)', 'void nextInstructions']],

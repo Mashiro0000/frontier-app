@@ -1,0 +1,19 @@
+{
+  "label": "w93-sweep-young",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    .then((refs) => (refs.complete ? attachments.sweep(refs.ids, 3_600_000) : undefined))",
+      "to": "    .then((refs) => (refs.complete ? attachments.sweep(refs.ids, 0) : undefined))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run93.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "RUN93_ONLY": "wb"
+  },
+  "timeoutMs": 600000
+}

@@ -3,7 +3,7 @@
 // only: this file is bundled into the preload, which runs sandboxed (see D-004).
 
 import type { AskFirstChoice, AskFirstSetting, RequestEstimate } from './askFirst'
-import type { AttachedFile } from './attachments'
+import type { AttachedFile, AttachmentInfo } from './attachments'
 import type { Limits, LimitsChoice } from './limits'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
@@ -25,6 +25,9 @@ export interface ModelOption {
   contextWindow: number
   /** List prices in US dollars per million tokens (D-030). */
   pricing: ModelPricing
+  /** It reads images, and PDFs (D-037): the page says so before anything is sent; main checks again. */
+  imageInput: boolean
+  documentInput: boolean
 }
 
 /** One provider the app can call, as the page sees it: its name, and whether an API key for it is saved (D-020). */
@@ -97,7 +100,19 @@ export type SetAskFirstResult = { ok: true; status: SettingsStatus } | { ok: fal
 export type WireRole = 'user' | 'assistant'
 export interface WireMessage {
   role: WireRole
+  /** The text. It may be '' only for a message of the person's that carries files. */
   content: string
+  /**
+   * The files on a message of the person's (D-037), by the id of main's copy and the name to show the model. Main reads the copies from its own folder (the
+   * page cannot point at any other file) and checks them again. Absent when there are none, so a request without files is what it always was.
+   */
+  attachments?: WireAttachment[]
+}
+
+/** A file on a message, as a request names it: the id of main's copy and its name (a label, cleaned again by main). */
+export interface WireAttachment {
+  id: string
+  name: string
 }
 
 /** Asks for one reply. The conversation so far ends with the message just sent by the person. */
@@ -156,6 +171,8 @@ export interface SavedMessage {
    */
   provider?: ProviderId | null
   model?: string | null
+  /** The files on a message of the person's (D-037): what each was when it was attached. Only in a file of version 4; absent when there are none. */
+  attachments?: AttachmentInfo[]
 }
 
 /** A message as the page hands it over to be saved. Main turns 'streaming' into 'stopped'. */
@@ -167,6 +184,8 @@ export interface MessageToSave {
   /** For a reply: which model answered, as main reported it when the reply began (D-021). Checked again by main. */
   provider?: ProviderId | null
   model?: string | null
+  /** The files on a message of the person's (D-037). Checked again by main, field by field. */
+  attachments?: AttachmentInfo[]
 }
 
 /**
@@ -245,6 +264,8 @@ export interface ChatStorageReport {
   failed: number
   /** The backup that was made first (turning encryption on, when there were chats), or null. */
   backup: { count: number; leftOut: number; where: string } | null
+  /** The attached files (D-037), rewritten in the same form as the chats; absent when there are none. */
+  files?: { changed: number; failed: number }
 }
 
 /** `cancelled`: the person closed the system's dialog, which is not a failure and is not shown as one. */
@@ -327,6 +348,11 @@ export type AttachPickResult =
 
 /** What came of a pasted or dropped file (D-037): kept (a copy, checked by its bytes), or a sentence that names it and says why not. */
 export type AttachBytesResult = { ok: true; file: AttachedFile } | { ok: false; error: string }
+
+/** The small picture or the first lines of a kept file, for a chat opened from History (D-037); or why its copy cannot be read. */
+export type AttachmentPreview =
+  | { id: string; thumbnail: string | null; firstLines: string | null }
+  | { id: string; missing: string }
 
 /** Everything the preload hands to the page as `window.api`. Nothing else is reachable. */
 export interface FrontierApi {
@@ -424,6 +450,8 @@ export interface FrontierApi {
     addBytes(name: string, bytes: Uint8Array): Promise<AttachBytesResult>
     /** The person took a file off the message before sending it: main stops keeping it for this message (a copy no chat uses is deleted). */
     discard(id: string): void
+    /** The small pictures and first lines of kept files, by id (a chat opened from History): main reads its own copies. At most `perChat` ids. */
+    describe(ids: string[]): Promise<AttachmentPreview[]>
   }
 }
 
@@ -454,7 +482,8 @@ export const CHANNELS = {
   historyDecrypt: 'history:decrypt',
   attachmentsPick: 'attachments:pick',
   attachmentsAddBytes: 'attachments:add-bytes',
-  attachmentsDiscard: 'attachments:discard'
+  attachmentsDiscard: 'attachments:discard',
+  attachmentsDescribe: 'attachments:describe'
 } as const
 
 /**

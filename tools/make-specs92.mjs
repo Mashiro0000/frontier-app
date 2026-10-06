@@ -40,7 +40,8 @@ const win = {
   'w92-page-cap-off': [[HOOK, '        if (next.length >= ATTACHMENT_LIMITS.perMessage) {', '        if (false as boolean) {']],
   'w92-paste-with-text-attaches': [[COMP, "              event.clipboardData.getData('text/plain') === '' &&\n", '']],
   'w92-drop-not-taken': [[VIEW, "          event.preventDefault()\n          event.dataTransfer.dropEffect = 'copy'", "          event.dataTransfer.dropEffect = 'copy'"]],
-  'w92-send-with-files': [[COMP, "  const canSend = text.trim() !== '' && !isReplying && !hasFiles", "  const canSend = text.trim() !== '' && !isReplying"]],
+  // since 9.3 Send is on with files (it was off in 9.2): the sabotage keeps it off
+  'w92-files-keep-send-off': [[COMP, "  const canSend = (text.trim() !== '' || hasFiles) && !isReplying && blocked === null", "  const canSend = text.trim() !== '' && !isReplying && !hasFiles && blocked === null"]],
   'w92-attach-not-off-when-full': [[APP, '        attachDisabled={attachments.busy || attachFull}', '        attachDisabled={attachments.busy}']],
   'w92-no-destination': [[CHIPS, '          <p className="attachment-destination">', '          <p className="attachment-destination" hidden>']],
   'w92-no-notes': [[CHIPS, '                    {notes.length > 0 && (', '                    {false && (']],

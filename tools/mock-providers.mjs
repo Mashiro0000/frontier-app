@@ -9,6 +9,7 @@
 //   POST /__reset      -> forget it
 //   POST /__expect-key -> { key }  requests carrying any other x-api-key get a 401
 //   POST /__models    -> { pageSize?: n, fail?: status, hang?: true }  GET /v1/models serves pages of at most n models, fails with that status, or never answers
+import { anthropicBlockProblems, anthropicManyImages, describeAnthropic } from './mock-files.mjs'
 import { createOpenAIMock } from './mock-openai.mjs'
 import http from 'node:http'
 
@@ -70,11 +71,15 @@ export function startMock(port = 8787) {
     } else {
       if (messages[0].role !== 'user') problems.push('first message must be user')
       if (messages.at(-1).role !== 'user') problems.push('last message must be user (prefill is not supported)')
+      // 9.3 (D-037): a message's content is text, or a list of blocks (text, image, document), each checked as the documentation says.
+      const images = []
       messages.forEach((m, i) => {
-        const text = typeof m.content === 'string' ? m.content : Array.isArray(m.content) ? m.content.map((b) => b.text ?? '').join('') : ''
-        if (text.trim() === '') problems.push(`messages.${i}: text content blocks must be non-empty`)
+        if (typeof m.content === 'string') { if (m.content.trim() === '') problems.push(`messages.${i}: text content blocks must be non-empty`) }
+        else if (Array.isArray(m.content)) problems.push(...anthropicBlockProblems(m, i, images))
+        else problems.push(`messages.${i}.content: must be a string or a list of content blocks`)
         if (i > 0 && messages[i - 1].role === m.role) problems.push(`messages.${i}: roles must alternate between "user" and "assistant"`)
       })
+      problems.push(...anthropicManyImages(images))
     }
     return problems
   }
@@ -170,12 +175,13 @@ export function startMock(port = 8787) {
     if (!(req.method === 'POST' && req.url.split('?')[0] === '/v1/messages')) return json(res, 404, errorBody('not_found_error', `no route ${req.method} ${req.url}`, 'req_mock_404'))
 
     const raw = await readBody(req)
+    if (Buffer.byteLength(raw) > 32 * 1024 * 1024) return json(res, 413, errorBody('request_too_large', 'Request exceeds the maximum allowed number of bytes.', 'req_mock_413'))
     let body
     try { body = JSON.parse(raw) } catch { return json(res, 400, errorBody('invalid_request_error', 'request body is not valid JSON', 'req_mock_400')) }
     // The newest directive wins: after a failed reply the app merges the unanswered message into the next one.
     const directive = [...lastUserText(body).matchAll(/\[\[mock:([a-z0-9-]+)\]\]/g)].at(-1)?.[1] ?? 'echo'
     const problems = problemsWith(req.headers, body)
-    const record = { provider: 'anthropic', headers: req.headers, body, directive, problems, closedEarly: false, startedAt: Date.now(), finishedAt: null }
+    const record = { provider: 'anthropic', headers: req.headers, url: req.url, raw, body, directive, problems, closedEarly: false, startedAt: Date.now(), finishedAt: null }
     requests.push(record)
     let alive = true
     res.on('close', () => { alive = false; record.finishedAt = Date.now(); if (!res.writableFinished) record.closedEarly = true })
@@ -240,6 +246,10 @@ export function startMock(port = 8787) {
         }
         return alive ? finish(res, index, 'end_turn') : undefined
       }
+      case 'files':
+        // 9.3: the reply says what the last message of the person's carried: each image (type, size, bytes), PDF (title, bytes), text document and text block.
+        await echoPieces(res, index, describeAnthropic(body), () => alive)
+        return alive ? finish(res, index, 'end_turn') : undefined
       case 'slow':
         await sleep(200)
         for (let i = 0; alive && i < 300; i++) { text(res, index, `tick${i} `); await sleep(100) }

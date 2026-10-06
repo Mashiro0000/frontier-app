@@ -42,20 +42,31 @@ export const systemPromptFor = (provider: ProviderId, instructions?: string): st
 /**
  * Providers want the two sides to take turns. After a reply that failed with no text, the person's next message
  * follows their previous one, so this joins consecutive messages from the same side into one. (The docs disagree on
- * whether a provider does this itself, so it is not left to the provider.)
+ * whether a provider does this itself, so it is not left to the provider.) The files of joined messages are kept, in
+ * order (D-037); a message that is only files adds no blank lines to the text.
  */
 export function mergeAdjacent(messages: readonly NeutralMessage[]): NeutralMessage[] {
   const merged: NeutralMessage[] = []
   for (const message of messages) {
     const last = merged.at(-1)
     if (last && last.role === message.role) {
-      last.content += `\n\n${message.content}`
+      last.content =
+        last.content === '' || message.content === ''
+          ? last.content + message.content
+          : `${last.content}\n\n${message.content}`
+      if (message.attachments !== undefined) {
+        last.attachments = [...(last.attachments ?? []), ...message.attachments]
+      }
     } else {
       merged.push({ ...message })
     }
   }
   return merged
 }
+
+/** The line that names a text file before its text, where a provider has no form for a named document of text (OpenAI). */
+export const textFileLead = (name: string): string =>
+  `The person attached a text file named "${name}". Its text follows.`
 
 /**
  * Turns what the chat knows into what an adapter is given. `effort` is what chat.ts decided for this reply (the person's saved
