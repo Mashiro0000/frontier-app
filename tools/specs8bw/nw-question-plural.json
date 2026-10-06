@@ -1,0 +1,14 @@
+{
+  "label": "nw-question-plural",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatEncryptionService.ts",
+      "from": "${one ? 'a plain file' : 'plain files'}",
+      "to": "${one ? 'a plain file' : 'a plain file'}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-wording.mjs"
+  ],
+  "env": {}
+}

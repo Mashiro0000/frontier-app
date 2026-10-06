@@ -1,0 +1,14 @@
+{
+  "label": "nw-panel-same-plural",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/RestorePreviewPanel.tsx",
+      "from": "{preview.same === 1 ? 'it is' : 'they are'}",
+      "to": "{'it is'}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-wording.mjs"
+  ],
+  "env": {}
+}

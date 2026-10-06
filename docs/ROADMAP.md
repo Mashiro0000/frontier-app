@@ -184,6 +184,8 @@ the backup has been tried on real chats is not known, and it is still the thing 
       uses no key (the secure storage is never asked to encrypt), and leaves every file untouched. The way out is the backup (restored as copies) or turning encryption off; and if the key comes back, everything opens. Proved on this PC's real secure storage by deleting a scratch profile's `Local State`.
 - [x] (8b.5, D-035) The stage's threat note (in D-035; the notes for 8b.1 and 8b.2 are in D-034) and the full regression: **96 runs, 94 clean**; the two others were one stale check (`verify-5-3` counted six buttons in Settings, now
       seven), fixed in the test and passed again on the dev and the built app.
+- [x] (after 8b.5, D-035) Run once on the **owner's own profile with the real Windows dialogs** (backup, the restore preview, encrypt, a restart, the question, back to plain; the original file put back byte for byte afterwards); the
+      sentences that carry a count now agree with it ("1 chat will be rewritten as a plain file"), checked by `verify-8b-wording.mjs` and 13 negative controls.
 
 ## Stage 9 - Images and files in (not started)
 

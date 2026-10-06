@@ -47,6 +47,8 @@ node tools/run8b3.mjs [dev|preview] [launches=4]  encrypting the saved chats and
 node tools/verify-8b-3.mjs                the encryption under plain Node (the envelope, the choice and every kind of damage to it, the store, crashes and disk faults in a conversion, the whole flow with a secure storage that can lose its key, source checks); QUICK=1 for the normal folder only (the controls)
 node tools/verify-8b-1.mjs                the backup file under plain Node (its shape, a cut at every length, a changed byte at every place, caps, a 160 MB line, nine disk faults)
 QUICK=1 node tools/verify-8b-2.mjs        restoring under plain Node (the store's add and inspect, the flow with fake dialogs, the token, a changed file, 1000 chats out and back); without QUICK it also runs in the EFS folder with the real 1000 (about 3 min)
+node tools/verify-8b-wording.mjs          the sentences that carry a count agree with it (after 8b): the question before going back to plain files, two notices, and the restore preview panel rendered to text (esbuild and React's server renderer), at 0, 1 and 2 chats; the plural ones are exactly what they were
+powershell -File tools\real-dialogs.ps1 -Op find     reads (setname, ok, tdclick, shot) the REAL Windows dialog of a test app started with a debug port, instead of replacing it from the main inspector (see the script's header)
 node tools/run-one.mjs w81 dev setup-key.mjs,verify-8-1w.mjs USER_DATA_DIR=s81 MOCK_PORT=8790      just the first launch of the usage suite
 node tools/run-scenario.mjs <scenario>    one registry scenario
 node tools/nc-all.mjs specs guard-off     one negative control (spec folders: specs, specs4, specs4w)
@@ -76,6 +78,7 @@ running; `!! the app is GONE` means no `electron.exe` was left.
 | `nc*.mjs`, `specs*/`, `make-specs54.mjs` | Negative controls: sabotage one thing, run the suite, prove it fails, restore the file and prove it by hash |
 | `check-specs.mjs`                      | Dry check that every negative-control spec still finds its sabotage text exactly once |
 | `watch-windows.ps1`                    | Read-only watcher of the operating system's windows (what is in front of the test window, input, minimized), for finding out why a window went "hidden" |
+| `real-dialogs.ps1`                     | Reads and answers the REAL save, open and message-box dialogs of a test app (UI Automation, and window messages to that dialog only) |
 | `capture-golden-5.mjs`, `golden-*.json`| The recorded request bodies the Anthropic path must keep sending byte for byte  |
 | `mock-openai.mjs`                      | OpenAI's side of the mock: Responses API streaming and its model list (my reading of the docs and the SDK's types, not the real API) |
 | `registry-good.json`                   | A fixed registry for the adapter suites (it is NOT the live one; update it when the schema changes) |

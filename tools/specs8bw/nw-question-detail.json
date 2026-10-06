@@ -1,0 +1,14 @@
+{
+  "label": "nw-question-detail",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatEncryptionService.ts",
+      "from": "able to read ${one ? 'it' : 'them'},",
+      "to": "able to read them,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-wording.mjs"
+  ],
+  "env": {}
+}

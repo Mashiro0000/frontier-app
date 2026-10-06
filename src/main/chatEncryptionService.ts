@@ -65,10 +65,11 @@ export function plainQuestion(facts: PlainFacts): {
       detail: `No saved chat is encrypted now. Anyone who can read the app's data folder will be able to read the chats you save.${left}`
     }
   }
+  const one = facts.encrypted === 1
   return {
     title: 'Go back to plain files?',
-    message: `${chats(facts.encrypted)} will be rewritten as plain files.`,
-    detail: `Anyone who can read the app's data folder will then be able to read them, and every chat you save from now on. Your API keys stay encrypted, and a backup you made is not changed.${left}`
+    message: `${chats(facts.encrypted)} will be rewritten as ${one ? 'a plain file' : 'plain files'}.`,
+    detail: `Anyone who can read the app's data folder will then be able to read ${one ? 'it' : 'them'}, and every chat you save from now on. Your API keys stay encrypted, and a backup you made is not changed.${left}`
   }
 }
 

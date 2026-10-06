@@ -1,0 +1,14 @@
+{
+  "label": "nw-panel-copies-noun",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/RestorePreviewPanel.tsx",
+      "from": "{preview.copies === 1 ? 'a copy' : 'copies'}",
+      "to": "{'copies'}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-wording.mjs"
+  ],
+  "env": {}
+}

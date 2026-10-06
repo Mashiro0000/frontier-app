@@ -1,0 +1,14 @@
+{
+  "label": "nw-question-one-inverted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatEncryptionService.ts",
+      "from": "const one = facts.encrypted === 1",
+      "to": "const one = facts.encrypted !== 1"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-8b-wording.mjs"
+  ],
+  "env": {}
+}
