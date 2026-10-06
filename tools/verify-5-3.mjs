@@ -5,6 +5,7 @@ import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
 import { mainInspector } from './lib4.mjs'
+import { readRegistry } from './lib3.mjs'
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { randomBytes, createHash } from 'node:crypto'
@@ -56,7 +57,7 @@ check('window.api.settings has getStatus / setApiKey / clearApiKey / testApiKey 
 const st0 = await ev(`window.api.settings.getStatus()`)
 check('getStatus: exactly providers, canStoreKey, models, selectedModelId, modelsError, modelsCheckedOn, tasks, suggestions, effort, limits (since 8.2), askFirst (since 8.3)', Object.keys(st0).join() === 'providers,canStoreKey,models,selectedModelId,modelsError,modelsCheckedOn,tasks,suggestions,effort,limits,askFirst', Object.keys(st0).join())
 check('getStatus: two providers, Anthropic then OpenAI, neither with a key', JSON.stringify(st0.providers) === '[{"id":"anthropic","name":"Anthropic","hasKey":false},{"id":"openai","name":"OpenAI","hasKey":false}]', JSON.stringify(st0.providers))
-check('getStatus: every model names its provider by id', st0.models.length >= 7 && st0.models.every((m) => ['anthropic', 'openai'].includes(m.provider)) && new Set(st0.models.map((m) => m.provider)).size === 2, JSON.stringify(st0.models.map((m) => m.provider)))
+check('getStatus: every model of the registry is there, and names its provider by id', st0.models.length === readRegistry().models.length &&st0.models.every((m) => ['anthropic', 'openai'].includes(m.provider)) && new Set(st0.models.map((m) => m.provider)).size === 2, JSON.stringify(st0.models.map((m) => m.provider)))
 check('getStatus: each model still has exactly id, label, provider, description, contextWindow, pricing', st0.models.every((m) => Object.keys(m).join() === 'id,label,provider,description,contextWindow,pricing'))
 check('a fresh profile has no credential file of any kind', credFiles().length === 0, JSON.stringify(credFiles()))
 const b0 = await badges()

@@ -56,7 +56,7 @@ await sleep(400)
 // ============ A. a fresh profile ============
 const st0 = await ev(`window.api.settings.getStatus()`)
 check('two providers, Anthropic then OpenAI, neither has a key', JSON.stringify(st0.providers) === '[{"id":"anthropic","name":"Anthropic","hasKey":false},{"id":"openai","name":"OpenAI","hasKey":false}]', JSON.stringify(st0.providers))
-check('the menu lists all seven models, the three OpenAI ones last, by their registry names', JSON.stringify((await H.menu()).labels) === JSON.stringify(registry.models.map((m) => m.label)) && registry.models.slice(4).every((m) => m.provider === 'openai'), JSON.stringify((await H.menu()).labels))
+check('the menu lists all six models (Claude Haiku 4.5 was removed, D-036), the three OpenAI ones last, by their registry names', JSON.stringify((await H.menu()).labels) === JSON.stringify(registry.models.map((m) => m.label)) && registry.models.length === 6 && registry.models.slice(3).every((m) => m.provider === 'openai') && registry.models.slice(0, 3).every((m) => m.provider === 'anthropic'), JSON.stringify((await H.menu()).labels))
 check('the default model is still Claude Opus 5.5, so the badge asks for the ANTHROPIC key', (await H.badges()).some((b) => b.text === 'No API key' && b.title === 'Open Settings to add your Anthropic API key.'), JSON.stringify(await H.badges()))
 
 // ============ B. a key for each provider, saved through the real Settings dialog ============
