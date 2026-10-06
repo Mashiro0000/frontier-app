@@ -34,7 +34,9 @@ if (sha(REGISTRY) !== goodSha) {
 const good = JSON.parse(readFileSync(GOOD, 'utf8'))
 const clone = (v) => JSON.parse(JSON.stringify(v))
 const withModels = (fn) => { const r = clone(good); fn(r); return JSON.stringify(r, null, 2) + '\n' }
-const OPUS = 'claude-opus-5-5', SONNET = 'claude-sonnet-5-5', HAIKU = 'claude-haiku-4-5-20251001'
+const OPUS = 'claude-opus-5-5', SONNET = 'claude-sonnet-5-5', FABLE = 'claude-fable-5-1'
+// The scenarios that break ONE entry break Fable's (they broke Claude Haiku 4.5's until that model was removed on 2026-10-06, D-036); emptying
+// its effortLevels while its effort stays set is the same fault the Haiku variant had ("effort is set, but capabilities.effortLevels is empty").
 
 // scenario -> { file: text to put in registry/models.json, preseed?: file to copy in as preferences.json }
 const SCENARIOS = {
@@ -42,11 +44,11 @@ const SCENARIOS = {
   'no-usable-models': { file: withModels((r) => { r.models.forEach((m) => { m.effrot = m.effort; delete m.effort }) }) },
   'default-missing': { file: withModels((r) => { r.defaultModelId = 'claude-nope' }) },
   'default-is-broken-entry': { file: withModels((r) => { r.models.find((m) => m.id === OPUS).effort = 'extreme' }) },
-  'one-bad-entry': { file: withModels((r) => { r.models.find((m) => m.id === HAIKU).effort = 'xhigh' }) },
-  'unknown-provider': { file: withModels((r) => { r.models.find((m) => m.id === HAIKU).provider = 'gemini' }) },
+  'one-bad-entry': { file: withModels((r) => { r.models.find((m) => m.id === FABLE).capabilities.effortLevels = [] }) },
+  'unknown-provider': { file: withModels((r) => { r.models.find((m) => m.id === FABLE).provider = 'gemini' }) },
   'reordered': { file: withModels((r) => { r.models.reverse() }) },
   'default-sonnet': { file: withModels((r) => { r.defaultModelId = SONNET }) },
-  'saved-skipped': { file: withModels((r) => { r.models.find((m) => m.id === HAIKU).effort = 'xhigh' }), preseed: join(OUT, 'seeds', 'valid-haiku.json') },
+  'saved-skipped': { file: withModels((r) => { r.models.find((m) => m.id === FABLE).capabilities.effortLevels = [] }), preseed: join(OUT, 'seeds', 'valid-fable.json') },
   // syntax error: the BUILD must refuse it, loudly, before any window exists
   'broken-json-syntax': { file: JSON.stringify(good, null, 2).slice(0, 400) + '\n', build: true }
 }

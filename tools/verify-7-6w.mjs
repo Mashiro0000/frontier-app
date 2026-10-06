@@ -1,5 +1,5 @@
 // Stage 7.6 (D-029), in the real window against the mock: New chat, History and Instructions live in a bar UNDER the message box, and the header
-// is ONE row at the default window width in every state: each model (the OpenAI ones show "No API key", Haiku has no Effort menu), each task
+// is ONE row at the default window width in every state: each model (the OpenAI ones show "No API key"; Haiku, with no Effort menu, was removed in D-036), each task
 // (a task makes the model menu wider, "(suggested)"), and the widest one (a task chosen and both badges at once, which would need about 870 px
 // without the menus giving way). Also: where the bar sits, that its buttons keep the rules they had in the header (off while a reply arrives,
 // the same sentences, focus back to the button after a dialog), the keyboard order, narrow windows. The "Not saved" badge is made on the page for
@@ -20,7 +20,7 @@ await assertScratchProfile()
 const H = helpers(page, { userData, mockUrl })
 const { ev } = H
 const SEND_READY = `!!document.querySelector('.composer-button[type=submit]')`
-const OPUS = 'claude-opus-5-5', HAIKU = 'claude-haiku-4-5-20251001'
+const OPUS = 'claude-opus-5-5'
 const reset = () => fetch(`${mockUrl}/__reset`, { method: 'POST' })
 
 // ---- what the page looks like ----
@@ -81,7 +81,7 @@ try {
     const openai = /^gpt-/.test(id)
     const hasEffort = await ev(`!!document.querySelector('.effort-select')`)
     rowsSeen.push([id, Math.round(s.h)])
-    check(`model ${id}: the header is one row (${Math.round(s.h)} px)${openai ? ', with the "No API key" badge showing' : ''}${id === HAIKU ? ', and no Effort menu' : ''}`, oneRow(s) && (openai ? badges.some((b) => /No API key/.test(b.text)) : badges.length === 0) && (id === HAIKU ? !hasEffort : true), JSON.stringify({ s, badges: badges.map((b) => b.text), hasEffort }))
+    check(`model ${id}: the header is one row (${Math.round(s.h)} px), with its Effort menu${openai ? ', and the "No API key" badge showing' : ''}`, oneRow(s) && (openai ? badges.some((b) => /No API key/.test(b.text)) : badges.length === 0) && hasEffort, JSON.stringify({ s, badges: badges.map((b) => b.text), hasEffort }))
   }
   await H.chooseInPage(OPUS)
   await H.settle(OPUS)

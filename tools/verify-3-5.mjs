@@ -38,7 +38,7 @@ if (WARN_ABOUT) {
 }
 
 // Whatever was there, choosing from the menu must replace it with a valid file.
-const target = EXPECT === 'claude-sonnet-5-5' ? 'claude-haiku-4-5-20251001' : 'claude-sonnet-5-5'
+const target = EXPECT === 'claude-sonnet-5-5' ? 'claude-fable-5-1' : 'claude-sonnet-5-5' // a model other than the one shown (Haiku 4.5 until D-036)
 await H.chooseInPage(target)
 await H.settle(target)
 check(`[${SEED_NAME}] choosing ${target} from the menu replaces the file with a valid one`, H.prefs() === `{"version":1,"modelId":"${target}"}`, String(H.prefs()).slice(0, 80))

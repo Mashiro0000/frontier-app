@@ -1,7 +1,8 @@
 // Slices 3.3 + 3.4 in the real window: the model menu, the saved choice, the Settings details, what each model
 // is sent, the guard on setModel, and rapid changes. FIRST launch on a fresh scratch profile (no key, no choice).
 // Needs: MOCK_PORT, USER_DATA_DIR (scratch profile inside the real %APPDATA%, to exercise EFS), APP_LOG.
-// It leaves a saved key and the choice "Claude Haiku 4.5" behind, for verify-3-4b.mjs (second launch).
+// It leaves a saved key and the choice "Claude Fable 5.1" behind, for verify-3-4b.mjs (second launch). (It was Claude Haiku 4.5 until that
+// model was removed from the registry on 2026-10-06, D-036.)
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
@@ -25,7 +26,8 @@ const registry = readRegistry()
 const models = registry.models
 const ids = models.map((m) => m.id)
 const labels = models.map((m) => m.label)
-const [FABLE, OPUS, SONNET, HAIKU] = ids
+const [FABLE, OPUS, SONNET] = ids
+const AFTER_SONNET = ids[ids.indexOf(SONNET) + 1] // the next model in the menu (GPT-6 Astra since Claude Haiku 4.5 was removed, D-036)
 const label = (id) => models.find((m) => m.id === id).label
 const SEND_READY = `!!document.querySelector('.composer-button[type=submit]')`
 
@@ -100,8 +102,8 @@ check('Settings now describes Sonnet and its prices ($2 / $10)', /Claude Sonnet 
 // keyboard: ArrowDown / ArrowUp on the focused menu
 await ev(`document.querySelector('.header-select').focus()`)
 await page.press('ArrowDown')
-await H.settle(HAIKU)
-check('keyboard: ArrowDown on the menu moves to the next model (Haiku), saved', H.prefs() === `{"version":1,"modelId":"${HAIKU}"}` && (await H.menu()).value === HAIKU)
+await H.settle(AFTER_SONNET)
+check(`keyboard: ArrowDown on the menu moves to the next model (${label(AFTER_SONNET)}), saved`, H.prefs() === `{"version":1,"modelId":"${AFTER_SONNET}"}` && (await H.menu()).value === AFTER_SONNET)
 check('...and keyboard focus stays on the menu (it is not disabled while main answers)', (await ev(`document.activeElement.className`)) === 'header-select')
 await page.press('ArrowUp')
 await page.press('ArrowUp')
@@ -175,8 +177,8 @@ menu = await H.menu()
 check('while a reply is arriving the menu is disabled, and says why', menu.disabled === true && /can be changed when the reply has finished/.test(menu.title), JSON.stringify([menu.disabled, menu.title]))
 await page.screenshot(`${shots}/3-4-replying.png`)
 // A page that misbehaves (calls the API directly) can still ask main to switch models mid-reply.
-const midReply = await ev(`window.api.settings.setModel(${JSON.stringify(HAIKU)})`)
-check('a (misbehaving) page that switches the model mid-reply is accepted by main...', midReply.ok === true && midReply.status.selectedModelId === HAIKU)
+const midReply = await ev(`window.api.settings.setModel(${JSON.stringify(OPUS)})`)
+check('a (misbehaving) page that switches the model mid-reply is accepted by main...', midReply.ok === true && midReply.status.selectedModelId === OPUS)
 const inFlight = await H.mockReqs()
 check('...but the reply already running keeps its model: the request in flight was sent for Sonnet', inFlight.length === 1 && inFlight[0].body.model === SONNET, JSON.stringify(inFlight.map((r) => r.body.model)))
 await page.click('.composer-button-stop')
@@ -186,11 +188,11 @@ check('Stop unlocks the menu again', menu.disabled === false && !/finished/.test
 await page.send('Page.reload')
 await sleep(1800)
 await page.waitFor(`!!document.querySelector('.header-select')`)
-check('after a reload the page re-reads main\'s selection (Haiku, set by that call)', (await H.menu()).value === HAIKU)
+check('after a reload the page re-reads main\'s selection (Opus, set by that call)', (await H.menu()).value === OPUS)
 await resetMock()
 await H.sendAndWait('after the switch')
 const after = (await H.mockReqs()).at(-1)
-check('the NEXT reply uses the new model (Haiku), exactly as the registry says', after.body.model === HAIKU && !('output_config' in after.body) && after.problems.length === 0, JSON.stringify(after.body.model))
+check('the NEXT reply uses the new model (Opus), exactly as the registry says (its own effort)', after.body.model === OPUS && JSON.stringify(after.body.output_config) === JSON.stringify({ effort: models.find((m) => m.id === OPUS).effort }) && after.problems.length === 0, JSON.stringify([after.body.model, after.body.output_config]))
 
 // switching in the middle of a conversation: the whole chat goes to the new model
 await page.send('Page.reload')
@@ -199,11 +201,11 @@ await resetMock()
 await H.chooseInPage(OPUS)
 await H.settle(OPUS)
 await H.sendAndWait('first')
-await H.chooseInPage(HAIKU)
-await H.settle(HAIKU)
+await H.chooseInPage(SONNET)
+await H.settle(SONNET)
 await H.sendAndWait('second')
 const [r1, r2] = await H.mockReqs()
-check('mid-chat switch: the first message went to Opus, the second to Haiku', r1.body.model === OPUS && r2.body.model === HAIKU, JSON.stringify([r1.body.model, r2.body.model]))
+check('mid-chat switch: the first message went to Opus, the second to Sonnet', r1.body.model === OPUS && r2.body.model === SONNET, JSON.stringify([r1.body.model, r2.body.model]))
 check('...and the second request carries the whole conversation, as plain text turns', JSON.stringify(r2.body.messages) === JSON.stringify([{ role: 'user', content: 'first' }, { role: 'assistant', content: 'Echo: first' }, { role: 'user', content: 'second' }]), JSON.stringify(r2.body.messages))
 check('...with no thinking blocks or other extras sent back (only text is ever sent)', r2.body.messages.every((m) => typeof m.content === 'string') && !('thinking' in r2.body))
 
@@ -237,7 +239,7 @@ await ev(`setTimeout(() => { location.href = 'about:blank' }, 0); 0`)
 await sleep(1200)
 const blank = await ev(`(async () => {
   const settle = (p) => p.then((r) => 'RESOLVED ' + JSON.stringify(r).slice(0, 60), (e) => 'rejected: ' + String(e.message).slice(0, 120))
-  return { where: location.href, api: typeof window.api, set: await settle(window.api.settings.setModel(${JSON.stringify(HAIKU)})), status: await settle(window.api.settings.getStatus()) }
+  return { where: location.href, api: typeof window.api, set: await settle(window.api.settings.setModel(${JSON.stringify(OPUS)})), status: await settle(window.api.settings.getStatus()) }
 })()`)
 check('precondition: the page really is about:blank and still has window.api', blank.where === 'about:blank' && blank.api === 'object', JSON.stringify(blank))
 check('setModel from about:blank is rejected by main ("Blocked")', /^rejected: .*Blocked/.test(blank.set), blank.set)
@@ -248,17 +250,17 @@ await sleep(1800)
 check('back on the app page: the selection is still Sonnet', (await H.menu()).value === SONNET)
 
 // ===================== E. the end state, for the restart test =====================
-await H.chooseInPage(HAIKU)
-await H.settle(HAIKU)
-check('left behind for the restart test: Haiku chosen and saved, a key saved', H.prefs() === `{"version":1,"modelId":"${HAIKU}"}` && (await H.status()).providers[0].hasKey === true)
-await page.screenshot(`${shots}/3-4-haiku.png`)
+await H.chooseInPage(FABLE)
+await H.settle(FABLE)
+check('left behind for the restart test: Fable chosen and saved, a key saved', H.prefs() === `{"version":1,"modelId":"${FABLE}"}` && (await H.status()).providers[0].hasKey === true)
+await page.screenshot(`${shots}/3-4-fable.png`)
 text = await H.settingsText()
 await page.click('.header-button@Settings')
 await page.waitFor(`!!document.querySelector('dialog.settings')?.open`)
 await sleep(150)
-await page.screenshot(`${shots}/3-4-settings-haiku.png`)
+await page.screenshot(`${shots}/3-4-settings-fable.png`)
 await page.press('Escape')
-check('Settings for Haiku: 200K tokens, $1 / $5, its own description', /about 200K tokens/.test(text) && /\$1 per million tokens it reads and \$5 per million tokens it writes/.test(text) && text.includes(models[3].description), text.match(/It can read[^.]*\./)?.[0])
+check('Settings for Fable: 1M tokens, $10 / $50, its own description', /about 1M tokens/.test(text) && /\$10 per million tokens it reads and \$50 per million tokens it writes/.test(text) && text.includes(models[0].description), text.match(/It can read[^.]*\./)?.[0])
 
 // ===================== F. nothing leaked =====================
 const appLog = readFileSync(process.env.APP_LOG, 'utf8')

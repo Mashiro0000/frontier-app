@@ -56,17 +56,16 @@ await guard('block A', async () => {
   check('defaultAskFirst: nothing chosen, and a new object every time', same(defaultAskFirst(), DEFAULT) && defaultAskFirst() !== defaultAskFirst())
   check('sameAskFirst: kind and amount both count', sameAskFirst(usd(1), usd(1)) && !sameAskFirst(usd(1), usd(2)) && !sameAskFirst(usd(0.5), DEFAULT) && !sameAskFirst(NEVER, DEFAULT) && sameAskFirst(NEVER, NEVER) && sameAskFirst(DEFAULT, defaultAskFirst()) && !sameAskFirst(usd(1), NEVER))
 
-  // each of the seven models, a million tokens in and the 16,000-token ceiling out: the input at the dearer of its two input prices
+  // each of the six models, a million tokens in and the 16,000-token ceiling out: the input at the dearer of its two input prices
   const expected = {
     'claude-fable-5-1': { input: 12.5, output: 0.8 },
     'claude-opus-5-5': { input: 5, output: 0.32 },
     'claude-sonnet-5-5': { input: 2.5, output: 0.16 },
-    'claude-haiku-4-5-20251001': { input: 1.25, output: 0.08 },
     'gpt-6-astra': { input: 12.5, output: 0.8 },
     'gpt-6.1-sol': { input: 2.5, output: 0.16 },
     'gpt-6-luna': { input: 0.125, output: 0.008 }
   }
-  check('the registry holds exactly the seven models this suite knows', same(models.map((m) => m.id).sort(), Object.keys(expected).sort()), models.map((m) => m.id).join(','))
+  check('the registry holds exactly the six models this suite knows (Claude Haiku 4.5 was removed on 2026-10-06, D-036)', same(models.map((m) => m.id).sort(), Object.keys(expected).sort()), models.map((m) => m.id).join(','))
   for (const model of models) {
     const want = expected[model.id]
     if (!want) continue
@@ -90,7 +89,7 @@ await guard('block A', async () => {
   // where the default $0.50 begins to ask, per model (D-032 quotes these)
   const startsAbove = (model) => Math.floor(500_000 / Math.max(model.pricing.inputPerMTok, model.pricing.cacheWritePerMTok))
   const begins = Object.fromEntries(models.map((m) => [m.id, startsAbove(m)]))
-  check('the default asks above 40,000 tokens on Fable 5.1 and GPT-6 Astra, 100,000 on Opus 5.5, 200,000 on Sonnet 5.5 and GPT-6.1 Sol, 400,000 on Haiku 4.5, 4,000,000 on GPT-6 Luna', begins['claude-fable-5-1'] === 40_000 && begins['gpt-6-astra'] === 40_000 && begins['claude-opus-5-5'] === 100_000 && begins['claude-sonnet-5-5'] === 200_000 && begins['gpt-6.1-sol'] === 200_000 && begins['claude-haiku-4-5-20251001'] === 400_000 && begins['gpt-6-luna'] === 4_000_000, JSON.stringify(begins))
+  check('the default asks above 40,000 tokens on Fable 5.1 and GPT-6 Astra, 100,000 on Opus 5.5, 200,000 on Sonnet 5.5 and GPT-6.1 Sol, 4,000,000 on GPT-6 Luna', begins['claude-fable-5-1'] === 40_000 && begins['gpt-6-astra'] === 40_000 && begins['claude-opus-5-5'] === 100_000 && begins['claude-sonnet-5-5'] === 200_000 && begins['gpt-6.1-sol'] === 200_000 && begins['gpt-6-luna'] === 4_000_000 && Object.keys(begins).length === 6, JSON.stringify(begins))
   // The comparison is made in millionths of a dollar (a token at $1 a million is one), so a token on the cheapest model, which is an eighth of one, cannot
   // tip it: "more than" means at least a millionth of a dollar more. The first token count that asks is therefore at most 8 tokens above the amount.
   for (const model of models) {

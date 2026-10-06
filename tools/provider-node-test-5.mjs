@@ -191,9 +191,11 @@ for (const model of parsedRegistry.registry.models.filter((m) => m.provider === 
 }
 
 // ---- 3. negative controls: these checks CAN fail ----------------------------------------------------------
-// (a) Haiku is documented to reject effort. If the app sent it anyway, the mock must say so, loudly.
+// (a) Haiku is documented to reject effort. If the app sent it anyway, the mock must say so, loudly. (The app no longer lists Haiku 4.5,
+// D-036; the mock still knows it, as the provider does, so these controls use its entry in the fixed registry, tools/registry-good.json.)
 await reset()
-const haiku = models['claude-haiku-4-5-20251001']
+const haiku = JSON.parse(readFileSync(`${REPO}/tools/registry-good.json`, 'utf8')).models.find((m) => m.id === 'claude-haiku-4-5-20251001')
+if (!haiku || 'claude-haiku-4-5-20251001' in models) throw new Error('the fixed registry must hold Haiku 4.5 and the live one must not (D-036)')
 const wrongHaiku = await run('control', { model: { ...haiku, effort: 'medium' } })
 const [wrongReq] = await get()
 check('control: forcing effort onto Haiku makes the mock answer 400 "does not support the effort parameter"', !!wrongHaiku.error && /does not support the effort parameter/.test(describeError(wrongHaiku.error, fakeKey, haiku.id)) && wrongReq.problems.length === 1, `${describeError(wrongHaiku.error, fakeKey, haiku.id)}`)

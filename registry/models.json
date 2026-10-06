@@ -71,28 +71,6 @@
       "effort": "medium"
     },
     {
-      "provider": "anthropic",
-      "id": "claude-haiku-4-5-20251001",
-      "label": "Claude Haiku 4.5",
-      "description": "The fastest and cheapest. This app uses it without extended thinking.",
-      "contextWindow": 200000,
-      "maxOutputTokens": 64000,
-      "pricing": {
-        "inputPerMTok": 1,
-        "cacheReadPerMTok": 0.1,
-        "cacheWritePerMTok": 1.25,
-        "outputPerMTok": 5
-      },
-      "capabilities": {
-        "imageInput": true,
-        "toolUse": true,
-        "reasoning": false,
-        "promptCaching": true,
-        "effortLevels": []
-      },
-      "effort": null
-    },
-    {
       "provider": "openai",
       "id": "gpt-6-astra",
       "label": "GPT-6 Astra",
