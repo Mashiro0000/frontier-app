@@ -28,13 +28,15 @@ function waitForPortFree(port) {
   if (r.status !== 0) throw new Error(r.stderr.trim() || `debug port ${port} did not become free`)
 }
 
-/** The seed files for verify-3-5 (stale, corrupt and hostile preferences.json) are generated, not committed (one is 5 MB). */
+/**
+ * The seed files for verify-3-5 (stale, corrupt and hostile preferences.json) are generated, not committed (one is 5 MB). Always rewritten,
+ * never reused (as run71.mjs does): a manifest left by an older make-seeds.mjs names seeds that no longer exist (valid-haiku, before D-036),
+ * and every launch would check the old expectations.
+ */
 export function ensureSeeds() {
   const manifest = join(OUT, 'seeds', 'manifest.json')
-  if (!existsSync(manifest)) {
-    const r = spawnSync(process.execPath, [join(here, 'make-seeds.mjs')], { encoding: 'utf8' })
-    if (r.status !== 0) throw new Error('make-seeds.mjs failed: ' + (r.stderr || r.stdout))
-  }
+  const r = spawnSync(process.execPath, [join(here, 'make-seeds.mjs')], { encoding: 'utf8' })
+  if (r.status !== 0) throw new Error('make-seeds.mjs failed: ' + (r.stderr || r.stdout))
   return JSON.parse(readFileSync(manifest, 'utf8'))
 }
 
