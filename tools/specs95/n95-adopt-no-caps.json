@@ -1,0 +1,14 @@
+{
+  "label": "n95-adopt-no-caps",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "        if (!room(id, bytes.length, mode.form).fits) return 'full'\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-5.mjs"
+  ],
+  "env": {}
+}

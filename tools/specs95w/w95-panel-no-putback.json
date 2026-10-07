@@ -1,0 +1,18 @@
+{
+  "label": "w95-panel-no-putback",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/RestorePreviewPanel.tsx",
+      "from": "          disabled={disabled || (fits === 0 && missing === 0)}",
+      "to": "          disabled={disabled || fits === 0}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run95.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 500000
+}

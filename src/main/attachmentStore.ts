@@ -66,7 +66,7 @@ export interface ImageTools {
 
 /** How a sealed copy begins. A plain copy is told apart by its hash (it hashes to its name), so a text file that begins like this is still read right. */
 export const SEALED_MAGIC = Buffer.from('FRONTIER-SEALED-ATTACHMENT-1\n', 'latin1')
-const MAX_KEPT_BYTES = Math.max(
+export const MAX_KEPT_BYTES = Math.max(
   ATTACHMENT_LIMITS.maxImageBytes,
   ATTACHMENT_LIMITS.maxPdfBytes,
   ATTACHMENT_LIMITS.maxTextBytes
@@ -416,11 +416,19 @@ export interface AttachmentStore {
     referenced: ReadonlySet<string>,
     olderThanMs: number
   ): Promise<{ deleted: number; failed: number }>
+  /**
+   * Puts back a copy from a backup (9.5): `bytes` must hash to `id` and be a file the app keeps (`factsOf`); a whole copy already here is left as it is.
+   * Written in the form encryption asks for now, within the folder's caps. Never throws for bytes that cannot be used.
+   */
+  adopt(id: string, bytes: Buffer): Promise<AdoptOutcome>
   /** Rewrites every copy in the form the choice says now (D-035), one per turn. Writes nothing while writing is refused. */
   conform(): Promise<AttachmentConformResult>
   counts(): Promise<AttachmentCounts>
   whenIdle(): Promise<void>
 }
+
+/** What came of putting back one copy from a backup: written, already here, not a usable file, no room, or not written (refused or failed). */
+export type AdoptOutcome = 'added' | 'already' | 'refused' | 'full' | 'failed'
 
 export interface AttachmentStoreOptions {
   images: ImageTools
@@ -601,6 +609,24 @@ export function createAttachmentStore(
     return true
   }
 
+  /** Whether the folder has room for one more copy of `size` bytes under `id` (one already under it is replaced), and what it holds besides. */
+  function room(
+    id: string,
+    size: number,
+    form: FileForm
+  ): { files: number; total: number; fits: boolean } {
+    const onDisk =
+      form === 'encrypted' ? Math.ceil(size / 3) * 4 + 4096 + SEALED_MAGIC.length : size
+    let files = 0
+    let total = 0
+    for (const [other, entry] of index) {
+      if (other === id) continue
+      files += 1
+      total += entry.size
+    }
+    return { files, total, fits: files + 1 <= caps.files && total + onDisk <= caps.bytes }
+  }
+
   const store: AttachmentStore = {
     add: async (input) => {
       const prepared = prepare(input, images)
@@ -627,18 +653,8 @@ export function createAttachmentStore(
           return { ok: true, file: prepared.file, already: true }
         }
         // A new copy, or one that must be written again (damaged, or kept in the other form): the caps count what the folder would hold after it.
-        const sealedSize =
-          mode.form === 'encrypted'
-            ? Math.ceil(prepared.bytes.length / 3) * 4 + 4096 + SEALED_MAGIC.length
-            : prepared.bytes.length
-        let files = 0
-        let total = 0
-        for (const [id, entry] of index) {
-          if (id === info.id) continue
-          files += 1
-          total += entry.size
-        }
-        if (files + 1 > caps.files || total + sealedSize > caps.bytes) {
+        const { files, total, fits } = room(info.id, prepared.bytes.length, mode.form)
+        if (!fits) {
           return {
             ok: false,
             error: `${info.name} was not attached: the attachments folder is full (${count(files)} files, ${mb(total)}). Delete chats with files in them to make room; nothing is deleted for you.`
@@ -755,6 +771,35 @@ export function createAttachmentStore(
           else failed += 1
         }
         return { deleted, failed }
+      }),
+
+    adopt: (id, bytes) =>
+      inOrder(async (): Promise<AdoptOutcome> => {
+        // The same checks as a copy read from the folder: the bytes are what the id names, and a file the app keeps.
+        if (
+          !isAttachmentId(id) ||
+          bytes.length > MAX_KEPT_BYTES ||
+          sha256(bytes) !== id ||
+          factsOf(bytes) === null
+        ) {
+          return 'refused'
+        }
+        const mode = await writeMode()
+        if ('refused' in mode) return 'failed'
+        await ensureScanned()
+        const there = index.has(id) ? await readCopy(id).catch(() => null) : null
+        if (there !== null && there.ok) return 'already'
+        if (!room(id, bytes.length, mode.form).fits) return 'full'
+        try {
+          await writeCopy(id, bytes, mode.form)
+        } catch (error) {
+          console.error(
+            'Putting back an attached file failed:',
+            error instanceof Error ? error.message : error
+          )
+          return 'failed'
+        }
+        return 'added'
       }),
 
     conform: async () => {

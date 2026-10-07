@@ -152,7 +152,8 @@ await guard('B', async () => {
   for (const [name, exportedAt] of [['a text time', 'now'], ['a negative time', -1], ['a fractional time', 1.5], ['a missing time', undefined], ['a huge time', 1e300]]) {
     await notBackup(`a header with ${name}`, Buffer.from(`${JSON.stringify({ format: BACKUP_FORMAT, version: 1, exportedAt })}\n`))
   }
-  await notBackup('a header of version 2 (made by a newer app)', Buffer.from(`${JSON.stringify({ format: BACKUP_FORMAT, version: 2, exportedAt: NOW })}\n`), /another version of the app/)
+  // version 2 is a backup with attached files since 9.5 (D-037); version 3 is a newer app's
+  await notBackup('a header of version 3 (made by a newer app)', Buffer.from(`${JSON.stringify({ format: BACKUP_FORMAT, version: 3, exportedAt: NOW })}\n`), /another version of the app/)
   await notBackup('a header of version "1" as text', Buffer.from(`${JSON.stringify({ format: BACKUP_FORMAT, version: '1', exportedAt: NOW })}\n`), /another version of the app/)
   check('a header and nothing else: a backup with no chats and no end, so not whole', await (async () => { const { read } = await run(Buffer.from(`${headerLine()}\n`)); return read.problem === null && read.header !== null && read.good === 0 && !read.complete && read.trailer === null })())
   check('a header and an end line: a whole backup of nothing', await (async () => { const { read } = await run(Buffer.from(`${headerLine()}\n${trailerLine(0)}\n`)); return read.problem === null && read.complete && read.good === 0 })())

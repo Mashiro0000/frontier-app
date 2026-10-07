@@ -79,7 +79,8 @@ const node = {
   'n91-store-no-second-readback': [[S, "    if (!proved(await fs.readFile(file))) throw new Error('the copy could not be read back')", '']],
   'n91-store-size-unchecked': [[S, "    if (size > MAX_COPY_BYTES) return { ok: false, why: 'damaged' } // looked at before it is read: no file can fill the memory", '']],
   'n91-store-no-tmp-recovery': [[S, '    const copy = await readAt(`${file}.tmp`, id)\n    if (copy !== null && copy.ok) return copy', '    const copy = null as Opened | null']],
-  'n91-store-caps-off': [[S, '        if (files + 1 > caps.files || total + sealedSize > caps.bytes) {', '        if (false as boolean) {']],
+  // (9.5, D-037: the caps are worked out by room(), for add and adopt alike; the sabotage still turns them off)
+  'n91-store-caps-off': [[S, '    return { files, total, fits: files + 1 <= caps.files && total + onDisk <= caps.bytes }', '    return { files, total, fits: true }']],
   'n91-store-damaged-already': [[S, '          there !== null &&\n          there.ok &&\n          there.form === mode.form &&\n          there.bytes.equals(prepared.bytes)\n', '          there !== null\n']],
   'n91-store-no-hold': [[S, '        held.add(info.id)\n        return { ok: true, file: prepared.file, already: false }', '        return { ok: true, file: prepared.file, already: false }']],
   'n91-store-delete-referenced': [[S, '          if (!isAttachmentId(id) || referenced.has(id) || held.has(id)) continue', '          if (!isAttachmentId(id) || held.has(id)) continue']],

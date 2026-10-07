@@ -2385,3 +2385,19 @@ if you have not, please do before you rely on this. **The design was mine** (you
 
 1. **The guess for files is meant to be high.** A real bill for images is probably lower; the provider's report replaces the guess when a reply ends, as before.
 2. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 9 - Slice 9.5: backups hold the files (7 October 2026; D-037)
+
+**Step by step.**
+
+1. **A backup now holds the attached files of its chats** (your answer 5), as their own bytes, even when the app's copies are encrypted: a backup has always been a plain file you keep safe. A backup of chats without files is exactly what it was before.
+2. **Each file is checked when a backup is read**, the way the app checks its own copies: a file that was changed or damaged is set aside and counted, and the chats are not affected. Backups made before this still restore.
+3. **Restoring puts the files back** for the chats it adds (and for chats already here), each copy checked again, written encrypted if encryption is on, and never past the folder's limits. The look before adding says how many files the backup holds and how many are missing here.
+4. **One addition to the plan:** if a chat is still here but its files were lost, the restore panel now offers "Put back 2 attached files" (before, it would have said "Nothing to add").
+5. **Checked:** 33 checks under Node; in the window, on the dev app and the built one, 14: back up a chat with a photo and a PDF, delete it, restore it, the files back and sent again with the same bytes; with encryption on, the backup made before encrypting holds the files too, and lost copies are put back encrypted. 23 negative controls, all caught in the end (one check was made stricter after its control was missed: nothing at all may be written while writing is refused). One older check and three older negative-control specs pointed at text I moved, and were updated with the same meaning.
+
+## Stage 9.5 - Things to know (not problems, but worth your attention)
+
+1. **A backup with files can be large** (a 10 MB PDF takes about 14 MB in it), and it is a plain file: anyone who can open it can see the files. Keep it where you keep the chats' backups.
+2. **An older version of the app cannot read a backup that holds files** (it says the backup was made by another version); backups without files are unchanged.
+3. **Everything in the earlier stages' "Things to know" still applies.**

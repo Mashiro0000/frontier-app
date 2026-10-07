@@ -1,0 +1,14 @@
+{
+  "label": "n95-adopt-ignores-refusal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "        if ('refused' in mode) return 'failed'\n        await ensureScanned()\n        const there = index.has(id)",
+      "to": "        await ensureScanned()\n        const there = index.has(id)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-5.mjs"
+  ],
+  "env": {}
+}

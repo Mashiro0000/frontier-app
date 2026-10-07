@@ -315,7 +315,15 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   const backups = createBackupService({
     store: history,
     dataDir: app.getPath('userData'),
-    pickers: systemPickers
+    pickers: systemPickers,
+    // A backup holds the files its chats carry, as their plain bytes, and a restore puts them back (D-037).
+    files: {
+      read: async (id) => {
+        const copy = await attachments.read(id)
+        return copy.ok ? copy.bytes : null
+      },
+      adopt: (id, bytes) => attachments.adopt(id, bytes)
+    }
   })
   const encryption = createChatEncryptionService({
     store: history,

@@ -1,0 +1,18 @@
+{
+  "label": "w95-ipc-no-files",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    files: {\n      read: async (id) => {",
+      "to": "    nofiles: {\n      read: async (id) => {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run95.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 500000
+}

@@ -1,7 +1,9 @@
 import { createHash } from 'crypto'
 import { promises as fs } from 'fs'
+import { isAttachmentId } from '../shared/attachments'
 import { HISTORY_LIMITS, type SavedConversation } from '../shared/ipc'
 import { isConversationId } from '../shared/validate'
+import { factsOf, MAX_KEPT_BYTES } from './attachmentStore'
 import { fileVersion, parseSavedFile } from './conversationStore'
 
 // The backup file (D-034): saved chats written out to ONE plain text file the person keeps wherever they like, and read back in. No Electron
@@ -11,6 +13,12 @@ import { fileVersion, parseSavedFile } from './conversationStore'
 //   line 1      {"format":"frontier-chats","version":1,"exportedAt":<ms>}
 //   chat lines  {"n":1,"sha256":"<64 hex>","chat":{...the chat exactly as its own file holds it...}}   (n counts from 1)
 //   last line   {"end":true,"count":<how many chat lines>,"leftOut":<saved files that could not be read, so are not here>}
+// VERSION 2 (Stage 9.5, D-037) is written only when a chat in the backup carries files, so a backup without files is what it always was. After the
+// chat lines it has one line for each file those chats name (once, however often they name it), and its last line counts them:
+//   file lines  {"file":"<64 hex: its id, the SHA-256 of its bytes>","data":"<its bytes, base64>"}    (the PLAIN bytes, even of a sealed copy)
+//   last line   {"end":true,"count":...,"leftOut":...,"files":<how many file lines>,"filesLeftOut":<copies that could not be read, so are not here>}
+// A file line is checked as a copy in the app's folder is (its bytes hash to its id, and they are a file the app keeps) and one that is not is set aside,
+// counted apart from the chats. This version still reads version 1.
 // Why lines and not one JSON object: a file that was cut off (a copy that stopped, a full disk) still gives back every chat before the cut, and
 // can say so, where one big object would give back nothing; and a reader never needs more memory than one chat. Why a checksum on each chat: a
 // byte that changed inside a message still parses as JSON, so nothing else would notice; with the checksum a changed chat is refused, named by
@@ -24,10 +32,14 @@ import { fileVersion, parseSavedFile } from './conversationStore'
 
 export const BACKUP_FORMAT = 'frontier-chats'
 export const BACKUP_VERSION = 1
+/** A backup that holds attached files (D-037). */
+export const BACKUP_VERSION_FILES = 2
 
 export const BACKUP_LIMITS = {
   /** One line: the largest chat file (HISTORY_LIMITS.maxFileBytes) plus the few bytes that wrap it. A longer line is skipped unread. */
   maxLineBytes: HISTORY_LIMITS.maxFileBytes + 4096,
+  /** One file line (version 2): the largest attached file as base64, and its id. */
+  maxFileLineBytes: Math.ceil(MAX_KEPT_BYTES / 3) * 4 + 4096,
   /** A file larger than this is not read, and one that would be larger is not written. Far above any real history (1000 chats of 22 KB are 22 MB). */
   maxFileBytes: 2 * 1024 * 1024 * 1024,
   /** More chat lines than the app can hold are not looked at. */
@@ -40,12 +52,15 @@ const READ_PIECE_BYTES = 64 * 1024
 const HASH = /^[0-9a-f]{64}$/
 
 const sha256 = (text: string): string => createHash('sha256').update(text, 'utf8').digest('hex')
+const sha256Bytes = (bytes: Buffer): string => createHash('sha256').update(bytes).digest('hex')
+const BASE64 = /^[A-Za-z0-9+/]*={0,2}$/
+const FILE_LINE_START = Buffer.from('{"file":', 'utf8')
 const isCount = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
 
 /**
  * The text of a chat as written in a backup: its own file's text (version 3, or 4 for a chat with files, D-037), which is also what the checksum is of.
- * A chat with files is backed up with its files' descriptions; the files themselves are not in a backup of this version.
+ * The files a chat carries follow the chats, as file lines (version 2).
  */
 export const chatText = (chat: SavedConversation): string =>
   JSON.stringify({ version: fileVersion(chat), ...chat })
@@ -105,6 +120,25 @@ async function* readLines(
   else if (have > 0) yield Buffer.concat(parts, have)
 }
 
+/** One file line of a version 2 backup, checked: its id and its bytes, or why it cannot be used. */
+function fileOfLine(line: Record<string, unknown>): { id: string; bytes: Buffer } | string {
+  const keys = Object.keys(line)
+  if (keys.length !== 2 || keys[0] !== 'file' || keys[1] !== 'data') return 'it is not a file line'
+  const { file: id, data } = line
+  if (!isAttachmentId(id)) return 'its id is not usable'
+  if (typeof data !== 'string' || data.length % 4 !== 0 || !BASE64.test(data)) {
+    return 'its data is not base64'
+  }
+  if (data.length > Math.ceil(MAX_KEPT_BYTES / 3) * 4)
+    return 'it is larger than any attached file can be'
+  const bytes = Buffer.from(data, 'base64')
+  if (sha256Bytes(bytes) !== id) {
+    return 'it does not match its id: it was changed or damaged after the backup was made'
+  }
+  if (factsOf(bytes) === null) return 'it is not a file the app keeps'
+  return { id, bytes }
+}
+
 export interface BackupRead {
   /** Null if the file is not a backup this app can read (see `problem`); nothing was looked at then. */
   header: { exportedAt: number } | null
@@ -115,12 +149,19 @@ export interface BackupRead {
   good: number
   refusedCount: number
   refused: { line: number; why: string }[]
-  /** What the last line says, or null if the file ends without one (cut off). */
-  trailer: { count: number; leftOut: number } | null
+  /** What the last line says, or null if the file ends without one (cut off). Version 2 counts the file lines too. */
+  trailer: { count: number; leftOut: number; files?: number; filesLeftOut?: number } | null
   /** The file is whole: it has its last line, that line's count is the number of chat lines, and they are numbered 1, 2, 3 ... with nothing after the end. */
   complete: boolean
   /** The file has more chat lines than the app can hold; the rest were not looked at. */
   tooMany: boolean
+  /** Version 2 (D-037): the file lines looked at, how many were usable, and how many were not (with the first few reasons). Absent for version 1. */
+  files?: {
+    seen: number
+    good: number
+    refusedCount: number
+    refused: { line: number; why: string }[]
+  }
 }
 
 /**
@@ -130,7 +171,8 @@ export interface BackupRead {
  */
 export async function readBackup(
   path: string,
-  onChat: (chat: SavedConversation, hash: string, line: number) => Promise<void> | void
+  onChat: (chat: SavedConversation, hash: string, line: number) => Promise<void> | void,
+  onFile?: (id: string, bytes: Buffer, line: number) => Promise<void> | void
 ): Promise<BackupRead> {
   const result: BackupRead = {
     header: null,
@@ -171,8 +213,18 @@ export async function readBackup(
     let ended = false // the last line has been read
     let afterTheEnd = false // and something came after it
     let numbering = true // every chat line had the number it should
-    for await (const raw of readLines(handle, info.size, BACKUP_LIMITS.maxLineBytes)) {
+    // Lines are read up to the size of a file line; a line longer than any chat that is not a file line of version 2 is treated as before.
+    const longest = Math.max(BACKUP_LIMITS.maxLineBytes, BACKUP_LIMITS.maxFileLineBytes)
+    for await (const piece of readLines(handle, info.size, longest)) {
       lineNumber += 1
+      const fileSized =
+        result.files !== undefined &&
+        piece !== 'too-long' &&
+        piece.subarray(0, FILE_LINE_START.length).equals(FILE_LINE_START)
+      const raw =
+        piece !== 'too-long' && piece.length > BACKUP_LIMITS.maxLineBytes && !fileSized
+          ? 'too-long'
+          : piece
       // The header is the first line, and until it is understood nothing else is.
       if (result.header === null) {
         let first: unknown
@@ -186,13 +238,16 @@ export async function readBackup(
         if (typeof header !== 'object' || header === null || header.format !== BACKUP_FORMAT) {
           return stop('That file is not a Frontier chat backup.')
         }
-        if (header.version !== BACKUP_VERSION) {
+        if (header.version !== BACKUP_VERSION && header.version !== BACKUP_VERSION_FILES) {
           return stop(
             'That backup was made by another version of the app, and this one cannot read it.'
           )
         }
         if (!isCount(header.exportedAt)) return stop('That file is not a Frontier chat backup.')
         result.header = { exportedAt: header.exportedAt }
+        if (header.version === BACKUP_VERSION_FILES) {
+          result.files = { seen: 0, good: 0, refusedCount: 0, refused: [] }
+        }
         continue
       }
       // Whatever comes after the last line is not part of the backup, and is not read (two backups joined, or something appended).
@@ -220,12 +275,48 @@ export async function readBackup(
         line !== null &&
         line.end === true
       ) {
-        if (isCount(line.count) && isCount(line.leftOut)) {
+        if (result.files === undefined && isCount(line.count) && isCount(line.leftOut)) {
           result.trailer = { count: line.count, leftOut: line.leftOut }
+        } else if (
+          result.files !== undefined &&
+          isCount(line.count) &&
+          isCount(line.leftOut) &&
+          isCount(line.files) &&
+          isCount(line.filesLeftOut)
+        ) {
+          result.trailer = {
+            count: line.count,
+            leftOut: line.leftOut,
+            files: line.files,
+            filesLeftOut: line.filesLeftOut
+          }
         } else {
           refuse(lineNumber, 'its last line is not understood')
         }
         ended = true
+        continue
+      }
+      // Version 2: a line that names a file is one of the backup's files, not a chat (D-037). It holds no place among the chats.
+      if (
+        result.files !== undefined &&
+        unreadableLine === null &&
+        typeof line === 'object' &&
+        line !== null &&
+        !Array.isArray(line) &&
+        'file' in line
+      ) {
+        const files = result.files
+        files.seen += 1
+        const file = fileOfLine(line)
+        if (typeof file === 'string') {
+          files.refusedCount += 1
+          if (files.refused.length < BACKUP_LIMITS.keptRefusals) {
+            files.refused.push({ line: lineNumber, why: file })
+          }
+        } else {
+          files.good += 1
+          await onFile?.(file.id, file.bytes, lineNumber)
+        }
         continue
       }
       // Anything else is a chat line, and is counted as one whether or not it can be used: the last line says how many there were.
@@ -274,6 +365,7 @@ export async function readBackup(
     result.complete =
       result.trailer !== null &&
       result.trailer.count === result.seen &&
+      (result.files === undefined || result.trailer.files === result.files.seen) &&
       numbering &&
       !result.tooMany &&
       !afterTheEnd
@@ -293,10 +385,23 @@ export interface BackupSource {
   load(id: string): Promise<SavedConversation | null>
   /** Saved files that could not be read when the list was made. They are not in the backup, and the backup says how many. */
   leftOut: number
+  /**
+   * The plain bytes of an attached file (D-037), or null if its copy cannot be read (it is then counted as left out). Without it, or when no chat
+   * written names a file, the backup is version 1.
+   */
+  readFile?(id: string): Promise<Buffer | null>
 }
 
 export type WriteOutcome =
-  { ok: true; count: number; leftOut: number; bytes: number } | { ok: false; error: string }
+  | {
+      ok: true
+      count: number
+      leftOut: number
+      bytes: number
+      /** Version 2: the files written, and those whose copies could not be read. */
+      files?: { count: number; leftOut: number }
+    }
+  | { ok: false; error: string }
 
 /**
  * Writes the chats to `dest` and proves they are there: the file is written as "<dest>.part", read back with `readBackup` (every checksum,
@@ -311,6 +416,11 @@ export async function writeBackup(
 ): Promise<WriteOutcome> {
   const part = `${dest}.part`
   const written: { id: string; hash: string }[] = []
+  // The files the written chats name, in the order they are first named, and what became of them (version 2).
+  const named = new Set<string>()
+  const filesWritten: string[] = []
+  let filesGone = 0
+  let withFiles = false
   let bytes = 0
   let gone = 0
   const discard = (): Promise<void> => fs.rm(part, { force: true }).catch(() => undefined)
@@ -325,9 +435,12 @@ export async function writeBackup(
       }
       await handle.write(line)
     }
-    await put(
-      `${JSON.stringify({ format: BACKUP_FORMAT, version: BACKUP_VERSION, exportedAt: now })}\n`
-    )
+    const header = JSON.stringify({
+      format: BACKUP_FORMAT,
+      version: BACKUP_VERSION,
+      exportedAt: now
+    })
+    await put(`${header}\n`)
     for (const id of source.ids) {
       if (tooLarge) break
       const chat = await source.load(id)
@@ -339,11 +452,37 @@ export async function writeBackup(
       const hash = sha256(text)
       written.push({ id: chat.id, hash })
       await put(`{"n":${written.length},"sha256":"${hash}","chat":${text}}\n`)
+      for (const message of chat.messages) {
+        for (const file of message.attachments ?? []) named.add(file.id)
+      }
+    }
+    // Version 2 when a written chat names a file and the files can be read: one line for each, then the trailer that counts them. The header was
+    // written as version 1; once everything else is written, its one digit is changed in place (the two headers are the same length).
+    withFiles = source.readFile !== undefined && named.size > 0
+    if (withFiles && source.readFile !== undefined) {
+      for (const id of named) {
+        if (tooLarge) break
+        const data = await source.readFile(id)
+        if (data === null) {
+          filesGone += 1
+          continue
+        }
+        await put(`{"file":"${id}","data":"${data.toString('base64')}"}\n`)
+        filesWritten.push(id)
+      }
     }
     if (!tooLarge) {
       await put(
-        `${JSON.stringify({ end: true, count: written.length, leftOut: source.leftOut + gone })}\n`
+        `${JSON.stringify({
+          end: true,
+          count: written.length,
+          leftOut: source.leftOut + gone,
+          ...(withFiles ? { files: filesWritten.length, filesLeftOut: filesGone } : {})
+        })}\n`
       )
+      if (withFiles) {
+        await handle.write(String(BACKUP_VERSION_FILES), header.indexOf('"version":1') + 10)
+      }
     }
     if (!tooLarge) await handle.sync()
     await handle.close()
@@ -363,16 +502,31 @@ export async function writeBackup(
   // The same proof for both copies: the file reads back whole, and holds exactly what was written, in the order it was written.
   const proves = async (path: string): Promise<boolean> => {
     const seen: { id: string; hash: string }[] = []
-    const read = await readBackup(path, (chat, hash) => {
-      seen.push({ id: chat.id, hash })
-    })
+    const seenFiles: string[] = []
+    const read = await readBackup(
+      path,
+      (chat, hash) => {
+        seen.push({ id: chat.id, hash })
+      },
+      (id) => {
+        seenFiles.push(id)
+      }
+    )
     return (
       read.problem === null &&
       read.complete &&
       read.refusedCount === 0 &&
       read.trailer?.count === written.length &&
       seen.length === written.length &&
-      seen.every((one, index) => one.id === written[index].id && one.hash === written[index].hash)
+      seen.every(
+        (one, index) => one.id === written[index].id && one.hash === written[index].hash
+      ) &&
+      (read.files === undefined
+        ? !withFiles
+        : withFiles &&
+          read.files.refusedCount === 0 &&
+          seenFiles.length === filesWritten.length &&
+          seenFiles.every((id, index) => id === filesWritten[index]))
     )
   }
   if (!(await proves(part))) {
@@ -397,5 +551,11 @@ export async function writeBackup(
     }
   }
   await discard() // if this fails the ".part" only repeats the file
-  return { ok: true, count: written.length, leftOut: source.leftOut + gone, bytes }
+  return {
+    ok: true,
+    count: written.length,
+    leftOut: source.leftOut + gone,
+    bytes,
+    ...(withFiles ? { files: { count: filesWritten.length, leftOut: filesGone } } : {})
+  }
 }

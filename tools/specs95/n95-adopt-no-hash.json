@@ -1,0 +1,14 @@
+{
+  "label": "n95-adopt-no-hash",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "          bytes.length > MAX_KEPT_BYTES ||\n          sha256(bytes) !== id ||\n",
+      "to": "          bytes.length > MAX_KEPT_BYTES ||\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-5.mjs"
+  ],
+  "env": {}
+}

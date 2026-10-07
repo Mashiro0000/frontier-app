@@ -292,6 +292,8 @@ export type HistoryExportResult =
       leftOut: number
       /** Where it is, for the person to see. */
       where: string
+      /** The attached files it holds, and those whose copies could not be read (D-037). Absent for a backup without files. */
+      files?: { count: number; leftOut: number }
     }
   | { ok: false; error: string; cancelled?: true }
 
@@ -312,6 +314,11 @@ export interface RestorePreview {
   copies: number
   /** Chats that would be added (fresh and copies) and carry instructions of their own, which go out with each message of that chat (D-027). */
   withInstructions: number
+  /**
+   * The attached files the backup holds for its chats (D-037), how many of them are not in the app's folder yet (to be put back), and file lines that
+   * cannot be used. Absent for a backup without files.
+   */
+  files?: { count: number; missing: number; refused: number }
   /** Chats in the file that cannot be used, and why (the first few). */
   refusedCount: number
   refused: { line: number; why: string }[]
@@ -335,6 +342,8 @@ export type HistoryRestoreApplyResult =
       refused: number
       noRoom: number
       failed: number
+      /** The attached files put back, already here, and not put back: no room, not written, or not usable (D-037). Absent for a backup without files. */
+      files?: { added: number; already: number; noRoom: number; failed: number; refused: number }
     }
   | { ok: false; error: string }
 

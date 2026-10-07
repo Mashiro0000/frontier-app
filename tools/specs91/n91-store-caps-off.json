@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/attachmentStore.ts",
-      "from": "        if (files + 1 > caps.files || total + sealedSize > caps.bytes) {",
-      "to": "        if (false as boolean) {"
+      "from": "    return { files, total, fits: files + 1 <= caps.files && total + onDisk <= caps.bytes }",
+      "to": "    return { files, total, fits: true }"
     }
   ],
   "argv": [

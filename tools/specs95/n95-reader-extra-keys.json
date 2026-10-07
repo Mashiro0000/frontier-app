@@ -1,0 +1,14 @@
+{
+  "label": "n95-reader-extra-keys",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "  if (keys.length !== 2 || keys[0] !== 'file' || keys[1] !== 'data') return 'it is not a file line'",
+      "to": "  if (keys[0] !== 'file') return 'it is not a file line'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-5.mjs"
+  ],
+  "env": {}
+}

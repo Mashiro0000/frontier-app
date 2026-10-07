@@ -10,6 +10,8 @@ const NO_BRIDGE = 'the window could not connect to the app (the preload did not 
 const NO_ANSWER = 'the app did not answer'
 
 const chats = (count: number): string => `${count} ${count === 1 ? 'chat' : 'chats'}`
+export const attached = (count: number): string =>
+  `${count} attached ${count === 1 ? 'file' : 'files'}`
 
 /** What the person is told after a backup (D-034). */
 export function describeExport(result: Extract<HistoryExportResult, { ok: true }>): string {
@@ -17,15 +19,30 @@ export function describeExport(result: Extract<HistoryExportResult, { ok: true }
     result.leftOut === 0
       ? ''
       : ` ${result.leftOut === 1 ? '1 saved file' : `${result.leftOut} saved files`} could not be read and ${result.leftOut === 1 ? 'is' : 'are'} not in it.`
-  return `Backed up ${chats(result.count)} to ${result.where}. The file was read back and every chat matched.${left}`
+  // The attached files it holds (D-037), said only for a backup that has any.
+  let files = ''
+  if (result.files !== undefined) {
+    const { count, leftOut } = result.files
+    const lost = `${attached(leftOut)} could not be read and ${leftOut === 1 ? 'is' : 'are'} not in it`
+    files =
+      count > 0
+        ? ` It holds their ${attached(count)} too${leftOut > 0 ? `; ${lost}` : ''}.`
+        : leftOut > 0
+          ? ` ${lost}.`
+          : ''
+  }
+  return `Backed up ${chats(result.count)} to ${result.where}. The file was read back and every chat matched.${left}${files}`
 }
 
 /** What the person is told after chats were added from a backup. */
 export function describeRestore(result: Extract<HistoryRestoreApplyResult, { ok: true }>): string {
-  const parts = [`Added ${chats(result.added + result.copies)}`]
-  if (result.copies > 0)
-    parts[0] += ` (${result.copies === 1 ? '1 as a copy' : `${result.copies} as copies`})`
-  parts[0] += '.'
+  const parts: string[] = []
+  // A restore that only put files back (its chats were here already) does not say "Added 0 chats".
+  if (result.added + result.copies > 0 || result.files === undefined) {
+    parts.push(
+      `Added ${chats(result.added + result.copies)}${result.copies > 0 ? ` (${result.copies === 1 ? '1 as a copy' : `${result.copies} as copies`})` : ''}.`
+    )
+  }
   if (result.same > 0)
     parts.push(
       `${chats(result.same)} already here, left as ${result.same === 1 ? 'it is' : 'they are'}.`
@@ -37,6 +54,33 @@ export function describeRestore(result: Extract<HistoryRestoreApplyResult, { ok:
     if (result.noRoom > 0) why.push(`${result.noRoom} had no room`)
     if (result.failed > 0) why.push(`${result.failed} could not be written`)
     parts.push(`Not added: ${why.join(', ')}.`)
+  }
+  // The attached files (D-037), said only for a backup that has any.
+  if (result.files !== undefined) {
+    const f = result.files
+    if (f.added > 0)
+      parts.push(
+        `Put back ${attached(f.added)}${f.already > 0 ? ` (${f.already} already here)` : ''}.`
+      )
+    else if (f.already > 0) parts.push(`${attached(f.already)} already here.`)
+    const lost = f.noRoom + f.failed + f.refused
+    if (lost > 0) {
+      const they = lost === 1 ? 'it' : 'they'
+      const why: string[] = []
+      if (f.noRoom > 0)
+        why.push(
+          f.noRoom === lost ? 'the attachments folder is full' : `${f.noRoom} for lack of room`
+        )
+      if (f.failed > 0)
+        why.push(
+          f.failed === lost ? `${they} could not be written` : `${f.failed} could not be written`
+        )
+      if (f.refused > 0)
+        why.push(
+          f.refused === lost ? `${they} could not be used` : `${f.refused} could not be used`
+        )
+      parts.push(`${attached(lost)} could not be put back: ${why.join(', ')}.`)
+    }
   }
   return parts.join(' ')
 }
