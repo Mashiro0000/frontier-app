@@ -1,0 +1,14 @@
+{
+  "label": "n104-note-breaks-free",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "  notes.map((note) => `- ${note.replace(/\\r?\\n/g, '\\n  ')}`).join('\\n')",
+      "to": "  notes.map((note) => `- ${note}`).join('\\n')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-4.mjs"
+  ],
+  "env": {}
+}

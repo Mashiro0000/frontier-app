@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "      if (held !== null) {",
-      "to": "      if (held === \"never\") {"
+      "from": "      const held = heldKey(text, keys)\n      if (held !== null) {",
+      "to": "      const held = heldKey(text, keys)\n      if (held === \"never\") {"
     }
   ],
   "argv": [

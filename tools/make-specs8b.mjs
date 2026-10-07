@@ -102,7 +102,8 @@ const win = {
   // main, seen from the window
   'w8b-service-no-inside-check': [[SV, 'if (await isInside(dataDir, dest)) {', 'if (false) {']],
   'w8b-ipc-look-no-window': [[IPC, 'guardedForWindow((window): Promise<HistoryRestoreLookResult> => backups.restoreLook(window))', 'guardedForWindow((): Promise<HistoryRestoreLookResult> => backups.restoreLook(null))']],
-  'w8b-dialogs-no-overwrite-confirm': [[DLG, "properties: ['showOverwriteConfirmation' as const]", 'properties: []']],
+  // since 10.4 the notes' export dialog asks before overwriting too: the backup's own is named by its filter
+  'w8b-dialogs-no-overwrite-confirm': [[DLG, "filters: [BACKUP_FILTER],\n      properties: ['showOverwriteConfirmation' as const]", 'filters: [BACKUP_FILTER],\n      properties: []']],
   'w8b-service-page-picks-path': [[SV, '    const dest = await pickers.savePath(\n      owner,\n      name,\n      beforeEncrypting ? BEFORE_ENCRYPTING_TITLE : undefined\n    )', '    const dest =\n      (request as { path?: string }).path ??\n      (await pickers.savePath(owner, name, beforeEncrypting ? BEFORE_ENCRYPTING_TITLE : undefined))']],
   'w8b-service-token-reusable': [[SV, '    pending = null // good for one use, whatever happens next\n', '']]
 }

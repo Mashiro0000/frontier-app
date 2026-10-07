@@ -25,6 +25,7 @@ import {
   type SettingsStatus,
   type TestKeyResult
 } from '../shared/ipc'
+import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from '../shared/memory'
 import type { UsageSummary } from '../shared/usage'
 import { effortStatusOf } from '../shared/effort'
 import { unsetLimits } from '../shared/limits'
@@ -48,7 +49,13 @@ import { createAskFirstStore } from './askFirst'
 import { electronImageTools } from './attachmentImages'
 import { createAttachmentService } from './attachmentService'
 import { createAttachmentStore } from './attachmentStore'
-import { askPerson, pickAttachmentPaths, systemAskers, systemPickers } from './backupDialogs'
+import {
+  askPerson,
+  pickAttachmentPaths,
+  pickNotesExportPath,
+  systemAskers,
+  systemPickers
+} from './backupDialogs'
 import { createBackupService } from './backupService'
 import { baseUrlOverride } from './baseUrl'
 import { registerChatIpc } from './chat'
@@ -60,6 +67,7 @@ import { keptDocuments } from './keptFile'
 import { canStoreKey, clearApiKey, readApiKey, saveApiKey, secureStorage } from './keyStore'
 import { createLimitChanges } from './limitChanges'
 import { createLimitsStore } from './limits'
+import { createMemory } from './memory'
 import { chooseEffort, chooseModel, currentModel, inOrder } from './models'
 import { adapterFor } from './providers'
 import { describeFailure, timeoutError } from './providers/errors'
@@ -304,6 +312,18 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     gate: questions,
     savedKeys
   })
+  // The person's notes (D-039), in memory.json beside them, kept the same way. Main sends them itself; the page shows them and asks to change them, and a
+  // new or changed note waits for a yes in the system's box. Projects come in 10.5: until then there is none, and no note can be for one.
+  const memory = createMemory({
+    pathOf: () => join(app.getPath('userData'), 'memory.json'),
+    box: secureStorage,
+    writeMode: protection.writeMode,
+    gate: questions,
+    savedKeys,
+    projectName: async () => null,
+    dataDir: app.getPath('userData'),
+    pickExportPath: pickNotesExportPath
+  })
   const reason = (error: unknown): unknown => (error instanceof Error ? error.message : error)
   // The attachments (D-037): main's own copies of the files the person attaches, in attachments/ beside the chats, checked by their bytes and sealed
   // like the chats (the same rule for how a file may be written). The page hands over bytes (a paste, a drop) or asks main to open the system's dialog;
@@ -345,7 +365,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     backups,
     asks: systemAskers,
     files: attachments,
-    documents: keptDocuments([everyChat.file]) // rewritten with the chats (D-039)
+    documents: keptDocuments([everyChat.file, memory.file]) // rewritten with the chats (D-039)
   })
 
   ipcMain.handle(
@@ -546,6 +566,61 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     guarded((input: unknown): Promise<CheckChatInstructionsResult> => everyChat.checkForChat(input))
   )
 
+  // The person's notes (D-039). Making or changing one, and turning memory back on, ask in the system's message box for the window that asked; deleting
+  // and turning memory off ask nothing there (the page asks first). The export opens the system's save dialog; the page sends no path and no answer.
+  ipcMain.handle(
+    CHANNELS.memoryStatus,
+    guarded(async (): Promise<MemoryStatus> => {
+      try {
+        return await memory.status()
+      } catch (error) {
+        console.error('Reading the notes failed:', reason(error))
+        throw new Error('Your notes could not be read.')
+      }
+    })
+  )
+
+  ipcMain.handle(
+    CHANNELS.memoryAdd,
+    guardedForWindow((window, input: unknown): Promise<MemoryChangeResult> =>
+      memory.add(window, input)
+    )
+  )
+
+  ipcMain.handle(
+    CHANNELS.memoryEdit,
+    guardedForWindow((window, input: unknown): Promise<MemoryChangeResult> =>
+      memory.edit(window, input)
+    )
+  )
+
+  ipcMain.handle(
+    CHANNELS.memoryRemove,
+    guarded((input: unknown): Promise<MemoryChangeResult> => memory.remove(input))
+  )
+
+  ipcMain.handle(
+    CHANNELS.memoryRemoveAll,
+    guarded((): Promise<MemoryChangeResult> => memory.removeAll())
+  )
+
+  ipcMain.handle(
+    CHANNELS.memorySetOn,
+    guardedForWindow((window, on: unknown): Promise<MemoryChangeResult> => memory.setOn(window, on))
+  )
+
+  ipcMain.handle(
+    CHANNELS.memoryExport,
+    guardedForWindow(async (window): Promise<MemoryExportResult> => {
+      try {
+        return await memory.exportAll(window)
+      } catch (error) {
+        console.error('Exporting the notes failed:', reason(error))
+        return { ok: false, error: 'The notes could not be exported.' }
+      }
+    })
+  )
+
   // What was used and what it cost (D-030): one plain file, written by main alone. The page can ask for sums and nothing else.
   const ledger = createUsageLedger(join(app.getPath('userData'), 'usage', 'ledger.jsonl'))
 
@@ -574,7 +649,8 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     askFirstStore,
     readAttachment: (id) => attachments.read(id),
     everyChat: () => everyChat.forRequest(),
-    savedKeys
+    savedKeys,
+    notes: (projectId) => memory.forRequest(projectId)
   })
   // The lock the encryption flows run in is the backup service's, so waiting for it waits for them too.
   return () =>
@@ -583,6 +659,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       ledger.whenIdle(),
       backups.whenIdle(),
       attachments.whenIdle(),
-      everyChat.file.whenIdle()
+      everyChat.file.whenIdle(),
+      memory.file.whenIdle()
     ]).then(() => undefined)
 }

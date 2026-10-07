@@ -40,7 +40,7 @@ const node = {
   'n74-prompt-replaces-rules': [[R, JOIN, "  return own === '' ? pieces.join('\\n\\n') : own"]],
   'n74-prompt-blank-counts': [[R, "  if (own !== '') pieces.push(", '  if (instructions) pieces.push(']],
   'n74-prompt-not-trimmed': [[R, "const own = instructions?.trim() ?? ''", "const own = instructions ?? ''"]],
-  'n74-build-drops-instructions': [[R, 'system: systemPromptFor(model.provider, input.instructions, { everyChat: input.everyChat }),', 'system: systemPromptFor(model.provider, undefined, { everyChat: input.everyChat }),']],
+  'n74-build-drops-instructions': [[R, 'system: systemPromptFor(model.provider, input.instructions, {', 'system: systemPromptFor(model.provider, undefined, {']], // the parts on lines of their own since 10.4
   'n74-anthropic-adapter-drops-instructions': [[AN, 'system: request.system,', "system: request.system.split('\\n\\n')[0],"]],
   'n74-openai-adapter-drops-instructions': [[OA, 'instructions: request.system,', "instructions: request.system.split('\\n\\n')[0],"]],
   // 9.3 (D-037): the version is worked out by fileVersion; the sabotage still writes version 2

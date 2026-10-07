@@ -1579,3 +1579,166 @@ body {
   gap: 8px;
   margin-top: 14px;
 }
+
+/* ---------- the Memory page (D-039) ---------- */
+
+.memory {
+  margin: auto;
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 20px 22px;
+  overflow-y: auto;
+  color: var(--color-text);
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.memory::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.memory-heading {
+  margin-bottom: 14px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.memory-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.memory-hint,
+.memory-meta,
+.memory-count,
+.memory-place-use,
+.memory-none {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.memory-switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.memory-place {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.memory-place-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 8px;
+}
+
+.memory-place-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.memory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.memory-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.memory-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.memory-row-actions,
+.memory-ask,
+.memory-place-actions,
+.memory-editor-actions,
+.memory-problem-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.memory-editor-actions {
+  justify-content: flex-end;
+}
+
+.memory-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.memory-label {
+  font-size: 13px;
+}
+
+.memory-input {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-background);
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.memory-input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.memory-count-over,
+.memory-notice-error,
+.memory-secrets,
+.memory-problem {
+  color: var(--color-danger);
+}
+
+.memory-secrets {
+  padding-left: 18px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.memory-notice {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.memory-problem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.memory-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}

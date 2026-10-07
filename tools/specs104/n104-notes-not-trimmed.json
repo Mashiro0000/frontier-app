@@ -1,0 +1,14 @@
+{
+  "label": "n104-notes-not-trimmed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "  const notes = (parts.notes ?? []).map((note) => note.trim()).filter((note) => note !== '')",
+      "to": "  const notes = [...(parts.notes ?? [])]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-4.mjs"
+  ],
+  "env": {}
+}

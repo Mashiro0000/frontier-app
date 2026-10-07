@@ -1,0 +1,18 @@
+{
+  "label": "w104-page-delete-no-confirm",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/memory/MemoryDialog.tsx",
+      "from": "                            onClick={() => setAsking(note.id)}",
+      "to": "                            onClick={() => void change(() => window.api.memory.remove(note.id), false)}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run104.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

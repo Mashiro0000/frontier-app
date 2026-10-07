@@ -267,7 +267,7 @@ try {
   await clickMarked(`[...document.getElementById('settings-storage-heading').closest('section').querySelectorAll('button')].find((b) => b.textContent.trim() === 'Encrypt my saved chats...')`)
   await page.waitFor(`/encrypted too/.test(document.getElementById('settings-storage-heading').closest('section').innerText)`, { timeoutMs: 30000, label: 'the encryption report' })
   const onText = await ev(`document.getElementById('settings-storage-heading').closest('section').innerText`)
-  check('E: turning encryption on says the instructions for every chat are encrypted too', onText.includes('Your instructions for every chat are encrypted too.'), onText.slice(0, 500))
+  check('E: turning encryption on says the instructions for every chat are encrypted too', onText.includes('Your instructions for every chat and your notes are encrypted too.') /* the notes since 10.4 */, onText.slice(0, 500))
   check('E: ...the file is now the chats\' envelope, and the text is nowhere in it', (fileText() ?? '').startsWith('{"format":"frontier-chat-encrypted"') && !(fileText() ?? '').includes('nurse'), (fileText() ?? '').slice(0, 60))
   await page.press('Escape')
   await sleep(300)
@@ -278,14 +278,14 @@ try {
   await page.waitFor(`(() => { const s = document.getElementById('settings-storage-heading')?.closest('section')?.querySelector('.settings-status'); return !!s && s.innerText !== 'Checking...' })()`, { timeoutMs: 15000, label: 'the Saved chats section' })
   await Q.queue('yes')
   await clickMarked(`[...document.getElementById('settings-storage-heading').closest('section').querySelectorAll('button')].find((b) => /plain files/.test(b.textContent))`)
-  await page.waitFor(`/a plain file again too/.test(document.getElementById('settings-storage-heading').closest('section').innerText)`, { timeoutMs: 30000, label: 'the report of going back' })
+  await page.waitFor(`/plain files again too/.test(document.getElementById('settings-storage-heading').closest('section').innerText)`, { timeoutMs: 30000, label: 'the report of going back' })
   check('E: going back to plain files rewrites it as a plain file again, and says so', fileText() === JSON.stringify({ version: 1, text: EVERY_TEXT }), fileText())
   await page.press('Escape')
   await sleep(300)
 
   // ============ F. the bridge ============
   const api = await ev(`({ top: Object.keys(window.api).sort(), instructions: Object.keys(window.api.instructions).sort() })`)
-  check('F: window.api has instructions (since 10.2) with exactly checkForChat, getEveryChat and setEveryChat; nothing that writes the prompt or answers a question', show(api) === show({ top: ['attachments', 'chat', 'history', 'instructions', 'settings', 'usage'], instructions: ['checkForChat', 'getEveryChat', 'setEveryChat'] }), show(api))
+  check('F: window.api has instructions (since 10.2) with exactly checkForChat, getEveryChat and setEveryChat; nothing that writes the prompt or answers a question', show(api) === show({ top: ['attachments', 'chat', 'history', 'instructions', 'memory', 'settings', 'usage'], instructions: ['checkForChat', 'getEveryChat', 'setEveryChat'] }), show(api))
   const bad = await ev(`Promise.all([window.api.instructions.setEveryChat(12345), window.api.instructions.setEveryChat({ text: 'x' }), window.api.instructions.checkForChat(null)])`)
   check('F: text that is not text is "not understood" by main, and changes nothing', bad.every((x) => x.ok === false && /not understood/.test(x.error)) && fileText() === JSON.stringify({ version: 1, text: EVERY_TEXT }), show(bad))
 

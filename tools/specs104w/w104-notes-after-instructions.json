@@ -1,0 +1,18 @@
+{
+  "label": "w104-notes-after-instructions",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "  if (notes.length > 0) pieces.push(NOTES_LEAD, noteList(notes))\n  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)",
+      "to": "  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)\n  if (notes.length > 0) pieces.push(NOTES_LEAD, noteList(notes))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run104.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

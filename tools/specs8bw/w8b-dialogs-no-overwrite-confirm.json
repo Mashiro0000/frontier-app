@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/backupDialogs.ts",
-      "from": "properties: ['showOverwriteConfirmation' as const]",
-      "to": "properties: []"
+      "from": "filters: [BACKUP_FILTER],\n      properties: ['showOverwriteConfirmation' as const]",
+      "to": "filters: [BACKUP_FILTER],\n      properties: []"
     }
   ],
   "argv": [

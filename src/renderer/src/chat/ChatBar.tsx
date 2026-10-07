@@ -1,4 +1,6 @@
 import type { EveryChatStatus } from '../../../shared/ipc'
+import type { MemoryStatus } from '../../../shared/memory'
+import { notesSent } from '../memory/useMemory'
 
 interface ChatBarProps {
   /** A reply is arriving: nothing here can start or open another chat meanwhile. */
@@ -9,6 +11,9 @@ interface ChatBarProps {
   instructions: string
   /** Their instructions for every chat (D-039), as main has them; null while not known. */
   everyChat: EveryChatStatus | null
+  /** Their notes (D-039), as main has them; null while not known. */
+  memory: MemoryStatus | null
+  onOpenMemory: () => void
   /** The chat on screen could not be saved (D-017): starting a new one would lose it, and the button says so. */
   saveFailed: boolean
   onNewChat: () => void
@@ -46,6 +51,22 @@ function instructionsTitle(
   return 'Give the model instructions for this chat or for every chat, for example how it should answer.'
 }
 
+/** What the Memory button's tooltip says: how many notes go with this chat, or that memory is off, or why nothing can be sent. */
+function memoryTitle(isReplying: boolean, memory: MemoryStatus | null): string {
+  if (isReplying) return 'Memory can be opened when the reply has finished.'
+  if (memory?.problem != null) {
+    return 'Your notes could not be read, so nothing can be sent. Click to delete them or turn memory off.'
+  }
+  if (memory !== null && !memory.on) {
+    return 'Memory is off: none of your notes is sent. Click to see them or turn memory on.'
+  }
+  const count = notesSent(memory).length
+  if (count > 0) {
+    return `${count === 1 ? '1 note goes' : `${count} notes go`} with every message of this chat. Click to see or change them.`
+  }
+  return 'Keep notes for the model about you and your work. Click to add one.'
+}
+
 /**
  * The buttons of the chat on screen, in a slim row under the message box (D-029). They were in the header until Stage 7.4 made the header
  * too wide for the default window, so that it wrapped to two rows. They keep the rules they had there: all of them wait for a reply that is
@@ -56,6 +77,8 @@ function ChatBar({
   messageCount,
   instructions,
   everyChat,
+  memory,
+  onOpenMemory,
   saveFailed,
   onNewChat,
   onOpenHistory,
@@ -124,6 +147,29 @@ function ChatBar({
             <>
               {' '}
               <span className="chat-mark">on</span>
+            </>
+          )
+        )}
+      </button>
+      {/* The notes go with every message too, so while any do, the button says how many: they are never sent unseen (D-039). */}
+      <button
+        type="button"
+        className="chat-button chat-memory"
+        disabled={isReplying}
+        title={memoryTitle(isReplying, memory)}
+        onClick={onOpenMemory}
+      >
+        Memory
+        {memory?.problem != null ? (
+          <>
+            {' '}
+            <span className="chat-mark chat-mark-warn">!</span>
+          </>
+        ) : (
+          notesSent(memory).length > 0 && (
+            <>
+              {' '}
+              <span className="chat-mark">{notesSent(memory).length}</span>
             </>
           )
         )}

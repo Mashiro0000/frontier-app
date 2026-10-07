@@ -1,0 +1,18 @@
+{
+  "label": "w104-damaged-sends",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "      if (current.state === 'unreadable') return { ok: false, error: memoryUnreadable(current.why) }",
+      "to": "      if (current.state === 'unreadable') return { ok: true, notes: [] }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run104.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

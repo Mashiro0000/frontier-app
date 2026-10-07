@@ -1,0 +1,18 @@
+{
+  "label": "w104-remember-whole-only",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/MessageActions.tsx",
+      "from": "          onClick={(event) => onRemember(selectedIn(event.currentTarget) ?? message.content)}",
+      "to": "          onClick={() => onRemember(message.content)}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run104.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

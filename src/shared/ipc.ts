@@ -5,6 +5,7 @@
 import type { AskFirstChoice, AskFirstSetting, RequestEstimate } from './askFirst'
 import type { AttachedFile, AttachmentInfo } from './attachments'
 import type { Limits, LimitsChoice } from './limits'
+import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from './memory'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
 import type { ReplyUsage, UsageSummary } from './usage'
@@ -300,7 +301,7 @@ export interface ChatStorageReport {
   backup: { count: number; leftOut: number; where: string } | null
   /** The attached files (D-037), rewritten in the same form as the chats; absent when there are none. */
   files?: { changed: number; failed: number }
-  /** The person's instructions for every chat (D-039), rewritten in the same form too; absent when there are none. */
+  /** The person's instructions for every chat and their notes (D-039), rewritten in the same form too; absent when there are none. */
   documents?: { changed: number; failed: number }
 }
 
@@ -512,6 +513,23 @@ export interface FrontierApi {
     /** The same look for secrets for a chat's own instructions (D-027), before the page keeps them. Saves nothing and asks nothing. */
     checkForChat(text: string, saveAnyway?: boolean): Promise<CheckChatInstructionsResult>
   }
+  /**
+   * The person's notes (D-039): main keeps them in memory.json and sends them itself with every request (every chat's; a project's with its chats). A
+   * new or changed note is kept only after the person's yes in the system's own message box, which the page cannot answer; a saved API key is refused,
+   * and text that looks like one needs `saveAnyway`. Deleting and turning memory off ask nothing there (the page asks first).
+   */
+  memory: {
+    status(): Promise<MemoryStatus>
+    /** A new note for every chat (`scope` "all") or for a project's chats (its id). */
+    add(text: string, scope: string, saveAnyway?: boolean): Promise<MemoryChangeResult>
+    edit(id: string, text: string, saveAnyway?: boolean): Promise<MemoryChangeResult>
+    remove(id: string): Promise<MemoryChangeResult>
+    removeAll(): Promise<MemoryChangeResult>
+    /** Memory on or off for every chat; on asks in the system's box when there are notes. */
+    setOn(on: boolean): Promise<MemoryChangeResult>
+    /** Every note to one plain text file the person places in the system's save dialog (main opens it; the page sends no path). */
+    exportAll(): Promise<MemoryExportResult>
+  }
 }
 
 export const CHANNELS = {
@@ -545,7 +563,14 @@ export const CHANNELS = {
   attachmentsDescribe: 'attachments:describe',
   instructionsGetEveryChat: 'instructions:get-every-chat',
   instructionsSetEveryChat: 'instructions:set-every-chat',
-  instructionsCheckForChat: 'instructions:check-for-chat'
+  instructionsCheckForChat: 'instructions:check-for-chat',
+  memoryStatus: 'memory:status',
+  memoryAdd: 'memory:add',
+  memoryEdit: 'memory:edit',
+  memoryRemove: 'memory:remove',
+  memoryRemoveAll: 'memory:remove-all',
+  memorySetOn: 'memory:set-on',
+  memoryExport: 'memory:export'
 } as const
 
 /**

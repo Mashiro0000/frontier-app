@@ -2,6 +2,7 @@ import { ipcMain, type WebContents } from 'electron'
 import { askFirstAmount, estimateRequest, needsConfirmation } from '../shared/askFirst'
 import { CHANNELS, type ChatRequest, type ChatStreamEvent } from '../shared/ipc'
 import { checkAgainstLimits, withFilesNote, type Limits } from '../shared/limits'
+import type { Note } from '../shared/memory'
 import { PROVIDER_NAMES, type ProviderId } from '../shared/registry'
 import {
   costOf,
@@ -29,7 +30,7 @@ import { adapterFor } from './providers'
 import { describeFailure, unknownError } from './providers/errors'
 import { buildStreamRequest } from './providers/request'
 import type { ErrorKind, ProviderAdapter, ReplyEnd, Usage } from './providers/types'
-import { heldKey, keyInInstructions, type SavedKey } from './secrets'
+import { heldKey, keyInInstructions, keyInNotes, type SavedKey } from './secrets'
 import { isTrustedSender } from './security'
 import { RequestRefused, type UsageLedger } from './usageLedger'
 
@@ -127,6 +128,13 @@ interface ReplyContext {
   everyChat: () => Promise<{ ok: true; text: string } | { ok: false; error: string }>
   /** The API keys saved in this app: none of them goes out inside instructions. */
   savedKeys: () => Promise<SavedKey[]>
+  /**
+   * The person's notes for a chat in a project (or none, `null`), from main's own file (10.4): their text, oldest first ([] while memory is off), or the
+   * sentence that refuses the request while the file cannot be read.
+   */
+  notes: (
+    projectId: string | null
+  ) => Promise<{ ok: true; notes: Note[] } | { ok: false; error: string }>
 }
 
 async function runReply(
@@ -229,12 +237,27 @@ async function runReply(
         return
       }
     }
+    // The person's notes (10.4), from main's own file and never from the page, read for every request: every chat's (a chat's project comes in 10.6).
+    // A file that cannot be read refuses the request, and so does a note that holds a saved key (looked at one note at a time).
+    const memory = await context.notes(null)
+    if (!memory.ok) {
+      send({ streamId, type: 'error', message: memory.error })
+      return
+    }
+    for (const note of memory.notes) {
+      const held = heldKey(note.text, keys)
+      if (held !== null) {
+        send({ streamId, type: 'error', message: keyInNotes(held) })
+        return
+      }
+    }
     const streamRequest = buildStreamRequest({
       credentials: { apiKey, baseURL: baseUrlOverride(entry.provider) },
       model: entry,
       effort,
       instructions: request.instructions, // the person's own, already checked (D-027): added after the app's rules
       everyChat: everyChat.text, // before the chat's own (D-039)
+      notes: memory.notes.map((note) => note.text), // first after the rules, as information (10.4)
       messages: resolved.messages,
       signal: controller.signal
     })

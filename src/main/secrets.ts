@@ -54,6 +54,10 @@ export const heldKeySentence = (provider: ProviderId, kept: string): string =>
 export const keyInInstructions = (provider: ProviderId, whose: string): string =>
   `Nothing was sent: your instructions ${whose} hold your ${PROVIDER_NAMES[provider]} API key, which is saved in this app. Open Instructions and take it out.`
 
+/** The refusal of a request when one of the person's notes holds a saved key (10.4). */
+export const keyInNotes = (provider: ProviderId): string =>
+  `Nothing was sent: one of your notes holds your ${PROVIDER_NAMES[provider]} API key, which is saved in this app. Open Memory and take it out.`
+
 /** The warning for a text with parts that look like a key or a password. */
 export const lookalikeSentence = (kept: string): string =>
   `Part of this looks like a key or a password (below). ${kept} go to the company that runs the model with every message: take it out, or press "Save anyway" if it is not a secret.`

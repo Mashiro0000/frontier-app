@@ -62,6 +62,17 @@ const api: FrontierApi = {
       ipcRenderer.invoke(CHANNELS.instructionsSetEveryChat, { text, saveAnyway }),
     checkForChat: (text, saveAnyway) =>
       ipcRenderer.invoke(CHANNELS.instructionsCheckForChat, { text, saveAnyway })
+  },
+  memory: {
+    status: () => ipcRenderer.invoke(CHANNELS.memoryStatus),
+    add: (text, scope, saveAnyway) =>
+      ipcRenderer.invoke(CHANNELS.memoryAdd, { text, scope, saveAnyway }),
+    edit: (id, text, saveAnyway) =>
+      ipcRenderer.invoke(CHANNELS.memoryEdit, { id, text, saveAnyway }),
+    remove: (id) => ipcRenderer.invoke(CHANNELS.memoryRemove, { id }),
+    removeAll: () => ipcRenderer.invoke(CHANNELS.memoryRemoveAll),
+    setOn: (on) => ipcRenderer.invoke(CHANNELS.memorySetOn, on),
+    exportAll: () => ipcRenderer.invoke(CHANNELS.memoryExport)
   }
 }
 

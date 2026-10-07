@@ -1,0 +1,18 @@
+{
+  "label": "w104-page-saves-too-long",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/memory/MemoryDialog.tsx",
+      "from": "  const canSave = checked.ok && !unchanged && !busy",
+      "to": "  const canSave = !unchanged && !busy"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run104.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n104-notes-dropped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "  if (notes.length > 0) pieces.push(NOTES_LEAD, noteList(notes))\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-4.mjs"
+  ],
+  "env": {}
+}

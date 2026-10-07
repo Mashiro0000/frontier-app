@@ -38,12 +38,14 @@ const s = {
   promptEveryDropped: [REQ, "  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)\n", ''],
   promptOrder: [REQ, "  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)\n  if (own !== '') pieces.push(every === '' ? INSTRUCTIONS_LEAD : CHAT_AFTER_OTHERS_LEAD, own)", "  if (own !== '') pieces.push(every === '' ? INSTRUCTIONS_LEAD : CHAT_AFTER_OTHERS_LEAD, own)\n  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)"],
   promptSameLead: [REQ, "  if (own !== '') pieces.push(every === '' ? INSTRUCTIONS_LEAD : CHAT_AFTER_OTHERS_LEAD, own)", "  if (own !== '') pieces.push(CHAT_AFTER_OTHERS_LEAD, own)"],
-  buildDropsEvery: [REQ, '    system: systemPromptFor(model.provider, input.instructions, { everyChat: input.everyChat }),', '    system: systemPromptFor(model.provider, input.instructions),'],
+  // since 10.4 the parts are on lines of their own (the notes came first)
+  buildDropsEvery: [REQ, '      notes: input.notes,\n      everyChat: input.everyChat\n    }),', '      notes: input.notes\n    }),'],
   encNoDocuments: [ENC, '    return { documents: await documents.conform() }', '    return {}'],
   encShortCircuit: [ENC, "    if (before.choice === 'on' && counts.plain === 0 && plainFiles === 0 && plainDocuments === 0) {", "    if (before.choice === 'on' && counts.plain === 0 && plainFiles === 0 && plainDocuments >= 0) {"],
   chatNoEvery: [CHAT, "    if (!everyChat.ok) {\n      send({ streamId, type: 'error', message: everyChat.error })\n      return\n    }\n", ''],
   chatSkipsEvery: [CHAT, "      everyChat: everyChat.text, // before the chat's own (D-039)", "      everyChat: '', // sabotaged"],
-  chatNoKeyCheck: [CHAT, '      if (held !== null) {', '      if (held === "never") {'],
+  // since 10.4 the notes have a loop of their own: this one is the instructions'
+  chatNoKeyCheck: [CHAT, '      const held = heldKey(text, keys)\n      if (held !== null) {', '      const held = heldKey(text, keys)\n      if (held === "never") {'],
   ipcNoWindow: [IPC, '      everyChat.save(window, input)', '      everyChat.save(null, input)'],
   dlgEscapeWhileBusy: [DLG, '        if (busy.current) event.preventDefault()', '        void busy.current'],
   dlgChangeWhileUnsaved: [DLG, "                  disabled={busy || unsaved || (part === 'every' && everyChat === null)}", "                  disabled={busy || (part === 'every' && everyChat === null)}"],

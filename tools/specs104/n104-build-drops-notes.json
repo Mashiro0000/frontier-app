@@ -1,0 +1,14 @@
+{
+  "label": "n104-build-drops-notes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "      notes: input.notes,\n      everyChat: input.everyChat",
+      "to": "      everyChat: input.everyChat"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-4.mjs"
+  ],
+  "env": {}
+}

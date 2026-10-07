@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { ATTACHMENT_LIMITS } from '../../shared/attachments'
 import { limitsAreSet } from '../../shared/limits'
 import type { TaskId } from '../../shared/rankings'
@@ -12,6 +12,8 @@ import HistoryDialog from './history/HistoryDialog'
 import { useHistory } from './history/useHistory'
 import InstructionsDialog from './instructions/InstructionsDialog'
 import { useEveryChat } from './instructions/useEveryChat'
+import MemoryDialog from './memory/MemoryDialog'
+import { useMemory } from './memory/useMemory'
 import EffortPicker from './settings/EffortPicker'
 import { providerMissingKey } from './settings/format'
 import LimitsDialog from './settings/LimitsDialog'
@@ -40,6 +42,21 @@ function App(): React.JSX.Element {
   const attachments = useAttachments()
   // The person's instructions for every chat (D-039): kept by main, which adds them to every request; the page shows them and asks to change them.
   const everyChat = useEveryChat()
+  // The person's notes (D-039): kept by main, which sends them with every request; the Memory page shows them and asks to change them.
+  const memory = useMemory()
+  const [memoryOpen, setMemoryOpen] = useState(false)
+  // Text picked with "Remember..." on a message, for the Memory page's box; null when the page was opened from the chat bar.
+  const [memoryDraft, setMemoryDraft] = useState<string | null>(null)
+  const { reload: reloadMemory } = memory
+  const openMemory = useCallback(
+    (draft: string | null): void => {
+      reloadMemory()
+      setMemoryDraft(draft)
+      setMemoryOpen(true)
+    },
+    [reloadMemory]
+  )
+  const onRemember = useCallback((text: string): void => openMemory(text), [openMemory])
   // A message carries at most ten files, and a chat (whose files are sent again with every message) at most fifty.
   const attachFull =
     attachments.files.length >= ATTACHMENT_LIMITS.perMessage ||
@@ -93,6 +110,7 @@ function App(): React.JSX.Element {
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenLimits={() => setLimitsPutOff(false)}
         attachments={attachments}
+        onRemember={onRemember}
       />
       {/* New chat, History and Instructions live under the message box, not in the header, so the header stays one row (D-029). */}
       <ChatBar
@@ -100,6 +118,8 @@ function App(): React.JSX.Element {
         messageCount={chat.messages.length}
         instructions={chat.instructions}
         everyChat={everyChat.status}
+        memory={memory.status}
+        onOpenMemory={() => openMemory(null)}
         saveFailed={history.saveError !== null}
         onNewChat={history.startNew}
         onOpenHistory={() => setHistoryOpen(true)}
@@ -120,6 +140,12 @@ function App(): React.JSX.Element {
         }
       />
       <HistoryDialog open={historyOpen} history={history} onClose={() => setHistoryOpen(false)} />
+      <MemoryDialog
+        open={memoryOpen}
+        memory={memory}
+        draft={memoryDraft}
+        onClose={() => setMemoryOpen(false)}
+      />
       <InstructionsDialog
         open={instructionsOpen}
         instructions={chat.instructions}

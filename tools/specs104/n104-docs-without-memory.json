@@ -1,0 +1,14 @@
+{
+  "label": "n104-docs-without-memory",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    documents: keptDocuments([everyChat.file, memory.file]) // rewritten with the chats (D-039)",
+      "to": "    documents: keptDocuments([everyChat.file]) // rewritten with the chats (D-039)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-4.mjs"
+  ],
+  "env": {}
+}

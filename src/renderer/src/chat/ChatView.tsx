@@ -25,6 +25,8 @@ interface ChatViewProps {
   conversationId: string
   /** The files on the message being written (D-037). */
   attachments: UseAttachments
+  /** "Remember..." on a message (D-039): opens the Memory page with the text in its box. */
+  onRemember: (text: string) => void
 }
 
 function ChatView({
@@ -34,7 +36,8 @@ function ChatView({
   onOpenSettings,
   onOpenLimits,
   conversationId,
-  attachments
+  attachments,
+  onRemember
 }: ChatViewProps): React.JSX.Element {
   const { messages, isReplying, largeRequest, answerLargeRequest, send, stop, regenerate, resend } =
     chat
@@ -128,6 +131,7 @@ function ChatView({
             modelName={modelName}
             onRegenerate={onRegenerate}
             onResend={onResend}
+            onRemember={onRemember}
           />
         </LinkConfirm>
       </PreviewsContext.Provider>

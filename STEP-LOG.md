@@ -2475,3 +2475,14 @@ if you have not, please do before you rely on this. **The design was mine** (you
 3. **If the file cannot be read,** nothing will be sent until you delete the notes or turn memory off; either keeps a copy of the damaged file. "Export all..." will write every note to one plain text file you place yourself.
 4. **Found on the way, and fixed** (in 10.2's code): a fault could have written a file the app itself would then refuse to read (a note number used twice), which would have stopped every request; now nothing is written that cannot be read back. And a warning about a short password showed most of it; now it shows only its first character and its length.
 5. **Checked:** 74 checks under Node; 10.2's suites still pass (118 under Node, 56 in the window); **33 negative controls, all caught** (one check made sharper).
+
+## Stage 10 - Slice 10.4: memory in the window (7 October 2026 session; D-039)
+
+**Step by step.**
+
+1. **What changed for you:** a new **Memory** button under the message box. It shows how many notes go with this chat ("Memory 2"), nothing while memory is off, and "!" if the notes cannot be read. It opens the **Memory page**: your notes with when each was made, "Change..." and "Delete" (which asks first), "Add a note...", a switch "Send my notes with every message", "Export all..." and "Delete all..." (which asks first).
+2. **"Remember..."** now sits under every message (yours and the replies). Select part of a message first to keep just that part; otherwise the whole message goes into the box, where you can cut it down (a note is at most 500 characters).
+3. **Saving a note, changing one, or turning memory back on asks in a Windows message box** that shows the note. Deleting and turning memory off ask on the page only.
+4. **What goes to the model:** your notes go with every message, right after the app's own rules, introduced as information about you and not as instructions; then your instructions. With no notes, nothing changes (the 70 recorded requests are identical). If the notes cannot be read, or one holds an API key saved in the app, nothing is sent and the app says why.
+5. **Encryption** covers the notes too, as it does the instructions.
+6. **Checked:** 22 checks under Node, 59 in the window (on the dev app and the built one); **34 negative controls, all caught**. One sabotage was not noticed because the code it removed was not needed (a click keeps your selection anyway), so I took that code out; two of my checks were made sharper. The regression's Node, window and Stage 4 parts (63 runs) found three checks made stale by the new Memory button and my last change; fixed and passed when run again.
