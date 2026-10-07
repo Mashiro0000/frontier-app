@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { RestorePreview } from '../../../shared/ipc'
 import { formatWhen } from './format'
+import { attached } from './useBackup'
 
 interface RestorePreviewPanelProps {
   preview: RestorePreview
@@ -23,6 +24,9 @@ function RestorePreviewPanel({
 }: RestorePreviewPanelProps): React.JSX.Element {
   const toAdd = preview.fresh + preview.copies
   const fits = Math.min(toAdd, preview.room)
+  // Attached files whose copies are not here (D-037): a restore puts them back even when every chat is here already.
+  const missing = preview.files?.missing ?? 0
+  const filesHere = (preview.files?.count ?? 0) - missing
   // The safe choice has the focus: Enter or Space adds nothing. (With nothing to add, it is the only button that does anything.)
   const dismissRef = useRef<HTMLButtonElement>(null)
   useEffect(() => dismissRef.current?.focus(), [])
@@ -60,6 +64,21 @@ function RestorePreviewPanel({
         {preview.refusedCount > 0 && (
           <li>
             <strong>{chats(preview.refusedCount)}</strong> in the file cannot be used
+          </li>
+        )}
+        {missing > 0 && (
+          <li>
+            <strong>{attached(missing)}</strong> to put back
+          </li>
+        )}
+        {filesHere > 0 && (
+          <li>
+            <strong>{attached(filesHere)}</strong> already here
+          </li>
+        )}
+        {(preview.files?.refused ?? 0) > 0 && (
+          <li>
+            <strong>{attached(preview.files?.refused ?? 0)}</strong> in the file cannot be used
           </li>
         )}
       </ul>
@@ -118,8 +137,17 @@ function RestorePreviewPanel({
         </p>
       )}
       <div className="history-actions">
-        <button type="button" className="button" disabled={disabled || fits === 0} onClick={onAdd}>
-          {fits === 0 ? 'Nothing to add' : `Add ${chats(fits)}`}
+        <button
+          type="button"
+          className="button"
+          disabled={disabled || (fits === 0 && missing === 0)}
+          onClick={onAdd}
+        >
+          {fits > 0
+            ? `Add ${chats(fits)}`
+            : missing > 0
+              ? `Put back ${attached(missing)}`
+              : 'Nothing to add'}
         </button>
         <button
           ref={dismissRef}
@@ -128,7 +156,7 @@ function RestorePreviewPanel({
           disabled={disabled}
           onClick={onDismiss}
         >
-          {fits === 0 ? 'Back to the list' : "Don't add"}
+          {fits === 0 && missing === 0 ? 'Back to the list' : "Don't add"}
         </button>
       </div>
     </section>

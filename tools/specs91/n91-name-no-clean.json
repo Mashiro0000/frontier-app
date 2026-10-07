@@ -1,0 +1,16 @@
+{
+  "label": "n91-name-no-clean",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/attachments.ts",
+      "from": "  const clean = last.replace(/\\s+/g, ' ').replace(UNSAFE_IN_NAME, '').replace(/ +/g, ' ').trim()",
+      "to": "  const clean = last"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

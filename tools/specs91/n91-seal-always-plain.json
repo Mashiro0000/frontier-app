@@ -1,0 +1,16 @@
+{
+  "label": "n91-seal-always-plain",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "    const data = form === 'encrypted' && box !== undefined ? seal(bytes, box) : bytes",
+      "to": "    const data = bytes"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

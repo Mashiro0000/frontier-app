@@ -86,6 +86,14 @@ export interface ChatEncryptionOptions {
   /** The backup service: the lock, and the backup that turning encryption on starts with. */
   backups: Pick<BackupService, 'backUpAllBeforeEncrypting' | 'exclusive'>
   asks: Askers
+  /**
+   * The attachments' copies (D-037): sealed and opened with the chats, by the same rule (they ask the same `writeMode`). Rewritten after the chats, every
+   * time the chats are. Optional: without it only the chats are rewritten.
+   */
+  files?: {
+    conform(): Promise<{ changed: number; already: number; failed: number }>
+    counts(): Promise<{ plain: number; encrypted: number }>
+  }
 }
 
 const BUSY =
@@ -96,7 +104,19 @@ export const NO_SECURE_STORAGE =
 const reason = (error: unknown): unknown => (error instanceof Error ? error.message : error)
 
 export function createChatEncryptionService(options: ChatEncryptionOptions): ChatEncryptionService {
-  const { store, protection, backups, asks } = options
+  const { store, protection, backups, asks, files } = options
+
+  /** The attachments rewritten in the form the choice now says; null when there are none at all (the report then says nothing about them). */
+  async function conformFiles(): Promise<{ changed: number; failed: number } | null> {
+    if (files === undefined) return null
+    const before = await files.counts()
+    if (before.plain + before.encrypted === 0) return null
+    const done = await files.conform()
+    return { changed: done.changed, failed: done.failed }
+  }
+  const withFiles = (
+    done: { changed: number; failed: number } | null
+  ): { files?: { changed: number; failed: number } } => (done === null ? {} : { files: done })
 
   async function status(): Promise<ChatStorageStatus> {
     const state = await protection.state()
@@ -120,7 +140,8 @@ export function createChatEncryptionService(options: ChatEncryptionOptions): Cha
       return { ok: false, error: `Nothing was encrypted. ${before.blocked ?? ''}`.trim() }
     }
     const counts = await store.counts()
-    if (before.choice === 'on' && counts.plain === 0) {
+    const plainFiles = files === undefined ? 0 : (await files.counts()).plain
+    if (before.choice === 'on' && counts.plain === 0 && plainFiles === 0) {
       // Nothing to do, and nothing to protect with a backup: say so instead of asking for one.
       return {
         ok: true,
@@ -152,13 +173,19 @@ export function createChatEncryptionService(options: ChatEncryptionOptions): Cha
       }
     }
     const done = await store.conform()
-    return { ok: true, status: await status(), report: { ...done, backup } }
+    const filesDone = await conformFiles()
+    return {
+      ok: true,
+      status: await status(),
+      report: { ...done, backup, ...withFiles(filesDone) }
+    }
   }
 
   async function decrypt(owner: unknown): Promise<ChatStorageResult> {
     const before = await protection.state()
     const counts = await store.counts()
-    if (before.choice === 'off' && counts.encrypted === 0) {
+    const sealedFiles = files === undefined ? 0 : (await files.counts()).encrypted
+    if (before.choice === 'off' && counts.encrypted === 0 && sealedFiles === 0) {
       // Plain already, and no encrypted chat to turn back: nothing is weakened, so nothing is asked.
       return {
         ok: true,
@@ -182,7 +209,12 @@ export function createChatEncryptionService(options: ChatEncryptionOptions): Cha
       }
     }
     const done = await store.conform()
-    return { ok: true, status: await status(), report: { ...done, backup: null } }
+    const filesDone = await conformFiles()
+    return {
+      ok: true,
+      status: await status(),
+      report: { ...done, backup: null, ...withFiles(filesDone) }
+    }
   }
 
   return {

@@ -1,0 +1,16 @@
+{
+  "label": "n91-png-keeps-exif",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "  'pHYs',\n  'cICP'",
+      "to": "  'pHYs',\n  'cICP',\n  'eXIf'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n91-local-ads-ok",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "    if (!/^[A-Za-z]:\\\\/.test(path) || path.indexOf(':', 2) !== -1) {",
+      "to": "    if (!/^[A-Za-z]:\\\\/.test(path)) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

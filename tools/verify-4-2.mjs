@@ -27,14 +27,16 @@ const samePath = (a, b) => String(a).replaceAll('\\', '/').toLowerCase() === Str
 
 // ===================== A. a fresh start writes nothing =====================
 check('a fresh profile has no conversations folder (starting up and looking wrote nothing)', H.files() === null, JSON.stringify(H.files()))
-const buttons = await H.chatButtons()
+// Since 9.2 (D-037) the chat bar begins with "Attach..." (verify-9-2w checks it); this suite checks the three buttons it was written for.
+const withoutAttach = (list) => list.filter((b) => b.text !== 'Attach...')
+const buttons = withoutAttach(await H.chatButtons())
 const headerBtns = await H.headerButtons()
 check('under the message box the chat bar has New chat, History and Instructions (7.4), in that order (they left the header in 7.6, D-029)', JSON.stringify(buttons.map((b) => b.text)) === JSON.stringify(['New chat', 'History', 'Instructions']), JSON.stringify(buttons.map((b) => b.text)))
 check('...and the header keeps only Settings among its buttons', JSON.stringify(headerBtns.map((b) => b.text)) === JSON.stringify(['Settings']), JSON.stringify(headerBtns.map((b) => b.text)))
 check('New chat is disabled while the chat is empty, and says why', buttons[0].disabled && /empty/i.test(buttons[0].title), buttons[0].title)
 check('History, Instructions and Settings are enabled', !buttons[1].disabled && !buttons[2].disabled && !headerBtns[0].disabled)
-const api = await ev(`({ top: Object.keys(window.api).sort(), history: Object.keys(window.api.history ?? {}).sort(), settings: Object.keys(window.api.settings).sort(), chat: Object.keys(window.api.chat).sort() })`)
-check('window.api has exactly chat, history, settings and (since 8.1) usage; history is { list, load, remove, save } and, since 8b, exportChats, restoreLook, restoreApply and restoreCancel, and since 8b.3 storage, encryptChats and decryptChats; settings has setLimits since 8.2 and setAskFirst since 8.3, chat has confirm since 8.3', JSON.stringify(api) === JSON.stringify({ top: ['chat', 'history', 'settings', 'usage'], history: ['decryptChats', 'encryptChats', 'exportChats', 'list', 'load', 'remove', 'restoreApply', 'restoreCancel', 'restoreLook', 'save', 'storage'], settings: ['clearApiKey', 'getStatus', 'setApiKey', 'setAskFirst', 'setEffort', 'setLimits', 'setModel', 'testApiKey'], chat: ['cancel', 'confirm', 'onEvent', 'start'] }), JSON.stringify(api))
+const api = await ev(`({ top: Object.keys(window.api).sort(), history: Object.keys(window.api.history ?? {}).sort(), settings: Object.keys(window.api.settings).sort(), chat: Object.keys(window.api.chat).sort(), attachments: Object.keys(window.api.attachments ?? {}).sort() })`)
+check('window.api has exactly attachments (since 9.2: pick, addBytes, discard; since 9.3 describe), chat, history, settings and (since 8.1) usage; history is { list, load, remove, save } and, since 8b, exportChats, restoreLook, restoreApply and restoreCancel, and since 8b.3 storage, encryptChats and decryptChats; settings has setLimits since 8.2 and setAskFirst since 8.3, chat has confirm since 8.3', JSON.stringify(api) === JSON.stringify({ top: ['attachments', 'chat', 'history', 'settings', 'usage'], history: ['decryptChats', 'encryptChats', 'exportChats', 'list', 'load', 'remove', 'restoreApply', 'restoreCancel', 'restoreLook', 'save', 'storage'], settings: ['clearApiKey', 'getStatus', 'setApiKey', 'setAskFirst', 'setEffort', 'setLimits', 'setModel', 'testApiKey'], chat: ['cancel', 'confirm', 'onEvent', 'start'], attachments: ['addBytes', 'describe', 'discard', 'pick'] }), JSON.stringify(api))
 const list0 = await ev(`window.api.history.list()`)
 check('list() on a fresh profile: no conversations, none unreadable, and it names the folder', list0.conversations.length === 0 && list0.unreadable === 0 && samePath(list0.folder, folder), JSON.stringify(list0))
 check('...and asking did not create the folder', H.files() === null)
@@ -228,7 +230,7 @@ await resetMock()
 await H.send('[[mock:slow]] busy')
 await page.waitFor(`!!document.querySelector('.message-assistant')`)
 await sleep(300)
-const busyBtns = await H.chatButtons()
+const busyBtns = withoutAttach(await H.chatButtons())
 const menu = await H.menu()
 check('while a reply arrives, New chat and History are disabled and say why', busyBtns[0].disabled && busyBtns[1].disabled && /reply/.test(busyBtns[0].title) && /reply/.test(busyBtns[1].title), JSON.stringify(busyBtns))
 check('...Settings stays available, and so does the model menu rule (disabled)', !(await H.headerButton('Settings')).disabled && menu.disabled)
@@ -237,7 +239,7 @@ check('...a click on History does nothing', (await H.clickChat('History'), await
 await page.click('.composer-button')
 await H.waitReady()
 await sleep(300)
-const afterBusy = await H.chatButtons()
+const afterBusy = withoutAttach(await H.chatButtons())
 check('after Stop they are enabled again', !afterBusy[0].disabled && !afterBusy[1].disabled, JSON.stringify(afterBusy))
 check('the stopped chat was saved (stopped, with its partial text)', (await H.waitFirst('[[mock:slow]] busy', (c) => c.messages.at(-1).status === 'stopped')).conv.messages.at(-1).content.length > 0)
 
@@ -301,7 +303,7 @@ for (const width of [420, 320]) {
   await page.send('Emulation.setDeviceMetricsOverride', { width, height: 700, deviceScaleFactor: 1, mobile: false })
   await sleep(300)
   const fit = await ev(`(() => { const bs = [...document.querySelectorAll('.app-header .header-button, .app-header .header-select, .chat-bar .chat-button')]; const r = bs.map((b) => b.getBoundingClientRect()); return { overflowX: document.documentElement.scrollWidth > window.innerWidth, allInside: r.every((x) => x.left >= 0 && x.right <= window.innerWidth), count: bs.length } })()`)
-  check(`at ${width}px wide the header has no sideways scroll and every control is fully on screen`, !fit.overflowX && fit.allInside && fit.count === 5, JSON.stringify(fit)) // New chat, History, Instructions, Settings and the model menu
+  check(`at ${width}px wide the header has no sideways scroll and every control is fully on screen`, !fit.overflowX && fit.allInside && fit.count === 6, JSON.stringify(fit)) // Attach... (since 9.2), New chat, History, Instructions, Settings and the model menu
   await page.screenshot(`${shots}/4-2-header-${width}.png`)
   await H.openHistory()
   const dlg = await ev(`(() => { const d = document.querySelector('dialog.history').getBoundingClientRect(); const c = [...document.querySelectorAll('dialog.history .history-footer button')].pop().getBoundingClientRect(); return { left: d.left, right: d.right, top: d.top, bottom: d.bottom, closeInside: c.left >= 0 && c.right <= window.innerWidth && c.bottom <= window.innerHeight, w: window.innerWidth, h: window.innerHeight } })()`)

@@ -1,0 +1,16 @@
+{
+  "label": "n91-pdf-encrypt-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "  if (/\\/Encrypt[\\s/<[0-9]/.test(raw))",
+      "to": "  if (false as boolean)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

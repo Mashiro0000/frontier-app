@@ -1,0 +1,16 @@
+{
+  "label": "n91-store-damaged-already",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "          there !== null &&\n          there.ok &&\n          there.form === mode.form &&\n          there.bytes.equals(prepared.bytes)\n",
+      "to": "          there !== null\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

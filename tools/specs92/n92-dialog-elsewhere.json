@@ -1,0 +1,14 @@
+{
+  "label": "n92-dialog-elsewhere",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupDialogs.ts",
+      "from": "    properties: ['openFile' as const, 'multiSelections' as const]",
+      "to": "    properties: ['openFile' as const]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

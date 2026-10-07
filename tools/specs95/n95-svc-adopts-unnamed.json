@@ -1,0 +1,14 @@
+{
+  "label": "n95-svc-adopts-unnamed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "          if (!named.has(id) || options.files === undefined) {",
+      "to": "          if (options.files === undefined) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-5.mjs"
+  ],
+  "env": {}
+}

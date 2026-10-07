@@ -3,6 +3,7 @@ import Markdown from '../markdown/Markdown'
 import { replyUsageText, replyUsageTitle } from '../settings/format'
 import MessageActions from './MessageActions'
 import MessageEdit from './MessageEdit'
+import MessageFiles from './MessageFiles'
 import type { ChatMessage } from './types'
 
 interface MessageBubbleProps {
@@ -48,6 +49,9 @@ function MessageBubble({
       aria-label={message.role === 'user' ? 'You' : 'Assistant'}
     >
       {answeredBy && <p className="message-model">{answeredBy}</p>}
+      {message.files !== undefined && message.files.length > 0 && (
+        <MessageFiles files={message.files} />
+      )}
       {editing ? (
         <MessageEdit
           original={message.content}

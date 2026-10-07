@@ -9,6 +9,7 @@ import {
   type SavedConversation
 } from '../shared/ipc'
 import { checkBackupRequest } from '../shared/validate'
+import type { AdoptOutcome } from './attachmentStore'
 import { contentKey, readBackup, writeBackup } from './backup'
 import { titleFor, type ConversationStore } from './conversationStore'
 
@@ -54,7 +55,19 @@ export interface BackupServiceOptions {
   /** For the tests. */
   now?: () => number
   tokenLifetimeMs?: number
+  /**
+   * The attached files (D-037): a copy's plain bytes for a backup (null if it cannot be read), and a copy put back from one. Without it a backup holds no
+   * files and a restore puts none back.
+   */
+  files?: {
+    read(id: string): Promise<Buffer | null>
+    adopt(id: string, bytes: Buffer): Promise<AdoptOutcome>
+  }
 }
+
+/** The ids of the files a chat's messages carry. */
+const filesOf = (chat: SavedConversation): string[] =>
+  chat.messages.flatMap((message) => (message.attachments ?? []).map((file) => file.id))
 
 export const TOKEN_LIFETIME_MS = 10 * 60 * 1000
 /** The save dialog's title when the backup is the first step of turning encryption on, so the person knows why a backup is asked for now. */
@@ -182,12 +195,19 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
           load: async (id) => {
             const loaded = await store.load(id)
             return loaded.ok ? loaded.conversation : null
-          }
+          },
+          ...(options.files !== undefined ? { readFile: options.files.read } : {})
         },
         now()
       )
       if (!written.ok) return written
-      return { ok: true, count: written.count, leftOut: written.leftOut, where: dest }
+      return {
+        ok: true,
+        count: written.count,
+        leftOut: written.leftOut,
+        where: dest,
+        ...(written.files !== undefined ? { files: written.files } : {})
+      }
     } catch (error) {
       console.error('Writing a backup failed:', reason(error))
       return { ok: false, error: 'The backup could not be written there.' }
@@ -211,18 +231,35 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
       let copies = 0
       let withInstructions = 0
       const titles: string[] = []
-      const read = await readBackup(path, async (chat) => {
-        const kind = await classify(chat)
-        if (kind === 'same') {
-          same += 1
-          return
+      // The files the backup's chats name (D-037): only those are counted as files to put back, and only those are put back.
+      const named = new Set<string>()
+      const files = { count: 0, missing: 0, refused: 0 }
+      const read = await readBackup(
+        path,
+        async (chat) => {
+          for (const id of filesOf(chat)) named.add(id)
+          const kind = await classify(chat)
+          if (kind === 'same') {
+            same += 1
+            return
+          }
+          if (kind === 'fresh') fresh += 1
+          else copies += 1
+          if (chat.instructions !== '') withInstructions += 1
+          if (titles.length < PREVIEW_TITLES) titles.push(titleFor(chat.messages))
+        },
+        async (id) => {
+          if (!named.has(id)) {
+            files.refused += 1
+            return
+          }
+          files.count += 1
+          if (options.files === undefined || (await options.files.read(id)) === null)
+            files.missing += 1
         }
-        if (kind === 'fresh') fresh += 1
-        else copies += 1
-        if (chat.instructions !== '') withInstructions += 1
-        if (titles.length < PREVIEW_TITLES) titles.push(titleFor(chat.messages))
-      })
+      )
       if (read.problem !== null) return { ok: false, error: read.problem }
+      files.refused += read.files?.refusedCount ?? 0
       const { conversations } = await store.list()
       const token = randomUUID()
       pending = { token, path, size: info.size, mtimeMs: info.mtimeMs, at: now() }
@@ -238,6 +275,7 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
           same,
           copies,
           withInstructions,
+          ...(read.files !== undefined ? { files } : {}),
           refusedCount: read.refusedCount,
           refused: read.refused.slice(0, 5),
           room: Math.max(0, HISTORY_LIMITS.maxConversations - conversations.length),
@@ -272,32 +310,57 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
       let noRoom = 0
       let failed = 0
       let tooLarge = 0
-      const read = await readBackup(plan.path, async (chat) => {
-        const kind = await classify(chat)
-        if (kind === 'same') {
-          same += 1
-          return
-        }
-        try {
-          let asCopy = kind === 'copy'
-          let outcome = await store.add(asCopy ? { ...chat, id: randomUUID() } : chat)
-          if (!outcome.ok && outcome.why === 'occupied') {
-            // Taken after it was looked at, or by a file the list did not know of: never written over, so a new id.
-            asCopy = true
-            outcome = await store.add({ ...chat, id: randomUUID() })
+      // The files (D-037): those of chats that are here once this restore has added what it could (added, copied, or already here) are put back; a file
+      // named by a chat that could not be added is left (the chat's own failure is reported); a file no chat in the backup names is not usable.
+      const named = new Set<string>()
+      const here = new Set<string>()
+      const files = { added: 0, already: 0, noRoom: 0, failed: 0, refused: 0 }
+      const read = await readBackup(
+        plan.path,
+        async (chat) => {
+          for (const id of filesOf(chat)) named.add(id)
+          const kind = await classify(chat)
+          if (kind === 'same') {
+            same += 1
+            for (const id of filesOf(chat)) here.add(id)
+            return
           }
-          if (outcome.ok) {
-            if (asCopy) copies += 1
-            else added += 1
-          } else if (outcome.why === 'full') noRoom += 1
-          else if (outcome.why === 'too-large') tooLarge += 1
-          else failed += 1
-        } catch (error) {
-          console.error('Adding a chat from a backup failed:', reason(error))
-          failed += 1
+          try {
+            let asCopy = kind === 'copy'
+            let outcome = await store.add(asCopy ? { ...chat, id: randomUUID() } : chat)
+            if (!outcome.ok && outcome.why === 'occupied') {
+              // Taken after it was looked at, or by a file the list did not know of: never written over, so a new id.
+              asCopy = true
+              outcome = await store.add({ ...chat, id: randomUUID() })
+            }
+            if (outcome.ok) {
+              if (asCopy) copies += 1
+              else added += 1
+              for (const id of filesOf(chat)) here.add(id)
+            } else if (outcome.why === 'full') noRoom += 1
+            else if (outcome.why === 'too-large') tooLarge += 1
+            else failed += 1
+          } catch (error) {
+            console.error('Adding a chat from a backup failed:', reason(error))
+            failed += 1
+          }
+        },
+        async (id, bytes) => {
+          if (!named.has(id) || options.files === undefined) {
+            files.refused += 1
+            return
+          }
+          if (!here.has(id)) return
+          const outcome = await options.files.adopt(id, bytes)
+          if (outcome === 'added') files.added += 1
+          else if (outcome === 'already') files.already += 1
+          else if (outcome === 'full') files.noRoom += 1
+          else if (outcome === 'failed') files.failed += 1
+          else files.refused += 1
         }
-      })
+      )
       if (read.problem !== null) return { ok: false, error: read.problem }
+      files.refused += read.files?.refusedCount ?? 0
       return {
         ok: true,
         added,
@@ -305,7 +368,8 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
         same,
         refused: read.refusedCount + tooLarge,
         noRoom,
-        failed
+        failed,
+        ...(read.files !== undefined ? { files } : {})
       }
     } catch (error) {
       console.error('Restoring from a backup failed:', reason(error))

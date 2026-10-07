@@ -1,0 +1,14 @@
+{
+  "label": "n93-val-info-kind-mismatch",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "  if (kind !== MEDIA_KIND[type] || !isCount(bytes, ATTACHMENT_LIMITS.maxPdfBytes)) return null",
+      "to": "  if (!isCount(bytes, ATTACHMENT_LIMITS.maxPdfBytes)) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

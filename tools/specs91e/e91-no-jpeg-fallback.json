@@ -1,0 +1,15 @@
+{
+  "label": "e91-no-jpeg-fallback",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentImages.ts",
+      "from": "              ...(opaque(bitmap)",
+      "to": "              ...(false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run91.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

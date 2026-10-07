@@ -2,7 +2,8 @@ import type { WireMessage } from '../../../shared/ipc'
 import type { ChatMessage } from './types'
 
 /**
- * Decides what the model is told about the conversation so far (the question D-008 left open).
+ * Decides what the model is told about the conversation so far (the question D-008 left open). A message of the person's that carries files is
+ * told with them, even with no text (D-037).
  *
  * Everything the person saw is included, even a reply that was stopped or that failed halfway,
  * because they may refer to it ("continue", "that last part was wrong"). Only a message with no text
@@ -11,6 +12,15 @@ import type { ChatMessage } from './types'
  */
 export function toWireMessages(history: ChatMessage[]): WireMessage[] {
   return history
-    .filter((message) => message.content !== '')
-    .map((message) => ({ role: message.role, content: message.content }))
+    .filter((message) => message.content !== '' || (message.files?.length ?? 0) > 0)
+    .map((message) =>
+      message.files !== undefined && message.files.length > 0
+        ? {
+            role: message.role,
+            content: message.content,
+            // The files go by the id of main's copy and their name (D-037); main reads the copies itself.
+            attachments: message.files.map((file) => ({ id: file.info.id, name: file.info.name }))
+          }
+        : { role: message.role, content: message.content }
+    )
 }

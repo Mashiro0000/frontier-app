@@ -1,0 +1,18 @@
+{
+  "label": "w92-chips-no-wrap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/assets/main.css",
+      "from": ".attachment-list {\n  display: flex;\n  flex-wrap: wrap;",
+      "to": ".attachment-list {\n  display: flex;\n  flex-wrap: nowrap;"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run92.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 420000
+}

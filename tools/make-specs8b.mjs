@@ -26,7 +26,8 @@ const node = {
   'n8b-reader-no-line-cap': [FILE1, [[BK, 'if (have + (end - start) > maxLine) {', 'if (false) {']]],
   'n8b-reader-no-size-cap': [FILE1, [[BK, 'if (info.size > BACKUP_LIMITS.maxFileBytes)', 'if (false)']]],
   'n8b-reader-no-chat-cap': [FILE1, [[BK, 'if (result.seen >= BACKUP_LIMITS.maxChats) {', 'if (false) {']]],
-  'n8b-reader-any-version': [FILE1, [[BK, 'if (header.version !== BACKUP_VERSION) {', 'if (false) {']]],
+  // (9.5, D-037: version 2 is read too; the sabotage still reads any version)
+  'n8b-reader-any-version': [FILE1, [[BK, 'if (header.version !== BACKUP_VERSION && header.version !== BACKUP_VERSION_FILES) {', 'if (false) {']]],
   'n8b-reader-lenient-utf8': [FILE1, [[BK, "new TextDecoder('utf-8', { fatal: true })", "new TextDecoder('utf-8')"]]],
   'n8b-reader-id-unchecked': [FILE1, [[BK, 'if (!isConversationId(id)) {', 'if (false) {']]],
   'n8b-reader-format-unchecked': [FILE1, [[BK, 'header === null || header.format !== BACKUP_FORMAT) {', 'header === null) {']]],
@@ -36,7 +37,8 @@ const node = {
   'n8b-writer-no-verify-dest': [FILE1, [[BK, 'if (!(await proves(dest))) {', 'if (false) {']]],
   'n8b-writer-in-place': [FILE1, [[BK, 'const part = `${dest}.part`', 'const part = dest']]],
   'n8b-writer-leaves-part-on-fault': [FILE1, [[BK, '    await discard() // a disk that failed halfway: nothing of the half-written file is left lying about\n', '']]],
-  'n8b-writer-leftout-lost': [FILE1, [[BK, 'return { ok: true, count: written.length, leftOut: source.leftOut + gone, bytes }', 'return { ok: true, count: written.length, leftOut: source.leftOut, bytes }']]],
+  // (9.5: the answer is written over lines and may say what became of the files; the sabotage still forgets the chats that went)
+  'n8b-writer-leftout-lost': [FILE1, [[BK, '    leftOut: source.leftOut + gone,\n    bytes,', '    leftOut: source.leftOut,\n    bytes,']]],
   'n8b-writer-no-sync': [FILE1, [[BK, '    if (!tooLarge) await handle.sync()\n', '']]],
   'n8b-writer-no-size-cap': [FILE1, [[BK, 'if (bytes > BACKUP_LIMITS.maxFileBytes) {', 'if (false) {']]],
   'n8b-writer-copy-error-hides-part': [FILE1, [[BK, 'could not be copied to where you chose. A whole copy is at ${part}.', 'could not be copied to where you chose.']]],
@@ -75,7 +77,8 @@ const node = {
   'n8b-validate-scope-loose': [FILE2, [[VAL, "if (scope === 'all') return { ok: true, request: { scope: 'all' } }", "if (typeof scope === 'string' && scope.toLowerCase() === 'all') return { ok: true, request: { scope: 'all' } }"]]],
   'n8b-ipc-window-calls-unguarded': [FILE2, [[IPC, '      guarded((...rest: A) => handler(BrowserWindow.fromWebContents(event.sender), ...rest))(\n        event,\n        ...args\n      )', '      handler(BrowserWindow.fromWebContents(event.sender), ...args)']]],
   'n8b-ipc-look-no-window': [FILE2, [[IPC, 'guardedForWindow((window): Promise<HistoryRestoreLookResult> => backups.restoreLook(window))', 'guardedForWindow((): Promise<HistoryRestoreLookResult> => backups.restoreLook(null))']]],
-  'n8b-ipc-quit-not-waiting': [FILE2, [[IPC, 'Promise.all([history.whenIdle(), ledger.whenIdle(), backups.whenIdle()])', 'Promise.all([history.whenIdle(), ledger.whenIdle()])']]],
+  // (9.2, D-037: the list of what quitting waits for gained the attachments and is written one per line)
+  'n8b-ipc-quit-not-waiting': [FILE2, [[IPC, '      ledger.whenIdle(),\n      backups.whenIdle(),\n', '      ledger.whenIdle(),\n']]],
   'n8b-ipc-cancel-untrusted': [FILE2, [[IPC, 'if (isTrustedSender(event, appUrl)) backups.restoreCancel(token)', 'backups.restoreCancel(token)']]],
   'n8b-preload-path-param': [FILE2, [[PRE, 'exportChats: (request) => ipcRenderer.invoke(CHANNELS.historyExport, request),', 'exportChats: (request, path?: string) => ipcRenderer.invoke(CHANNELS.historyExport, { ...request, path }),']]]
 }

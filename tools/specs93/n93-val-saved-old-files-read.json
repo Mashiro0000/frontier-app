@@ -1,0 +1,14 @@
+{
+  "label": "n93-val-saved-old-files-read",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "    if (attachments !== undefined && filesAllowed) {",
+      "to": "    if (attachments !== undefined) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

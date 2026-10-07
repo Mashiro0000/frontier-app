@@ -1,0 +1,19 @@
+{
+  "label": "w93-block-not-passed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ChatView.tsx",
+      "from": "        blocked={blocked}\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run93.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "RUN93_ONLY": "c"
+  },
+  "timeoutMs": 600000
+}

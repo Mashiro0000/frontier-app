@@ -1,0 +1,16 @@
+{
+  "label": "n91-jpeg-stuffing-ends-scan",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "          if (next === 0x00 || (next >= 0xd0 && next <= 0xd7)) {",
+      "to": "          if (next === 0x00) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n91-text-bom-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "      ? bytes.subarray(3)\n      : bytes",
+      "to": "      ? bytes\n      : bytes"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

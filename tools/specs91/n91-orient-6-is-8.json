@@ -1,0 +1,16 @@
+{
+  "label": "n91-orient-6-is-8",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "        case 6:\n          sx = y\n          sy = height - 1 - x",
+      "to": "        case 6:\n          sx = width - 1 - y\n          sy = x"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

@@ -20,7 +20,8 @@ const store = {
   'model-without-provider-kept': [V, "if (provider === null && model !== null) {\n    if (!lenient) return null\n    model = null\n  }", 'if (false) model = null'],
   'user-messages-get-fields': [V, "if (role === 'assistant') {\n      const answerer", 'if (true) {\n      const answerer'],
   'file-lenient-is-strict': [V, "const lenient = source === 'file'", "const lenient = source === 'file' && false"],
-  'writes-version-1': [S, 'JSON.stringify({ version: 3, ...conversation })', 'JSON.stringify({ version: 1, ...conversation })'],
+  // 9.3 (D-037): the version is worked out by fileVersion (3, or 4 for a chat with files); the sabotage still writes version 1
+  'writes-version-1': [S, '    const version = fileVersion(conversation)', '    const version = 1'],
   'v1-not-upgraded': [S, "file.version === 1 ? 'file-v1' : 'file'", "'file'"],
   'v2-refused': [S, 'file.version !== 1 && file.version !== 2', 'file.version !== 1'],
   'any-version-accepted': [S, 'file.version !== 1 && file.version !== 2', 'false'],

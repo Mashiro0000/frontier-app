@@ -1,0 +1,14 @@
+{
+  "label": "n92-svc-whole-buffer",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentService.ts",
+      "from": "      const bytes = Buffer.from(check.bytes.buffer, check.bytes.byteOffset, check.bytes.byteLength)",
+      "to": "      const bytes = Buffer.from(check.bytes.buffer)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

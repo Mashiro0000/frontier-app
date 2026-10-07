@@ -1,8 +1,10 @@
 import OpenAI from 'openai'
 import { PROVIDER_NAMES } from '../../shared/registry'
 import { isInterrupted, normalizedError, rawMessage, type ErrorFacts } from './errors'
+import { textFileLead } from './request'
 import type {
   Credentials,
+  NeutralMessage,
   NormalizedError,
   ProviderAdapter,
   ProviderModel,
@@ -113,13 +115,39 @@ function usage(report: unknown): Usage {
   }
 }
 
+/**
+ * One turn in OpenAI's form. With no files it is `{ role, content }` with the text, exactly as before files existed. With files (D-037): an image as
+ * `input_image` (a data URL; the detail left to the model), a PDF as `input_file` (a data URL and its file name), a text file as `input_text` led by a line
+ * that names it (the Responses API has no titled text document); then the person's text, if there is any. Only the person's messages carry files.
+ */
+function openaiInput(message: NeutralMessage): OpenAI.Responses.ResponseInputItem {
+  if (message.attachments === undefined) return { role: message.role, content: message.content }
+  const parts: OpenAI.Responses.ResponseInputContent[] = message.attachments.map((file) =>
+    file.kind === 'image'
+      ? {
+          type: 'input_image',
+          image_url: `data:${file.mediaType};base64,${file.data}`,
+          detail: 'auto'
+        }
+      : file.kind === 'pdf'
+        ? {
+            type: 'input_file',
+            filename: file.name,
+            file_data: `data:application/pdf;base64,${file.data}`
+          }
+        : { type: 'input_text', text: `${textFileLead(file.name)}\n\n${file.text}` }
+  )
+  if (message.content !== '') parts.push({ type: 'input_text', text: message.content })
+  return { role: 'user', content: parts }
+}
+
 async function* stream(request: StreamRequest): AsyncGenerator<StreamEvent> {
   const { model } = request
   const reply = newClient(request.credentials).responses.stream(
     {
       model: model.id,
       instructions: request.system,
-      input: request.messages.map(({ role, content }) => ({ role, content })),
+      input: request.messages.map(openaiInput),
       max_output_tokens: request.maxOutputTokens,
       // `effort` is how much the model thinks before it answers (its thinking is billed as output and counts against
       // max_output_tokens). Written out for every model that takes it, because the defaults differ between models (D-014);

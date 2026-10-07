@@ -2,9 +2,13 @@ import { useCallback, useState } from 'react'
 import type { SettingsStatus } from '../../../shared/ipc'
 import LinkConfirm from '../markdown/LinkConfirm'
 import { providerMissingKey } from '../settings/format'
+import { filesBlock } from './attachmentText'
+import AttachmentChips from './AttachmentChips'
 import Composer from './Composer'
+import { PreviewsContext, useAttachmentPreviews } from './previews'
 import LargeRequestDialog from './LargeRequestDialog'
 import MessageList from './MessageList'
+import type { UseAttachments } from './useAttachments'
 import type { UseChat } from './useChat'
 
 interface ChatViewProps {
@@ -19,6 +23,8 @@ interface ChatViewProps {
   onOpenLimits: () => void
   /** Changes when another conversation is put on screen, so the input box can take the focus. */
   conversationId: string
+  /** The files on the message being written (D-037). */
+  attachments: UseAttachments
 }
 
 function ChatView({
@@ -27,7 +33,8 @@ function ChatView({
   needsLimits,
   onOpenSettings,
   onOpenLimits,
-  conversationId
+  conversationId,
+  attachments
 }: ChatViewProps): React.JSX.Element {
   const { messages, isReplying, largeRequest, answerLargeRequest, send, stop, regenerate, resend } =
     chat
@@ -78,23 +85,68 @@ function ChatView({
     )
   }
 
+  // Where the files go: the provider of the model that will answer (D-037, rule 1).
+  const chosen = status?.models.find((model) => model.id === status.selectedModelId)
+  // The pictures of a saved chat's files, made by main from its copies (kept apart from the messages, so the chat is not saved again for them).
+  const previews = useAttachmentPreviews(messages, conversationId)
+  // Why the message cannot go as it is: the whole chat is sent again with every message, its earlier files too (D-028).
+  const blocked = filesBlock(messages, attachments.files, chosen ?? null)
+  const sendWithFiles = useCallback(
+    (text: string): void => {
+      send(text, attachments.files)
+      attachments.clear() // the files are the message's now; main keeps them for the chat
+    },
+    [send, attachments]
+  )
+  const destination =
+    chosen === undefined
+      ? null
+      : (status?.providers.find((provider) => provider.id === chosen.provider)?.name ?? null)
+
   return (
-    <main className="chat">
-      <LinkConfirm>
-        <MessageList
-          messages={messages}
-          isReplying={isReplying}
-          emptyHint={emptyHint}
-          modelName={modelName}
-          onRegenerate={onRegenerate}
-          onResend={onResend}
-        />
-      </LinkConfirm>
+    <main
+      className="chat"
+      onDragOver={(event) => {
+        if (event.dataTransfer.types.includes('Files')) {
+          event.preventDefault()
+          event.dataTransfer.dropEffect = 'copy'
+        }
+      }}
+      onDrop={(event) => {
+        // Dropped files are read here and handed to main as bytes: their place on disk is never used (D-037).
+        if (event.dataTransfer.files.length === 0) return
+        event.preventDefault()
+        attachments.addFiles([...event.dataTransfer.files])
+      }}
+    >
+      <PreviewsContext.Provider value={previews}>
+        <LinkConfirm>
+          <MessageList
+            messages={messages}
+            isReplying={isReplying}
+            emptyHint={emptyHint}
+            modelName={modelName}
+            onRegenerate={onRegenerate}
+            onResend={onResend}
+          />
+        </LinkConfirm>
+      </PreviewsContext.Provider>
       <Composer
         focusKey={`${conversationId}:${asked}`}
         isReplying={isReplying}
-        onSend={send}
+        onSend={sendWithFiles}
         onStop={stop}
+        hasFiles={attachments.files.length > 0}
+        blocked={blocked}
+        onPasteFiles={attachments.addFiles}
+        attachments={
+          <AttachmentChips
+            files={attachments.files}
+            notices={attachments.notices}
+            destination={destination}
+            onRemove={attachments.remove}
+          />
+        }
       />
       {/* A large request is held by the main process until the person says yes here (D-032). */}
       <LargeRequestDialog

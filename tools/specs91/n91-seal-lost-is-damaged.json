@@ -1,0 +1,16 @@
+{
+  "label": "n91-seal-lost-is-damaged",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "    return { ok: false, why: 'unopened' }\n  }\n  if (!/^[A-Za-z0-9+/]*={0,2}$/",
+      "to": "    return { ok: false, why: 'damaged' }\n  }\n  if (!/^[A-Za-z0-9+/]*={0,2}$/"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

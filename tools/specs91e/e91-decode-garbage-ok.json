@@ -1,0 +1,15 @@
+{
+  "label": "e91-decode-garbage-ok",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentImages.ts",
+      "from": "  return image.isEmpty() ? null : image",
+      "to": "  return image"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run91.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

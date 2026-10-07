@@ -1,0 +1,16 @@
+{
+  "label": "n91-prep-tool-meta-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "    kept = clean.bytes\n",
+      "to": "    kept = redone.bytes\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

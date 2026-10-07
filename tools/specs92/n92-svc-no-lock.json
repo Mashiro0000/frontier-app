@@ -1,0 +1,14 @@
+{
+  "label": "n92-svc-no-lock",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentService.ts",
+      "from": "      if (picking) return { ok: false, error: 'The window for choosing files is already open.' }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

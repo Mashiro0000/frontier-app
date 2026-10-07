@@ -1,4 +1,5 @@
 import type { RequestEstimate } from '../../../shared/askFirst'
+import type { AttachedFile } from '../../../shared/attachments'
 import type { ProviderId } from '../../../shared/registry'
 import type { ReplyUsage } from '../../../shared/usage'
 
@@ -30,6 +31,11 @@ export interface ChatMessage {
    * (its guess is in the ledger and in the sums of Settings).
    */
   usage?: ReplyUsage
+  /**
+   * The files on a message of the person's (D-037): what main said about each when it was attached (and, for one just sent, its small picture). Saved with
+   * the message as their descriptions; the copies are main's. Absent when there are none.
+   */
+  files?: AttachedFile[]
 }
 
 /** Which model is answering, as the main process reports it when a reply begins. */

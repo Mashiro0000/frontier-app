@@ -1,0 +1,14 @@
+{
+  "label": "n94-estimate-files-always",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "    ...(files !== undefined && files.count > 0 ? { files: { ...files } } : {})",
+      "to": "    files: files ?? { count: 0, tokens: 0 }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-4.mjs"
+  ],
+  "env": {}
+}

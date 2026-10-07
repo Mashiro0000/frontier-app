@@ -55,10 +55,13 @@ const win = {
   // the provider's report is ignored (everything is a guess)
   'w81-report-ignored': [[CHAT, 'const report = real !== null && !tokensAreEmpty(tokensOf(real)) ? tokensOf(real) : null', 'const report = null']],
   // a guess is not marked as one
+  // 9.6: Settings shows the sums of its last opening until main answers (the reset taken out)
+  'w81-settings-shows-old-sums': [[R + 'src/renderer/src/settings/UsageSection.tsx', '    if (open) {\n      setSummary(null)\n      setError(null)\n    }\n', '']],
   'w81-guess-not-marked': [[CHAT, "estimate: state !== 'rejected' && report === null", 'estimate: false']],
   // the text that arrived is not counted in a guess; the system prompt is not counted in the input guess
   'w81-guess-output-zero': [[CHAT, 'output: estimateOutputTokens(arrivedBytes)', 'output: 0']],
-  'w81-guess-input-without-system-prompt': [[CHAT, 'const inputTokens = estimateInputTokens(streamRequest.system, streamRequest.messages)', "const inputTokens = estimateInputTokens('', streamRequest.messages)"]],
+  // (9.4, D-037: the guess adds the files' tokens, and the line is wrapped; the sabotage still leaves the system prompt out)
+  'w81-guess-input-without-system-prompt': [[CHAT, 'estimateInputTokens(streamRequest.system, streamRequest.messages) + fileTokens', "estimateInputTokens('', streamRequest.messages) + fileTokens"]],
   // a stopped reply is not counted as stopped (the safety net in `finally` settles it as failed instead)
   'w81-stopped-not-settled': [[CHAT, "      await settle('stopped', null)\n      return", '      return']],
   // the page is not told what the reply cost

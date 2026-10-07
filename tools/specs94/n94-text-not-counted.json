@@ -1,0 +1,14 @@
+{
+  "label": "n94-text-not-counted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "    tokensForBytes(files.textBytes) +",
+      "to": "    0 +"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-4.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n91-store-sweep-held",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "          if (referenced.has(id) || held.has(id)) continue\n          const stat",
+      "to": "          if (referenced.has(id)) continue\n          const stat"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

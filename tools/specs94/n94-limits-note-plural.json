@@ -1,0 +1,14 @@
+{
+  "label": "n94-limits-note-plural",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "      ? 'The file in this chat is'",
+      "to": "      ? `The 1 files in this chat are`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-4.mjs"
+  ],
+  "env": {}
+}

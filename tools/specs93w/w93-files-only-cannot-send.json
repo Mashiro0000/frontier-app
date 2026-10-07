@@ -1,0 +1,19 @@
+{
+  "label": "w93-files-only-cannot-send",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/Composer.tsx",
+      "from": "  const canSend = (text.trim() !== '' || hasFiles) && !isReplying && blocked === null",
+      "to": "  const canSend = text.trim() !== '' && !isReplying && blocked === null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run93.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "RUN93_ONLY": "w"
+  },
+  "timeoutMs": 600000
+}

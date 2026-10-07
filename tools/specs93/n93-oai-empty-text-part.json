@@ -1,0 +1,14 @@
+{
+  "label": "n93-oai-empty-text-part",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "  if (message.content !== '') parts.push({ type: 'input_text', text: message.content })",
+      "to": "  parts.push({ type: 'input_text', text: message.content })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

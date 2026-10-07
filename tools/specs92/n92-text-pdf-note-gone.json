@@ -1,0 +1,14 @@
+{
+  "label": "n92-text-pdf-note-gone",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/attachmentText.ts",
+      "from": "  if (info.kind === 'pdf') notes.push('sent as it is, with any metadata it holds')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

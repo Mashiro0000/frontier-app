@@ -1,0 +1,14 @@
+{
+  "label": "n94-images-not-counted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "  for (const image of files.images) tokens += imageTokens(image.width, image.height)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-4.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n91-png-keeps-text",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "  'pHYs',\n  'cICP'",
+      "to": "  'pHYs',\n  'cICP',\n  'tEXt',\n  'iTXt',\n  'zTXt'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w92-remove-unnamed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/AttachmentChips.tsx",
+      "from": "                    aria-label={`Remove ${info.name}`}",
+      "to": "                    aria-label=\"Remove\""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run92.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 420000
+}

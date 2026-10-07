@@ -1,0 +1,14 @@
+{
+  "label": "n92-val-no-size",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "  if (bytes.byteLength > maxBytes) {",
+      "to": "  if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

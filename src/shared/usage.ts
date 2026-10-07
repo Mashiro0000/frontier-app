@@ -138,6 +138,42 @@ export function estimateInputTokens(
 /** A guess at the output tokens of a reply, from the text that arrived. */
 export const estimateOutputTokens = (arrivedBytes: number): number => tokensForBytes(arrivedBytes)
 
+// --- Guessing what attached files send (Stage 9.4, D-037) ----------------------------------------------------------------------------
+// A provider counts an image by its size in pixels and a PDF by its pages, not by their bytes, so the guess does the same, on the high side as
+// above. An image: one token for every square of 28 x 28 pixels, and a quarter more (Anthropic's pages say about one token for every 750 pixels;
+// OpenAI counts fewer); an image is sent at most 2000 px a side, so one is at most 6,480 tokens. A PDF page: 4,800 tokens (Anthropic bills each page
+// as its text, 1,500 to 3,000 tokens, and as a picture of the page). A text file is text: one token for every three bytes. Each file adds a little
+// for its framing (its title, or the line that names it). Every file is counted each time it is sent: the whole chat goes with every message (D-028).
+
+const IMAGE_SQUARE_PX = 28
+const IMAGE_MARGIN = 1.25
+export const PDF_PAGE_TOKENS = 4_800
+const TOKENS_PER_FILE = 16
+
+/** A guess at the tokens of one image of this size. */
+export const imageTokens = (width: number, height: number): number =>
+  Math.ceil(Math.ceil(width / IMAGE_SQUARE_PX) * Math.ceil(height / IMAGE_SQUARE_PX) * IMAGE_MARGIN)
+
+/** What the files of one request come to, as far as the guess needs (main's `RequestFiles`). */
+export interface FilesToGuess {
+  /** How many files the request sends (a file named on two messages counts twice). */
+  count: number
+  images: readonly { width: number; height: number }[]
+  pdfPages: number
+  /** The text files' UTF-8 bytes in all. */
+  textBytes: number
+}
+
+/** A guess at the input tokens of the files of a request: images by their size, PDFs by their pages, text by its bytes, and each file's framing. */
+export function estimateFileTokens(files: FilesToGuess): number {
+  let tokens =
+    files.pdfPages * PDF_PAGE_TOKENS +
+    tokensForBytes(files.textBytes) +
+    TOKENS_PER_FILE * files.count
+  for (const image of files.images) tokens += imageTokens(image.width, image.height)
+  return tokens
+}
+
 // --- Reading a ledger line ---------------------------------------------------------------------------------------------------
 
 const MAX_TOKENS_PER_BUCKET = 1_000_000_000

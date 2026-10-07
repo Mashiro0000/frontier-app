@@ -1,0 +1,16 @@
+{
+  "label": "n91-sniff-pdf-anywhere",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "  if (head.startsWith('%PDF-')) return 'application/pdf'",
+      "to": "  if (head.includes('%PDF')) return 'application/pdf'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

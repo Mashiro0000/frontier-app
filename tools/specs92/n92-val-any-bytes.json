@@ -1,0 +1,14 @@
+{
+  "label": "n92-val-any-bytes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "  if (typeof name !== 'string' || name.length > 1000 || !(bytes instanceof Uint8Array)) return bad",
+      "to": "  if (typeof name !== 'string' || name.length > 1000 || bytes === undefined) return bad"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

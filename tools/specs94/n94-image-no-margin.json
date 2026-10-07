@@ -1,0 +1,14 @@
+{
+  "label": "n94-image-no-margin",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "const IMAGE_MARGIN = 1.25",
+      "to": "const IMAGE_MARGIN = 1"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-4.mjs"
+  ],
+  "env": {}
+}

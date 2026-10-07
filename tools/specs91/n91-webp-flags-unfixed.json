@@ -1,0 +1,16 @@
+{
+  "label": "n91-webp-flags-unfixed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "    if (chunk.fourcc === 'VP8X') copy[8] &= ~(0x08 | 0x04) // no EXIF, no XMP",
+      "to": "    void copy[8]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

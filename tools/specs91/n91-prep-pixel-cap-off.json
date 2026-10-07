@@ -1,0 +1,16 @@
+{
+  "label": "n91-prep-pixel-cap-off",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "  if (width > L.maxImageSide || height > L.maxImageSide || width * height > L.maxImagePixels) {",
+      "to": "  if (width > L.maxImageSide || height > L.maxImageSide) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

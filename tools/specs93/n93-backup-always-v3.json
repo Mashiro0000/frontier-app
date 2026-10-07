@@ -1,0 +1,14 @@
+{
+  "label": "n93-backup-always-v3",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "  JSON.stringify({ version: fileVersion(chat), ...chat })",
+      "to": "  JSON.stringify({ version: 3, ...chat })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

@@ -48,6 +48,10 @@ import type { SecretBox } from './credentialStore'
 // check), so a folder with both, which a conversion that was cut short leaves, is fine. HOW A WRITE IS MADE is not decided here: `writeMode` (from
 // chatProtection.ts) is asked before EVERY write, and either names the form or REFUSES, and then nothing is written (no plain fallback, no new key).
 // A file that cannot be opened is read as unreadable, left exactly as it is, and counted (`unopened` says how many of those are encrypted).
+// FILES (Stage 9.3, D-037). A message of the person's may carry files: each described in full (`attachments`, what it was when attached); the copies
+// themselves are in attachments/ (attachmentStore.ts), named by their hash. A chat with files is written as VERSION 4, which a build from before
+// Stage 9 leaves alone (it is "made by another version"); a chat without files is still written as version 3, byte for byte what it was. The store
+// keeps, for every chat it has read, the ids of its files, so that the files no chat uses can be found (`attachmentRefs`).
 // The exception to "nothing is converted in bulk": `conform()` rewrites every readable chat in the form the choice now says, one at a time, when the
 // person turns encryption on or off. Each file is rewritten by the same three steps, proved by opening what was written, and read again after; a chat
 // that cannot be rewritten is left as it was. A chat's dates, title and instructions are kept as they are, and a version 1 or 2 file comes out as version 3.
@@ -102,6 +106,13 @@ export interface ConversationStoreOptions {
 }
 
 export interface ConversationStore {
+  /**
+   * The ids of the files every readable chat uses (D-037), and whether that is every chat: with a file that could not be read (a damaged one, or its key
+   * gone), the files it uses are not known, and nothing may be deleted on the strength of this list.
+   */
+  attachmentRefs(): Promise<{ ids: Set<string>; complete: boolean }>
+  /** The ids of the files one chat uses ([] for a chat that is not listed). */
+  attachmentsOf(id: string): Promise<string[]>
   /** Every readable conversation, newest first, and how many files could not be read (and were left alone). */
   list(): Promise<{ conversations: ConversationSummary[]; unreadable: number }>
   /** How many chats are kept plain and how many encrypted, and how many files could not be read (D-035). */
@@ -137,8 +148,19 @@ export interface ConversationStore {
 }
 
 /** The title shown in the list: the first message the person wrote, on one line, cut at 60 characters. */
+/** The version a chat's file is written as: 4 when a message of it carries files (D-037), else 3, so a chat without files is written exactly as before. */
+export const fileVersion = (conversation: { messages: readonly SavedMessage[] }): 3 | 4 =>
+  conversation.messages.some((message) => message.attachments !== undefined) ? 4 : 3
+
 export function titleFor(messages: readonly SavedMessage[]): string {
-  const first = messages.find((message) => message.role === 'user')?.content ?? ''
+  const firstMessage = messages.find((message) => message.role === 'user')
+  // A first message that is only files (D-037) is named by its files.
+  const first =
+    firstMessage === undefined
+      ? ''
+      : firstMessage.content.trim() !== ''
+        ? firstMessage.content
+        : (firstMessage.attachments ?? []).map((file) => file.name).join(', ')
   const oneLine = first.replace(/\s+/g, ' ').trim()
   const letters = Array.from(oneLine) // by character, so an emoji is not cut in half
   return letters.length > 60 ? `${letters.slice(0, 60).join('')}...` : oneLine || 'New chat'
@@ -158,7 +180,7 @@ const isTime = (value: unknown): value is number =>
 export function parseSavedFile(raw: unknown, id: string): SavedConversation | string {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return 'it is not an object'
   const file = raw as Record<string, unknown>
-  if (file.version !== 1 && file.version !== 2 && file.version !== 3) {
+  if (file.version !== 1 && file.version !== 2 && file.version !== 3 && file.version !== 4) {
     return 'it was made by another version of the app'
   }
   if (file.id !== id) return 'the id inside does not match the file name'
@@ -170,14 +192,25 @@ export function parseSavedFile(raw: unknown, id: string): SavedConversation | st
   // opened without the instructions it was saved with would quietly answer differently. An older file has none, and whatever such a file
   // says about them is not read (it was not made by a version that knew them).
   let instructions = ''
-  if (file.version === 3) {
+  if (file.version === 3 || file.version === 4) {
     const checked =
       typeof file.instructions === 'string' ? checkInstructions(file.instructions) : null
     if (checked === null || !checked.ok) return 'its instructions are not usable'
     instructions = checked.instructions
   }
-  const messages = checkSavedMessages(file.messages, file.version === 1 ? 'file-v1' : 'file')
+  // Files are read only from a version 4 file (D-037), which must have at least one: a version 4 file without any is not one this app writes.
+  const messages = checkSavedMessages(
+    file.messages,
+    file.version === 1 ? 'file-v1' : 'file',
+    file.version === 4
+  )
   if (!messages.ok) return messages.error
+  if (
+    file.version === 4 &&
+    !messages.messages.some((message) => message.attachments !== undefined)
+  ) {
+    return 'it says it holds files and holds none'
+  }
   return {
     id,
     title: file.title,
@@ -292,8 +325,13 @@ export function createConversationStore(
   const writeMode = options.writeMode ?? alwaysPlain
   const index = new Map<
     string,
-    { summary: ConversationSummary; createdAt: number; form: FileForm }
+    { summary: ConversationSummary; createdAt: number; form: FileForm; files: string[] }
   >()
+  const filesOf = (conversation: SavedConversation): string[] => [
+    ...new Set(
+      conversation.messages.flatMap((message) => (message.attachments ?? []).map((file) => file.id))
+    )
+  ]
   const unreadable = new Set<string>()
   /** The part of `unreadable` that is encrypted files that could not be opened. */
   const unopened = new Set<string>()
@@ -337,7 +375,8 @@ export function createConversationStore(
               index.set(id, {
                 summary: summaryOf(read.conversation),
                 createdAt: read.conversation.createdAt,
-                form: read.form
+                form: read.form,
+                files: filesOf(read.conversation)
               })
               return
             }
@@ -371,7 +410,9 @@ export function createConversationStore(
     conversation: SavedConversation,
     form: FileForm
   ): Promise<SaveOutcome> {
-    const plain = JSON.stringify({ version: 3, ...conversation })
+    // Version 4 only for a chat with files (D-037): a chat without any is written exactly as before.
+    const version = fileVersion(conversation)
+    const plain = JSON.stringify({ version, ...conversation })
     // Whatever is written must be readable again, so the limit on reading is also a limit on writing.
     if (Buffer.byteLength(plain) > HISTORY_LIMITS.maxFileBytes) {
       return { ok: false, error: 'This conversation is too large to save.' }
@@ -396,7 +437,12 @@ export function createConversationStore(
       throw new Error('the saved file could not be read back')
     await fs.rm(copy, { force: true }).catch(() => undefined) // if this fails the ".tmp" only repeats the file
     const summary = summaryOf(conversation)
-    index.set(conversation.id, { summary, createdAt: conversation.createdAt, form })
+    index.set(conversation.id, {
+      summary,
+      createdAt: conversation.createdAt,
+      form,
+      files: filesOf(conversation)
+    })
     markReadable(conversation.id)
     return { ok: true, summary }
   }
@@ -438,6 +484,21 @@ export function createConversationStore(
   }
 
   return {
+    attachmentRefs: () =>
+      inOrder(async () => {
+        await ensureScanned()
+        const ids = new Set<string>()
+        for (const entry of index.values()) for (const file of entry.files) ids.add(file)
+        return { ids, complete: unreadable.size === 0 }
+      }),
+
+    attachmentsOf: (id) =>
+      inOrder(async () => {
+        assertId(id)
+        await ensureScanned()
+        return [...(index.get(id)?.files ?? [])]
+      }),
+
     list: () =>
       inOrder(async () => {
         await ensureScanned()

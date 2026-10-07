@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { withEditedMessage, withoutLastReply } from './rewrite'
+import type { AttachedFile } from '../../../shared/attachments'
 import type { ChatMessage, LargeRequest, ReplyFn } from './types'
 
 export interface UseChat {
@@ -10,7 +11,8 @@ export interface UseChat {
   largeRequest: LargeRequest | null
   /** The person's answer to `largeRequest`: true to send it, false not to. Does nothing when no question is open. */
   answerLargeRequest: (yes: boolean) => void
-  send: (text: string) => void
+  /** Sends a message of the person's: its text and the files on it (D-037; either may be empty, not both). */
+  send: (text: string, files?: AttachedFile[]) => void
   /** Stops the reply that is arriving. Whatever has arrived so far is kept. */
   stop: () => void
   /** The person's instructions for this chat (D-027): '' for none. They go with every request, and are saved with the chat. */
@@ -145,14 +147,16 @@ export function useChat(reply: ReplyFn): UseChat {
     void streamReply(history, replyMessage.id, controller)
   }
 
-  function send(text: string): void {
+  function send(text: string, files: AttachedFile[] = []): void {
     if (activeReply.current) return // one reply at a time
+    if (text === '' && files.length === 0) return
 
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'user',
       content: text,
-      status: 'done'
+      status: 'done',
+      ...(files.length > 0 ? { files } : {})
     }
     begin([...messages, userMessage])
   }

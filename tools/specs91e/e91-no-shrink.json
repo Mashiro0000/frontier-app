@@ -1,0 +1,15 @@
+{
+  "label": "e91-no-shrink",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentImages.ts",
+      "from": "      let picture = scale < 1 ? image.resize({ width: w, height: h, quality: 'best' }) : image",
+      "to": "      let picture = image"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run91.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

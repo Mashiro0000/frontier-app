@@ -1,0 +1,14 @@
+{
+  "label": "n95-reader-trailer-files-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "      (result.files === undefined || result.trailer.files === result.files.seen) &&\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-5.mjs"
+  ],
+  "env": {}
+}

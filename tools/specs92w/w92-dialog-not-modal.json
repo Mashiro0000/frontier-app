@@ -1,0 +1,18 @@
+{
+  "label": "w92-dialog-not-modal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupDialogs.ts",
+      "from": "    properties: ['openFile' as const, 'multiSelections' as const]\n  }\n  const window = windowOf(owner)",
+      "to": "    properties: ['openFile' as const, 'multiSelections' as const]\n  }\n  const window = windowOf(null)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run92.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 420000
+}

@@ -6,13 +6,28 @@ import type { Effort, ModelEntry, ProviderId } from '../../shared/registry'
 // only these types. No Electron imports, so every adapter can be run and checked under plain Node.
 
 /**
- * One turn of a conversation, in no provider's format. Text only, because the chat shows text (a reply is Markdown, D-025):
- * a different kind of content (an image, a tool call) would be a new field here and a translation in each adapter.
+ * One turn of a conversation, in no provider's format: its text, and (on a message of the person's, Stage 9.3, D-037) the files on it. A turn with no
+ * files has no `attachments` at all, and each adapter then sends it exactly as it did before files existed (checked byte for byte).
  */
 export interface NeutralMessage {
   role: 'user' | 'assistant'
+  /** May be '' only on a message of the person's that carries files. */
   content: string
+  attachments?: NeutralAttachment[]
 }
+
+/**
+ * A file on a message, read by main from its own copy and checked (D-037): an image (its bytes as base64), a PDF (its bytes as base64, and a name that
+ * ends in ".pdf"), or a text file (its text, and its name, which says what language it is in). Each adapter puts them in its provider's own form.
+ */
+export type NeutralAttachment =
+  | {
+      kind: 'image'
+      mediaType: 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp'
+      data: string
+    }
+  | { kind: 'pdf'; name: string; data: string }
+  | { kind: 'text'; name: string; text: string }
 
 /** What a provider is given to prove who is asking. */
 export interface Credentials {

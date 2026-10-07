@@ -1,0 +1,16 @@
+{
+  "label": "n91-pdf-no-inflate-cap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "        maxOutputLength: MAX_INFLATED_BYTES - inflated",
+      "to": "        maxOutputLength: 2 ** 31 - 1"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

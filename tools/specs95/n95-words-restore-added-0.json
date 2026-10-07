@@ -1,0 +1,14 @@
+{
+  "label": "n95-words-restore-added-0",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/useBackup.ts",
+      "from": "  if (result.added + result.copies > 0 || result.files === undefined) {",
+      "to": "  if (true as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-5.mjs"
+  ],
+  "env": {}
+}

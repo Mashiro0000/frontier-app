@@ -1,0 +1,14 @@
+{
+  "label": "n92-ipc-discard-unguarded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    if (!isTrustedSender(event, appUrl)) return\n    attaching.discard(id)",
+      "to": "    void event\n    attaching.discard(id)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

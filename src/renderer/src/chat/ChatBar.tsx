@@ -10,6 +10,11 @@ interface ChatBarProps {
   onNewChat: () => void
   onOpenHistory: () => void
   onOpenInstructions: () => void
+  /** Opens the system's dialog to attach files to the message being written (D-037). */
+  onAttach: () => void
+  /** Main is working on files, or the message has as many as it may carry. */
+  attachDisabled: boolean
+  attachTitle: string
 }
 
 /**
@@ -24,10 +29,22 @@ function ChatBar({
   saveFailed,
   onNewChat,
   onOpenHistory,
-  onOpenInstructions
+  onOpenInstructions,
+  onAttach,
+  attachDisabled,
+  attachTitle
 }: ChatBarProps): React.JSX.Element {
   return (
     <div className="chat-bar" role="group" aria-label="This chat">
+      <button
+        type="button"
+        className="chat-button"
+        disabled={attachDisabled}
+        title={attachTitle}
+        onClick={onAttach}
+      >
+        Attach...
+      </button>
       <button
         type="button"
         className="chat-button"

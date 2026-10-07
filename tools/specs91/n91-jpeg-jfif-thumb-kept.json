@@ -1,0 +1,16 @@
+{
+  "label": "n91-jpeg-jfif-thumb-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "      : 'jfif-no-thumbnail'",
+      "to": "      : 'keep'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

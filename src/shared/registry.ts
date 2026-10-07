@@ -11,7 +11,7 @@
 import type { ModelOption } from './ipc'
 
 /** The shape of registry/models.json that this version of the app reads. */
-export const REGISTRY_SCHEMA_VERSION = '0.4'
+export const REGISTRY_SCHEMA_VERSION = '0.5'
 
 /** The providers this version of the app can call. An entry for any other provider is left out. */
 export const SUPPORTED_PROVIDERS = ['anthropic', 'openai'] as const
@@ -44,6 +44,8 @@ export const PROVIDER_EFFORTS: Record<ProviderId, readonly Effort[]> = {
 export interface ModelCapabilities {
   /** It reads images. */
   imageInput: boolean
+  /** It reads PDFs (each page as its text and as a picture). Since schema 0.5 (Stage 9.3, D-037): a PDF is not sent to a model that does not. */
+  documentInput: boolean
   /** It can call functions the app offers it. */
   toolUse: boolean
   /**
@@ -188,7 +190,13 @@ const PRICING_FIELDS = [
   'cacheWritePerMTok',
   'outputPerMTok'
 ] as const
-const CAPABILITY_FLAGS = ['imageInput', 'toolUse', 'reasoning', 'promptCaching'] as const
+const CAPABILITY_FLAGS = [
+  'imageInput',
+  'documentInput',
+  'toolUse',
+  'reasoning',
+  'promptCaching'
+] as const
 const CAPABILITY_FIELDS = [...CAPABILITY_FLAGS, 'effortLevels'] as const
 
 type EntryResult = { ok: true; entry: ModelEntry } | { ok: false; problem: string }
@@ -225,6 +233,7 @@ function parseCapabilities(value: unknown, provider: ProviderId): CapabilitiesRe
     ok: true,
     capabilities: {
       imageInput: value['imageInput'] as boolean,
+      documentInput: value['documentInput'] as boolean,
       toolUse: value['toolUse'] as boolean,
       reasoning: value['reasoning'] as boolean,
       promptCaching: value['promptCaching'] as boolean,
@@ -390,6 +399,8 @@ export function toModelOption(entry: ModelEntry): ModelOption {
     provider: entry.provider,
     description: entry.description,
     contextWindow: entry.contextWindow,
-    pricing: { ...entry.pricing }
+    pricing: { ...entry.pricing },
+    imageInput: entry.capabilities.imageInput,
+    documentInput: entry.capabilities.documentInput
   }
 }

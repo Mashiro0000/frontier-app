@@ -1,0 +1,14 @@
+{
+  "label": "n95-svc-look-all-missing",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "          if (options.files === undefined || (await options.files.read(id)) === null)\n            files.missing += 1",
+      "to": "          files.missing += 1"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-5.mjs"
+  ],
+  "env": {}
+}

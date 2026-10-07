@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/backup.ts",
-      "from": "return { ok: true, count: written.length, leftOut: source.leftOut + gone, bytes }",
-      "to": "return { ok: true, count: written.length, leftOut: source.leftOut, bytes }"
+      "from": "    leftOut: source.leftOut + gone,\n    bytes,",
+      "to": "    leftOut: source.leftOut,\n    bytes,"
     }
   ],
   "argv": [

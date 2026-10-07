@@ -1,0 +1,16 @@
+{
+  "label": "n91-prep-webp-turn-ok",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "    if (orientation !== 1) {\n      return refuse(",
+      "to": "    if (false as boolean) {\n      return refuse("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

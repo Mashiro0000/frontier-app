@@ -1,0 +1,21 @@
+{
+  "label": "n91-seal-nobox-plain",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "    if (form === 'encrypted' && box === undefined) {\n      throw new Error('this store has no secure storage to encrypt with')\n    }",
+      "to": ""
+    },
+    {
+      "file": "{{REPO}}/src/main/attachmentStore.ts",
+      "from": "      return opened.ok && opened.form === form && opened.bytes.equals(bytes)",
+      "to": "      return opened.ok && opened.bytes.equals(bytes)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

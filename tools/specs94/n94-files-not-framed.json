@@ -1,0 +1,14 @@
+{
+  "label": "n94-files-not-framed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "    TOKENS_PER_FILE * files.count",
+      "to": "    0 * files.count"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-4.mjs"
+  ],
+  "env": {}
+}

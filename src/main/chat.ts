@@ -1,11 +1,12 @@
 import { ipcMain, type WebContents } from 'electron'
 import { askFirstAmount, estimateRequest, needsConfirmation } from '../shared/askFirst'
 import { CHANNELS, type ChatRequest, type ChatStreamEvent } from '../shared/ipc'
-import { checkAgainstLimits, type Limits } from '../shared/limits'
+import { checkAgainstLimits, withFilesNote, type Limits } from '../shared/limits'
 import { PROVIDER_NAMES, type ProviderId } from '../shared/registry'
 import {
   costOf,
   costOfRecord,
+  estimateFileTokens,
   estimateInputTokens,
   estimateOutputTokens,
   NO_TOKENS,
@@ -17,6 +18,8 @@ import {
 } from '../shared/usage'
 import { checkChatRequest } from '../shared/validate'
 import type { AskFirstStore } from './askFirst'
+import { resolveAttachments } from './attachmentRequest'
+import type { ReadResult } from './attachmentStore'
 import { baseUrlOverride } from './baseUrl'
 import { createConfirmations } from './confirmation'
 import { readApiKey } from './keyStore'
@@ -110,14 +113,21 @@ function endEvent(streamId: string, end: ReplyEnd): ChatStreamEvent {
   }
 }
 
+/** What a reply needs besides the request: the stores it counts and checks against, and the reader of the attachments' copies (D-037). */
+interface ReplyContext {
+  ledger: UsageLedger
+  limitsStore: LimitsStore
+  askFirstStore: AskFirstStore
+  readAttachment: (id: string) => Promise<ReadResult>
+}
+
 async function runReply(
   windowId: number,
   request: ChatRequest,
   send: (event: ChatStreamEvent) => void,
-  ledger: UsageLedger,
-  limitsStore: LimitsStore,
-  askFirstStore: AskFirstStore
+  context: ReplyContext
 ): Promise<void> {
+  const { ledger, limitsStore, askFirstStore } = context
   const { streamId } = request
   const key = `${windowId}:${streamId}`
   if (running.has(key)) {
@@ -185,17 +195,28 @@ async function runReply(
       return
     }
     apiKey = saved
+    // The files of the conversation (D-037): read from main's own copies and checked, every time, before anything is counted or sent. A file that cannot be
+    // read, a kind of file the model cannot read, or files over the caps of one request: nothing is sent, and the person is told why.
+    const resolved = await resolveAttachments(request.messages, entry, context.readAttachment)
+    if (!resolved.ok) {
+      send({ streamId, type: 'error', message: resolved.error })
+      return
+    }
     const streamRequest = buildStreamRequest({
       credentials: { apiKey, baseURL: baseUrlOverride(entry.provider) },
       model: entry,
       effort,
       instructions: request.instructions, // the person's own, already checked (D-027): added after the app's rules
-      messages: request.messages,
+      messages: resolved.messages,
       signal: controller.signal
     })
     // One guess at what this request sends, used three times and the same each time: for the question below (D-032), for the limit's check
-    // (D-031) and for the ledger's first line (D-030).
-    const inputTokens = estimateInputTokens(streamRequest.system, streamRequest.messages)
+    // (D-031) and for the ledger's first line (D-030). The files are part of it (D-037): images by their size, PDFs by their pages, text by its bytes.
+    const fileTokens = estimateFileTokens(resolved.files)
+    const files =
+      resolved.files.count > 0 ? { count: resolved.files.count, tokens: fileTokens } : undefined
+    const inputTokens =
+      estimateInputTokens(streamRequest.system, streamRequest.messages) + fileTokens
     // The spending limits (D-031), as they are now. They are asked for on EVERY request, whichever way it came (a new message, Regenerate,
     // an edited message): this is the only place a provider is called. A file that cannot be read at all refuses the request (null, after
     // the page has been told), and so does a limit that has not been chosen yet.
@@ -216,7 +237,12 @@ async function runReply(
     // A very large request is asked about BEFORE anything is written or sent (D-032): what it could cost at the most is shown to the person,
     // and it goes only on their yes. Nothing is begun in the ledger while the question is open, so a request that is never answered never counts.
     // The answer comes from `confirmations`, which hears a yes only for a question that is waiting.
-    const estimate = estimateRequest(inputTokens, streamRequest.maxOutputTokens, entry.pricing)
+    const estimate = estimateRequest(
+      inputTokens,
+      streamRequest.maxOutputTokens,
+      entry.pricing,
+      files
+    )
     const askFirst = await askFirstStore.read() // never throws: damage to the file is "nothing chosen", and the default asks
     const askAbove = askFirstAmount(askFirst)
     if (askAbove !== null && needsConfirmation(askFirst, estimate)) {
@@ -227,11 +253,14 @@ async function runReply(
       let refusal: string | null = null
       try {
         const sums = await ledger.summary(null)
-        refusal = checkAgainstLimits(before, {
-          today: sums.today.costUsd,
-          month: sums.month.costUsd,
-          request: costOf({ ...NO_TOKENS, input: inputTokens }, entry.pricing)
-        })
+        refusal = withFilesNote(
+          checkAgainstLimits(before, {
+            today: sums.today.costUsd,
+            month: sums.month.costUsd,
+            request: costOf({ ...NO_TOKENS, input: inputTokens }, entry.pricing)
+          }),
+          files
+        )
       } catch {
         // The ledger could not be read: `begin` below fails the same way and says so. The question is asked meanwhile.
       }
@@ -260,7 +289,7 @@ async function runReply(
           prices: entry.pricing,
           inputTokens
         },
-        (spend) => checkAgainstLimits(limits, spend)
+        (spend) => withFilesNote(checkAgainstLimits(limits, spend), files)
       )
     } catch (error) {
       if (error instanceof RequestRefused) {
@@ -326,12 +355,7 @@ async function runReply(
 }
 
 /** Registers the chat messages. Called from registerIpc, after the app is ready. */
-export function registerChatIpc(
-  appUrl: string,
-  ledger: UsageLedger,
-  limitsStore: LimitsStore,
-  askFirstStore: AskFirstStore
-): void {
+export function registerChatIpc(appUrl: string, context: ReplyContext): void {
   ipcMain.on(CHANNELS.chatStart, (event, raw: unknown) => {
     if (!isTrustedSender(event, appUrl)) return // nobody to answer: it is not our page
     const sender = event.sender
@@ -344,7 +368,7 @@ export function registerChatIpc(
       return
     }
     stopWhenPageGoes(sender)
-    void runReply(sender.id, check.request, send, ledger, limitsStore, askFirstStore)
+    void runReply(sender.id, check.request, send, context)
   })
 
   ipcMain.on(CHANNELS.chatCancel, (event, streamId: unknown) => {

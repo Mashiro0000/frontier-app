@@ -1,0 +1,14 @@
+{
+  "label": "n93-block-ignores-earlier",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/attachmentText.ts",
+      "from": "  const all = chatFiles(messages, draft)",
+      "to": "  const all = chatFiles([], draft)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

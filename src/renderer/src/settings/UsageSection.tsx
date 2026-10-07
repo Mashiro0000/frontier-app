@@ -38,6 +38,16 @@ function row(label: string, totals: UsageTotals, limit?: LimitSetting): React.JS
 function UsageSection({ open, conversationId, limits }: UsageSectionProps): React.JSX.Element {
   const [summary, setSummary] = useState<UsageSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // The sums of an earlier opening are not shown again (found by the regression of 9.6): a reply may have ended since, and the old numbers
+  // would be on screen until main answered. When Settings opens, it says "Checking..." until the new sums arrive.
+  const [wasOpen, setWasOpen] = useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      setSummary(null)
+      setError(null)
+    }
+  }
 
   useEffect(() => {
     if (!open) return

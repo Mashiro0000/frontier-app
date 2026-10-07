@@ -1,0 +1,14 @@
+{
+  "label": "n93-ipc-hold-kept-after-save",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "            for (const file of message.attachments ?? []) attachments.release(file.id)",
+      "to": "            void message"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

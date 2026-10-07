@@ -2,6 +2,9 @@ import { app, BrowserWindow, ipcMain, type IpcMainInvokeEvent } from 'electron'
 import { join } from 'path'
 import {
   CHANNELS,
+  type AttachBytesResult,
+  type AttachmentPreview,
+  type AttachPickResult,
   type ChatStorageResult,
   type ChatStorageStatus,
   type HistoryExportResult,
@@ -40,7 +43,10 @@ import {
   checkProvider
 } from '../shared/validate'
 import { createAskFirstStore } from './askFirst'
-import { systemAskers, systemPickers } from './backupDialogs'
+import { electronImageTools } from './attachmentImages'
+import { createAttachmentService } from './attachmentService'
+import { createAttachmentStore } from './attachmentStore'
+import { pickAttachmentPaths, systemAskers, systemPickers } from './backupDialogs'
 import { createBackupService } from './backupService'
 import { baseUrlOverride } from './baseUrl'
 import { registerChatIpc } from './chat'
@@ -285,6 +291,23 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     writeMode: protection.writeMode
   })
   const reason = (error: unknown): unknown => (error instanceof Error ? error.message : error)
+  // The attachments (D-037): main's own copies of the files the person attaches, in attachments/ beside the chats, checked by their bytes and sealed
+  // like the chats (the same rule for how a file may be written). The page hands over bytes (a paste, a drop) or asks main to open the system's dialog;
+  // it never names a path.
+  const attachments = createAttachmentStore(join(app.getPath('userData'), 'attachments'), {
+    images: electronImageTools,
+    box: secureStorage,
+    writeMode: protection.writeMode
+  })
+  const attaching = createAttachmentService({
+    store: attachments,
+    pickPaths: pickAttachmentPaths,
+    // The files saved chats use (D-037): a file taken off a message is deleted only if no chat uses it, and only if every chat could be read.
+    referenced: async () => {
+      const refs = await history.attachmentRefs()
+      return refs.complete ? refs.ids : null
+    }
+  })
 
   // Backing up chats to a file and restoring them from one (D-034), and turning the encryption of the saved chats on and off (D-035): the same lock,
   // so that never two of them run at once. The person chooses places and answers questions in the system's own dialogs, which main opens for the
@@ -292,13 +315,22 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   const backups = createBackupService({
     store: history,
     dataDir: app.getPath('userData'),
-    pickers: systemPickers
+    pickers: systemPickers,
+    // A backup holds the files its chats carry, as their plain bytes, and a restore puts them back (D-037).
+    files: {
+      read: async (id) => {
+        const copy = await attachments.read(id)
+        return copy.ok ? copy.bytes : null
+      },
+      adopt: (id, bytes) => attachments.adopt(id, bytes)
+    }
   })
   const encryption = createChatEncryptionService({
     store: history,
     protection,
     backups,
-    asks: systemAskers
+    asks: systemAskers,
+    files: attachments
   })
 
   ipcMain.handle(
@@ -333,7 +365,15 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       const check = checkConversationSave(input) // the title and dates are not the page's to choose
       if (!check.ok) return check
       try {
-        return await history.save(check.conversation)
+        const saved = await history.save(check.conversation)
+        // A file attached in this run is held (kept from deletion) while it is on a message being written. Once a saved chat names it, the chat keeps
+        // it instead: it is let go of, so that deleting the chat can delete it (D-037).
+        if (saved.ok) {
+          for (const message of check.conversation.messages) {
+            for (const file of message.attachments ?? []) attachments.release(file.id)
+          }
+        }
+        return saved
       } catch (error) {
         console.error('Saving a conversation failed:', reason(error))
         return { ok: false, error: 'The conversation could not be saved on this computer.' }
@@ -347,7 +387,15 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       const check = checkConversationId(input)
       if (!check.ok) return check
       try {
-        return await history.remove(check.id)
+        // The chat's files are deleted with it when no other chat uses them (D-037), and only when every chat could be read (else what uses them is
+        // not known). A file that cannot be deleted is left; the chat is still deleted.
+        const files = await history.attachmentsOf(check.id)
+        const removed = await history.remove(check.id)
+        if (removed.ok && files.length > 0) {
+          const refs = await history.attachmentRefs()
+          if (refs.complete) await attachments.deleteUnused(files, refs.ids)
+        }
+        return removed
       } catch (error) {
         console.error('Deleting a saved conversation failed:', reason(error))
         return { ok: false, error: 'The conversation could not be deleted.' }
@@ -418,6 +466,44 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
+  // Attaching files (D-037). "Attach..." opens the system's open dialog for the window that asked; a paste or a drop hands over bytes and a name. Every
+  // file is checked by its bytes and kept as a copy; the page learns what it is (and a small picture), never a path.
+  ipcMain.handle(
+    CHANNELS.attachmentsPick,
+    guardedForWindow(async (window): Promise<AttachPickResult> => {
+      try {
+        return await attaching.pick(window)
+      } catch (error) {
+        console.error('Attaching files failed:', reason(error))
+        return { ok: false, error: 'The files could not be attached.' }
+      }
+    })
+  )
+
+  ipcMain.handle(
+    CHANNELS.attachmentsAddBytes,
+    guarded(async (input: unknown): Promise<AttachBytesResult> => {
+      try {
+        return await attaching.addBytes(input)
+      } catch (error) {
+        console.error('Attaching a pasted or dropped file failed:', reason(error))
+        return { ok: false, error: 'The file could not be attached.' }
+      }
+    })
+  )
+
+  ipcMain.handle(
+    CHANNELS.attachmentsDescribe,
+    guarded(async (input: unknown): Promise<AttachmentPreview[]> => attaching.describe(input))
+  )
+
+  ipcMain.on(CHANNELS.attachmentsDiscard, (event, id: unknown) => {
+    if (!isTrustedSender(event, appUrl)) return
+    attaching.discard(id).catch((error: unknown) => {
+      console.error('Letting go of an attachment failed:', reason(error))
+    })
+  })
+
   // What was used and what it cost (D-030): one plain file, written by main alone. The page can ask for sums and nothing else.
   const ledger = createUsageLedger(join(app.getPath('userData'), 'usage', 'ledger.jsonl'))
 
@@ -433,8 +519,25 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
-  registerChatIpc(appUrl, ledger, limitsStore, askFirstStore)
+  // At start, the copies left by messages that were never sent (D-037): deleted when no chat uses them, they are over an hour old, and every chat could
+  // be read (otherwise what uses them is not known, and nothing is deleted). It runs in the stores' own turns, after the folder has been read.
+  void history
+    .attachmentRefs()
+    .then((refs) => (refs.complete ? attachments.sweep(refs.ids, 3_600_000) : undefined))
+    .catch((error: unknown) => console.error('Clearing unused attachments failed:', reason(error)))
+
+  registerChatIpc(appUrl, {
+    ledger,
+    limitsStore,
+    askFirstStore,
+    readAttachment: (id) => attachments.read(id)
+  })
   // The lock the encryption flows run in is the backup service's, so waiting for it waits for them too.
   return () =>
-    Promise.all([history.whenIdle(), ledger.whenIdle(), backups.whenIdle()]).then(() => undefined)
+    Promise.all([
+      history.whenIdle(),
+      ledger.whenIdle(),
+      backups.whenIdle(),
+      attachments.whenIdle()
+    ]).then(() => undefined)
 }

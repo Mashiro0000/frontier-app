@@ -1,0 +1,14 @@
+{
+  "label": "n93-conv-always-v4",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "  conversation.messages.some((message) => message.attachments !== undefined) ? 4 : 3",
+      "to": "  4"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

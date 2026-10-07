@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "Promise.all([history.whenIdle(), ledger.whenIdle(), backups.whenIdle()])",
-      "to": "Promise.all([history.whenIdle(), ledger.whenIdle()])"
+      "from": "      ledger.whenIdle(),\n      backups.whenIdle(),\n",
+      "to": "      ledger.whenIdle(),\n"
     }
   ],
   "argv": [

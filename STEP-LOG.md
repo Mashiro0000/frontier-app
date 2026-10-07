@@ -2302,3 +2302,117 @@ if you have not, please do before you rely on this. **The design was mine** (you
 1. **"Quick answer" has no suggested model now.** Its only row was Haiku's; a documented replacement would need a page that names one (IDEAS).
 2. **The mock still knows Haiku 4.5**, as the provider does until it retires; only the app's list dropped it.
 3. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 9 - The plan (6 October 2026; waiting for your yes, nothing built)
+
+**Your instruction.** "After this start the new stage in new session on your own, I'm going out. And keep the OPUS 5.5 Max."
+
+**What I did, and why only this.**
+
+1. **A new session could not carry on alone.** I can open a session only as a scheduled task, and the one I tried came up at medium effort (not Max) and stopped at its first file write to ask you (new sessions start in the "ask" permission mode; changing that is a security setting, yours). When I looked into another way (a prompt scheduled into this session after clearing it), the app's own safety check refused the look, so I dropped that idea.
+2. **So I started the stage in this session, with its first step:** the roadmap says each stage "starts with a short written plan that the owner approves", so the plan is in `docs/ROADMAP.md` (Stage 9), with five questions for you. Nothing is built. It is committed on the branch `stage-9-attachments` (not pushed).
+3. **To go on:** answer the five questions (or say "your picks"), then start a new session in `A:\frontier-app` on Opus 5.5 at Max effort and say "Stage 9: read your notes (stage-9-state), my answers are ...". (A one-click suggestion would have started it in a separate copy of the repository without `node_modules`, where the app cannot run, so I did not leave one.)
+
+**The plan in one paragraph.** Files come in through the system's own open dialog (the page never names a path), or as pasted or dropped bytes; main decides what a file is from its first bytes (images, PDF, text), checks an image's size from its header before decoding it, copies it into the app's data folder named by its hash, removes image metadata, and keeps caps on size and count. Each file shows as a chip that says which provider it goes to; the request names files by id and main builds each provider's form; with no attachment a request is byte for byte what it is today. Attachments are sealed when encryption is on, deleted with the last chat that uses them, and included in backups; the cost guess counts them, so the limits and the question before a large request see them. Six slices, 9.1 to 9.6.
+
+## Stage 9 - Slice 9.1: the attachment store (6 October 2026 session; D-037)
+
+**Your instructions.** "Start Stage 9 ... I approve the plan in docs/ROADMAP.md ... My answers to its five questions: your picks. First bring stage-9-attachments up to date with main (... where STEP-LOG conflicts, keep both sections). Then build slice 9.1 and verify it the usual way ..., and go on slice by slice through 9.6, ending with the stage's full regression. Commit, merge and push on your own ... Scratch profiles only, no new packages, no real API calls." And: "Work on your own I'm going out."
+
+**Step by step.**
+
+1. **The branch brought up to date.** `main` (with the removal of Claude Haiku 4.5) was merged into `stage-9-attachments`; STEP-LOG was the only conflict, and both sections are kept (Haiku's first, then the Stage 9 plan).
+2. **Your picks, as answers:** image metadata always removed; a PDF sent as it is, with a note; my caps; big images made smaller; backups with the attachments in them.
+3. **The caps were checked against the providers' own pages** (Anthropic's "Vision" and "PDF support", OpenAI's "Images and vision" and "File inputs"). One of mine had to change: Anthropic refuses every image over 2000 px a side in a request that holds more than 20 images, and a chat sends all its earlier images again with every message, so **an image is now sent at most 2000 px a side** (a bigger PNG or JPEG is made smaller; the plan said 8000). OpenAI takes no animated GIF, so **animated images are refused**. The full list is in D-037.
+4. **What Electron's own image tool does, measured before relying on it:** it decodes PNG and JPEG but not GIF or WebP (so those go as they are, with lower caps), and **it ignores a photo's "held sideways" mark**. Taking a phone photo's metadata out would have left it lying on its side, so such a photo is now turned upright pixel by pixel when it comes in.
+5. **Built** (no window yet; nothing in the app calls it until 9.2): `src/shared/attachments.ts` (what the page may know about an attachment, the caps, the name rule), `src/main/attachmentFormats.ts` (what a file is from its bytes, image headers, metadata taken out by rewriting the bytes, a PDF's pages, the text rule), `src/main/attachmentStore.ts` (the whole way in, reading a file you chose, the folder: copies named by their hash and read back, the caps, sealing like the chats, deleting only what nothing uses) and `src/main/attachmentImages.ts` (Electron's image tool: smaller, upright, the small picture for the chip).
+6. **Checked:** 185 checks under plain Node (in a normal folder and in your PC's EFS-encrypted data folder), 14 with Electron's real image tool (the eight ways a photo can be marked as turned all come out upright; the same pixels after the metadata goes), and **79 negative controls, all caught** in the end. Five were not caught the first time: four because my checks were blind (fixed in the checks), one because two separate guards stop the same thing (its control now removes both).
+
+## Stage 9.1 - Things to know (not problems, but worth your attention)
+
+1. **Nothing of this is on screen yet.** The Attach button, paste and drop come in 9.2; sending in 9.3.
+2. **A PDF is sent as it is**, with whatever its author or its program put in it (your answer 2); the chip will say so.
+3. **A PDF's pages are counted from its structure, not drawn**: an unusual PDF could be counted wrong (the provider then has the last word). A PDF with a password is refused.
+4. **A photo is made smaller and its metadata removed before it is kept**: the copy in the app's folder is what is sent, and your original is never changed (only read).
+5. **Everything in the earlier stages' "Things to know" still applies**, including the first real API call, which only you can make.
+
+## Stage 9 - Slice 9.2: getting files in (6 October 2026 session; D-037)
+
+**Step by step.**
+
+1. **"Attach..." is the first button under the message box.** It opens Windows' own open dialog (main opens it; the page never names a path). You can also **paste an image** into the message box, or **drop files** on the chat: the page reads their bytes and hands them over, never their place on disk.
+2. **Each file becomes a chip** above the box: a small picture (or "PDF" / "TXT"), its name, what it is ("JPEG image, 32 x 64"), what was done to it ("metadata removed; turned upright"), a PDF's note that it goes as it is, and a button to take it off. Under the chips: **where they go** ("These files go to Anthropic with this message, and again with each later message of this chat."). A file that cannot be attached gets one sentence saying why.
+3. **Sending them comes in 9.3**: until then Send waits while files are on the message.
+4. **The real Windows dialog, once, on a scratch profile** (window messages only, nothing else on your desktop): it works, one file or several. **It found a real problem**: Windows opened the dialog on the "Images" filter although "All files" was listed first, which would have hidden your PDFs and text files. The dialog now has only "All files".
+5. **Something you should know about that run:** Windows opened the dialog in your Downloads folder (the folder it remembers), and my script took a screenshot of the dialog. **I deleted that screenshot at once** (it was only in the test output folder, never committed or sent anywhere) and the script no longer takes one.
+6. **Checked:** 30 checks under Node, 36 in the window on the dev app and on the built one (a real paste through the system clipboard and a real file drop included), and 33 negative controls, all caught in the end. Three older checks counted the chat bar's buttons or the bridge's functions and were updated; four older negative-control specs were repointed and run again.
+
+## Stage 9.2 - Things to know (not problems, but worth your attention)
+
+1. **A paste that carries text pastes the text.** Copying cells from a spreadsheet also puts a picture of them on the clipboard; the app pastes the text and attaches nothing, so a picture is never sent by surprise. To attach an image, copy just the image.
+2. **Attach... works while a reply is arriving** (you can prepare the next message), unlike New chat, History and Instructions.
+3. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 9 - Slice 9.3: sending and saving files (6 and 7 October 2026 sessions; D-037)
+
+**Step by step.**
+
+1. **Files are sent.** Send is on with files on the message (even with nothing typed). Main reads its own copy of each file again for every message (the whole chat is sent each time) and sends it in each provider's own form: to Anthropic an image block, a PDF and a text file as titled documents, then your words; to OpenAI an image, a PDF file and the text file led by a line that names it, then your words.
+2. **A message without files is sent exactly as before.** I recorded 70 requests before changing anything (every model, several kinds of chat) and compared them after: byte for byte the same.
+3. **Nothing is sent when a file cannot go**, and one sentence says why: a file whose copy is gone or damaged, a model that cannot read a kind of file in the chat, or a chat whose files are too big for one request. The registry now says which models read PDFs (all six do); if one could not, Send would be off with the reason written under the message box.
+4. **Saved and shown.** A chat with files is saved as version 4 (with each file's description, never a picture or a path); a chat without files is saved exactly as before. A sent message shows its files; a chat opened from History shows their pictures again, made from the copies, without saving the chat again. A chat that starts with only files is named after them.
+5. **Deleting a chat deletes its files** (those no other chat uses). At start, copies no chat uses and older than an hour are removed. Encrypting your chats encrypts the files too, and going back to plain files turns them back.
+6. **The window tests found two real faults, both fixed:** (a) a file you had attached and sent was kept from deletion until the app restarted, so deleting its chat left the copy behind; (b) a backup could not hold a chat with files (it read the chat back and refused it), so turning encryption on, which makes a backup first, stopped. A third (a picture shown for a file deleted since) I found while writing the tests.
+7. **Checked:** 74 checks under Node; in the window 42 on the dev app and the built one, 6 after a restart, and 10 with a changed list of models (one that cannot read images or PDFs; the real list put back and checked). 54 negative controls, all caught the first time. Six older checks and seven older negative-control specs pointed at text I moved, and were updated with the same meaning (each run again: all pass, and the controls are all caught).
+
+## Stage 9.3 - Things to know (not problems, but worth your attention)
+
+1. **Every file in a chat is sent again with every message**, as the chat's text is. A chat with big files costs more with each message; the cost guess for files comes in 9.4. To stop sending a file, start a new chat.
+2. **A backup holds a chat's files' descriptions, not the files** until 9.5. Restoring such a chat on another computer shows its files as "cannot be read any more".
+3. **The forms sent to the providers are my reading of their documentation**, checked by a mock written from the same reading; only a real request (yours to make) proves them.
+4. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 9 - Slice 9.4: what files cost (7 October 2026; D-037)
+
+**Step by step.**
+
+1. **Until now the cost guess counted only text**, so a chat's files were invisible to your spending limits and to the question before a large request: a 100-page PDF went as if it were a few words.
+2. **Now the guess counts files** the way the providers do, on the high side: an image by its size (at most about 6,500 tokens, since images are sent at most 2000 px a side), a PDF by its pages (4,800 a page), a text file by its length. Every file in a chat is counted with every message, because it is sent with every message.
+3. **What you see:** the question before a large request says how much of it is the chat's files ("The file attached in this chat is about 144K tokens of it: every file in a chat is sent again with each message, so a new chat without it costs less."), and a spending limit that stops a request says the same. A request without files is described exactly as before.
+4. **Checked:** 21 checks under Node; in the window, on the dev app and the built one, 11: a small photo goes without the question, a 30-page PDF is asked about and "Don't send" sends nothing, a daily limit of $0.10 stops it with the sentence, and with no limit it goes and the usage record holds the same guess. 18 negative controls, all caught. Two older checks and four older negative-control specs pointed at a line I wrapped, and were updated with the same meaning.
+
+## Stage 9.4 - Things to know (not problems, but worth your attention)
+
+1. **The guess for files is meant to be high.** A real bill for images is probably lower; the provider's report replaces the guess when a reply ends, as before.
+2. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 9 - Slice 9.5: backups hold the files (7 October 2026; D-037)
+
+**Step by step.**
+
+1. **A backup now holds the attached files of its chats** (your answer 5), as their own bytes, even when the app's copies are encrypted: a backup has always been a plain file you keep safe. A backup of chats without files is exactly what it was before.
+2. **Each file is checked when a backup is read**, the way the app checks its own copies: a file that was changed or damaged is set aside and counted, and the chats are not affected. Backups made before this still restore.
+3. **Restoring puts the files back** for the chats it adds (and for chats already here), each copy checked again, written encrypted if encryption is on, and never past the folder's limits. The look before adding says how many files the backup holds and how many are missing here.
+4. **One addition to the plan:** if a chat is still here but its files were lost, the restore panel now offers "Put back 2 attached files" (before, it would have said "Nothing to add").
+5. **Checked:** 33 checks under Node; in the window, on the dev app and the built one, 14: back up a chat with a photo and a PDF, delete it, restore it, the files back and sent again with the same bytes; with encryption on, the backup made before encrypting holds the files too, and lost copies are put back encrypted. 23 negative controls, all caught in the end (one check was made stricter after its control was missed: nothing at all may be written while writing is refused). One older check and three older negative-control specs pointed at text I moved, and were updated with the same meaning.
+
+## Stage 9.5 - Things to know (not problems, but worth your attention)
+
+1. **A backup with files can be large** (a 10 MB PDF takes about 14 MB in it), and it is a plain file: anyone who can open it can see the files. Keep it where you keep the chats' backups.
+2. **An older version of the app cannot read a backup that holds files** (it says the backup was made by another version); backups without files are unchanged.
+3. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 9 - Slice 9.6: the stage as a whole, and the full regression (7 October 2026; D-038)
+
+**Step by step.**
+
+1. **The stage's threat note** is D-038: what Stage 9 added to the app, the risks where its parts meet, and what was not checked. The main points for you: a file is data the model reads, and it can carry instructions (nothing in the app can act on them yet, and Stage 11 must keep it that way); **pictures are decoded in the app's main process** (Electron's own decoder, behind the app's header checks), which I suggest moving to a sandboxed process one day (in IDEAS); a backup holds the files as plain bytes; and a photo's location is always removed, but a file's name and a PDF's own metadata are sent.
+2. **The full regression** (every suite of every stage, on the dev app and the built app): 112 runs, 101 clean the first time, and all the Stage 9 suites passed on both apps. Ten of the other eleven failed only because older checks listed the app's functions or a model's fields as they were before Stage 9 (updated, run again: all pass). **The eleventh found a real fault from Stage 8:** when you opened Settings again, the Usage table showed the numbers from the last time it was open for a moment, before the new ones arrived. It now says "Checking..." until they do, and a new check proves it without depending on timing.
+3. **No package was added, no network address, and nothing in the window's security settings changed** in the whole stage.
+
+## Stage 9 - Things to know (not problems, but worth your attention)
+
+1. **Every file in a chat goes to the provider again with every message.** A big PDF costs again each time; to stop sending it, start a new chat.
+2. **Backups with files are plain files and can be large.** Keep them where you keep the chats' backups.
+3. **The app has still never talked to a real provider**: the files' forms are my reading of Anthropic's and OpenAI's documentation. Your first real request with a file is the real test.
+4. **Everything in the earlier stages' "Things to know" still applies.**

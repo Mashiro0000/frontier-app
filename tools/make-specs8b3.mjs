@@ -59,9 +59,9 @@ const node = {
   'n3-svc-no-backup': [FILE3, [[ES, '    if (counts.plain + counts.encrypted > 0) {', '    if (false as boolean) {']]],
   'n3-svc-backup-failure-ignored': [FILE3, [[ES, '      if (!made.ok) {', '      if (false as boolean) {']]],
   'n3-svc-confirm-always-yes': [FILE3, [[ES, '    if (!yes) return { ok: false, cancelled: true, error: \'Cancelled.\' }', '    void yes']]],
-  'n3-svc-asks-when-nothing-to-weaken': [FILE3, [[ES, "  if (before.choice === 'off' && counts.encrypted === 0) {", '  if (false as boolean) {']]],
+  'n3-svc-asks-when-nothing-to-weaken': [FILE3, [[ES, "  if (before.choice === 'off' && counts.encrypted === 0 && sealedFiles === 0) {", '  if (false as boolean) {']]],
   'n3-svc-key-lost-encrypts': [FILE3, [[ES, "    if (before.choice === 'on' && before.keyUsable !== true) {", '    if (false as boolean) {']]],
-  'n3-svc-noop-asks-backup': [FILE3, [[ES, "    if (before.choice === 'on' && counts.plain === 0) {", '    if (false as boolean) {']]],
+  'n3-svc-noop-asks-backup': [FILE3, [[ES, "    if (before.choice === 'on' && counts.plain === 0 && plainFiles === 0) {", '    if (false as boolean) {']]],
   'n3-svc-no-lock': [FILE3, [[ES, '      backups.exclusive<ChatStorageResult>({ ok: false, error: BUSY }, () => encrypt(owner)),', '      encrypt(owner),']]],
   // ---- the backup service
   'n3-backup-no-title': [FILE3, [[SV, '      beforeEncrypting ? BEFORE_ENCRYPTING_TITLE : undefined\n    )', '      undefined\n    )']]],
@@ -89,8 +89,9 @@ const win = {
   'w8b3-page-no-backup-reminder': [1, [[SECTION, "          {status.choice === 'on' && status.keyUsable === true && (\n            <p className=\"settings-hint\">\n              A backup holds", "          {false && (\n            <p className=\"settings-hint\">\n              A backup holds"]]],
   'w8b3-css-button-fixed-height': [1, [[CSS, '.storage-button {\n  height: auto;', '.storage-button {\n  height: 36px;']]],
   'w8b3-css-path-no-wrap': [1, [[CSS, '.storage-section p {\n  overflow-wrap: anywhere;\n}', '.storage-section p {\n  overflow-wrap: normal;\n}']]],
-  'w8b3-ipc-store-no-writemode': [1, [[IPC, '    box: secureStorage,\n    writeMode: protection.writeMode\n', '    box: secureStorage\n']]],
-  'w8b3-ipc-store-no-box': [1, [[IPC, '    box: secureStorage,\n    writeMode: protection.writeMode\n', '    writeMode: protection.writeMode\n']]],
+  // (9.2, D-037: the attachment store is made with the same two options, so the anchor names the chat store)
+  'w8b3-ipc-store-no-writemode': [1, [[IPC, '  const history = createConversationStore(folder, {\n    box: secureStorage,\n    writeMode: protection.writeMode\n', '  const history = createConversationStore(folder, {\n    box: secureStorage\n']]],
+  'w8b3-ipc-store-no-box': [1, [[IPC, '  const history = createConversationStore(folder, {\n    box: secureStorage,\n    writeMode: protection.writeMode\n', '  const history = createConversationStore(folder, {\n    writeMode: protection.writeMode\n']]],
   'w8b3-ipc-list-no-storage': [1, [[IPC, 'return { ...(await history.list()), folder, storage: await encryption.status() }', "return { ...(await history.list()), folder, storage: { choice: 'off', canEncrypt: true, keyUsable: null, plain: 0, encrypted: 0, unreadable: 0, unopened: 0, blocked: null } }"]]],
   'w8b3-dialogs-no-title': [1, [[DLG, '      title,\n      defaultPath', "      title: 'Back up chats',\n      defaultPath"]]],
   'w8b3-dialogs-default-yes': [1, [[DLG, 'defaultId: 1, // the safe answer has the focus, and Escape is the same answer', 'defaultId: 0, // the safe answer has the focus, and Escape is the same answer']]],

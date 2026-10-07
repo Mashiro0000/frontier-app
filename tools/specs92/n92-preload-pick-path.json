@@ -1,0 +1,14 @@
+{
+  "label": "n92-preload-pick-path",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/preload/index.ts",
+      "from": "    pick: () => ipcRenderer.invoke(CHANNELS.attachmentsPick),",
+      "to": "    pick: (...args: unknown[]) => ipcRenderer.invoke(CHANNELS.attachmentsPick, ...args),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

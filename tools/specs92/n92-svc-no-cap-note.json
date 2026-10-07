@@ -1,0 +1,14 @@
+{
+  "label": "n92-svc-no-cap-note",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentService.ts",
+      "from": "        if (paths.length > max) {",
+      "to": "        if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-2.mjs"
+  ],
+  "env": {}
+}

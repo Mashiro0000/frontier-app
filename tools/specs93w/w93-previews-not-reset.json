@@ -1,0 +1,19 @@
+{
+  "label": "w93-previews-not-reset",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/previews.ts",
+      "from": "    if (asked.current.chatId !== chatId) asked.current = { chatId, ids: new Set() }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run93.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "RUN93_ONLY": "w"
+  },
+  "timeoutMs": 600000
+}

@@ -71,7 +71,8 @@ const node = {
   'n83-figures-no-epsilon': [[FORMAT, 'Math.ceil(dollars * 100 - 1e-7)', 'Math.ceil(dollars * 100)']],
   'n83-figures-total-unrounded': [[FORMAT, 'total: centsText(input + output)', 'total: centsText(ceilCents(estimate.totalUsd))']],
   // chat.ts, seen by the source checks of the Node suite
-  'n83-chat-ceiling-constant': [[CHAT, 'estimateRequest(inputTokens, streamRequest.maxOutputTokens, entry.pricing)', 'estimateRequest(inputTokens, 16000, entry.pricing)']],
+  // (9.4, D-037: the call also takes the files' share, and is wrapped; the sabotage still fixes the ceiling)
+  'n83-chat-ceiling-constant': [[CHAT, '      inputTokens,\n      streamRequest.maxOutputTokens,\n      entry.pricing,\n      files\n    )', '      inputTokens,\n      16000,\n      entry.pricing,\n      files\n    )']],
   'n83-chat-guess-twice': [[CHAT, '          inputTokens\n        },\n        (spend)', '          inputTokens: estimateInputTokens(streamRequest.system, streamRequest.messages)\n        },\n        (spend)']],
   'n83-chat-yes-key-without-window': [[CHAT, 'confirmations.send(`${event.sender.id}:${streamId}`)', 'confirmations.send(streamId)']],
   'n83-chat-yes-handler-untrusted': [[CHAT, "  ipcMain.on(CHANNELS.chatConfirm, (event, streamId: unknown) => {\n    if (!isTrustedSender(event, appUrl) || typeof streamId !== 'string') return", "  ipcMain.on(CHANNELS.chatConfirm, (event, streamId: unknown) => {\n    if (typeof streamId !== 'string') return"]],

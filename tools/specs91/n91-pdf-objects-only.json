@@ -1,0 +1,16 @@
+{
+  "label": "n91-pdf-objects-only",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "  const pages = count > 0 ? count : objects",
+      "to": "  const pages = objects"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

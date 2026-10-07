@@ -1,0 +1,16 @@
+{
+  "label": "n91-jpeg-keeps-tail",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "    bytes: removed ? Buffer.concat(parts) : bytes.subarray(0, segments.at(-1)!.end),",
+      "to": "    bytes: removed ? Buffer.concat([...parts, bytes.subarray(segments.at(-1)!.end)]) : bytes,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

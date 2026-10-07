@@ -1,0 +1,16 @@
+{
+  "label": "n91-exif-no-range",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentFormats.ts",
+      "from": "      return value >= 1 && value <= 8 ? value : 1",
+      "to": "      return value"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-1.mjs"
+  ],
+  "env": {
+    "QUICK": "1"
+  }
+}

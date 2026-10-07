@@ -1,0 +1,14 @@
+{
+  "label": "n93-val-saved-files-on-reply",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "        role !== 'user' ||\n        !Array.isArray(attachments) ||",
+      "to": "        !Array.isArray(attachments) ||"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-3.mjs"
+  ],
+  "env": {}
+}

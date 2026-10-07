@@ -6,6 +6,7 @@ const NO_ANSWER = 'the app did not answer'
 
 const chats = (count: number): string => `${count} ${count === 1 ? 'chat' : 'chats'}`
 const files = (count: number): string => `${count} saved ${count === 1 ? 'file' : 'files'}`
+const attached = (count: number): string => `${count} attached ${count === 1 ? 'file' : 'files'}`
 
 export type Notice = { kind: 'ok' | 'error'; text: string }
 
@@ -29,6 +30,15 @@ export function describeEncrypted(report: ChatStorageReport): string {
       `${chats(report.failed)} could not be rewritten and ${report.failed === 1 ? 'is' : 'are'} as before; "Encrypt the rest" tries again.`
     )
   }
+  // The attached files (D-037), said only when there are any.
+  if (report.files !== undefined) {
+    if (report.files.changed > 0) parts.push(`Encrypted ${attached(report.files.changed)} too.`)
+    if (report.files.failed > 0) {
+      parts.push(
+        `${attached(report.files.failed)} could not be rewritten and ${report.files.failed === 1 ? 'is' : 'are'} as before.`
+      )
+    }
+  }
   parts.push('Chats you save from now on are encrypted too.')
   return parts.join(' ')
 }
@@ -44,6 +54,17 @@ export function describePlain(report: ChatStorageReport, status: ChatStorageStat
     parts.push(
       `${chats(report.failed)} could not be rewritten and ${report.failed === 1 ? 'is' : 'are'} still encrypted.`
     )
+  }
+  if (report.files !== undefined) {
+    if (report.files.changed > 0)
+      parts.push(
+        `Rewrote ${attached(report.files.changed)} as ${report.files.changed === 1 ? 'a plain file' : 'plain files'} too.`
+      )
+    if (report.files.failed > 0) {
+      parts.push(
+        `${attached(report.files.failed)} could not be rewritten and ${report.files.failed === 1 ? 'is' : 'are'} still encrypted.`
+      )
+    }
   }
   if (status.unopened > 0) {
     parts.push(
