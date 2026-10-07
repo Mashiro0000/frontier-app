@@ -2401,3 +2401,18 @@ if you have not, please do before you rely on this. **The design was mine** (you
 1. **A backup with files can be large** (a 10 MB PDF takes about 14 MB in it), and it is a plain file: anyone who can open it can see the files. Keep it where you keep the chats' backups.
 2. **An older version of the app cannot read a backup that holds files** (it says the backup was made by another version); backups without files are unchanged.
 3. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 9 - Slice 9.6: the stage as a whole, and the full regression (7 October 2026; D-038)
+
+**Step by step.**
+
+1. **The stage's threat note** is D-038: what Stage 9 added to the app, the risks where its parts meet, and what was not checked. The main points for you: a file is data the model reads, and it can carry instructions (nothing in the app can act on them yet, and Stage 11 must keep it that way); **pictures are decoded in the app's main process** (Electron's own decoder, behind the app's header checks), which I suggest moving to a sandboxed process one day (in IDEAS); a backup holds the files as plain bytes; and a photo's location is always removed, but a file's name and a PDF's own metadata are sent.
+2. **The full regression** (every suite of every stage, on the dev app and the built app): 112 runs, 101 clean the first time, and all the Stage 9 suites passed on both apps. Ten of the other eleven failed only because older checks listed the app's functions or a model's fields as they were before Stage 9 (updated, run again: all pass). **The eleventh found a real fault from Stage 8:** when you opened Settings again, the Usage table showed the numbers from the last time it was open for a moment, before the new ones arrived. It now says "Checking..." until they do, and a new check proves it without depending on timing.
+3. **No package was added, no network address, and nothing in the window's security settings changed** in the whole stage.
+
+## Stage 9 - Things to know (not problems, but worth your attention)
+
+1. **Every file in a chat goes to the provider again with every message.** A big PDF costs again each time; to stop sending it, start a new chat.
+2. **Backups with files are plain files and can be large.** Keep them where you keep the chats' backups.
+3. **The app has still never talked to a real provider**: the files' forms are my reading of Anthropic's and OpenAI's documentation. Your first real request with a file is the real test.
+4. **Everything in the earlier stages' "Things to know" still applies.**

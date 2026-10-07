@@ -55,6 +55,8 @@ const win = {
   // the provider's report is ignored (everything is a guess)
   'w81-report-ignored': [[CHAT, 'const report = real !== null && !tokensAreEmpty(tokensOf(real)) ? tokensOf(real) : null', 'const report = null']],
   // a guess is not marked as one
+  // 9.6: Settings shows the sums of its last opening until main answers (the reset taken out)
+  'w81-settings-shows-old-sums': [[R + 'src/renderer/src/settings/UsageSection.tsx', '    if (open) {\n      setSummary(null)\n      setError(null)\n    }\n', '']],
   'w81-guess-not-marked': [[CHAT, "estimate: state !== 'rejected' && report === null", 'estimate: false']],
   // the text that arrived is not counted in a guess; the system prompt is not counted in the input guess
   'w81-guess-output-zero': [[CHAT, 'output: estimateOutputTokens(arrivedBytes)', 'output: 0']],

@@ -127,6 +127,19 @@ try {
   const line1 = await usageLine()
   check('under the reply: "25 in, 12 out, $0.0003" (4 dollars a million in, 20 a million out: 0.00034)', line1?.text === '25 in, 12 out, $0.0003', JSON.stringify(line1))
   check('...and what it says when hovered: the four buckets, "the thinking counts as writing", and that the provider\'s invoice decides', /Read 25 tokens, 0 from the provider's cache, and put 0 into it\. Wrote 12 tokens \(the thinking counts as writing\)\. At list prices; your provider's invoice decides\.$/.test(line1?.title ?? ''), line1?.title)
+  // 9.6: Settings opened again after a reply must not show the sums of its last opening (0 requests here) while it waits for main: the click and the
+  // first look at the table happen in one turn of the page, before main's answer can arrive (it comes as a later task).
+  const atOnce = await ev(`(async () => {
+    const button = [...document.querySelectorAll('.app-header .header-button')].find((b) => b.textContent === 'Settings')
+    button.click()
+    for (let i = 0; i < 100 && !document.querySelector('dialog.settings')?.open; i++) await Promise.resolve()
+    const d = document.querySelector('dialog.settings')
+    return { open: !!d?.open, rows: [...(d?.querySelectorAll('.settings-usage tbody tr') ?? [])].map((tr) => tr.textContent), checking: [...(d?.querySelectorAll('.settings-status') ?? [])].some((p) => p.textContent === 'Checking...') }
+  })()`)
+  check('Settings opened again does not show the sums of its last opening while it waits for main: "Checking..." and no rows, at the moment it opens', atOnce.open && atOnce.rows.length === 0 && atOnce.checking, JSON.stringify(atOnce))
+  await page.waitFor(`!!document.querySelector('.settings-usage tbody tr')`, { timeoutMs: 8000, label: 'the new sums' })
+  await page.press('Escape')
+  await sleep(200)
   rows = await usageRows()
   check('Settings: this chat, today and this month each show 1 request, 25 in, 12 out and $0.0003', rows.every((x) => x.detail === '25 in, 12 out, 1 request' && x.cost === '$0.0003'), JSON.stringify(rows))
 

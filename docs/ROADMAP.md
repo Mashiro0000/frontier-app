@@ -187,7 +187,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 - [x] (after 8b.5, D-035) Run once on the **owner's own profile with the real Windows dialogs** (backup, the restore preview, encrypt, a restart, the question, back to plain; the original file put back byte for byte afterwards); the
       sentences that carry a count now agree with it ("1 chat will be rewritten as a plain file"), checked by `verify-8b-wording.mjs` and 13 negative controls.
 
-## Stage 9 - Images and files in (plan approved 6 October 2026, the owner's answers: "your picks"; done: 9.1 the store, 9.2 getting files in)
+## Stage 9 - Images and files in (done: plan approved 6 October 2026 with the owner's answers "your picks"; 9.1 the store, 9.2 getting files in, 9.3 sending and saving, 9.4 costs and limits, 9.5 backups with files, 9.6 the stage's threat note and the full regression)
 
 - Attach or paste images, PDFs and text or code files; the models that accept them get them; a preview of exactly what will be sent.
 - Safety: type checked by content, size and count caps, no path tricks, files copied into the app's data folder (the original is never
@@ -213,7 +213,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 - [x] (9.3, D-037) Sending and saving: both providers' forms (the mock learns them), a request without files byte for byte what it was (70 recorded requests), the registry's `documentInput` (schema 0.5) and Send off with a reason when the model cannot read a file, the chat file version 4 (only with files), History with the files' pictures, deleting a chat deletes its files, the start-up sweep, encryption of the files. 74 checks under Node, 58 in the window (42 also on the built app), 54 negative controls, all caught.
 - [x] (9.4, D-037) Costs and limits: the guess counts files (an image by its size, a PDF by its pages, text by its length), so the question before a large request, the spending limits and the ledger see them, and the question and a limit's refusal say the files are sent again with every message. 21 checks under Node, 11 in the window (dev and built), 18 negative controls.
 - [x] (9.5, D-037) Backups with attachments: backup version 2 (only when a chat has files) with each file's plain bytes after the chats, checked when read; a restore puts the files back within the folder's caps, sealed when encryption is on, and offers "Put back N attached files" when the chats are here but their copies are not; version 1 still restores. 33 checks under Node, 14 in the window (dev and built), 23 negative controls.
-- [ ] (9.6) The stage's threat note and the full regression.
+- [x] (9.6, D-038) The stage's threat note and the full regression: 112 runs, 101 clean the first time; ten failed on older checks that listed the app's functions or a model's fields as they were before Stage 9 (updated, all pass), and one found a real fault from Stage 8 (Settings showed the sums of its last opening for a moment; fixed, with a check that does not depend on timing).
 
 **Questions for the owner** (each changes the plan): (1) remove image metadata always (my pick), or show it and let you choose for each file? (2) PDF metadata: send it as it is with a note (my pick, no new package), or add a PDF library to remove it? (3) Are the caps above right for you? (4) Make big images smaller before sending (my pick)? (5) Backups with the attachments in them (bigger files; my pick), or without them and a count?
 
