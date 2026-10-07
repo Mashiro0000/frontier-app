@@ -1,0 +1,14 @@
+{
+  "label": "n107-no-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "            if (answer !== 'yes') {",
+      "to": "            if (answer === 'busy') {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

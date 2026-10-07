@@ -1,0 +1,14 @@
+{
+  "label": "n107-plan-no-key-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/restoreKept.ts",
+      "from": "    if (heldKey(project.instructions, keys) !== null) {",
+      "to": "    if (keys === null) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

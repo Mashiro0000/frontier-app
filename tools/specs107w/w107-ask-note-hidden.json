@@ -1,0 +1,18 @@
+{
+  "label": "w107-ask-note-hidden",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/RestorePreviewPanel.tsx",
+      "from": "      {kept !== undefined && keptAdd > 0 && (\n        <p className=\"history-notice\" role=\"status\">",
+      "to": "      {kept !== undefined && keptAdd < 0 && (\n        <p className=\"history-notice\" role=\"status\">"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run107.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

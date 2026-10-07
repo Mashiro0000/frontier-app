@@ -1,0 +1,14 @@
+{
+  "label": "n107-never-asks",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "            chosen.projects.add.length + chosen.notes.add.length > 0 &&\n            options.kept !== undefined",
+      "to": "            chosen.projects.add.length < 0 &&\n            options.kept !== undefined"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

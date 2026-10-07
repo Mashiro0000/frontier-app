@@ -2,7 +2,7 @@
   "label": "n103-parse-loose-note",
   "edits": [
     {
-      "file": "{{REPO}}/src/main/memory.ts",
+      "file": "{{REPO}}/src/shared/memory.ts",
       "from": "  if (!checked.ok || checked.text !== text) return null",
       "to": "  if (!checked.ok) return null"
     }

@@ -1,0 +1,18 @@
+{
+  "label": "w107-problem-hidden",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/RestorePreviewPanel.tsx",
+      "from": "      {kept !== undefined && kept.problem !== null && (",
+      "to": "      {kept !== undefined && kept.problem === \"\" && ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run107.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

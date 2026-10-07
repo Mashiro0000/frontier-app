@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/history/useBackup.ts",
-      "from": "  if (result.added + result.copies > 0 || result.files === undefined) {",
+      "from": "  if (result.added + result.copies > 0 || (result.files === undefined && k === undefined)) {",
       "to": "  if (true as boolean) {"
     }
   ],

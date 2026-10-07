@@ -80,6 +80,22 @@ export function checkNoteText(
   return { ok: true, text }
 }
 
+const isTime = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isSafeInteger(value) && value > 0
+
+/** One note exactly as this app writes one (in memory.json, and in a backup since 10.7), or null. */
+export function parseNote(raw: unknown): Note | null {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return null
+  const fields = raw as Record<string, unknown>
+  if (Object.keys(fields).length !== 5) return null
+  const { id, text, scope, createdAt, updatedAt } = fields
+  if (!isNoteId(id) || !isNoteScope(scope) || !isTime(createdAt) || !isTime(updatedAt)) return null
+  if (updatedAt < createdAt) return null
+  const checked = checkNoteText(text)
+  if (!checked.ok || checked.text !== text) return null
+  return { id, text: checked.text, scope, createdAt, updatedAt }
+}
+
 /** How much of one place's room its notes take. */
 export function scopeUse(notes: readonly Note[], scope: string): { notes: number; chars: number } {
   let count = 0

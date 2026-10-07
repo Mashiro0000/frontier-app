@@ -1,0 +1,18 @@
+{
+  "label": "w107-declined-silent",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/useBackup.ts",
+      "from": "    if (k.declined) parts.push('No project or note was added: you did not say yes in the question.')",
+      "to": "    if (k.declined) void k"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run107.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

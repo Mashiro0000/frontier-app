@@ -1,0 +1,14 @@
+{
+  "label": "n107-project-files-not-put-back",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "            for (const file of project.files) here.add(file.id)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

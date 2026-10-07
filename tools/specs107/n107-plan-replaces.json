@@ -1,0 +1,14 @@
+{
+  "label": "n107-plan-replaces",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/restoreKept.ts",
+      "from": "      sameId === undefined\n        ? project.id\n        : freshId",
+      "to": "      sameId !== null\n        ? project.id\n        : freshId"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

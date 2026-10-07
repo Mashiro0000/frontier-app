@@ -1,0 +1,14 @@
+{
+  "label": "n107-project-files-unnamed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "        for (const file of project.files) named.add(file.id)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

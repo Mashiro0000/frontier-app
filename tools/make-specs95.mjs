@@ -19,8 +19,8 @@ const node = {
   'n95-reader-no-facts': [[BAK, "  if (factsOf(bytes) === null) return 'it is not a file the app keeps'\n", '']],
   'n95-reader-extra-keys': [[BAK, "  if (keys.length !== 2 || keys[0] !== 'file' || keys[1] !== 'data') return 'it is not a file line'", "  if (keys[0] !== 'file') return 'it is not a file line'"]],
   'n95-reader-trailer-files-unchecked': [[BAK, '      (result.files === undefined || result.trailer.files === result.files.seen) &&\n', '']],
-  'n95-reader-v1-reads-files': [[BAK, '        if (header.version === BACKUP_VERSION_FILES) {', '        if (true as boolean) {']],
-  'n95-reader-v3-read': [[BAK, '        if (header.version !== BACKUP_VERSION && header.version !== BACKUP_VERSION_FILES) {', '        if (header.version !== BACKUP_VERSION && header.version !== BACKUP_VERSION_FILES && header.version !== 3) {']],
+  'n95-reader-v1-reads-files': [[BAK, '        if (header.version === BACKUP_VERSION_FILES || header.version === BACKUP_VERSION_KEPT) {', '        if (true as boolean) {']], // version 3 holds files too since 10.7
+  'n95-reader-v3-read': [[BAK, '          header.version !== BACKUP_VERSION_KEPT\n        ) {', '          header.version !== BACKUP_VERSION_KEPT &&\n          header.version !== 4\n        ) {']], // a version from a later app read; 3 is this app's own since 10.7, so 4
   // the store
   'n95-adopt-no-hash': [[STORE, '          bytes.length > MAX_KEPT_BYTES ||\n          sha256(bytes) !== id ||\n', '          bytes.length > MAX_KEPT_BYTES ||\n']],
   'n95-adopt-no-facts': [[STORE, '          sha256(bytes) !== id ||\n          factsOf(bytes) === null\n        ) {', '          sha256(bytes) !== id\n        ) {']],
@@ -35,12 +35,12 @@ const node = {
   'n95-svc-same-chat-files-left': [[SVC, "            same += 1\n            for (const id of filesOf(chat)) here.add(id)\n", '            same += 1\n']],
   // the words
   'n95-words-export-silent': [[WORDS, '        ? ` It holds their ${attached(count)} too${leftOut > 0 ? `; ${lost}` : \'\'}.`', "        ? ''"]],
-  'n95-words-restore-added-0': [[WORDS, '  if (result.added + result.copies > 0 || result.files === undefined) {', '  if (true as boolean) {']]
+  'n95-words-restore-added-0': [[WORDS, '  if (result.added + result.copies > 0 || (result.files === undefined && k === undefined)) {', '  if (true as boolean) {']] // 10.7: and no projects or notes
 }
 
 const win = {
   'w95-ipc-no-files': [[IPC, '    files: {\n      read: async (id) => {', '    nofiles: {\n      read: async (id) => {']],
-  'w95-panel-no-putback': [[PANEL, '          disabled={disabled || (fits === 0 && missing === 0)}', '          disabled={disabled || fits === 0}']],
+  'w95-panel-no-putback': [[PANEL, '          disabled={disabled || (fits === 0 && missing === 0 && keptAdd === 0)}', '          disabled={disabled || (fits === 0 && keptAdd === 0)}']], // 10.7: projects and notes may be added too
   'w95-panel-no-facts': [[PANEL, '        {missing > 0 && (', '        {false && (']]
 }
 

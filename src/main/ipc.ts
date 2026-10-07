@@ -384,6 +384,15 @@ export function registerIpc(appUrl: string): () => Promise<void> {
         return copy.ok ? copy.bytes : null
       },
       adopt: (id, bytes) => attachments.adopt(id, bytes)
+    },
+    // A backup of every chat holds the projects and the notes, and a restore adds them after the person's yes (10.7, D-039).
+    kept: {
+      projects: () => projects.restoreView(),
+      notes: () => memory.restoreView(),
+      savedKeys,
+      gate: questions,
+      addProjects: (added) => projects.addRestored(added),
+      addNotes: (added) => memory.addRestored(added)
     }
   })
   const encryption = createChatEncryptionService({
@@ -482,7 +491,10 @@ export function registerIpc(appUrl: string): () => Promise<void> {
 
   ipcMain.handle(
     CHANNELS.historyRestoreApply,
-    guarded((token: unknown): Promise<HistoryRestoreApplyResult> => backups.restoreApply(token))
+    // For the window that asked: a restore that would add projects or notes asks the person in the system's own box first (10.7, D-039).
+    guardedForWindow((window, token: unknown): Promise<HistoryRestoreApplyResult> =>
+      backups.restoreApply(token, window)
+    )
   )
 
   ipcMain.on(CHANNELS.historyRestoreCancel, (event, token: unknown) => {

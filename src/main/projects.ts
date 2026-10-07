@@ -60,7 +60,8 @@ export const projectsFileText = (value: ProjectsFile): string =>
 const isTime = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value > 0
 
-function parseProject(raw: unknown): Project | null {
+/** One project exactly as this app writes one (in projects.json, and in a backup since 10.7), or null. */
+export function parseProject(raw: unknown): Project | null {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return null
   const fields = raw as Record<string, unknown>
   if (Object.keys(fields).length !== 6) return null
@@ -194,6 +195,13 @@ export interface ProjectsService {
   remove(input: unknown): Promise<ProjectChangeResult>
   /** Every project, deleted, the damaged file kept as a copy: the way out when projects.json cannot be read. */
   removeAll(): Promise<ProjectChangeResult>
+  /**
+   * Projects from a backup (10.7, D-039), added after the person's yes, which the restore asks for (restoreKept.ts). Refused, and nothing added, if one of
+   * them now shares an id or a name with a project here or the cap would be passed: the projects changed since the plan was made.
+   */
+  addRestored(projects: readonly Project[]): Promise<ProjectChangeResult>
+  /** Every project, or why projects.json cannot be read. */
+  restoreView(): Promise<Project[] | string>
   /** A project's name, or null when there is no such project (or the file cannot be read). */
   nameOf(id: string): Promise<string | null>
   /** The project a request of a chat in `id` brings (10.6): null when there is none of that id, or the sentence that refuses the request. */
@@ -523,6 +531,33 @@ export function createProjects(options: ProjectsOptions): ProjectsService {
     })
   }
 
+  function addRestored(added: readonly Project[]): Promise<ProjectChangeResult> {
+    return oneAtATime(async () => {
+      const now0 = await readable()
+      if (!now0.ok) return now0
+      if (added.length === 0) return { ok: true, status: await status() }
+      const all = [...now0.projects, ...added]
+      const clash = all.some(
+        (one, index) =>
+          all.findIndex((other) => other.id === one.id || sameName(other.name, one.name)) !== index
+      )
+      if (clash || all.length > PROJECT_LIMITS.maxProjects) {
+        return {
+          ok: false,
+          error:
+            'Your projects changed while the backup was being read, so none was added from it. Restore it again.'
+        }
+      }
+      return write(all.map((project) => ({ ...project, files: [...project.files] })))
+    })
+  }
+
+  async function restoreView(): Promise<Project[] | string> {
+    const current = await file.read()
+    if (current.state === 'unreadable') return current.why
+    return current.state === 'ok' ? current.value.projects : []
+  }
+
   async function nameOf(id: string): Promise<string | null> {
     const current = await file.read()
     if (current.state !== 'ok') return null
@@ -557,6 +592,8 @@ export function createProjects(options: ProjectsOptions): ProjectsService {
     removeFile,
     remove,
     removeAll,
+    addRestored,
+    restoreView,
     nameOf,
     forRequest,
     fileRefs,

@@ -1,0 +1,14 @@
+{
+  "label": "n107-trailer-no-counts",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "          ...(withKept\n            ? { projects: keptWritten.projects.length, notes: keptWritten.notes.length }\n            : {})\n        })}",
+      "to": "        })}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

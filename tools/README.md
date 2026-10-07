@@ -71,6 +71,8 @@ node tools/verify-10-5.mjs                projects (10.5) under plain Node: a pr
 node tools/run105.mjs [dev|preview]       projects in the real window (verify-10-5w.mjs): the Projects page, the system's box and open dialog stood in for from main, chats in a project, History by project, deleting, 420 and 280 px
 node tools/verify-10-6.mjs                a project's parts in requests (10.6) under plain Node: the prompt order, the golden, the request check, the files notes, the page's Send block, source checks
 node tools/run106.mjs [dev|preview]       the same in the real window (verify-10-6w.mjs): what a project chat's requests carry, the question, a key, a damaged file, a deleted project
+node tools/verify-10-7.mjs                backups with projects and notes (10.7) under plain Node: version 3, the reader, the restore plan, the service with the real stores
+node tools/run107.mjs [dev|preview]       the same in the real window (verify-10-7w.mjs): the backup, the look, the question, a no and a yes, a damaged projects.json
 node tools/run-one.mjs real92 dev verify-9-2-real.mjs USER_DATA_DIR=s92real FILES_DIR=<folder>   the REAL Windows open dialog once (real-dialogs.ps1: find, filetype, setname, ok); takes no screenshot (the dialog may open in a personal folder)
 node_modules\electron\dist\electron.exe tools\make-fixtures-9.cjs --user-data-dir=<scratch>   remakes tools/fixtures9/ (a JPEG, PNGs, WebPs from Chromium's canvas, PDFs from Chromium's print); the suites read the committed copies
 powershell -File tools\real-dialogs.ps1 -Op find     reads (setname, ok, tdclick, shot) the REAL Windows dialog of a test app started with a debug port, instead of replacing it from the main inspector (see the script's header)

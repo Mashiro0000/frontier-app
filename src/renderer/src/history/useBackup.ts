@@ -12,6 +12,15 @@ const NO_ANSWER = 'the app did not answer'
 const chats = (count: number): string => `${count} ${count === 1 ? 'chat' : 'chats'}`
 export const attached = (count: number): string =>
   `${count} attached ${count === 1 ? 'file' : 'files'}`
+export const projectsWord = (count: number): string =>
+  `${count} ${count === 1 ? 'project' : 'projects'}`
+export const notesWord = (count: number): string => `${count} ${count === 1 ? 'note' : 'notes'}`
+/** "2 projects and 5 notes", leaving out a part that is none (10.7). */
+export const keptWords = (projects: number, notes: number): string =>
+  [
+    ...(projects > 0 ? [projectsWord(projects)] : []),
+    ...(notes > 0 ? [notesWord(notes)] : [])
+  ].join(' and ')
 
 /** What the person is told after a backup (D-034). */
 export function describeExport(result: Extract<HistoryExportResult, { ok: true }>): string {
@@ -31,14 +40,36 @@ export function describeExport(result: Extract<HistoryExportResult, { ok: true }
           ? ` ${lost}.`
           : ''
   }
-  return `Backed up ${chats(result.count)} to ${result.where}. The file was read back and every chat matched.${left}${files}`
+  // The projects and the notes (10.7, D-039), said only for a backup that has them or should have had them.
+  const kept =
+    result.kept !== undefined && result.kept.projects + result.kept.notes > 0
+      ? ` It holds your ${keptWords(result.kept.projects, result.kept.notes)} too.`
+      : ''
+  const keptLeft = result.keptLeftOut !== undefined ? ` ${result.keptLeftOut}` : ''
+  return `Backed up ${chats(result.count)} to ${result.where}. The file was read back and every chat matched.${left}${files}${kept}${keptLeft}`
 }
 
 /** What the person is told after chats were added from a backup. */
 export function describeRestore(result: Extract<HistoryRestoreApplyResult, { ok: true }>): string {
   const parts: string[] = []
+  // The projects and notes first (10.7, D-039): they were added (or not) before the chats.
+  const k = result.kept
+  if (k !== undefined) {
+    if (k.projects + k.notes > 0) parts.push(`Added ${keptWords(k.projects, k.notes)}.`)
+    if (k.declined) parts.push('No project or note was added: you did not say yes in the question.')
+    if (k.problem !== null) parts.push(k.problem)
+    if (k.same > 0)
+      parts.push(
+        `${k.same === 1 ? '1 project or note' : `${k.same} projects and notes`} already here.`
+      )
+    if (k.notAdded > 0 && !k.declined && k.problem === null) {
+      parts.push(
+        `${k.notAdded === 1 ? '1 project or note was' : `${k.notAdded} projects and notes were`} not added (no room, a saved API key inside, or not usable).`
+      )
+    }
+  }
   // A restore that only put files back (its chats were here already) does not say "Added 0 chats".
-  if (result.added + result.copies > 0 || result.files === undefined) {
+  if (result.added + result.copies > 0 || (result.files === undefined && k === undefined)) {
     parts.push(
       `Added ${chats(result.added + result.copies)}${result.copies > 0 ? ` (${result.copies === 1 ? '1 as a copy' : `${result.copies} as copies`})` : ''}.`
     )

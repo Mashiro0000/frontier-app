@@ -1,0 +1,14 @@
+{
+  "label": "n107-look-no-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "          ...(read.files !== undefined ? { files } : {}),\n          ...(kept !== undefined ? { kept } : {}),\n          refusedCount",
+      "to": "          ...(read.files !== undefined ? { files } : {}),\n          refusedCount"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

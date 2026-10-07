@@ -1,0 +1,14 @@
+{
+  "label": "n107-plan-no-free-name",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/restoreKept.ts",
+      "from": "    const name = freeName(\n      project.name,\n      all().map((other) => other.name)\n    )",
+      "to": "    const name = project.name"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

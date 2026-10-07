@@ -1,0 +1,14 @@
+{
+  "label": "n107-chats-do-not-follow",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "          const chat = follow(read)",
+      "to": "          const chat = read"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

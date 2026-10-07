@@ -1,0 +1,14 @@
+{
+  "label": "n107-plan-no-same",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/restoreKept.ts",
+      "from": "    if (sameId !== undefined && sameProject(sameId, project)) {",
+      "to": "    if (sameId === null && sameProject(project, project)) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

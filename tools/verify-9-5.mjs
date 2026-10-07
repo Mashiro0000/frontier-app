@@ -104,8 +104,8 @@ await guard('B', async () => {
   check('B: a version 2 trailer without its file counts is not understood (the file is not whole)', !cut.read.complete, show(cut.read.trailer))
   const fewer = await variant('missing-file-line', (c) => { c.splice(at, 1) })
   check('B: a version 2 file with a file line missing is not whole (the trailer counts three)', !fewer.read.complete && fewer.handed.length === 2, show(fewer.read))
-  const old = await variant('v3', (c) => { c[0] = c[0].replace('"version":2', '"version":3') })
-  check('B: version 3 is another version of the app: not read', old.read.problem === 'That backup was made by another version of the app, and this one cannot read it.')
+  const old = await variant('v4', (c) => { c[0] = c[0].replace('"version":2', '"version":4') })
+  check('B: version 4 is another version of the app: not read (3 holds projects and notes since 10.7)', old.read.problem === 'That backup was made by another version of the app, and this one cannot read it.')
 })
 
 await guard('C', async () => {

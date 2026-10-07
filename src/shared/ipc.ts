@@ -343,6 +343,10 @@ export type HistoryExportResult =
       where: string
       /** The attached files it holds, and those whose copies could not be read (D-037). Absent for a backup without files. */
       files?: { count: number; leftOut: number }
+      /** The projects and the notes it holds (10.7, D-039): a backup of every chat, when there are any. */
+      kept?: { projects: number; notes: number }
+      /** Why the projects or the notes are not in it (their file could not be read), in a sentence; absent when nothing was left out. */
+      keptLeftOut?: string
     }
   | { ok: false; error: string; cancelled?: true }
 
@@ -368,6 +372,16 @@ export interface RestorePreview {
    * cannot be used. Absent for a backup without files.
    */
   files?: { count: number; missing: number; refused: number }
+  /**
+   * The projects and the notes the backup holds (10.7, D-039; version 3): to be added (after a yes in the system's own box), already here, added as
+   * copies (their id is taken by a different project), and not to be added (past a cap, a saved API key inside, or unusable in the file). `problem`:
+   * why none can be added (the projects or notes here cannot be read). Absent for a backup without them.
+   */
+  kept?: {
+    projects: { add: number; same: number; copies: number; notAdded: number; names: string[] }
+    notes: { add: number; same: number; notAdded: number }
+    problem: string | null
+  }
   /** Chats in the file that cannot be used, and why (the first few). */
   refusedCount: number
   refused: { line: number; why: string }[]
@@ -393,6 +407,18 @@ export type HistoryRestoreApplyResult =
       failed: number
       /** The attached files put back, already here, and not put back: no room, not written, or not usable (D-037). Absent for a backup without files. */
       files?: { added: number; already: number; noRoom: number; failed: number; refused: number }
+      /**
+       * The projects and notes (10.7, D-039): added, already here, not added. `declined`: the person did not say yes in the system's box (only the chats
+       * were added); `problem`: why none was added otherwise. Absent for a backup without them.
+       */
+      kept?: {
+        projects: number
+        notes: number
+        same: number
+        notAdded: number
+        declined: boolean
+        problem: string | null
+      }
     }
   | { ok: false; error: string }
 

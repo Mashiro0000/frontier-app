@@ -7,6 +7,7 @@ import {
   isNoteId,
   isNoteScope,
   MEMORY_LIMITS,
+  parseNote,
   scopeUse,
   type MemoryChangeResult,
   type MemoryExportResult,
@@ -61,22 +62,6 @@ export const memoryFileText = (memory: MemoryFile): string =>
       updatedAt
     }))
   })
-
-const isTime = (value: unknown): value is number =>
-  typeof value === 'number' && Number.isSafeInteger(value) && value > 0
-
-/** One note out of the file, exactly as this app writes one, or null. */
-function parseNote(raw: unknown): Note | null {
-  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return null
-  const fields = raw as Record<string, unknown>
-  if (Object.keys(fields).length !== 5) return null
-  const { id, text, scope, createdAt, updatedAt } = fields
-  if (!isNoteId(id) || !isNoteScope(scope) || !isTime(createdAt) || !isTime(updatedAt)) return null
-  if (updatedAt < createdAt) return null
-  const checked = checkNoteText(text)
-  if (!checked.ok || checked.text !== text) return null
-  return { id, text: checked.text, scope, createdAt, updatedAt }
-}
 
 /** What the file holds, or null when it is not exactly what this app writes (a field more or less, a note over a cap, an id twice). */
 export function parseMemoryFile(content: string): MemoryFile | null {
@@ -204,6 +189,13 @@ export interface MemoryService {
   setOn(owner: unknown, on: unknown): Promise<MemoryChange>
   /** Every note, to one plain text file the person picks in the system's save dialog. */
   exportAll(owner: unknown): Promise<MemoryExportResult>
+  /**
+   * Notes from a backup (10.7, D-039), added after the person's yes, which the restore asks for (restoreKept.ts). Memory stays on or off as it is. Refused,
+   * and nothing added, if one now shares an id with a note here or a place's caps would be passed.
+   */
+  addRestored(notes: readonly Note[]): Promise<MemoryChange>
+  /** Every note, or why memory.json cannot be read. */
+  restoreView(): Promise<Note[] | string>
   /**
    * The notes that go with a request of a chat in `projectId` (or none): the notes for every chat, then those for the project, oldest first; none while
    * memory is off. The sentence that refuses the request while the file cannot be read. Never throws.
@@ -570,6 +562,34 @@ export function createMemory(options: MemoryOptions): MemoryService {
     return lines.join('\n')
   }
 
+  function addRestored(added: readonly Note[]): Promise<MemoryChange> {
+    return oneAtATime(async () => {
+      const now0 = await readable()
+      if (!now0.ok) return now0
+      if (added.length === 0) return { ok: true, status: await status() }
+      const notes = [...now0.memory.notes, ...added]
+      const ids = new Set(notes.map((note) => note.id))
+      const full = [...new Set(added.map((note) => note.scope))].some((scope) => {
+        const use = scopeUse(notes, scope)
+        return use.notes > MEMORY_LIMITS.maxScopeNotes || use.chars > MEMORY_LIMITS.maxScopeChars
+      })
+      if (ids.size !== notes.length || full) {
+        return {
+          ok: false,
+          error:
+            'Your notes changed while the backup was being read, so none was added from it. Restore it again.'
+        }
+      }
+      return write({ on: now0.memory.on, notes })
+    })
+  }
+
+  async function restoreView(): Promise<Note[] | string> {
+    const current = await file.read()
+    if (current.state === 'unreadable') return current.why
+    return current.state === 'ok' ? current.value.notes : []
+  }
+
   async function forRequest(
     projectId: string | null
   ): Promise<{ ok: true; notes: Note[] } | { ok: false; error: string }> {
@@ -591,5 +611,18 @@ export function createMemory(options: MemoryOptions): MemoryService {
     }
   }
 
-  return { status, add, edit, remove, removeAll, removeScope, setOn, exportAll, forRequest, file }
+  return {
+    status,
+    add,
+    edit,
+    remove,
+    removeAll,
+    removeScope,
+    setOn,
+    exportAll,
+    addRestored,
+    restoreView,
+    forRequest,
+    file
+  }
 }

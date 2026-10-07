@@ -1,0 +1,14 @@
+{
+  "label": "n107-no-keeps-added",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/restoreKept.ts",
+      "from": "map.set(from, to === null || added.has(to) ? null : to)",
+      "to": "map.set(from, to)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

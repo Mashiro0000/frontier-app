@@ -16,7 +16,8 @@ const node = {
   'n103-parse-extra-field': [[M, '  if (fields.version !== MEMORY_FILE_VERSION || Object.keys(fields).length !== 3) return null', '  if (fields.version !== MEMORY_FILE_VERSION) return null']],
   'n103-parse-dup-ids': [[M, '    if (note === null || ids.has(note.id)) return null', '    if (note === null) return null']],
   'n103-parse-no-caps': [[M, '    if (use.notes > MEMORY_LIMITS.maxScopeNotes || use.chars > MEMORY_LIMITS.maxScopeChars)\n      return null', '    void use']],
-  'n103-parse-loose-note': [[M, '  if (!checked.ok || checked.text !== text) return null', '  if (!checked.ok) return null']],
+  'n103-parse-loose-note': [[SH, '  if (!checked.ok || checked.text !== text) return null', // parseNote is in the shared file since 10.7
+    '  if (!checked.ok) return null']],
   'n103-ask-skipped': [[M, "    const answer = await options.gate.ask(owner, question)\n    if (answer === 'yes') return null", "    void owner\n    void question\n    const answer = 'yes' as string\n    if (answer === 'yes') return null"]],
   'n103-no-ignored': [[M, '    return { ok: false, cancelled: true, error: notSaved }', '    return null']],
   'n103-add-dup-allowed': [[M, '      if (memory.notes.some((note) => note.scope === scope && note.text === checked.text)) {', '      if (memory.notes.some((note) => note.scope === 42)) {']],

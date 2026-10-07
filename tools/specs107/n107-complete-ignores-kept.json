@@ -1,0 +1,14 @@
+{
+  "label": "n107-complete-ignores-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "      (result.kept === undefined ||\n        (result.trailer.projects === result.kept.projects.seen &&\n          result.trailer.notes === result.kept.notes.seen)) &&\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

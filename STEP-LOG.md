@@ -2506,3 +2506,12 @@ if you have not, please do before you rely on this. **The design was mine** (you
 2. **Size and cost:** the project's files count with the chat's own against what one request may carry; if together they are too much, Send is off and says the project's files count too. The question before a large request and a limit's refusal say how many files are the project's.
 3. **If projects.json cannot be read,** a chat in a project sends nothing and says why; other chats are not affected. A project deleted while its chat is open simply stops being sent.
 4. **Checked:** 25 checks under Node, 14 in the window (dev and built), 29 negative controls all caught; the regression's Node, window and Stage 4 parts (67 runs) found 4 older tests still expecting requests without a project, which were fixed.
+
+## Stage 10 - Slice 10.7: backups with the projects and the notes (8 October 2026 session; D-039)
+
+**Step by step.**
+
+1. **What changed for you:** "Back up all chats..." now also saves your projects and notes in the same file, and says so. A backup of one chat is unchanged.
+2. **Restoring** shows how many projects and notes would be added, and "Add" asks you once in a Windows box. "Add them" adds them as they were (nothing here is replaced; a project whose name is taken becomes "name (2)"); "Add only the chats" adds the chats alone, outside their projects.
+3. **Not added:** a project or note holding one of your saved API keys, anything past the caps, and anything when your projects or notes here cannot be read (the app says why and leaves the damaged file alone).
+4. **Checked:** 54 checks under Node, 17 in the window (dev and built), 44 negative controls all caught (one after its check was sharpened); the regression's Node, window and Stage 4 parts, 69 runs, all clean.

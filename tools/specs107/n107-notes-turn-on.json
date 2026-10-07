@@ -1,0 +1,14 @@
+{
+  "label": "n107-notes-turn-on",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "      return write({ on: now0.memory.on, notes })",
+      "to": "      return write({ on: true, notes })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

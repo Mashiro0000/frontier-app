@@ -1,0 +1,14 @@
+{
+  "label": "n107-no-project-lines",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "        await put(`{\"project\":${text},\"sha256\":\"${sha256(text)}\"}\\n`)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

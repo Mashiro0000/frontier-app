@@ -1,0 +1,14 @@
+{
+  "label": "n107-export-no-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "          ...(options.files !== undefined ? { readFile: options.files.read } : {}),\n          ...(kept !== undefined ? { kept } : {})",
+      "to": "          ...(options.files !== undefined ? { readFile: options.files.read } : {})"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

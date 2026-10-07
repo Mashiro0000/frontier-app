@@ -27,7 +27,7 @@ const node = {
   'n8b-reader-no-size-cap': [FILE1, [[BK, 'if (info.size > BACKUP_LIMITS.maxFileBytes)', 'if (false)']]],
   'n8b-reader-no-chat-cap': [FILE1, [[BK, 'if (result.seen >= BACKUP_LIMITS.maxChats) {', 'if (false) {']]],
   // (9.5, D-037: version 2 is read too; the sabotage still reads any version)
-  'n8b-reader-any-version': [FILE1, [[BK, 'if (header.version !== BACKUP_VERSION && header.version !== BACKUP_VERSION_FILES) {', 'if (false) {']]],
+  'n8b-reader-any-version': [FILE1, [[BK, 'if (\n          header.version !== BACKUP_VERSION &&\n          header.version !== BACKUP_VERSION_FILES &&\n          header.version !== BACKUP_VERSION_KEPT\n        ) {', 'if (false) {']]], // three versions since 10.7
   'n8b-reader-lenient-utf8': [FILE1, [[BK, "new TextDecoder('utf-8', { fatal: true })", "new TextDecoder('utf-8')"]]],
   'n8b-reader-id-unchecked': [FILE1, [[BK, 'if (!isConversationId(id)) {', 'if (false) {']]],
   'n8b-reader-format-unchecked': [FILE1, [[BK, 'header === null || header.format !== BACKUP_FORMAT) {', 'header === null) {']]],

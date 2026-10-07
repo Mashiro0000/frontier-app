@@ -1,0 +1,14 @@
+{
+  "label": "n107-ipc-no-window",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      backups.restoreApply(token, window)",
+      "to": "      backups.restoreApply(token, null)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}
