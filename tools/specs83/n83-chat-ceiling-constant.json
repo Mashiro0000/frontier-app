@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "estimateRequest(inputTokens, streamRequest.maxOutputTokens, entry.pricing)",
-      "to": "estimateRequest(inputTokens, 16000, entry.pricing)"
+      "from": "      inputTokens,\n      streamRequest.maxOutputTokens,\n      entry.pricing,\n      files\n    )",
+      "to": "      inputTokens,\n      16000,\n      entry.pricing,\n      files\n    )"
     }
   ],
   "argv": [

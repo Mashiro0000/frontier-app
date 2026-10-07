@@ -1,0 +1,18 @@
+{
+  "label": "w94-question-no-files",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      entry.pricing,\n      files\n    )",
+      "to": "      entry.pricing\n    )"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run94.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 400000
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n94-image-bigger-squares",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "const IMAGE_SQUARE_PX = 28",
+      "to": "const IMAGE_SQUARE_PX = 32"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-4.mjs"
+  ],
+  "env": {}
+}

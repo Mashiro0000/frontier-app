@@ -2371,3 +2371,17 @@ if you have not, please do before you rely on this. **The design was mine** (you
 2. **A backup holds a chat's files' descriptions, not the files** until 9.5. Restoring such a chat on another computer shows its files as "cannot be read any more".
 3. **The forms sent to the providers are my reading of their documentation**, checked by a mock written from the same reading; only a real request (yours to make) proves them.
 4. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 9 - Slice 9.4: what files cost (7 October 2026; D-037)
+
+**Step by step.**
+
+1. **Until now the cost guess counted only text**, so a chat's files were invisible to your spending limits and to the question before a large request: a 100-page PDF went as if it were a few words.
+2. **Now the guess counts files** the way the providers do, on the high side: an image by its size (at most about 6,500 tokens, since images are sent at most 2000 px a side), a PDF by its pages (4,800 a page), a text file by its length. Every file in a chat is counted with every message, because it is sent with every message.
+3. **What you see:** the question before a large request says how much of it is the chat's files ("The file attached in this chat is about 144K tokens of it: every file in a chat is sent again with each message, so a new chat without it costs less."), and a spending limit that stops a request says the same. A request without files is described exactly as before.
+4. **Checked:** 21 checks under Node; in the window, on the dev app and the built one, 11: a small photo goes without the question, a 30-page PDF is asked about and "Don't send" sends nothing, a daily limit of $0.10 stops it with the sentence, and with no limit it goes and the usage record holds the same guess. 18 negative controls, all caught. Two older checks and four older negative-control specs pointed at a line I wrapped, and were updated with the same meaning.
+
+## Stage 9.4 - Things to know (not problems, but worth your attention)
+
+1. **The guess for files is meant to be high.** A real bill for images is probably lower; the provider's report replaces the guess when a reply ends, as before.
+2. **Everything in the earlier stages' "Things to know" still applies.**

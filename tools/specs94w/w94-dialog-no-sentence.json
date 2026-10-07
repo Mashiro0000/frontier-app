@@ -1,0 +1,18 @@
+{
+  "label": "w94-dialog-no-sentence",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/LargeRequestDialog.tsx",
+      "from": "          {request.estimate.files !== undefined && (",
+      "to": "          {false && ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run94.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 400000
+}

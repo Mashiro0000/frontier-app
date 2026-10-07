@@ -1,0 +1,14 @@
+{
+  "label": "n94-chat-question-no-files",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      entry.pricing,\n      files\n    )",
+      "to": "      entry.pricing\n    )"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-4.mjs"
+  ],
+  "env": {}
+}

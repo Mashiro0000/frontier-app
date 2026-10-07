@@ -9,20 +9,31 @@ import type { NeutralAttachment, NeutralMessage } from './providers/types'
 // time, because the whole conversation is sent again with every message (D-028). Nothing is sent if any file cannot be read, if the model cannot read a
 // kind of file the chat holds, or if the files together pass the caps of one request: the person is told why, in one sentence.
 
-/** What the files of one request come to, for the guess of what it costs (9.4). */
+/** What the files of one request come to, for the guess of what it costs (9.4, `estimateFileTokens`). */
 export interface RequestFiles {
+  /** How many files are sent (a file named on two messages is sent, and counted, twice). */
+  count: number
   /** Every image as it is sent (one entry per time it is sent), by its size in pixels. */
   images: { width: number; height: number }[]
   /** PDFs: how many, and their pages in all. */
   pdfs: number
   pdfPages: number
-  /** Text files: their characters in all. */
+  /** Text files: their characters in all (the cap), and their UTF-8 bytes (the guess). */
   textChars: number
+  textBytes: number
   /** Every file's bytes, before base64. */
   bytes: number
 }
 
-export const NO_FILES: RequestFiles = { images: [], pdfs: 0, pdfPages: 0, textChars: 0, bytes: 0 }
+export const NO_FILES: RequestFiles = {
+  count: 0,
+  images: [],
+  pdfs: 0,
+  pdfPages: 0,
+  textChars: 0,
+  textBytes: 0,
+  bytes: 0
+}
 
 export type ResolvedRequest =
   { ok: true; messages: NeutralMessage[]; files: RequestFiles } | { ok: false; error: string }
@@ -54,7 +65,7 @@ export async function resolveAttachments(
     error: `Nothing was sent: ${error}`
   })
   const copies = new Map<string, ReadResult>()
-  const files: RequestFiles = { images: [], pdfs: 0, pdfPages: 0, textChars: 0, bytes: 0 }
+  const files: RequestFiles = { ...NO_FILES, images: [] }
   const out: NeutralMessage[] = []
   for (const message of messages) {
     if (message.attachments === undefined || message.attachments.length === 0) {
@@ -81,6 +92,7 @@ export async function resolveAttachments(
         )
       }
       files.bytes += bytes.length
+      files.count += 1
       if (facts.kind === 'image') {
         files.images.push({ width: facts.width, height: facts.height })
         attached.push({ kind: 'image', mediaType: facts.mediaType, data: bytes.toString('base64') })
@@ -90,6 +102,7 @@ export async function resolveAttachments(
         attached.push({ kind: 'pdf', name: pdfName(name), data: bytes.toString('base64') })
       } else {
         files.textChars += facts.chars
+        files.textBytes += Buffer.byteLength(facts.text)
         attached.push({ kind: 'text', name, text: facts.text })
       }
     }

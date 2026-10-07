@@ -1,0 +1,14 @@
+{
+  "label": "n94-chat-ledger-no-note",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "        (spend) => withFilesNote(checkAgainstLimits(limits, spend), files)",
+      "to": "        (spend) => checkAgainstLimits(limits, spend)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-4.mjs"
+  ],
+  "env": {}
+}

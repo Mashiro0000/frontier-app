@@ -1,0 +1,14 @@
+{
+  "label": "n94-limits-note-when-unset",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "    refusal === LIMITS_UNSET_MESSAGE ||\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-4.mjs"
+  ],
+  "env": {}
+}

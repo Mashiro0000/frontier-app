@@ -88,6 +88,16 @@ function LargeRequestDialog({
               </tr>
             </tbody>
           </table>
+          {request.estimate.files !== undefined && (
+            <p className="settings-hint large-request-files">
+              {request.estimate.files.count === 1
+                ? 'The file attached in this chat is'
+                : `The ${request.estimate.files.count} files attached in this chat are`}{' '}
+              about {formatTokens(request.estimate.files.tokens)} tokens of it: every file in a chat
+              is sent again with each message, so a new chat without{' '}
+              {request.estimate.files.count === 1 ? 'it' : 'them'} costs less.
+            </p>
+          )}
           <p className="settings-hint">
             A reply is usually much shorter than its limit (its thinking counts towards it), and a
             conversation your provider still holds in its cache, from a message a few minutes ago,

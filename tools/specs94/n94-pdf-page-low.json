@@ -1,0 +1,14 @@
+{
+  "label": "n94-pdf-page-low",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "export const PDF_PAGE_TOKENS = 4_800",
+      "to": "export const PDF_PAGE_TOKENS = 1_500"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-4.mjs"
+  ],
+  "env": {}
+}

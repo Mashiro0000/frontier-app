@@ -53,6 +53,11 @@ export interface RequestEstimate {
   outputUsd: number
   /** `inputUsd` and `outputUsd` together: the most this request could cost. */
   totalUsd: number
+  /**
+   * The attached files the request sends, when there are any (D-037): how many, and how many of `inputTokens` they are. Absent for a request
+   * without files, which is described exactly as before.
+   */
+  files?: { count: number; tokens: number }
 }
 
 /**
@@ -64,7 +69,8 @@ export interface RequestEstimate {
 export function estimateRequest(
   inputTokens: number,
   maxOutputTokens: number,
-  prices: ModelPricing
+  prices: ModelPricing,
+  files?: { count: number; tokens: number }
 ): RequestEstimate {
   const inputUsd =
     (inputTokens * Math.max(prices.inputPerMTok, prices.cacheWritePerMTok)) / 1_000_000
@@ -74,7 +80,8 @@ export function estimateRequest(
     inputUsd,
     outputTokens: maxOutputTokens,
     outputUsd,
-    totalUsd: inputUsd + outputUsd
+    totalUsd: inputUsd + outputUsd,
+    ...(files !== undefined && files.count > 0 ? { files: { ...files } } : {})
   }
 }
 

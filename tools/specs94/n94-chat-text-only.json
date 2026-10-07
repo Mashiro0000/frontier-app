@@ -1,0 +1,14 @@
+{
+  "label": "n94-chat-text-only",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      estimateInputTokens(streamRequest.system, streamRequest.messages) + fileTokens",
+      "to": "      estimateInputTokens(streamRequest.system, streamRequest.messages)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-4.mjs"
+  ],
+  "env": {}
+}

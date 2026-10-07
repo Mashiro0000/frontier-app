@@ -1,0 +1,14 @@
+{
+  "label": "n94-req-text-chars",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentRequest.ts",
+      "from": "        files.textBytes += Buffer.byteLength(facts.text)",
+      "to": "        files.textBytes += facts.chars"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-9-4.mjs"
+  ],
+  "env": {}
+}

@@ -159,6 +159,28 @@ export function formatMoney(dollars: number): string {
   return `$${dollars.toFixed(2)}`
 }
 
+/**
+ * A limit's refusal of a request that carries files (D-037), with one sentence more: they are part of every request of the chat. Unchanged for a
+ * request without files, and for "no limits are set yet" (which is not about what the request costs).
+ */
+export function withFilesNote(
+  refusal: string | null,
+  files: { count: number; tokens: number } | undefined
+): string | null {
+  if (
+    refusal === null ||
+    refusal === LIMITS_UNSET_MESSAGE ||
+    files === undefined ||
+    files.count === 0
+  )
+    return refusal
+  const which =
+    files.count === 1
+      ? 'The file in this chat is'
+      : `The ${files.count.toLocaleString('en-US')} files in this chat are`
+  return `${refusal} ${which} about ${files.tokens.toLocaleString('en-US')} tokens of it: every file in a chat is sent again with each message, so a new chat without ${files.count === 1 ? 'it' : 'them'} costs less.`
+}
+
 export const LIMITS_UNSET_MESSAGE =
   'Nothing was sent: no spending limits are set yet. Open Settings, set a daily and a monthly limit (or choose No limit), and try again.'
 

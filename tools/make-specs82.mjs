@@ -47,14 +47,15 @@ const node = {
   'n82-ledger-today-shifted': [[LEDGER, 'summarize(records.values(), null, at, unreadable)', 'summarize(records.values(), null, at - 86_400_000, unreadable)']],
   'n82-ledger-request-cost-zero': [[LEDGER, 'request: costOf({ ...NO_TOKENS, input: input.inputTokens }, input.prices)', 'request: 0']],
   // the one place a provider is called must carry the check
-  'n82-chat-no-check': [[CHAT, '(spend) => checkAgainstLimits(limits, spend)', 'undefined']]
+  // (9.4, D-037: the check's refusal gets a sentence about the chat's files; the sabotage still passes no check)
+  'n82-chat-no-check': [[CHAT, '(spend) => withFilesNote(checkAgainstLimits(limits, spend), files)', 'undefined']]
 }
 
 const win = {
   // chat.ts: the ledger's refusal is treated as a write failure; the limits are not read (everything is allowed); no check is passed
   'w82-chat-refusal-as-write-failure': [[CHAT, 'if (error instanceof RequestRefused) {', 'if (false) {']],
   'w82-chat-limits-not-read': [[CHAT, 'return await limitsStore.read()', 'return ' + NONE_BOTH]],
-  'w82-chat-no-check': [[CHAT, '(spend) => checkAgainstLimits(limits, spend)', 'undefined']],
+  'w82-chat-no-check': [[CHAT, '(spend) => withFilesNote(checkAgainstLimits(limits, spend), files)', 'undefined']],
   // ipc.ts: a choice from the page is saved without being checked; the status hides that nothing is chosen
   'w82-set-limits-unchecked': [[IPC, 'const check = checkLimitsChoice(input)\n      if (!check.ok) return check\n      try {\n        await limitsStore.save(check.limits)', 'const check = { ok: true, limits: input as never }\n      try {\n        await limitsStore.save(check.limits)']],
   'w82-status-hides-unset': [[IPC, 'limits: await limitsStore.read().catch(() => unsetLimits())', 'limits: ' + NONE_BOTH]],
