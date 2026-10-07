@@ -57,11 +57,13 @@ const win = {
   'w82-chat-limits-not-read': [[CHAT, 'return await limitsStore.read()', 'return ' + NONE_BOTH]],
   'w82-chat-no-check': [[CHAT, '(spend) => withFilesNote(checkAgainstLimits(limits, spend), files)', 'undefined']],
   // ipc.ts: a choice from the page is saved without being checked; the status hides that nothing is chosen
-  'w82-set-limits-unchecked': [[IPC, 'const check = checkLimitsChoice(input)\n      if (!check.ok) return check\n      try {\n        await limitsStore.save(check.limits)', 'const check = { ok: true, limits: input as never }\n      try {\n        await limitsStore.save(check.limits)']],
+  // (since 10.1 the check is in limitChanges.ts, D-039)
+  'w82-set-limits-unchecked': [[R + 'src/main/limitChanges.ts', "      const check = checkLimitsChoice(input) // never trust what the page sends: main's own copy, field by field\n      if (!check.ok) return Promise.resolve(check)\n      const next = check.limits", '      const next = input as never']],
   'w82-status-hides-unset': [[IPC, 'limits: await limitsStore.read().catch(() => unsetLimits())', 'limits: ' + NONE_BOTH]],
   // the page: the question is never asked; the amount used is not shown; the warning for "No limit" is missing; Save is on while a limit is missing
   'w82-dialog-never-opens': [[APP, 'open={needsLimits && !limitsPutOff}', 'open={false}']],
-  'w82-usage-limit-not-shown': [[USAGE_SECTION, "        {limit?.kind === 'usd' && ` of ${formatMoney(limit.usd)}`}\n", '']],
+  // (since 10.1 the amount and its limit are two spans, so that a narrow window can break the cell before "of", D-039)
+  'w82-usage-limit-not-shown': [[USAGE_SECTION, "        {limit?.kind === 'usd' && (\n          <>\n            {' '}\n            <span className=\"settings-usage-amount\">of {formatMoney(limit.usd)}</span>\n          </>\n        )}\n", '']],
   'w82-none-warning-missing': [[FORM, '{(daily.none || monthly.none) && (', '{false && (']],
   'w82-save-on-while-missing': [[FORM, 'const canSave = !busy && choice !== null && !unchanged', 'const canSave = !busy && !unchanged']]
 }
@@ -71,7 +73,8 @@ mkdirSync(nodeDir, { recursive: true })
 for (const [name, edits] of Object.entries(node)) {
   writeFileSync(join(nodeDir, `${name}.json`), JSON.stringify({ label: name, edits: edits.map(([file, from, to]) => ({ file, from, to })), argv: ['{{TOOLS}}/verify-8-2.mjs'], env: {} }, null, 2) + '\n')
 }
-const winEnv = (name) => ({ USER_DATA_DIR: scratch('s82nc'), WIPE_USER_DATA: '1', MOCK_PORT: '8799', PRESEED_FILE: '', PRESEED_LIMITS: 'off', LOG_LABEL: `nc-${name}` })
+// INSPECT_PORT since 10.1 (D-039): the suite answers the system's question from main.
+const winEnv = (name) => ({ USER_DATA_DIR: scratch('s82nc'), WIPE_USER_DATA: '1', MOCK_PORT: '8799', PRESEED_FILE: '', PRESEED_LIMITS: 'off', INSPECT_PORT: '9230', LOG_LABEL: `nc-${name}` })
 const winArgv = ['{{TOOLS}}/run-with-app.mjs', 'dev', 'setup-key.mjs,verify-8-2w.mjs', '{{OUT}}/shots', '9222']
 const wdir = join(TOOLS, 'specs82w')
 mkdirSync(wdir, { recursive: true })

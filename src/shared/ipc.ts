@@ -93,8 +93,14 @@ export type SetKeyResult = { ok: true; status: SettingsStatus } | { ok: false; e
 export type TestKeyResult = { ok: true; modelCount: number } | { ok: false; error: string }
 export type SetModelResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
 export type SetEffortResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
-export type SetLimitsResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
-export type SetAskFirstResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
+/**
+ * `cancelled`: a change that lets the app spend more was asked about in the system's own message box (D-039), and the person said no (or closed it).
+ * Nothing was saved, and it is not shown as a failure.
+ */
+export type SetLimitsResult =
+  { ok: true; status: SettingsStatus } | { ok: false; error: string; cancelled?: true }
+export type SetAskFirstResult =
+  { ok: true; status: SettingsStatus } | { ok: false; error: string; cancelled?: true }
 
 /** A message as the model is told about it: who wrote it, and the plain text. */
 export type WireRole = 'user' | 'assistant'
@@ -384,12 +390,14 @@ export interface FrontierApi {
     setEffort(modelId: string, level: string): Promise<SetEffortResult>
     /**
      * Chooses the daily and the monthly spending limit (D-031): both together, each an amount in whole dollars and cents or "No limit". Main
-     * checks them again and keeps them; the page cannot take a choice back to "not chosen", and has no other way to change a limit.
+     * checks them again and keeps them; the page cannot take a choice back to "not chosen", and has no other way to change a limit. A choice
+     * that lets the app spend more is saved only after the person says yes in the system's own message box, which the page cannot answer (D-039).
      */
     setLimits(choice: LimitsChoice): Promise<SetLimitsResult>
     /**
      * Chooses the amount above which the app asks before sending a large request (D-032), or "Never ask". Main checks it again and keeps it; the
-     * page cannot send anything but those two, and this is not a limit: the spending limits still stop a request, whatever is chosen here.
+     * page cannot send anything but those two, and this is not a limit: the spending limits still stop a request, whatever is chosen here. A
+     * choice that asks less often is saved only after the person says yes in the system's own message box (D-039).
      */
     setAskFirst(choice: AskFirstChoice): Promise<SetAskFirstResult>
   }

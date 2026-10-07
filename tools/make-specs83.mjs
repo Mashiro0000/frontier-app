@@ -110,7 +110,8 @@ const win = {
     [CHAT, 'if (askAbove !== null && needsConfirmation(askFirst, estimate)) {', "if (askAbove !== null && needsConfirmation(askFirst, estimate) && (request as { confirmed?: boolean }).confirmed !== true) {"]
   ],
   // ipc.ts: a choice from the page is saved without being checked; the status hides the choice
-  'w83-set-ask-first-unchecked': [[IPC, 'const check = checkAskFirstChoice(input)\n      if (!check.ok) return check\n      try {\n        await askFirstStore.save(check.choice)', 'const check = { ok: true, choice: input as never }\n      try {\n        await askFirstStore.save(check.choice)']],
+  // (since 10.1 the check is in limitChanges.ts, D-039)
+  'w83-set-ask-first-unchecked': [[R + 'src/main/limitChanges.ts', '      const check = checkAskFirstChoice(input)\n      if (!check.ok) return Promise.resolve(check)\n      const next = check.choice', '      const next = input as never']],
   'w83-status-hides-choice': [[IPC, 'askFirst: await askFirstStore.read()', "askFirst: { kind: 'default' } as const"]],
   // the page: Send says no, Don't send says yes, Escape says yes, the keyboard starts on Send, a Stop is not heard, the yes is never sent, the no is not told to main
   'w83-page-no-alertdialog-role': [[DIALOG, '      role="alertdialog"\n', '']],
@@ -131,7 +132,8 @@ mkdirSync(nodeDir, { recursive: true })
 for (const [name, edits] of Object.entries(node)) {
   writeFileSync(join(nodeDir, `${name}.json`), JSON.stringify({ label: name, edits: edits.map(([file, from, to]) => ({ file, from, to })), argv: ['{{TOOLS}}/verify-8-3.mjs'], env: {} }, null, 2) + '\n')
 }
-const winEnv = (name) => ({ USER_DATA_DIR: scratch('s83nc'), WIPE_USER_DATA: '1', MOCK_PORT: '8799', PRESEED_FILE: '', LOG_LABEL: `nc-${name}` })
+// INSPECT_PORT since 10.1 (D-039): the suite answers the system's question from main.
+const winEnv = (name) => ({ USER_DATA_DIR: scratch('s83nc'), WIPE_USER_DATA: '1', MOCK_PORT: '8799', PRESEED_FILE: '', INSPECT_PORT: '9230', LOG_LABEL: `nc-${name}` })
 const winArgv = ['{{TOOLS}}/run-with-app.mjs', 'dev', 'setup-key.mjs,verify-8-3w.mjs', '{{OUT}}/shots', '9222']
 const wdir = join(TOOLS, 'specs83w')
 mkdirSync(wdir, { recursive: true })

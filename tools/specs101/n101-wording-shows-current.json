@@ -1,0 +1,14 @@
+{
+  "label": "n101-wording-shows-current",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/limitChanges.ts",
+      "from": "  const after = settingText(next)",
+      "to": "  const after = settingText(current)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

@@ -23,9 +23,8 @@ import {
   type TestKeyResult
 } from '../shared/ipc'
 import type { UsageSummary } from '../shared/usage'
-import { checkAskFirstChoice } from '../shared/askFirst'
 import { effortStatusOf } from '../shared/effort'
-import { checkLimitsChoice, unsetLimits } from '../shared/limits'
+import { unsetLimits } from '../shared/limits'
 import { suggestionsFor, TASKS } from '../shared/rankings'
 import {
   PROVIDER_NAMES,
@@ -46,7 +45,7 @@ import { createAskFirstStore } from './askFirst'
 import { electronImageTools } from './attachmentImages'
 import { createAttachmentService } from './attachmentService'
 import { createAttachmentStore } from './attachmentStore'
-import { pickAttachmentPaths, systemAskers, systemPickers } from './backupDialogs'
+import { askPerson, pickAttachmentPaths, systemAskers, systemPickers } from './backupDialogs'
 import { createBackupService } from './backupService'
 import { baseUrlOverride } from './baseUrl'
 import { registerChatIpc } from './chat'
@@ -54,6 +53,7 @@ import { createChatEncryptionService } from './chatEncryptionService'
 import { createChatProtection } from './chatProtection'
 import { createConversationStore } from './conversationStore'
 import { canStoreKey, clearApiKey, readApiKey, saveApiKey, secureStorage } from './keyStore'
+import { createLimitChanges } from './limitChanges'
 import { createLimitsStore } from './limits'
 import { chooseEffort, chooseModel, currentModel, inOrder } from './models'
 import { adapterFor } from './providers'
@@ -61,12 +61,17 @@ import { describeFailure, timeoutError } from './providers/errors'
 import { getRankings, reportRankingsProblems } from './rankings'
 import { getRegistry, reportRegistryProblems } from './registry'
 import { isTrustedSender } from './security'
+import { createQuestionGate } from './systemQuestion'
 import { createUsageLedger } from './usageLedger'
 
 // The spending limits (D-031), in limits.json in the data folder. Main alone reads and writes them; the folder is asked for when first used.
 const limitsStore = createLimitsStore(() => join(app.getPath('userData'), 'limits.json'))
 // What the person chose for being asked before a very large request (D-032), in ask-first.json beside it. Damage to it never turns the question off.
 const askFirstStore = createAskFirstStore(() => join(app.getPath('userData'), 'ask-first.json'))
+// The questions main asks the person in the system's own message box (D-039), one at a time across the app. The page cannot answer them.
+const questions = createQuestionGate(askPerson)
+// A change of a limit, or of the amount the app asks above, that lets the app spend more is saved only after the person's yes in that box (D-039).
+const limitChanges = createLimitChanges({ limitsStore, askFirstStore, gate: questions })
 
 /** "Test key" gives up after this long, so a provider that never answers cannot leave the button spinning for ever. */
 const TEST_KEY_TIMEOUT_MS = 20_000
@@ -237,42 +242,26 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     )
   )
 
-  // The spending limits (D-031): both together, as the person chose them. Checked again here; the page cannot take a choice back to "not
-  // chosen" and has no other way to change a limit. The request check that uses them is in chat.ts, in main.
+  // The spending limits (D-031): both together, as the person chose them. Checked again in limitChanges.ts; the page cannot take a choice back to "not
+  // chosen" and has no other way to change a limit. A choice that lets the app spend more (a higher amount, "No limit", any choice made from "not
+  // chosen") is saved only after the person's yes in the system's message box, for the window that asked (D-039). The request check that uses the
+  // limits is in chat.ts, in main.
   ipcMain.handle(
     CHANNELS.settingsSetLimits,
-    guarded(async (input: unknown): Promise<SetLimitsResult> => {
-      const check = checkLimitsChoice(input)
-      if (!check.ok) return check
-      try {
-        await limitsStore.save(check.limits)
-      } catch (error) {
-        // Logged here only; the message could name a file path.
-        console.error('Saving the limits failed:', error instanceof Error ? error.message : error)
-        return { ok: false, error: 'The limits could not be saved on this computer.' }
-      }
-      return { ok: true, status: await currentStatus() }
+    guardedForWindow(async (window, input: unknown): Promise<SetLimitsResult> => {
+      const done = await limitChanges.setLimits(window, input)
+      return done.ok ? { ok: true, status: await currentStatus() } : done
     })
   )
 
-  // The amount above which a large request is asked about first, or "Never ask" (D-032). Checked again here, and rebuilt field by field. The page
-  // cannot send "nothing chosen"; the question itself is asked in chat.ts, in main, whatever the page says.
+  // The amount above which a large request is asked about first, or "Never ask" (D-032). Checked again in limitChanges.ts, and rebuilt field by field. The
+  // page cannot send "nothing chosen"; a choice that asks less often (a higher amount, "Never ask") is saved only after the person's yes in the system's
+  // message box (D-039). The question before a large request itself is asked in chat.ts, in main, whatever the page says.
   ipcMain.handle(
     CHANNELS.settingsSetAskFirst,
-    guarded(async (input: unknown): Promise<SetAskFirstResult> => {
-      const check = checkAskFirstChoice(input)
-      if (!check.ok) return check
-      try {
-        await askFirstStore.save(check.choice)
-      } catch (error) {
-        // Logged here only; the message could name a file path.
-        console.error(
-          'Saving the ask-first choice failed:',
-          error instanceof Error ? error.message : error
-        )
-        return { ok: false, error: 'The choice could not be saved on this computer.' }
-      }
-      return { ok: true, status: await currentStatus() }
+    guardedForWindow(async (window, input: unknown): Promise<SetAskFirstResult> => {
+      const done = await limitChanges.setAskFirst(window, input)
+      return done.ok ? { ok: true, status: await currentStatus() } : done
     })
   )
 

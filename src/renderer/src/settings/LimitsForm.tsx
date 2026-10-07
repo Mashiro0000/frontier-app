@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { SettingsStatus } from '../../../shared/ipc'
 import {
+  limitsRaise,
   parseLimitText,
   sameLimits,
   type LimitChoice,
@@ -61,6 +62,8 @@ function LimitsForm({
       : null
   const unchanged = choice !== null && sameLimits(choice, limits)
   const canSave = !busy && choice !== null && !unchanged
+  // A choice that lets the app spend more is asked about once more by main, in the system's own message box (D-039): say so before Save.
+  const asksAgain = canSave && choice !== null && limitsRaise(limits, choice)
   const dailyAbove =
     choice !== null &&
     choice.daily.kind === 'usd' &&
@@ -78,7 +81,8 @@ function LimitsForm({
         onSaved(result.status)
         setNotice({ kind: 'ok', text: 'Saved.' })
       } else {
-        setNotice({ kind: 'error', text: result.error })
+        // A no in the system's question is the person's own answer, not a failure.
+        setNotice({ kind: result.cancelled ? 'ok' : 'error', text: result.error })
       }
     } catch {
       setNotice({ kind: 'error', text: 'The limits could not be saved: the app did not answer.' })
@@ -119,6 +123,12 @@ function LimitsForm({
         <p className="settings-hint">
           The daily limit is higher than the monthly one, so the monthly limit will always stop you
           first.
+        </p>
+      )}
+      {asksAgain && (
+        <p className="settings-hint limits-asks-again">
+          This lets the app spend more, so when you save, the system asks you once more in a window
+          of its own.
         </p>
       )}
       <div className="settings-actions">

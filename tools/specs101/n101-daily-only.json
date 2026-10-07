@@ -1,0 +1,14 @@
+{
+  "label": "n101-daily-only",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "  limitChange(current.daily, next.daily) === 'up' ||\n  limitChange(current.monthly, next.monthly) === 'up'",
+      "to": "  limitChange(current.daily, next.daily) === 'up'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

@@ -15,7 +15,7 @@ const P = scratch('s83')
 const MOCK = '8794'
 const results = []
 
-results.push(runApp({ label: `${tag}w83`, mode, scripts: 'setup-key.mjs,verify-8-3w.mjs', env: { USER_DATA_DIR: P, WIPE_USER_DATA: '1', MOCK_PORT: MOCK }, timeoutMs: 900000 }))
+results.push(runApp({ label: `${tag}w83`, mode, scripts: 'setup-key.mjs,verify-8-3w.mjs', env: { USER_DATA_DIR: P, WIPE_USER_DATA: '1', MOCK_PORT: MOCK, INSPECT_PORT: '9230' }, timeoutMs: 900000 }))
 results.push(runApp({ label: `${tag}w83b`, mode, scripts: 'verify-8-3b.mjs', env: { USER_DATA_DIR: P, MOCK_PORT: MOCK }, timeoutMs: 400000 }))
 
 const file = join(P, 'ask-first.json')
@@ -26,7 +26,7 @@ const cases = [
 ]
 for (const [name, seed] of cases) {
   seed()
-  results.push(runApp({ label: `${tag}w83c-${name}`, mode, scripts: 'verify-8-3c.mjs', env: { USER_DATA_DIR: P, MOCK_PORT: MOCK, CASE: name }, timeoutMs: 400000 }))
+  results.push(runApp({ label: `${tag}w83c-${name}`, mode, scripts: 'verify-8-3c.mjs', env: { USER_DATA_DIR: P, MOCK_PORT: MOCK, CASE: name, INSPECT_PORT: '9230' }, timeoutMs: 400000 }))
 }
 
 const passed = results.reduce((n, r) => n + r.passed, 0)

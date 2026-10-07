@@ -1,0 +1,14 @@
+{
+  "label": "n101-unset-same",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "  if (current.kind === 'unset') return 'up'",
+      "to": "  if (current.kind === 'unset') return 'same'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

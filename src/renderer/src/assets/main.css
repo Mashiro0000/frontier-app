@@ -1114,6 +1114,17 @@ body {
   white-space: nowrap;
 }
 
+.settings-usage .settings-usage-amount {
+  white-space: nowrap;
+}
+
+/* In a very narrow window "$0.00 of $20.00" may break before "of" (each amount stays whole): on one line it made Settings scroll sideways at 280 px. */
+@media (max-width: 340px) {
+  .settings-usage .settings-usage-cost {
+    white-space: normal;
+  }
+}
+
 .settings-label {
   margin-top: 6px;
   font-size: 13px;

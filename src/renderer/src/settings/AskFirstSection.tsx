@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   ASK_FIRST_DEFAULT_USD,
   askFirstAmount,
+  askFirstLoosens,
   parseAskFirstText,
   sameAskFirst,
   type AskFirstChoice,
@@ -54,6 +55,8 @@ function AskFirstForm({ setting, onSaved }: AskFirstFormProps): React.JSX.Elemen
   const choice = 'choice' in read ? read.choice : null
   const unchanged = choice !== null && sameAskFirst(choice, setting)
   const canSave = !busy && choice !== null && !unchanged
+  // A choice that asks less often is asked about once more by main, in the system's own message box (D-039): say so before Save.
+  const asksAgain = canSave && choice !== null && askFirstLoosens(setting, choice)
 
   async function save(event: React.FormEvent): Promise<void> {
     event.preventDefault()
@@ -66,7 +69,8 @@ function AskFirstForm({ setting, onSaved }: AskFirstFormProps): React.JSX.Elemen
         onSaved(result.status)
         setNotice({ kind: 'ok', text: 'Saved.' })
       } else {
-        setNotice({ kind: 'error', text: result.error })
+        // A no in the system's question is the person's own answer, not a failure.
+        setNotice({ kind: result.cancelled ? 'ok' : 'error', text: result.error })
       }
     } catch {
       setNotice({ kind: 'error', text: 'The choice could not be saved: the app did not answer.' })
@@ -91,6 +95,12 @@ function AskFirstForm({ setting, onSaved }: AskFirstFormProps): React.JSX.Elemen
         <p className="settings-hint limits-warning">
           With Never ask, a request is sent without this question, however large it is. The spending
           limits above still stop a request that would pass them.
+        </p>
+      )}
+      {asksAgain && (
+        <p className="settings-hint limits-asks-again">
+          The app would ask less often, so when you save, the system asks you once more in a window
+          of its own.
         </p>
       )}
       <div className="settings-actions">

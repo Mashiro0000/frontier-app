@@ -22,9 +22,15 @@ function row(label: string, totals: UsageTotals, limit?: LimitSetting): React.JS
         {formatCount(inputSide(totals.tokens))} in, {formatCount(totals.tokens.output)} out,{' '}
         {totals.requests === 1 ? '1 request' : `${formatCount(totals.requests)} requests`}
       </td>
+      {/* Two amounts that each stay on one line, so that a narrow window can break the cell before "of" (it scrolled sideways at 280 px). */}
       <td className="settings-usage-cost">
-        {formatSpend(totals.costUsd, totals.about)}
-        {limit?.kind === 'usd' && ` of ${formatMoney(limit.usd)}`}
+        <span className="settings-usage-amount">{formatSpend(totals.costUsd, totals.about)}</span>
+        {limit?.kind === 'usd' && (
+          <>
+            {' '}
+            <span className="settings-usage-amount">of {formatMoney(limit.usd)}</span>
+          </>
+        )}
       </td>
     </tr>
   )

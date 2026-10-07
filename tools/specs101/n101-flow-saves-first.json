@@ -1,0 +1,14 @@
+{
+  "label": "n101-flow-saves-first",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/limitChanges.ts",
+      "from": "        if (limitsRaise(current, next)) {",
+      "to": "        await limitsStore.save(next)\n        if (limitsRaise(current, next)) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

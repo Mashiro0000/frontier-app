@@ -1,0 +1,18 @@
+{
+  "label": "w101-never-not-loose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "  if (next.kind === 'never') return true",
+      "to": "  if (next.kind === 'never') return false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run101.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 400000
+}

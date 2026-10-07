@@ -1,0 +1,14 @@
+{
+  "label": "n101-from-never-loose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "  if (now === null) return false // \"Never ask\" already",
+      "to": "  if (now === null) return true // \"Never ask\" already"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

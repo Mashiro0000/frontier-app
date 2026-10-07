@@ -83,7 +83,8 @@ switch ($Op) {
     foreach ($e in $d.FindAll($T::Descendants, [System.Windows.Automation.Condition]::TrueCondition)) {
       $c = $e.Current
       $type = $c.ControlType.ProgrammaticName -replace 'ControlType\.', ''
-      $isNative = $c.ClassName -in @('Edit', 'Button', 'ComboBox', 'Static', 'DirectUIHWND')
+      # CCPushButton: a message box's own buttons (Electron's noLink buttons, ids CommandButton_100, _101, ...), which UI Automation shows as panes (10.1).
+      $isNative = $c.ClassName -in @('Edit', 'Button', 'ComboBox', 'Static', 'DirectUIHWND', 'CCPushButton')
       if ($c.IsOffscreen -or -not ($isNative -or $type -in @('Text', 'Button', 'Edit'))) { continue }
       if ($c.Name -eq '' -and $c.AutomationId -eq '') { continue }
       $val = if ($c.NativeWindowHandle -ne 0 -and $c.ClassName -eq 'Edit') { TextOf ([IntPtr]$c.NativeWindowHandle) } else { '' }

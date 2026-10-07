@@ -1,0 +1,14 @@
+{
+  "label": "n101-box-any-yes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupDialogs.ts",
+      "from": "  return result.response === 0\n}",
+      "to": "  return result.response !== undefined\n}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

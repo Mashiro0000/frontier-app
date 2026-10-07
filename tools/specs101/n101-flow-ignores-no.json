@@ -1,0 +1,14 @@
+{
+  "label": "n101-flow-ignores-no",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/limitChanges.ts",
+      "from": "    return { ok: false, cancelled: true, error: notSaved }",
+      "to": "    return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

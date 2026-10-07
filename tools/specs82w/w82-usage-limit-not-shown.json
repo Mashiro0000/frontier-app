@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/settings/UsageSection.tsx",
-      "from": "        {limit?.kind === 'usd' && ` of ${formatMoney(limit.usd)}`}\n",
+      "from": "        {limit?.kind === 'usd' && (\n          <>\n            {' '}\n            <span className=\"settings-usage-amount\">of {formatMoney(limit.usd)}</span>\n          </>\n        )}\n",
       "to": ""
     }
   ],
@@ -20,6 +20,7 @@
     "MOCK_PORT": "8799",
     "PRESEED_FILE": "",
     "PRESEED_LIMITS": "off",
+    "INSPECT_PORT": "9230",
     "LOG_LABEL": "nc-w82-usage-limit-not-shown"
   }
 }

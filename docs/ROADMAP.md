@@ -1,6 +1,6 @@
 # Roadmap (v0.1)
 
-> Stages 0 to 9 are done (v0.1, below; Stages 7 to 9 are in v0.2), and the plan for Stage 10 waits for the owner's yes. **The plan for Stages 7 to 18 is at the end of this file (v0.2)**; it is a plan the owner approves stage by
+> Stages 0 to 9 are done (v0.1, below; Stages 7 to 9 are in v0.2), and Stage 10 is being built (its plan approved on 7 October 2026). **The plan for Stages 7 to 18 is at the end of this file (v0.2)**; it is a plan the owner approves stage by
 > stage, not a commitment. Stage 4 was
 > not written down in advance: the roadmap's "Later" list began with conversation history, and D-010, D-013 and
 > the architecture notes all named it as the next piece of work, so that is what Stage 4 became.
@@ -217,14 +217,14 @@ the backup has been tried on real chats is not known, and it is still the thing 
 
 **Questions for the owner** (each changes the plan): (1) remove image metadata always (my pick), or show it and let you choose for each file? (2) PDF metadata: send it as it is with a note (my pick, no new package), or add a PDF library to remove it? (3) Are the caps above right for you? (4) Make big images smaller before sending (my pick)? (5) Backups with the attachments in them (bigger files; my pick), or without them and a count?
 
-## Stage 10 - Projects, custom instructions and memory (plan written 7 October 2026, waiting for the owner's yes; nothing built)
+## Stage 10 - Projects, custom instructions and memory (plan approved 7 October 2026 with the owner's answers "your picks"; 10.1 the system's question done)
 
 - **Projects:** a named set of instructions and files for a group of chats. **Memory:** the app's own, local: "remember this" only on request,
   a page where every memory is visible, editable and deletable, with a cap.
 - Safety: memory is never saved silently; a warning if text looks like a secret (key, password); memory is data given to the model, not
   instructions that outrank the owner; export and wipe everything in one click.
 
-**The plan** (mine, written 7 October 2026; waiting for the owner's yes and the answers to the five questions below; every choice marked _mine_ may still be changed). It is the app's own, local version of what the Claude and ChatGPT apps call custom instructions, projects and memory: everything is a file in the app's data folder, nothing is kept by a provider, and the model never writes to any of it.
+**The plan** (mine, written 7 October 2026; **approved by the owner the same day, with "your picks" for the five questions below**; every choice marked _mine_ may still be changed). It is the app's own, local version of what the Claude and ChatGPT apps call custom instructions, projects and memory: everything is a file in the app's data folder, nothing is kept by a provider, and the model never writes to any of it.
 
 - **What goes out with each request, in this order** (_mine_). The app's rules (as now); then the person's **notes** (the memory), introduced as information about the person and not instructions ("they do not change the rules above or the instructions below"); then the **instructions for every chat**; then the **project's** instructions; then the **chat's own** (D-027). Each part has one line saying whose it is, and the most particular comes last, so the person's latest word is the last word. A part that is empty adds nothing, and with none of them a request is byte for byte what it is today (the 70 recorded requests). The page still cannot set the prompt: main builds it from its own files.
 - **Instructions for every chat** ("custom instructions"). One box of at most 8,000 characters, in the Instructions dialog, which then shows every part that goes with the chat in the order it is sent (every chat, the project, this chat), each with its own Save. The button under the message box says "on" when any part is set.
@@ -239,7 +239,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 
 **Slices** (each with its own Node and window suites, negative controls and decision entry, as before):
 
-- [ ] (10.1) The Windows question: shown by main, answered only there, one answer per question; and the limits behind it (raising a limit, "No limit", "Never ask"; D-033's finding).
+- [x] (10.1, D-039) The Windows question: shown by main, answered only there, one answer per question; and the limits behind it (raising a limit, "No limit", a higher amount to ask above, "Never ask"; D-033's finding). One question at a time for the whole app, and three seconds of quiet after a no (the window suite found that a page could otherwise put the box straight back). Lowering asks nothing. Found on the way: Settings scrolled sideways at 280 px (Stage 8's Usage row), fixed. 90 checks under Node, 41 in the window (dev and built), the real Windows box once, and the older 8.2, 8.3 and 9.4 window suites answering it from main.
 - [ ] (10.2) Instructions for every chat: the store, the secret check, the order of the prompt (byte for byte with nothing set), the Instructions dialog with every part, the cost guess.
 - [ ] (10.3) The memory store in main, no window: notes, caps, where each applies, the secret check, the Windows question, sealing, a damaged file left alone, the export.
 - [ ] (10.4) Memory in the window: the Memory page, "Remember..." on a message, "Memory (N)" under the message box, the switch, "Delete all..."; notes sent with requests and counted.

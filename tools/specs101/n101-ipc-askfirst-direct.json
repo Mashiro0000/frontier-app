@@ -1,0 +1,14 @@
+{
+  "label": "n101-ipc-askfirst-direct",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      const done = await limitChanges.setAskFirst(window, input)",
+      "to": "      const done = await (async () => {\n        await askFirstStore.save(input as never)\n        return { ok: true as const }\n      })()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

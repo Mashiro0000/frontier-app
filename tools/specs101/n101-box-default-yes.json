@@ -1,0 +1,14 @@
+{
+  "label": "n101-box-default-yes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupDialogs.ts",
+      "from": "    defaultId: 1,\n    cancelId: 1,",
+      "to": "    defaultId: 0,\n    cancelId: 1,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

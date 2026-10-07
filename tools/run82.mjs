@@ -13,8 +13,8 @@ const P = scratch('s82')
 const MOCK = '8793'
 const results = []
 
-results.push(runApp({ label: `${tag}w82`, mode, scripts: 'setup-key.mjs,verify-8-2w.mjs', env: { USER_DATA_DIR: P, WIPE_USER_DATA: '1', MOCK_PORT: MOCK, PRESEED_LIMITS: 'off' }, timeoutMs: 600000 }))
-results.push(runApp({ label: `${tag}w82b`, mode, scripts: 'verify-8-2b.mjs', env: { USER_DATA_DIR: P, MOCK_PORT: MOCK }, timeoutMs: 400000 }))
+results.push(runApp({ label: `${tag}w82`, mode, scripts: 'setup-key.mjs,verify-8-2w.mjs', env: { USER_DATA_DIR: P, WIPE_USER_DATA: '1', MOCK_PORT: MOCK, PRESEED_LIMITS: 'off', INSPECT_PORT: '9230' }, timeoutMs: 600000 }))
+results.push(runApp({ label: `${tag}w82b`, mode, scripts: 'verify-8-2b.mjs', env: { USER_DATA_DIR: P, MOCK_PORT: MOCK, INSPECT_PORT: '9230' }, timeoutMs: 400000 }))
 
 const limits = join(P, 'limits.json')
 const cases = [
@@ -24,7 +24,7 @@ const cases = [
 ]
 for (const [name, seed] of cases) {
   seed()
-  results.push(runApp({ label: `${tag}w82c-${name}`, mode, scripts: 'verify-8-2c.mjs', env: { USER_DATA_DIR: P, MOCK_PORT: MOCK, CASE: name }, timeoutMs: 400000 }))
+  results.push(runApp({ label: `${tag}w82c-${name}`, mode, scripts: 'verify-8-2c.mjs', env: { USER_DATA_DIR: P, MOCK_PORT: MOCK, CASE: name, INSPECT_PORT: '9230' }, timeoutMs: 400000 }))
 }
 
 const passed = results.reduce((n, r) => n + r.passed, 0)

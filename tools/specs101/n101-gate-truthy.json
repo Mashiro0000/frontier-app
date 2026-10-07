@@ -1,0 +1,14 @@
+{
+  "label": "n101-gate-truthy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/systemQuestion.ts",
+      "from": "        if ((await askPerson(owner, question)) === true) return 'yes'",
+      "to": "        if (await askPerson(owner, question)) return 'yes'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}
