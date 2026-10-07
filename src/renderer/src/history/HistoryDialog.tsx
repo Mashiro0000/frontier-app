@@ -2,22 +2,32 @@ import { useEffect, useRef, useState } from 'react'
 import { formatCount, formatWhen } from './format'
 import RestorePreviewPanel from './RestorePreviewPanel'
 import { useBackup } from './useBackup'
+import type { ProjectsStatus } from '../../../shared/projects'
 import type { UseHistory } from './useHistory'
 
 interface HistoryDialogProps {
   open: boolean
   history: UseHistory
+  /** The projects (D-039): each chat's project is named, and the list can show one project's chats. Null while not known. */
+  projects: ProjectsStatus | null
   onClose: () => void
 }
 
 /** The list of saved chats: open one, or delete one. Starting a new chat is a button in the chat bar under the message box. */
-function HistoryDialog({ open, history, onClose }: HistoryDialogProps): React.JSX.Element {
+function HistoryDialog({
+  open,
+  history,
+  projects,
+  onClose
+}: HistoryDialogProps): React.JSX.Element {
   const dialogRef = useRef<HTMLDialogElement>(null)
   // True while a chat is being opened or deleted: the other buttons wait, so two requests cannot cross.
   const [busy, setBusy] = useState(false)
   // The chat whose "Delete" was pressed and which is waiting for a yes.
   const [asking, setAsking] = useState<string | null>(null)
   const [problem, setProblem] = useState<string | null>(null)
+  // Which chats the list shows (D-039): every chat ('all'), those in no project ('none'), or one project's (its id).
+  const [shown, setShown] = useState('all')
   // Backing up to a file and restoring from one (D-034).
   const backup = useBackup(history.reload)
   const { dismiss: dismissPreview, clearNotice } = backup
@@ -60,7 +70,32 @@ function HistoryDialog({ open, history, onClose }: HistoryDialogProps): React.JS
     if (error !== null) setProblem(error)
   }
 
-  const { conversations } = history
+  const { conversations: everyChat } = history
+  // A chat's project, if it is still there: a deleted project's chats belong to none.
+  const projectName = (id: string | undefined): string | null =>
+    id === undefined ? null : (projects?.projects.find((p) => p.id === id)?.name ?? null)
+  const conversations =
+    everyChat === null || shown === 'all'
+      ? everyChat
+      : everyChat.filter((c) =>
+          shown === 'none' ? projectName(c.project) === null : c.project === shown
+        )
+  // The filter, shown only when there are projects to filter by.
+  const projectFilter =
+    (projects?.projects.length ?? 0) > 0 ? (
+      <label className="history-filter">
+        Show{' '}
+        <select value={shown} onChange={(event) => setShown(event.target.value)}>
+          <option value="all">every chat</option>
+          <option value="none">chats in no project</option>
+          {(projects?.projects ?? []).map((p) => (
+            <option key={p.id} value={p.id}>
+              the project {p.name}
+            </option>
+          ))}
+        </select>
+      </label>
+    ) : null
 
   return (
     <dialog
@@ -106,76 +141,88 @@ function HistoryDialog({ open, history, onClose }: HistoryDialogProps): React.JS
         </div>
       ) : conversations === null ? (
         <p className="history-status">Loading...</p>
+      ) : conversations.length === 0 && shown !== 'all' ? (
+        <>
+          {projectFilter}
+          <p className="history-hint">No saved chat here yet.</p>
+        </>
       ) : conversations.length === 0 ? (
         <p className="history-hint">
           Nothing is saved yet. A chat is saved as soon as you send a message in it.
         </p>
       ) : (
-        <ul className="history-list" aria-label="Saved chats">
-          {conversations.map((conversation) => {
-            const isOpen = conversation.id === history.activeId
-            return (
-              <li key={conversation.id} className="history-row">
-                <button
-                  type="button"
-                  className="history-open"
-                  aria-current={isOpen ? 'true' : undefined}
-                  disabled={locked}
-                  onClick={() => void choose(conversation.id)}
-                >
-                  <span className="history-title">{conversation.title}</span>
-                  <span className="history-meta">
-                    {formatWhen(conversation.updatedAt)} · {formatCount(conversation.messageCount)}
-                    {isOpen ? ' · open now' : ''}
-                  </span>
-                </button>
-                {asking === conversation.id ? (
-                  <span className="history-ask" role="group" aria-label="Delete this chat?">
-                    <span className="history-ask-text">Delete?</span>
-                    <button
-                      type="button"
-                      className="history-button history-button-danger"
-                      disabled={locked}
-                      onClick={() => void confirmDelete(conversation.id)}
-                    >
-                      Delete
-                    </button>
-                    <button
-                      type="button"
-                      className="history-button"
-                      autoFocus
-                      disabled={locked}
-                      onClick={() => setAsking(null)}
-                    >
-                      Keep
-                    </button>
-                  </span>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      className="history-button"
-                      aria-label={`Export the chat "${conversation.title}" to a file`}
-                      disabled={locked}
-                      onClick={() => void backup.exportOne(conversation.id)}
-                    >
-                      Export
-                    </button>
-                    <button
-                      type="button"
-                      className="history-button"
-                      aria-label={`Delete the chat "${conversation.title}"`}
-                      disabled={locked}
-                      onClick={() => setAsking(conversation.id)}
-                    >
-                      Delete
-                    </button>
-                  </>
-                )}
-              </li>
-            )
-          })}
-        </ul>
+        <>
+          {projectFilter}
+          <ul className="history-list" aria-label="Saved chats">
+            {conversations.map((conversation) => {
+              const isOpen = conversation.id === history.activeId
+              return (
+                <li key={conversation.id} className="history-row">
+                  <button
+                    type="button"
+                    className="history-open"
+                    aria-current={isOpen ? 'true' : undefined}
+                    disabled={locked}
+                    onClick={() => void choose(conversation.id)}
+                  >
+                    <span className="history-title">{conversation.title}</span>
+                    <span className="history-meta">
+                      {formatWhen(conversation.updatedAt)} ·{' '}
+                      {formatCount(conversation.messageCount)}
+                      {projectName(conversation.project) !== null
+                        ? ` · ${projectName(conversation.project)}`
+                        : ''}
+                      {isOpen ? ' · open now' : ''}
+                    </span>
+                  </button>
+                  {asking === conversation.id ? (
+                    <span className="history-ask" role="group" aria-label="Delete this chat?">
+                      <span className="history-ask-text">Delete?</span>
+                      <button
+                        type="button"
+                        className="history-button history-button-danger"
+                        disabled={locked}
+                        onClick={() => void confirmDelete(conversation.id)}
+                      >
+                        Delete
+                      </button>
+                      <button
+                        type="button"
+                        className="history-button"
+                        autoFocus
+                        disabled={locked}
+                        onClick={() => setAsking(null)}
+                      >
+                        Keep
+                      </button>
+                    </span>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        className="history-button"
+                        aria-label={`Export the chat "${conversation.title}" to a file`}
+                        disabled={locked}
+                        onClick={() => void backup.exportOne(conversation.id)}
+                      >
+                        Export
+                      </button>
+                      <button
+                        type="button"
+                        className="history-button"
+                        aria-label={`Delete the chat "${conversation.title}"`}
+                        disabled={locked}
+                        onClick={() => setAsking(conversation.id)}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </>
       )}
 
       {problem && (

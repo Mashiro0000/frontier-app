@@ -23,8 +23,8 @@ const store = {
   // 9.3 (D-037): the version is worked out by fileVersion (3, or 4 for a chat with files); the sabotage still writes version 1
   'writes-version-1': [S, '    const version = fileVersion(conversation)', '    const version = 1'],
   'v1-not-upgraded': [S, "file.version === 1 ? 'file-v1' : 'file'", "'file'"],
-  'v2-refused': [S, 'file.version !== 1 && file.version !== 2', 'file.version !== 1'],
-  'any-version-accepted': [S, 'file.version !== 1 && file.version !== 2', 'false'],
+  'v2-refused': [S, '    file.version !== 1 &&\n    file.version !== 2 &&', '    file.version !== 1 &&'],
+  'any-version-accepted': [S, '    file.version !== 1 &&\n    file.version !== 2 &&', '    false &&\n    file.version !== 2 &&'], // the condition spans lines since 10.5
   'reading-rewrites': [S, "if ('conversation' in read) {\n              index.set(id, {", `if ('conversation' in read) {\n              ${UTIMES}\n              index.set(id, {`]
 }
 

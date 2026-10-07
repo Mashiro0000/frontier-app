@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/shared/validate.ts",
-      "from": "conversation: { id, messages: checked.messages, instructions: checkedInstructions.instructions }",
-      "to": "conversation: { id, messages: checked.messages, instructions: '' }"
+      "from": "      instructions: checkedInstructions.instructions,\n      ...(project",
+      "to": "      instructions: '',\n      ...(project"
     }
   ],
   "argv": [

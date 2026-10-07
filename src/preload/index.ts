@@ -73,6 +73,17 @@ const api: FrontierApi = {
     removeAll: () => ipcRenderer.invoke(CHANNELS.memoryRemoveAll),
     setOn: (on) => ipcRenderer.invoke(CHANNELS.memorySetOn, on),
     exportAll: () => ipcRenderer.invoke(CHANNELS.memoryExport)
+  },
+  projects: {
+    status: () => ipcRenderer.invoke(CHANNELS.projectsStatus),
+    create: (name) => ipcRenderer.invoke(CHANNELS.projectsCreate, { name }),
+    rename: (id, name) => ipcRenderer.invoke(CHANNELS.projectsRename, { id, name }),
+    setInstructions: (id, text, saveAnyway) =>
+      ipcRenderer.invoke(CHANNELS.projectsSetInstructions, { id, text, saveAnyway }),
+    addFiles: (id) => ipcRenderer.invoke(CHANNELS.projectsAddFiles, { id }),
+    removeFile: (id, fileId) => ipcRenderer.invoke(CHANNELS.projectsRemoveFile, { id, fileId }),
+    remove: (id) => ipcRenderer.invoke(CHANNELS.projectsRemove, { id }),
+    removeAll: () => ipcRenderer.invoke(CHANNELS.projectsRemoveAll)
   }
 }
 

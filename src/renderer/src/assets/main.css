@@ -1742,3 +1742,224 @@ body {
   gap: 8px;
   margin-top: 6px;
 }
+
+/* ---------- the Projects page (D-039) ---------- */
+
+.projects {
+  margin: auto;
+  width: min(600px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 20px 22px;
+  overflow-y: auto;
+  color: var(--color-text);
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.projects::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.projects-heading {
+  margin-bottom: 14px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.projects-body,
+.projects-detail,
+.projects-list-section,
+.projects-part,
+.projects-editor,
+.projects-problem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.projects-body {
+  gap: 12px;
+}
+
+.projects-hint,
+.projects-count,
+.projects-facts,
+.projects-none,
+.projects-file-facts,
+.projects-list-use {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.projects-chat {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.projects-chat-select,
+.history-filter select {
+  max-width: 100%;
+  padding: 4px 8px;
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-background);
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+}
+
+.projects-list-section,
+.projects-detail {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.projects-list-head,
+.projects-detail-head,
+.projects-part-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 8px;
+}
+
+.projects-list-title,
+.projects-detail-title {
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.projects-part-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.projects-list,
+.projects-files,
+.projects-refused {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  list-style: none;
+}
+
+.projects-open {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 6px 10px;
+  font: inherit;
+  text-align: left;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.projects-open[aria-current='true'] {
+  border-color: var(--color-accent);
+}
+
+.projects-name,
+.projects-file-name,
+.projects-text {
+  overflow-wrap: anywhere;
+}
+
+.projects-text {
+  max-height: 7.5em;
+  overflow-y: auto;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+.projects-file {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.projects-actions,
+.projects-editor-actions,
+.projects-ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.projects-editor-actions,
+.projects-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.projects-label {
+  font-size: 13px;
+}
+
+.projects-input,
+.projects-name-input {
+  width: 100%;
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-background);
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+}
+
+.projects-input {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.projects-input:focus-visible,
+.projects-name-input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.projects-count-over,
+.projects-notice-error,
+.projects-secrets,
+.projects-problem,
+.projects-refused {
+  color: var(--color-danger);
+}
+
+.projects-notice,
+.projects-refused,
+.projects-secrets {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+/* A long project name under the message box is cut short; the tooltip has it whole. */
+.chat-project-name {
+  display: inline-block;
+  max-width: 12em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.history-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}

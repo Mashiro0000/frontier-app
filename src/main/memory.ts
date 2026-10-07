@@ -198,6 +198,8 @@ export interface MemoryService {
   remove(input: unknown): Promise<MemoryChange>
   /** Deletes every note. Asks nothing (the page asks first). A file that cannot be read is kept as a copy first. */
   removeAll(): Promise<MemoryChange>
+  /** Deletes the notes of one project, when the project is deleted (10.5). Asks nothing; a file that cannot be read is left as it is. */
+  removeScope(projectId: string): Promise<void>
   /** Memory on or off for every chat. On asks in the system's box when there are notes; off asks nothing. */
   setOn(owner: unknown, on: unknown): Promise<MemoryChange>
   /** Every note, to one plain text file the person picks in the system's save dialog. */
@@ -461,6 +463,15 @@ export function createMemory(options: MemoryOptions): MemoryService {
     })
   }
 
+  async function removeScope(projectId: string): Promise<void> {
+    // Not one at a time with the person's changes: a project is deleted in its own turn, and this only waits for the file's own queue.
+    const current = await file.read()
+    if (current.state !== 'ok') return
+    const kept = current.value.notes.filter((note) => note.scope !== projectId)
+    if (kept.length === current.value.notes.length) return
+    await file.write({ on: current.value.on, notes: kept })
+  }
+
   function removeAll(): Promise<MemoryChange> {
     return oneAtATime(async () => {
       const current = await file.read()
@@ -580,5 +591,5 @@ export function createMemory(options: MemoryOptions): MemoryService {
     }
   }
 
-  return { status, add, edit, remove, removeAll, setOn, exportAll, forRequest, file }
+  return { status, add, edit, remove, removeAll, removeScope, setOn, exportAll, forRequest, file }
 }

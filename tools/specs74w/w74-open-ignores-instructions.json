@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/history/useHistory.ts",
-      "from": "chat.load(messages, instructions)",
-      "to": "chat.load(messages)"
+      "from": "chat.load(messages, instructions, project)",
+      "to": "chat.load(messages, '', project)"
     }
   ],
   "argv": [

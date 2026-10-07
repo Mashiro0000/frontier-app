@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "          if (refs.complete) await attachments.deleteUnused(files, refs.ids)",
-      "to": "          await attachments.deleteUnused(files, refs.ids)"
+      "from": "    if (used !== null) await attachments.deleteUnused([...ids], used)",
+      "to": "    await attachments.deleteUnused([...ids], used ?? new Set())"
     }
   ],
   "argv": [

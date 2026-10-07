@@ -2486,3 +2486,14 @@ if you have not, please do before you rely on this. **The design was mine** (you
 4. **What goes to the model:** your notes go with every message, right after the app's own rules, introduced as information about you and not as instructions; then your instructions. With no notes, nothing changes (the 70 recorded requests are identical). If the notes cannot be read, or one holds an API key saved in the app, nothing is sent and the app says why.
 5. **Encryption** covers the notes too, as it does the instructions.
 6. **Checked:** 22 checks under Node, 59 in the window (on the dev app and the built one); **34 negative controls, all caught**. One sabotage was not noticed because the code it removed was not needed (a click keeps your selection anyway), so I took that code out; two of my checks were made sharper. The regression's Node, window and Stage 4 parts (63 runs) found three checks made stale by the new Memory button and my last change; fixed and passed when run again.
+
+## Stage 10 - Slice 10.5: projects (7 October 2026 session; D-039)
+
+**Step by step.**
+
+1. **What changed for you:** a **Project** button under the message box opens the Projects page. Make a project (a name only you see: it is never sent to the model), give it instructions and files, and put chats in it ("Project: name" under the message box), or start one with "New chat in this project". History names each chat's project and can show one project's chats. The Memory page has a place for each project's notes.
+2. **Asked in a Windows message box:** a project's instructions, and its files (after you pick them in the Windows open dialog, a second question names each one). Making, renaming, taking a file off and deleting a project ask nothing there; deleting asks on the page first.
+3. **Deleting a project** keeps its chats (in no project), and deletes its notes and its files unless a chat still uses them.
+4. **Not yet:** in this slice a project's instructions, notes and files do not go with requests; that is the next slice (10.6). Backups do not hold projects until 10.7.
+5. **Files:** a chat in a project is saved in a new file version (5); a chat in no project is saved exactly as before.
+6. **Checked:** 54 checks under Node, 38 in the window (on the dev app and the built one); **47 negative controls, all caught** (two of my checks made sharper). The regression's Node, window and Stage 4 parts (65 runs) found four checks made stale (three of them because version 5 now means a chat in a project, one a race in a test); fixed, and they pass.

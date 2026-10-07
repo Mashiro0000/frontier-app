@@ -26,6 +26,7 @@ import {
   type TestKeyResult
 } from '../shared/ipc'
 import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from '../shared/memory'
+import type { ProjectChangeResult, ProjectsStatus } from '../shared/projects'
 import type { UsageSummary } from '../shared/usage'
 import { effortStatusOf } from '../shared/effort'
 import { unsetLimits } from '../shared/limits'
@@ -68,6 +69,7 @@ import { canStoreKey, clearApiKey, readApiKey, saveApiKey, secureStorage } from 
 import { createLimitChanges } from './limitChanges'
 import { createLimitsStore } from './limits'
 import { createMemory } from './memory'
+import { createProjects } from './projects'
 import { chooseEffort, chooseModel, currentModel, inOrder } from './models'
 import { adapterFor } from './providers'
 import { describeFailure, timeoutError } from './providers/errors'
@@ -313,14 +315,14 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     savedKeys
   })
   // The person's notes (D-039), in memory.json beside them, kept the same way. Main sends them itself; the page shows them and asks to change them, and a
-  // new or changed note waits for a yes in the system's box. Projects come in 10.5: until then there is none, and no note can be for one.
+  // new or changed note waits for a yes in the system's box. A note for a project names it by id; the projects say whether it exists (10.5).
   const memory = createMemory({
     pathOf: () => join(app.getPath('userData'), 'memory.json'),
     box: secureStorage,
     writeMode: protection.writeMode,
     gate: questions,
     savedKeys,
-    projectName: async () => null,
+    projectName: (id) => projects.nameOf(id),
     dataDir: app.getPath('userData'),
     pickExportPath: pickNotesExportPath
   })
@@ -337,10 +339,35 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     store: attachments,
     pickPaths: pickAttachmentPaths,
     // The files saved chats use (D-037): a file taken off a message is deleted only if no chat uses it, and only if every chat could be read.
-    referenced: async () => {
-      const refs = await history.attachmentRefs()
-      return refs.complete ? refs.ids : null
-    }
+    referenced: () => usedFiles()
+  })
+  // The files every saved chat and every project uses (D-037, D-039): null while a chat or projects.json cannot be read, and then nothing is deleted.
+  async function usedFiles(): Promise<ReadonlySet<string> | null> {
+    const chats = await history.attachmentRefs()
+    const inProjects = await projects.fileRefs()
+    return chats.complete && inProjects !== null ? new Set([...chats.ids, ...inProjects]) : null
+  }
+  /** Copies no chat and no project uses any more: deleted, and only when everything could be read. */
+  async function deleteUnusedFiles(ids: readonly string[]): Promise<void> {
+    if (ids.length === 0) return
+    const used = await usedFiles()
+    if (used !== null) await attachments.deleteUnused([...ids], used)
+  }
+  // The person's projects (D-039, 10.5), in projects.json beside the chats, kept the same way: a name, instructions and files for a group of chats. New
+  // instructions and added files wait for a yes in the system's box; a project's files are the attachment store's own copies, kept while it names them.
+  const projects = createProjects({
+    pathOf: () => join(app.getPath('userData'), 'projects.json'),
+    box: secureStorage,
+    writeMode: protection.writeMode,
+    gate: questions,
+    savedKeys,
+    files: {
+      pick: (owner) => attaching.pick(owner),
+      release: (id) => attachments.release(id),
+      discard: (id) => attaching.discard(id),
+      deleteUnused: deleteUnusedFiles
+    },
+    removeNotes: (projectId) => memory.removeScope(projectId)
   })
 
   // Backing up chats to a file and restoring them from one (D-034), and turning the encryption of the saved chats on and off (D-035): the same lock,
@@ -365,7 +392,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     backups,
     asks: systemAskers,
     files: attachments,
-    documents: keptDocuments([everyChat.file, memory.file]) // rewritten with the chats (D-039)
+    documents: keptDocuments([everyChat.file, memory.file, projects.file]) // rewritten with the chats (D-039)
   })
 
   ipcMain.handle(
@@ -400,7 +427,13 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       const check = checkConversationSave(input) // the title and dates are not the page's to choose
       if (!check.ok) return check
       try {
-        const saved = await history.save(check.conversation)
+        // A chat moved into a project that is not there (deleted meanwhile, or never made) is saved in none (D-039).
+        const { project, ...rest } = check.conversation
+        const conversation =
+          project !== undefined && (await projects.nameOf(project)) !== null
+            ? check.conversation
+            : rest
+        const saved = await history.save(conversation)
         // A file attached in this run is held (kept from deletion) while it is on a message being written. Once a saved chat names it, the chat keeps
         // it instead: it is let go of, so that deleting the chat can delete it (D-037).
         if (saved.ok) {
@@ -422,14 +455,11 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       const check = checkConversationId(input)
       if (!check.ok) return check
       try {
-        // The chat's files are deleted with it when no other chat uses them (D-037), and only when every chat could be read (else what uses them is
-        // not known). A file that cannot be deleted is left; the chat is still deleted.
+        // The chat's files are deleted with it when no other chat and no project uses them (D-037, D-039), and only when everything could be read
+        // (else what uses them is not known). A file that cannot be deleted is left; the chat is still deleted.
         const files = await history.attachmentsOf(check.id)
         const removed = await history.remove(check.id)
-        if (removed.ok && files.length > 0) {
-          const refs = await history.attachmentRefs()
-          if (refs.complete) await attachments.deleteUnused(files, refs.ids)
-        }
+        if (removed.ok) await deleteUnusedFiles(files)
         return removed
       } catch (error) {
         console.error('Deleting a saved conversation failed:', reason(error))
@@ -621,6 +651,57 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
+  // The person's projects (D-039, 10.5). New instructions and added files ask in the system's message box for the window that asked (the files come
+  // through the system's open dialog first); making, renaming, taking a file off and deleting ask nothing there (the page asks before deleting).
+  ipcMain.handle(
+    CHANNELS.projectsStatus,
+    guarded(async (): Promise<ProjectsStatus> => {
+      try {
+        return await projects.status()
+      } catch (error) {
+        console.error('Reading the projects failed:', reason(error))
+        throw new Error('Your projects could not be read.')
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.projectsCreate,
+    guarded((input: unknown): Promise<ProjectChangeResult> => projects.create(input))
+  )
+  ipcMain.handle(
+    CHANNELS.projectsRename,
+    guarded((input: unknown): Promise<ProjectChangeResult> => projects.rename(input))
+  )
+  ipcMain.handle(
+    CHANNELS.projectsSetInstructions,
+    guardedForWindow((window, input: unknown): Promise<ProjectChangeResult> =>
+      projects.setInstructions(window, input)
+    )
+  )
+  ipcMain.handle(
+    CHANNELS.projectsAddFiles,
+    guardedForWindow(async (window, input: unknown): Promise<ProjectChangeResult> => {
+      try {
+        return await projects.addFiles(window, input)
+      } catch (error) {
+        console.error('Adding files to a project failed:', reason(error))
+        return { ok: false, error: 'The files could not be added.' }
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.projectsRemoveFile,
+    guarded((input: unknown): Promise<ProjectChangeResult> => projects.removeFile(input))
+  )
+  ipcMain.handle(
+    CHANNELS.projectsRemove,
+    guarded((input: unknown): Promise<ProjectChangeResult> => projects.remove(input))
+  )
+  ipcMain.handle(
+    CHANNELS.projectsRemoveAll,
+    guarded((): Promise<ProjectChangeResult> => projects.removeAll())
+  )
+
   // What was used and what it cost (D-030): one plain file, written by main alone. The page can ask for sums and nothing else.
   const ledger = createUsageLedger(join(app.getPath('userData'), 'usage', 'ledger.jsonl'))
 
@@ -636,11 +717,10 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
-  // At start, the copies left by messages that were never sent (D-037): deleted when no chat uses them, they are over an hour old, and every chat could
-  // be read (otherwise what uses them is not known, and nothing is deleted). It runs in the stores' own turns, after the folder has been read.
-  void history
-    .attachmentRefs()
-    .then((refs) => (refs.complete ? attachments.sweep(refs.ids, 3_600_000) : undefined))
+  // At start, the copies left by messages that were never sent (D-037): deleted when no chat and no project uses them (D-039), they are over an hour
+  // old, and every chat and projects.json could be read (otherwise what uses them is not known, and nothing is deleted). It runs in the stores' own turns, after the folder has been read.
+  void usedFiles()
+    .then((used) => (used !== null ? attachments.sweep(used, 3_600_000) : undefined))
     .catch((error: unknown) => console.error('Clearing unused attachments failed:', reason(error)))
 
   registerChatIpc(appUrl, {
@@ -660,6 +740,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       backups.whenIdle(),
       attachments.whenIdle(),
       everyChat.file.whenIdle(),
-      memory.file.whenIdle()
+      memory.file.whenIdle(),
+      projects.file.whenIdle()
     ]).then(() => undefined)
 }

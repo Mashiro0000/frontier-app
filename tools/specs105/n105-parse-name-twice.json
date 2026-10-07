@@ -1,0 +1,14 @@
+{
+  "label": "n105-parse-name-twice",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/projects.ts",
+      "from": "    if (projects.some((other) => other.id === project.id || sameName(other.name, project.name)))",
+      "to": "    if (projects.some((other) => other.id === project.id))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-5.mjs"
+  ],
+  "env": {}
+}

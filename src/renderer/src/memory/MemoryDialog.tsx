@@ -8,6 +8,7 @@ import {
   type MemoryChangeResult,
   type Note
 } from '../../../shared/memory'
+import type { ProjectsStatus } from '../../../shared/projects'
 import type { MemoryState } from './useMemory'
 
 const fmt = (n: number): string => n.toLocaleString('en-US')
@@ -16,7 +17,7 @@ const WAITING = 'Waiting for your answer in the Windows message box...'
 
 type Notice = { kind: 'ok' | 'error'; text: string }
 /** What the one box is for: a new note, or new words for one. */
-type Editing = { kind: 'add' } | { kind: 'edit'; note: Note }
+type Editing = { kind: 'add'; scope: string } | { kind: 'edit'; note: Note }
 
 /** "7 Oct 2026, 14:05", this computer's time. */
 function when(ms: number): string {
@@ -34,6 +35,8 @@ interface MemoryDialogProps {
   memory: MemoryState
   /** Text picked with "Remember..." on a message: the box opens with it, to be cut down before saving. Null when the dialog was opened otherwise. */
   draft: string | null
+  /** The projects (D-039, 10.5): each is a place a note can be for. Null while not known. */
+  projects: ProjectsStatus | null
   onClose: () => void
 }
 
@@ -42,7 +45,13 @@ interface MemoryDialogProps {
  * with "Remember..." on a message. One switch turns memory off for every chat. Main keeps the notes and sends them; a note is made or changed only after
  * the person's yes in the system's own message box, which this page cannot answer.
  */
-function MemoryDialog({ open, memory, draft, onClose }: MemoryDialogProps): React.JSX.Element {
+function MemoryDialog({
+  open,
+  memory,
+  draft,
+  projects,
+  onClose
+}: MemoryDialogProps): React.JSX.Element {
   const dialogRef = useRef<HTMLDialogElement>(null)
   // While main is working (the system's message box may be open), Escape does not close the dialog: the answer is still to come.
   const busyRef = useRef(false)
@@ -74,6 +83,7 @@ function MemoryDialog({ open, memory, draft, onClose }: MemoryDialogProps): Reac
         <MemoryBody
           memory={memory}
           draft={draft}
+          projects={projects}
           onBusy={(on) => {
             busyRef.current = on
           }}
@@ -87,13 +97,22 @@ function MemoryDialog({ open, memory, draft, onClose }: MemoryDialogProps): Reac
 interface MemoryBodyProps {
   memory: MemoryState
   draft: string | null
+  projects: ProjectsStatus | null
   onBusy: (busy: boolean) => void
   onClose: () => void
 }
 
-function MemoryBody({ memory, draft, onBusy, onClose }: MemoryBodyProps): React.JSX.Element {
+function MemoryBody({
+  memory,
+  draft,
+  projects,
+  onBusy,
+  onClose
+}: MemoryBodyProps): React.JSX.Element {
   const { status } = memory
-  const [editing, setEditing] = useState<Editing | null>(draft !== null ? { kind: 'add' } : null)
+  const [editing, setEditing] = useState<Editing | null>(
+    draft !== null ? { kind: 'add', scope: ALL_CHATS } : null
+  )
   const [text, setText] = useState(draft ?? '')
   const [warnings, setWarnings] = useState<SecretFinding[] | null>(null)
   const [notice, setNotice] = useState<Notice | null>(null)
@@ -101,14 +120,6 @@ function MemoryBody({ memory, draft, onBusy, onClose }: MemoryBodyProps): React.
   // The note whose "Delete" was pressed, or 'all' for "Delete all...", waiting for a yes on the page.
   const [asking, setAsking] = useState<string | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const mounted = useRef(true)
-
-  useEffect(() => {
-    mounted.current = true
-    return () => {
-      mounted.current = false
-    }
-  }, [])
 
   // The keyboard goes to the box when it opens (the cursor at the end, so that a picked text can be cut down from there).
   useEffect(() => {
@@ -138,7 +149,6 @@ function MemoryBody({ memory, draft, onBusy, onClose }: MemoryBodyProps): React.
       result = { ok: false, error: `Your notes could not be changed: ${NO_ANSWER}.` }
     }
     if (result.ok) memory.setStatus(result.status) // the chat bar learns of it even if the dialog has gone
-    if (!mounted.current) return
     working(false)
     setAsking(null)
     if (result.ok) {
@@ -149,6 +159,10 @@ function MemoryBody({ memory, draft, onBusy, onClose }: MemoryBodyProps): React.
     }
     setWarnings(result.warnings ?? null)
     setNotice({ kind: result.cancelled ? 'ok' : 'error', text: result.error })
+  }
+
+  function removeNote(id: string): void {
+    void change(() => window.api.memory.remove(id), false)
   }
 
   function openEditor(next: Editing): void {
@@ -178,7 +192,7 @@ function MemoryBody({ memory, draft, onBusy, onClose }: MemoryBodyProps): React.
     void change(
       () =>
         editing.kind === 'add'
-          ? window.api.memory.add(note, ALL_CHATS, anyway)
+          ? window.api.memory.add(note, editing.scope, anyway)
           : window.api.memory.edit(editing.note.id, note, anyway),
       true,
       closeEditor
@@ -201,8 +215,22 @@ function MemoryBody({ memory, draft, onBusy, onClose }: MemoryBodyProps): React.
     )
   }
 
-  const notes = status.notes.filter((note) => note.scope === ALL_CHATS)
-  const use = scopeUse(status.notes, ALL_CHATS)
+  // The places a note can be for (D-039): every chat, then each project (10.5), each with its own room.
+  const places: { scope: string; title: string }[] = [
+    { scope: ALL_CHATS, title: 'For every chat' },
+    ...(projects?.projects ?? []).map((project) => ({
+      scope: project.id,
+      title: `For the project "${project.name}"`
+    }))
+  ]
+  const sections = places.map((place) => ({
+    ...place,
+    notes: status.notes.filter((note) => note.scope === place.scope),
+    use: scopeUse(status.notes, place.scope)
+  }))
+  const editingScope =
+    editing === null ? null : editing.kind === 'add' ? editing.scope : editing.note.scope
+  const placeTitle = places.find((place) => place.scope === editingScope)?.title ?? ''
 
   const editor = (
     <form
@@ -213,7 +241,9 @@ function MemoryBody({ memory, draft, onBusy, onClose }: MemoryBodyProps): React.
       }}
     >
       <label className="memory-label" htmlFor="memory-input">
-        {editing?.kind === 'edit' ? 'Change the note' : 'A note for every chat'}
+        {editing?.kind === 'edit'
+          ? 'Change the note'
+          : `A note ${placeTitle.replace(/^For /, 'for ')}`}
       </label>
       <textarea
         id="memory-input"
@@ -327,98 +357,97 @@ function MemoryBody({ memory, draft, onBusy, onClose }: MemoryBodyProps): React.
         </p>
       )}
 
-      {status.problem === null && (
-        <section className="memory-place" aria-label="For every chat">
-          <div className="memory-place-head">
-            <h3 className="memory-place-title">For every chat</h3>
-            <span className="memory-place-use">
-              {use.notes === 1 ? '1 note' : `${use.notes} notes`}, {fmt(use.chars)} of{' '}
-              {fmt(MEMORY_LIMITS.maxScopeChars)} characters
-            </span>
-          </div>
-          {editing?.kind === 'add' && editor}
-          {notes.length === 0 && editing === null ? (
-            <p className="memory-none">No notes yet.</p>
-          ) : (
-            <ul className="memory-list" aria-label="Notes for every chat">
-              {notes.map((note) => (
-                <li key={note.id} className="memory-row">
-                  {editing?.kind === 'edit' && editing.note.id === note.id ? (
-                    editor
-                  ) : (
-                    <>
-                      <p className="memory-text">{note.text}</p>
-                      <p className="memory-meta">
-                        Made {when(note.createdAt)}
-                        {note.updatedAt !== note.createdAt
-                          ? `, changed ${when(note.updatedAt)}`
-                          : ''}
-                      </p>
-                      {asking === note.id ? (
-                        <span className="memory-ask" role="group" aria-label="Delete this note?">
-                          <span className="memory-ask-text">Delete?</span>
-                          <button
-                            type="button"
-                            className="history-button history-button-danger"
-                            disabled={busy}
-                            onClick={() =>
-                              void change(() => window.api.memory.remove(note.id), false)
-                            }
-                          >
-                            Delete
-                          </button>
-                          <button
-                            type="button"
-                            className="history-button"
-                            autoFocus
-                            disabled={busy}
-                            onClick={() => setAsking(null)}
-                          >
-                            Keep
-                          </button>
-                        </span>
-                      ) : (
-                        <span className="memory-row-actions">
-                          <button
-                            type="button"
-                            className="history-button"
-                            aria-label={`Change the note "${note.text.slice(0, 40)}"`}
-                            disabled={busy || editing !== null}
-                            onClick={() => openEditor({ kind: 'edit', note })}
-                          >
-                            Change...
-                          </button>
-                          <button
-                            type="button"
-                            className="history-button"
-                            aria-label={`Delete the note "${note.text.slice(0, 40)}"`}
-                            disabled={busy || editing !== null}
-                            onClick={() => setAsking(note.id)}
-                          >
-                            Delete
-                          </button>
-                        </span>
-                      )}
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-          {editing === null && (
-            <div className="memory-place-actions">
-              <button
-                type="button"
-                className="history-button"
-                disabled={busy || use.notes >= MEMORY_LIMITS.maxScopeNotes}
-                onClick={() => openEditor({ kind: 'add' })}
-              >
-                Add a note...
-              </button>
+      {status.problem === null &&
+        sections.map(({ scope, title, notes, use }) => (
+          <section key={scope} className="memory-place" aria-label={title}>
+            <div className="memory-place-head">
+              <h3 className="memory-place-title">{title}</h3>
+              <span className="memory-place-use">
+                {use.notes === 1 ? '1 note' : `${use.notes} notes`}, {fmt(use.chars)} of{' '}
+                {fmt(MEMORY_LIMITS.maxScopeChars)} characters
+              </span>
             </div>
-          )}
-        </section>
-      )}
+            {editing?.kind === 'add' && editing.scope === scope && editor}
+            {notes.length === 0 && !(editing?.kind === 'add' && editing.scope === scope) ? (
+              <p className="memory-none">No notes yet.</p>
+            ) : (
+              <ul className="memory-list" aria-label={`Notes ${title.replace(/^For /, 'for ')}`}>
+                {notes.map((note) => (
+                  <li key={note.id} className="memory-row">
+                    {editing?.kind === 'edit' && editing.note.id === note.id ? (
+                      editor
+                    ) : (
+                      <>
+                        <p className="memory-text">{note.text}</p>
+                        <p className="memory-meta">
+                          Made {when(note.createdAt)}
+                          {note.updatedAt !== note.createdAt
+                            ? `, changed ${when(note.updatedAt)}`
+                            : ''}
+                        </p>
+                        {asking === note.id ? (
+                          <span className="memory-ask" role="group" aria-label="Delete this note?">
+                            <span className="memory-ask-text">Delete?</span>
+                            <button
+                              type="button"
+                              className="history-button history-button-danger"
+                              disabled={busy}
+                              onClick={() => removeNote(note.id)}
+                            >
+                              Delete
+                            </button>
+                            <button
+                              type="button"
+                              className="history-button"
+                              autoFocus
+                              disabled={busy}
+                              onClick={() => setAsking(null)}
+                            >
+                              Keep
+                            </button>
+                          </span>
+                        ) : (
+                          <span className="memory-row-actions">
+                            <button
+                              type="button"
+                              className="history-button"
+                              aria-label={`Change the note "${note.text.slice(0, 40)}"`}
+                              disabled={busy || editing !== null}
+                              onClick={() => openEditor({ kind: 'edit', note })}
+                            >
+                              Change...
+                            </button>
+                            <button
+                              type="button"
+                              className="history-button"
+                              aria-label={`Delete the note "${note.text.slice(0, 40)}"`}
+                              disabled={busy || editing !== null}
+                              onClick={() => setAsking(note.id)}
+                            >
+                              Delete
+                            </button>
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {editing === null && (
+              <div className="memory-place-actions">
+                <button
+                  type="button"
+                  className="history-button"
+                  disabled={busy || use.notes >= MEMORY_LIMITS.maxScopeNotes}
+                  onClick={() => openEditor({ kind: 'add', scope })}
+                >
+                  Add a note...
+                </button>
+              </div>
+            )}
+          </section>
+        ))}
 
       {asking === 'all' && (
         <div className="memory-ask memory-ask-all" role="group" aria-label="Delete all your notes?">
@@ -452,7 +481,7 @@ function MemoryBody({ memory, draft, onBusy, onClose }: MemoryBodyProps): React.
           type="button"
           className="history-button"
           disabled={busy || status.problem !== null || status.notes.length === 0}
-          onClick={() => void exportAll(setNotice, working, mounted)}
+          onClick={() => void exportAll(setNotice, working)}
         >
           Export all...
         </button>
@@ -475,8 +504,7 @@ function MemoryBody({ memory, draft, onBusy, onClose }: MemoryBodyProps): React.
 /** "Export all...": main opens the system's save dialog and writes one plain text file; the page learns where. */
 async function exportAll(
   setNotice: (notice: Notice | null) => void,
-  working: (on: boolean) => void,
-  mounted: React.RefObject<boolean>
+  working: (on: boolean) => void
 ): Promise<void> {
   working(true)
   setNotice(null)
@@ -486,7 +514,6 @@ async function exportAll(
   } catch {
     result = { ok: false, error: `The notes could not be exported: ${NO_ANSWER}.` }
   }
-  if (!mounted.current) return
   working(false)
   if (result.ok) {
     setNotice({

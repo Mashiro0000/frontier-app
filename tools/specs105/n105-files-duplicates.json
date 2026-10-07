@@ -1,0 +1,14 @@
+{
+  "label": "n105-files-duplicates",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/projects.ts",
+      "from": "            refused.push(`${info.name} is already in the project.`)",
+      "to": "            fresh.push(info)\n            continue"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-5.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n105-remove-file-keeps-copy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/projects.ts",
+      "from": "      if (result.ok) await options.files.deleteUnused([fileId])",
+      "to": "      void result"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-5.mjs"
+  ],
+  "env": {}
+}

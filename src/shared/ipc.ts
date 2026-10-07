@@ -6,6 +6,7 @@ import type { AskFirstChoice, AskFirstSetting, RequestEstimate } from './askFirs
 import type { AttachedFile, AttachmentInfo } from './attachments'
 import type { Limits, LimitsChoice } from './limits'
 import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from './memory'
+import type { ProjectChangeResult, ProjectsStatus } from './projects'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
 import type { ReplyUsage, UsageSummary } from './usage'
@@ -233,6 +234,8 @@ export interface ConversationToSave {
   messages: MessageToSave[]
   /** The person's instructions for this chat (D-027), saved with it. Absent means none. Checked again by main, as for a request. */
   instructions?: string
+  /** The project the chat belongs to (D-039): a project's id, or absent for none. Main checks the project exists; the file is then version 5. */
+  project?: string
 }
 
 /** A saved conversation, as main hands it back to be put on screen. */
@@ -246,6 +249,8 @@ export interface SavedConversation {
   /** The person's instructions for this chat (D-027): '' for none, and for every chat saved before version 3 of the file. */
   instructions: string
   messages: SavedMessage[]
+  /** The project the chat belongs to (D-039, file version 5): absent for none. */
+  project?: string
 }
 
 /** One line in the list of saved conversations. */
@@ -254,6 +259,8 @@ export interface ConversationSummary {
   title: string
   updatedAt: number
   messageCount: number
+  /** The project the chat belongs to (D-039): absent for none. It may name a project that has since been deleted (then it is in none). */
+  project?: string
 }
 
 export interface HistoryList {
@@ -530,6 +537,22 @@ export interface FrontierApi {
     /** Every note to one plain text file the person places in the system's save dialog (main opens it; the page sends no path). */
     exportAll(): Promise<MemoryExportResult>
   }
+  /**
+   * The person's projects (D-039): a name, instructions and files for a group of chats, kept by main in projects.json. New instructions and added files
+   * are kept only after the person's yes in the system's own message box (the files come through the system's open dialog: the page sends no path);
+   * making, renaming, taking a file off and deleting ask nothing there. A project's name is never sent to the model.
+   */
+  projects: {
+    status(): Promise<ProjectsStatus>
+    create(name: string): Promise<ProjectChangeResult>
+    rename(id: string, name: string): Promise<ProjectChangeResult>
+    setInstructions(id: string, text: string, saveAnyway?: boolean): Promise<ProjectChangeResult>
+    addFiles(id: string): Promise<ProjectChangeResult>
+    removeFile(id: string, fileId: string): Promise<ProjectChangeResult>
+    remove(id: string): Promise<ProjectChangeResult>
+    /** The way out when projects.json cannot be read: every project deleted, the damaged file kept as a copy. */
+    removeAll(): Promise<ProjectChangeResult>
+  }
 }
 
 export const CHANNELS = {
@@ -570,7 +593,15 @@ export const CHANNELS = {
   memoryRemove: 'memory:remove',
   memoryRemoveAll: 'memory:remove-all',
   memorySetOn: 'memory:set-on',
-  memoryExport: 'memory:export'
+  memoryExport: 'memory:export',
+  projectsStatus: 'projects:status',
+  projectsCreate: 'projects:create',
+  projectsRename: 'projects:rename',
+  projectsSetInstructions: 'projects:set-instructions',
+  projectsAddFiles: 'projects:add-files',
+  projectsRemoveFile: 'projects:remove-file',
+  projectsRemove: 'projects:remove',
+  projectsRemoveAll: 'projects:remove-all'
 } as const
 
 /**

@@ -1,0 +1,14 @@
+{
+  "label": "n105-name-twice",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/projects.ts",
+      "from": "      if (now0.projects.some((project) => sameName(project.name, checked.name))) {",
+      "to": "      if (now0.projects.some((project) => project.name === \"\")) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-5.mjs"
+  ],
+  "env": {}
+}

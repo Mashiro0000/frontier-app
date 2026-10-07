@@ -1,0 +1,18 @@
+{
+  "label": "w105-dlg-delete-no-confirm",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/projects/ProjectsDialog.tsx",
+      "from": "                onClick={() => setAsking('delete')}",
+      "to": "                onClick={() => void change(() => window.api.projects.remove(project.id), false)}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run105.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

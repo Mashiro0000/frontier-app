@@ -366,11 +366,11 @@ try {
 
   // ============ J. the bridge ============
   const api = await ev(`({ top: Object.keys(window.api).sort(), memory: Object.keys(window.api.memory).sort() })`)
-  check('J: window.api has memory (since 10.4) with exactly add, edit, exportAll, remove, removeAll, setOn and status: nothing that answers a question or names a path', show(api) === show({ top: ['attachments', 'chat', 'history', 'instructions', 'memory', 'settings', 'usage'], memory: ['add', 'edit', 'exportAll', 'remove', 'removeAll', 'setOn', 'status'] }), show(api))
+  check('J: window.api has memory (since 10.4) with exactly add, edit, exportAll, remove, removeAll, setOn and status: nothing that answers a question or names a path', show(api) === show({ top: ['attachments', 'chat', 'history', 'instructions', 'memory', 'projects', 'settings', 'usage'], memory: ['add', 'edit', 'exportAll', 'remove', 'removeAll', 'setOn', 'status'] }), show(api))
   const bad = await ev(`Promise.all([window.api.memory.add(12345, 'all'), window.api.memory.add('x', 'ALL'), window.api.memory.edit('x', 'y'), window.api.memory.remove(null), window.api.memory.setOn('true')])`)
   check('J: input that is not what main takes is "not understood", and changes nothing', bad.every((x) => x.ok === false && /not understood/.test(x.error)) && memJson()?.notes?.length === 1, show(bad))
   const project = await ev(`window.api.memory.add('For a project', '11111111-2222-4333-8444-555555555555')`)
-  check('J: a note for a project is refused while there are no projects (10.5)', project.ok === false && /project is not there/.test(project.error), show(project))
+  check('J: a note for a project that is not there is refused', project.ok === false && /project is not there/.test(project.error), show(project))
 
   // ============ K. narrow windows ============
   for (const width of [420, 280]) {

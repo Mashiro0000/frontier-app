@@ -1,0 +1,14 @@
+{
+  "label": "n105-always-v3",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "    ? 5\n",
+      "to": "    ? 3\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-5.mjs"
+  ],
+  "env": {}
+}

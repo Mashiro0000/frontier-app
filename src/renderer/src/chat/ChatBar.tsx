@@ -14,6 +14,9 @@ interface ChatBarProps {
   /** Their notes (D-039), as main has them; null while not known. */
   memory: MemoryStatus | null
   onOpenMemory: () => void
+  /** The name of the project the chat belongs to (D-039), or null for none. */
+  projectName: string | null
+  onOpenProjects: () => void
   /** The chat on screen could not be saved (D-017): starting a new one would lose it, and the button says so. */
   saveFailed: boolean
   onNewChat: () => void
@@ -79,6 +82,8 @@ function ChatBar({
   everyChat,
   memory,
   onOpenMemory,
+  projectName,
+  onOpenProjects,
   saveFailed,
   onNewChat,
   onOpenHistory,
@@ -172,6 +177,28 @@ function ChatBar({
               <span className="chat-mark">{notesSent(memory).length}</span>
             </>
           )
+        )}
+      </button>
+      {/* The project the chat belongs to (D-039): its name is the person's label, shown here and never sent to the model. */}
+      <button
+        type="button"
+        className="chat-button chat-project"
+        disabled={isReplying}
+        title={
+          isReplying
+            ? 'Projects can be opened when the reply has finished.'
+            : projectName === null
+              ? 'Put this chat in a project, or make one: a project gives its chats the same instructions, files and notes.'
+              : `This chat is in the project "${projectName}". Click to see the project, or to move the chat.`
+        }
+        onClick={onOpenProjects}
+      >
+        {projectName === null ? (
+          'Project'
+        ) : (
+          <>
+            Project: <span className="chat-project-name">{projectName}</span>
+          </>
         )}
       </button>
     </div>

@@ -1,0 +1,14 @@
+{
+  "label": "n105-v5-loose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "  if (file.version === 5 && !isProjectId(file.project)) return 'its project is not usable'",
+      "to": "  void isProjectId"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-5.mjs"
+  ],
+  "env": {}
+}

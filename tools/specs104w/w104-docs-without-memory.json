@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "    documents: keptDocuments([everyChat.file, memory.file]) // rewritten with the chats (D-039)",
-      "to": "    documents: keptDocuments([everyChat.file]) // rewritten with the chats (D-039)"
+      "from": "    documents: keptDocuments([everyChat.file, memory.file, projects.file]) // rewritten with the chats (D-039)",
+      "to": "    documents: keptDocuments([everyChat.file, projects.file]) // rewritten with the chats (D-039)"
     }
   ],
   "argv": [

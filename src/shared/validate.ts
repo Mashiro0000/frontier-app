@@ -17,6 +17,7 @@ import {
   type WireAttachment,
   type WireMessage
 } from './ipc'
+import { isProjectId } from './projects'
 import { SUPPORTED_PROVIDERS, type Effort, type ProviderId } from './registry'
 
 export const API_KEY_MIN_LENGTH = 20
@@ -554,7 +555,10 @@ export function checkSavedMessages(
 }
 
 export type SaveCheck =
-  | { ok: true; conversation: { id: string; messages: SavedMessage[]; instructions: string } }
+  | {
+      ok: true
+      conversation: { id: string; messages: SavedMessage[]; instructions: string; project?: string }
+    }
   | { ok: false; error: string }
 
 /**
@@ -565,14 +569,23 @@ export function checkConversationSave(input: unknown): SaveCheck {
   if (typeof input !== 'object' || input === null) {
     return { ok: false, error: 'The conversation was not understood.' }
   }
-  const { id, messages, instructions } = input as Record<string, unknown>
+  const { id, messages, instructions, project } = input as Record<string, unknown>
   if (!isConversationId(id)) return { ok: false, error: 'The conversation was not understood.' }
+  // The project (D-039): absent, or the spelling of a project id; whether it exists is main's to say.
+  if (project !== undefined && !isProjectId(project)) {
+    return { ok: false, error: 'The conversation was not understood.' }
+  }
   const checked = checkSavedMessages(messages)
   if (!checked.ok) return checked
   const checkedInstructions = checkInstructions(instructions)
   if (!checkedInstructions.ok) return checkedInstructions
   return {
     ok: true,
-    conversation: { id, messages: checked.messages, instructions: checkedInstructions.instructions }
+    conversation: {
+      id,
+      messages: checked.messages,
+      instructions: checkedInstructions.instructions,
+      ...(project !== undefined ? { project } : {})
+    }
   }
 }

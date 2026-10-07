@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/history/useHistory.ts",
-      "from": "window.api.history.save({ id, messages: toMessagesToSave(messages), instructions }).then(",
-      "to": "Promise.resolve({ ok: true as const, summary: { id, title: 'x', updatedAt: 1, messageCount: 1 } }).then("
+      "from": "    window.api.history\n      .save({",
+      "to": "    ;((_: unknown) => Promise.resolve({ ok: true as const, summary: { id, title: 'x', updatedAt: 1, messageCount: 1 } }))\n      ({"
     }
   ],
   "argv": [
@@ -19,5 +19,6 @@
     "WIPE_USER_DATA": "1",
     "MOCK_PORT": "8795",
     "LOG_LABEL": "w-autosave-off"
-  }
+  },
+  "timeoutMs": 600000
 }

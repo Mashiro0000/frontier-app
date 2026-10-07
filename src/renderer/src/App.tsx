@@ -14,6 +14,8 @@ import InstructionsDialog from './instructions/InstructionsDialog'
 import { useEveryChat } from './instructions/useEveryChat'
 import MemoryDialog from './memory/MemoryDialog'
 import { useMemory } from './memory/useMemory'
+import ProjectsDialog from './projects/ProjectsDialog'
+import { projectOf, useProjects } from './projects/useProjects'
 import EffortPicker from './settings/EffortPicker'
 import { providerMissingKey } from './settings/format'
 import LimitsDialog from './settings/LimitsDialog'
@@ -57,6 +59,10 @@ function App(): React.JSX.Element {
     [reloadMemory]
   )
   const onRemember = useCallback((text: string): void => openMemory(text), [openMemory])
+  // The person's projects (D-039, 10.5): kept by main; the chat on screen belongs to one or none (saved with it, in its file).
+  const projects = useProjects()
+  const [projectsOpen, setProjectsOpen] = useState(false)
+  const chatProject = projectOf(projects.status, chat.project)
   // A message carries at most ten files, and a chat (whose files are sent again with every message) at most fifty.
   const attachFull =
     attachments.files.length >= ATTACHMENT_LIMITS.perMessage ||
@@ -120,8 +126,13 @@ function App(): React.JSX.Element {
         everyChat={everyChat.status}
         memory={memory.status}
         onOpenMemory={() => openMemory(null)}
+        projectName={chatProject?.name ?? null}
+        onOpenProjects={() => {
+          projects.reload()
+          setProjectsOpen(true)
+        }}
         saveFailed={history.saveError !== null}
-        onNewChat={history.startNew}
+        onNewChat={() => history.startNew()}
         onOpenHistory={() => setHistoryOpen(true)}
         onOpenInstructions={() => {
           everyChat.reload()
@@ -139,11 +150,25 @@ function App(): React.JSX.Element {
               : 'Attach images, PDFs or text files to your message. You choose them in a Windows dialog; the app keeps a copy and sends it to the model.'
         }
       />
-      <HistoryDialog open={historyOpen} history={history} onClose={() => setHistoryOpen(false)} />
+      <HistoryDialog
+        open={historyOpen}
+        history={history}
+        projects={projects.status}
+        onClose={() => setHistoryOpen(false)}
+      />
+      <ProjectsDialog
+        open={projectsOpen}
+        projects={projects}
+        chatProject={chatProject?.id ?? null}
+        onChatProject={chat.setProject}
+        onNewChatIn={(id) => history.startNew(id)}
+        onClose={() => setProjectsOpen(false)}
+      />
       <MemoryDialog
         open={memoryOpen}
         memory={memory}
         draft={memoryDraft}
+        projects={projects.status}
         onClose={() => setMemoryOpen(false)}
       />
       <InstructionsDialog

@@ -1,0 +1,18 @@
+{
+  "label": "w105-ipc-save-unknown-project",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "          project !== undefined && (await projects.nameOf(project)) !== null",
+      "to": "          project !== undefined"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run105.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

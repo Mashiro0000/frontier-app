@@ -20,9 +20,12 @@ const newestFirst = (a: ConversationSummary, b: ConversationSummary): number =>
 interface Snapshot {
   messages: ChatMessage[]
   instructions: string
+  /** The chat's project (D-039): null for none. */
+  project: string | null
 }
 const sameSnapshot = (a: Snapshot, b: Snapshot): boolean =>
-  a.messages === b.messages && a.instructions === b.instructions
+  a.messages === b.messages && a.instructions === b.instructions && a.project === b.project
+const NOTHING_SAVED: Snapshot = { messages: [], instructions: '', project: null }
 
 export interface UseHistory {
   /** What is saved, newest first; null until the main process has answered. */
@@ -44,7 +47,8 @@ export interface UseHistory {
   /** Asks for the list again. */
   reload: () => void
   /** Starts an empty conversation. Whatever was on screen stays saved. */
-  startNew: () => void
+  /** Starts a new chat, in a project (D-039) or in none. */
+  startNew: (project?: string | null) => void
   /** Puts a saved conversation on screen. Resolves to null, or to the reason it could not be opened. */
   open: (id: string) => Promise<string | null>
   /** Deletes a saved conversation. Resolves to null, or to the reason it could not be deleted. */
@@ -76,10 +80,15 @@ export function useHistory(chat: UseChat): UseHistory {
   const latest = useRef({
     id: activeId,
     messages: chat.messages,
-    instructions: chat.instructions
+    instructions: chat.instructions,
+    project: chat.project
   })
   // What was last opened from disk or handed over to be saved.
-  const settled = useRef<Snapshot>({ messages: chat.messages, instructions: chat.instructions })
+  const settled = useRef<Snapshot>({
+    messages: chat.messages,
+    instructions: chat.instructions,
+    project: chat.project
+  })
   const lastSaveAt = useRef(0)
   const wasReplying = useRef(false)
   const timer = useRef<number | null>(null)
@@ -109,39 +118,51 @@ export function useHistory(chat: UseChat): UseHistory {
       window.clearTimeout(timer.current)
       timer.current = null
     }
-    const { id, messages, instructions } = latest.current
+    const { id, messages, instructions, project } = latest.current
     if (sameSnapshot(settled.current, latest.current) || messages.length === 0) return
     if (!window.api) {
       setSaveError(`The conversation could not be saved: ${NO_BRIDGE}.`)
       return
     }
-    settled.current = { messages, instructions }
+    settled.current = { messages, instructions, project }
     lastSaveAt.current = Date.now()
-    window.api.history.save({ id, messages: toMessagesToSave(messages), instructions }).then(
-      (result) => {
-        if (result.ok) {
-          setSaveError(null)
-          setConversations((previous) =>
-            previous === null
-              ? previous
-              : [result.summary, ...previous.filter((c) => c.id !== result.summary.id)].sort(
-                  newestFirst
-                )
-          )
-        } else {
-          settled.current = { messages: [], instructions: '' } // not saved: the next change, or "retry", tries again
-          setSaveError(result.error)
+    window.api.history
+      .save({
+        id,
+        messages: toMessagesToSave(messages),
+        instructions,
+        ...(project !== null ? { project } : {})
+      })
+      .then(
+        (result) => {
+          if (result.ok) {
+            setSaveError(null)
+            setConversations((previous) =>
+              previous === null
+                ? previous
+                : [result.summary, ...previous.filter((c) => c.id !== result.summary.id)].sort(
+                    newestFirst
+                  )
+            )
+          } else {
+            settled.current = NOTHING_SAVED // not saved: the next change, or "retry", tries again
+            setSaveError(result.error)
+          }
+        },
+        () => {
+          settled.current = NOTHING_SAVED
+          setSaveError('The conversation could not be saved: the app did not answer.')
         }
-      },
-      () => {
-        settled.current = { messages: [], instructions: '' }
-        setSaveError('The conversation could not be saved: the app did not answer.')
-      }
-    )
+      )
   }, [])
 
   useEffect(() => {
-    latest.current = { id: activeId, messages: chat.messages, instructions: chat.instructions }
+    latest.current = {
+      id: activeId,
+      messages: chat.messages,
+      instructions: chat.instructions,
+      project: chat.project
+    }
     // A reply has just begun: the person has just sent a message, and that is saved at once, whatever the
     // throttle says about the save before it. After that, a reply that streams in is saved once a second.
     const replyBegan = chat.isReplying && !wasReplying.current
@@ -150,7 +171,7 @@ export function useHistory(chat: UseChat): UseHistory {
     const wait = SAVE_EVERY_MS - (Date.now() - lastSaveAt.current)
     if (!chat.isReplying || replyBegan || wait <= 0) flush()
     else timer.current ??= window.setTimeout(flush, wait)
-  }, [activeId, chat.messages, chat.instructions, chat.isReplying, flush])
+  }, [activeId, chat.messages, chat.instructions, chat.project, chat.isReplying, flush])
 
   // Closing or reloading the window: whatever is waiting for its turn goes now, and the timer goes with the page.
   useEffect(() => {
@@ -162,9 +183,9 @@ export function useHistory(chat: UseChat): UseHistory {
     }
   }, [flush])
 
-  function startNew(): void {
+  function startNew(project: string | null = null): void {
     flush()
-    chat.load([])
+    chat.load([], '', project)
     setActiveId(crypto.randomUUID())
     setSaveError(null) // a failure belongs to the chat that is leaving the screen, not to the empty one
   }
@@ -182,8 +203,9 @@ export function useHistory(chat: UseChat): UseHistory {
       flush()
       const messages = fromSavedMessages(result.conversation.messages)
       const { instructions } = result.conversation // '' for a chat saved before version 3 of the file (D-027)
-      settled.current = { messages, instructions }
-      chat.load(messages, instructions)
+      const project = result.conversation.project ?? null // none for a chat saved before version 5 (D-039)
+      settled.current = { messages, instructions, project }
+      chat.load(messages, instructions, project)
       setActiveId(id)
       return null
     } catch {
@@ -202,7 +224,8 @@ export function useHistory(chat: UseChat): UseHistory {
         // save (a failed save) must not bring it back, so nothing of it is left to save.
         settled.current = {
           messages: latest.current.messages,
-          instructions: latest.current.instructions
+          instructions: latest.current.instructions,
+          project: latest.current.project
         }
         startNew()
       }

@@ -88,10 +88,10 @@ for (const [name, value] of [['empty', ''], ['65 characters', 'a'.repeat(65)], [
   check('parseSavedFile: a version 1 file is accepted and upgraded', typeof parsed !== 'string' && fields(parsed.messages[1]) === '["anthropic",null]', JSON.stringify(parsed))
   const parsed2 = parseSavedFile(text(2, [u(), a({ provider: 'anthropic', model: SONNET })]), id)
   check('parseSavedFile: a version 2 file is accepted as written', typeof parsed2 !== 'string' && fields(parsed2.messages[1]) === '["anthropic","claude-sonnet-5-5"]')
-  // Since 9.3 (D-037) version 4 is a chat with files: one without any is refused for that, with its own reason; version 5 is a later build's.
+  // Since 9.3 (D-037) version 4 is a chat with files: one without any is refused for that, with its own reason; version 5 is a chat in a project since 10.5 (D-039); version 6 is a later build's.
   const v4NoFiles = { version: 4, id, title: 't', createdAt: 1, updatedAt: 2, instructions: '', messages: [u(), a()] }
   check('parseSavedFile: a version 4 file with no files in it is refused, with its own reason', parseSavedFile(v4NoFiles, id) === 'it says it holds files and holds none', String(parseSavedFile(v4NoFiles, id)))
-  for (const version of [0, 5, 6, 9, '1', '2', '3', '4', null, undefined, 1.5]) {
+  for (const version of [0, 6, 7, 9, '1', '2', '3', '4', '5', null, undefined, 1.5]) {
     check(`parseSavedFile: version ${JSON.stringify(version)} was made by another version and is refused`, parseSavedFile(text(version, [u(), a()]), id) === 'it was made by another version of the app')
   }
   check('parseSavedFile: the id inside must still match the name', typeof parseSavedFile(text(2, [u(), a()]), randomUUID()) === 'string')
@@ -135,13 +135,13 @@ for (const [folderName, makeDir] of [['a normal folder', () => fsp.mkdtemp(join(
   check(T('the next save of it writes version 3, with the old replies still "anthropic"/null and the new one named'), next.ok && upgraded.version === 3 && upgraded.messages.filter((m) => m.role === 'assistant').map(fields).join(';') === `["anthropic",null];["anthropic",null];["anthropic","${OPUS}"]`, upgraded.version + ' ' + upgraded.messages.map(fields).join(';'))
   check(T('...keeps its creation date, and nothing else is left in the folder'), upgraded.createdAt === 5000 && (await names(dir)).join() === [id + '.json', oldId + '.json'].sort().join())
 
-  // a version 5 file (made by a later build) is left alone and counted
+  // a version 6 file (made by a later build) is left alone and counted
   const futureId = randomUUID()
-  const futureText = JSON.stringify({ version: 5, id: futureId, title: 'later', createdAt: 1, updatedAt: 2, instructions: '', messages: [u('x'), a()] })
+  const futureText = JSON.stringify({ version: 6, id: futureId, title: 'later', createdAt: 1, updatedAt: 2, instructions: '', messages: [u('x'), a()] })
   await fsp.writeFile(join(dir, `${futureId}.json`), futureText)
   const future = createConversationStore(dir)
   const fl = await future.list()
-  check(T('a version 5 file is counted as unreadable, not listed, and left as it is'), fl.unreadable === 1 && !fl.conversations.some((c) => c.id === futureId) && readFileSync(join(dir, `${futureId}.json`), 'utf8') === futureText)
+  check(T('a version 6 file is counted as unreadable, not listed, and left as it is'), fl.unreadable === 1 && !fl.conversations.some((c) => c.id === futureId) && readFileSync(join(dir, `${futureId}.json`), 'utf8') === futureText)
 
   // a version 2 file with unusable fields is still a conversation
   const oddId = randomUUID()

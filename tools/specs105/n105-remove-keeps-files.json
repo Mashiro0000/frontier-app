@@ -1,0 +1,14 @@
+{
+  "label": "n105-remove-keeps-files",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/projects.ts",
+      "from": "      await options.files.deleteUnused(project.files.map((file) => file.id))",
+      "to": "      void project.files"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-5.mjs"
+  ],
+  "env": {}
+}
