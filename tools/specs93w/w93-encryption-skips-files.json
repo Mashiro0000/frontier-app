@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "    files: attachments\n",
-      "to": ""
+      "from": "    files: attachments,\n    documents:",
+      "to": "    documents:"
     }
   ],
   "argv": [

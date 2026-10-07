@@ -1,0 +1,14 @@
+{
+  "label": "n102-anyway-passes-key",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/secrets.ts",
+      "from": "  if (held !== null) return { ok: false, error: heldKeySentence(held, kept) }",
+      "to": "  if (held !== null && !saveAnyway) return { ok: false, error: heldKeySentence(held, kept) }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

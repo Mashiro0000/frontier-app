@@ -1,0 +1,14 @@
+{
+  "label": "n102-kept-conform-skips",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/keptFile.ts",
+      "from": "        if (current.form === mode.form) return 'already'",
+      "to": "        return 'already'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

@@ -217,7 +217,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 
 **Questions for the owner** (each changes the plan): (1) remove image metadata always (my pick), or show it and let you choose for each file? (2) PDF metadata: send it as it is with a note (my pick, no new package), or add a PDF library to remove it? (3) Are the caps above right for you? (4) Make big images smaller before sending (my pick)? (5) Backups with the attachments in them (bigger files; my pick), or without them and a count?
 
-## Stage 10 - Projects, custom instructions and memory (plan approved 7 October 2026 with the owner's answers "your picks"; 10.1 the system's question done)
+## Stage 10 - Projects, custom instructions and memory (plan approved 7 October 2026 with the owner's answers "your picks"; 10.1 the system's question and 10.2 instructions for every chat done)
 
 - **Projects:** a named set of instructions and files for a group of chats. **Memory:** the app's own, local: "remember this" only on request,
   a page where every memory is visible, editable and deletable, with a cap.
@@ -240,7 +240,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 **Slices** (each with its own Node and window suites, negative controls and decision entry, as before):
 
 - [x] (10.1, D-039) The Windows question: shown by main, answered only there, one answer per question; and the limits behind it (raising a limit, "No limit", a higher amount to ask above, "Never ask"; D-033's finding). One question at a time for the whole app, and three seconds of quiet after a no (the window suite found that a page could otherwise put the box straight back). Lowering asks nothing. Found on the way: Settings scrolled sideways at 280 px (Stage 8's Usage row), fixed. 90 checks under Node, 41 in the window (dev and built), the real Windows box once, and the older 8.2, 8.3 and 9.4 window suites answering it from main.
-- [ ] (10.2) Instructions for every chat: the store, the secret check, the order of the prompt (byte for byte with nothing set), the Instructions dialog with every part, the cost guess.
+- [x] (10.2, D-039) Instructions for every chat: kept and sent by main (`instructions.json`, written and sealed like the chats, converted with them), saved after the system's question (turning off asks nothing; a chat's own instructions are not asked about, my choice), the look for secrets for both parts (a saved key refused, a lookalike only with "Save anyway", and again before every request), a damaged file refusing every request with a way out that keeps a copy, the order of the prompt (nothing set, or only a chat's own: every request byte for byte as before), the Instructions dialog with every part in send order, the cost guess. 118 checks under Node, 56 in the window (dev and built), 64 negative controls.
 - [ ] (10.3) The memory store in main, no window: notes, caps, where each applies, the secret check, the Windows question, sealing, a damaged file left alone, the export.
 - [ ] (10.4) Memory in the window: the Memory page, "Remember..." on a message, "Memory (N)" under the message box, the switch, "Delete all..."; notes sent with requests and counted.
 - [ ] (10.5) Projects: the store, their files through the Stage 9 store (kept by the sweep), the project page, chats in a project (file version 5), History by project, deleting a project.

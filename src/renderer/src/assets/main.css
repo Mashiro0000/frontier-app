@@ -951,6 +951,12 @@ body {
   border-radius: 999px;
 }
 
+/* ...and "!" when the instructions for every chat cannot be read: nothing is sent until the person deals with it (D-039). */
+.chat-mark-warn {
+  color: var(--color-background);
+  background: var(--color-danger);
+}
+
 /* ---------- buttons (settings dialog) ---------- */
 
 .button {
@@ -1503,6 +1509,67 @@ body {
 .instructions-count-over {
   font-size: 13px;
   color: var(--color-danger);
+}
+
+/* Every part of the instructions that is sent with the chat, in the order it is sent (D-039); the one being changed holds the box. */
+.instructions-part {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.instructions-part-editing {
+  border-color: var(--color-input-border);
+}
+
+.instructions-part-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 8px;
+}
+
+.instructions-part-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.instructions-change {
+  height: 30px;
+  padding: 0 12px;
+}
+
+/* A part that is not being changed: its text as it is kept, line breaks and all, in a short box of its own when it is long. */
+.instructions-part-text {
+  max-height: 7.5em;
+  overflow-y: auto;
+  font-size: 13px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.instructions-part-none {
+  color: var(--color-text-muted);
+}
+
+.instructions-part-problem,
+.instructions-notice-error,
+.instructions-secrets {
+  color: var(--color-danger);
+}
+
+.instructions-secrets {
+  padding-left: 18px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.instructions-notice {
+  font-size: 13px;
 }
 
 .instructions-footer {

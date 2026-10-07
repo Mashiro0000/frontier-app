@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/instructions/InstructionsDialog.tsx",
-      "from": "onChange={(event) => setDraft(event.target.value)}",
-      "to": "onChange={(event) => {\n            setDraft(event.target.value)\n            onSave(event.target.value.trim())\n          }}"
+      "from": "            setDraft(event.target.value)\n            setWarnings(null)",
+      "to": "            setDraft(event.target.value)\n            if (editing === 'chat') onSave(event.target.value.trim())\n            setWarnings(null)"
     }
   ],
   "argv": [

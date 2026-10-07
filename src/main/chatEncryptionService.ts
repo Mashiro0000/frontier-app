@@ -94,6 +94,14 @@ export interface ChatEncryptionOptions {
     conform(): Promise<{ changed: number; already: number; failed: number }>
     counts(): Promise<{ plain: number; encrypted: number }>
   }
+  /**
+   * The person's kept documents (D-039): the instructions for every chat. Sealed and opened by the same rule, and rewritten after the chats and the files,
+   * every time they are. Optional.
+   */
+  documents?: {
+    conform(): Promise<{ changed: number; failed: number }>
+    counts(): Promise<{ plain: number; encrypted: number }>
+  }
 }
 
 const BUSY =
@@ -104,7 +112,7 @@ export const NO_SECURE_STORAGE =
 const reason = (error: unknown): unknown => (error instanceof Error ? error.message : error)
 
 export function createChatEncryptionService(options: ChatEncryptionOptions): ChatEncryptionService {
-  const { store, protection, backups, asks, files } = options
+  const { store, protection, backups, asks, files, documents } = options
 
   /** The attachments rewritten in the form the choice now says; null when there are none at all (the report then says nothing about them). */
   async function conformFiles(): Promise<{ changed: number; failed: number } | null> {
@@ -117,6 +125,19 @@ export function createChatEncryptionService(options: ChatEncryptionOptions): Cha
   const withFiles = (
     done: { changed: number; failed: number } | null
   ): { files?: { changed: number; failed: number } } => (done === null ? {} : { files: done })
+
+  /** The same for the kept documents (D-039). */
+  async function conformDocuments(): Promise<{
+    documents?: { changed: number; failed: number }
+  }> {
+    if (documents === undefined) return {}
+    const before = await documents.counts()
+    if (before.plain + before.encrypted === 0) return {}
+    return { documents: await documents.conform() }
+  }
+  /** How many kept documents are in one form now (0 without any). */
+  const documentsIn = async (form: 'plain' | 'encrypted'): Promise<number> =>
+    documents === undefined ? 0 : (await documents.counts())[form]
 
   async function status(): Promise<ChatStorageStatus> {
     const state = await protection.state()
@@ -141,7 +162,8 @@ export function createChatEncryptionService(options: ChatEncryptionOptions): Cha
     }
     const counts = await store.counts()
     const plainFiles = files === undefined ? 0 : (await files.counts()).plain
-    if (before.choice === 'on' && counts.plain === 0 && plainFiles === 0) {
+    const plainDocuments = await documentsIn('plain')
+    if (before.choice === 'on' && counts.plain === 0 && plainFiles === 0 && plainDocuments === 0) {
       // Nothing to do, and nothing to protect with a backup: say so instead of asking for one.
       return {
         ok: true,
@@ -174,10 +196,11 @@ export function createChatEncryptionService(options: ChatEncryptionOptions): Cha
     }
     const done = await store.conform()
     const filesDone = await conformFiles()
+    const documentsDone = await conformDocuments()
     return {
       ok: true,
       status: await status(),
-      report: { ...done, backup, ...withFiles(filesDone) }
+      report: { ...done, backup, ...withFiles(filesDone), ...documentsDone }
     }
   }
 
@@ -185,7 +208,13 @@ export function createChatEncryptionService(options: ChatEncryptionOptions): Cha
     const before = await protection.state()
     const counts = await store.counts()
     const sealedFiles = files === undefined ? 0 : (await files.counts()).encrypted
-    if (before.choice === 'off' && counts.encrypted === 0 && sealedFiles === 0) {
+    const sealedDocuments = await documentsIn('encrypted')
+    if (
+      before.choice === 'off' &&
+      counts.encrypted === 0 &&
+      sealedFiles === 0 &&
+      sealedDocuments === 0
+    ) {
       // Plain already, and no encrypted chat to turn back: nothing is weakened, so nothing is asked.
       return {
         ok: true,
@@ -210,10 +239,11 @@ export function createChatEncryptionService(options: ChatEncryptionOptions): Cha
     }
     const done = await store.conform()
     const filesDone = await conformFiles()
+    const documentsDone = await conformDocuments()
     return {
       ok: true,
       status: await status(),
-      report: { ...done, backup: null, ...withFiles(filesDone) }
+      report: { ...done, backup: null, ...withFiles(filesDone), ...documentsDone }
     }
   }
 

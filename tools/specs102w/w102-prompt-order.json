@@ -1,0 +1,18 @@
+{
+  "label": "w102-prompt-order",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)\n  if (own !== '') pieces.push(every === '' ? INSTRUCTIONS_LEAD : CHAT_AFTER_OTHERS_LEAD, own)",
+      "to": "  if (own !== '') pieces.push(every === '' ? INSTRUCTIONS_LEAD : CHAT_AFTER_OTHERS_LEAD, own)\n  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run102.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 500000
+}

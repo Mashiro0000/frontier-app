@@ -1,0 +1,18 @@
+{
+  "label": "w102-dlg-escape-while-busy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/instructions/InstructionsDialog.tsx",
+      "from": "        if (busy.current) event.preventDefault()",
+      "to": "        void busy.current"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run102.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 500000
+}

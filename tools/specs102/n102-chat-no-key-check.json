@@ -1,0 +1,14 @@
+{
+  "label": "n102-chat-no-key-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      if (held !== null) {",
+      "to": "      if (held === \"never\") {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w102-dlg-change-while-unsaved",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/instructions/InstructionsDialog.tsx",
+      "from": "                  disabled={busy || unsaved || (part === 'every' && everyChat === null)}",
+      "to": "                  disabled={busy || (part === 'every' && everyChat === null)}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run102.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 500000
+}

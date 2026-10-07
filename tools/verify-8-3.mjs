@@ -503,7 +503,9 @@ await guard('block I', async () => {
   const preload = read('src/preload/index.ts')
   check('source: the page has confirm (a yes for a stream) and setAskFirst, and no way to read or write the file or the ledger', /confirm: \(streamId\)/.test(preload) && /setAskFirst:/.test(preload) && !/ask-first\.json|askFirst\.json|ledger|limits\.json/i.test(preload.replace(/settingsSetAskFirst|setAskFirst/g, '')))
   const ipc = read('src/main/ipc.ts')
-  check('source: the settings status carries the setting from the store, and setAskFirst saves only what checkAskFirstChoice built', /askFirst: await askFirstStore\.read\(\)/.test(ipc) && /askFirstStore\.save\(check\.choice\)/.test(ipc) && /checkAskFirstChoice\(input\)/.test(ipc))
+  // Since 10.1 (D-039) the check and the save are in limitChanges.ts, which ipc.ts's handler calls (a looser amount waits for the system's question first).
+  const flow = read('src/main/limitChanges.ts')
+  check('source: the settings status carries the setting from the store, and setAskFirst saves only what checkAskFirstChoice built', /askFirst: await askFirstStore\.read\(\)/.test(ipc) && /limitChanges\.setAskFirst\(window, input\)/.test(ipc) && /const check = checkAskFirstChoice\(input\)/.test(flow) && /const next = check\.choice/.test(flow) && /await askFirstStore\.save\(next\)/.test(flow) && !/askFirstStore\.save\(/.test(ipc))
   const pageSources = ['src/renderer/src/chat/ipcReply.ts', 'src/renderer/src/chat/useChat.ts', 'src/renderer/src/chat/LargeRequestDialog.tsx'].map(read).join('\n')
   check('source: the page works out no estimate of its own (the figures in the question are main\'s)', !/estimateRequest|estimateInputTokens|needsConfirmation/.test(pageSources))
 })

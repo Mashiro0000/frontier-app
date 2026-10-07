@@ -11,6 +11,7 @@ import { useChat } from './chat/useChat'
 import HistoryDialog from './history/HistoryDialog'
 import { useHistory } from './history/useHistory'
 import InstructionsDialog from './instructions/InstructionsDialog'
+import { useEveryChat } from './instructions/useEveryChat'
 import EffortPicker from './settings/EffortPicker'
 import { providerMissingKey } from './settings/format'
 import LimitsDialog from './settings/LimitsDialog'
@@ -37,6 +38,8 @@ function App(): React.JSX.Element {
   const history = useHistory(chat)
   // The files on the message being written (D-037): copies kept by main, attached with "Attach...", a paste or a drop.
   const attachments = useAttachments()
+  // The person's instructions for every chat (D-039): kept by main, which adds them to every request; the page shows them and asks to change them.
+  const everyChat = useEveryChat()
   // A message carries at most ten files, and a chat (whose files are sent again with every message) at most fifty.
   const attachFull =
     attachments.files.length >= ATTACHMENT_LIMITS.perMessage ||
@@ -96,10 +99,14 @@ function App(): React.JSX.Element {
         isReplying={chat.isReplying}
         messageCount={chat.messages.length}
         instructions={chat.instructions}
+        everyChat={everyChat.status}
         saveFailed={history.saveError !== null}
         onNewChat={history.startNew}
         onOpenHistory={() => setHistoryOpen(true)}
-        onOpenInstructions={() => setInstructionsOpen(true)}
+        onOpenInstructions={() => {
+          everyChat.reload()
+          setInstructionsOpen(true)
+        }}
         onAttach={attachments.pick}
         attachDisabled={attachments.busy || attachFull}
         attachTitle={
@@ -116,7 +123,9 @@ function App(): React.JSX.Element {
       <InstructionsDialog
         open={instructionsOpen}
         instructions={chat.instructions}
+        everyChat={everyChat.status}
         onSave={chat.setInstructions}
+        onEveryChatSaved={everyChat.setStatus}
         onClose={() => setInstructionsOpen(false)}
       />
       {status !== null && (

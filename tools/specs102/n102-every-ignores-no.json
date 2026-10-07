@@ -1,0 +1,14 @@
+{
+  "label": "n102-every-ignores-no",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/everyChat.ts",
+      "from": "        if (answer === 'no') return { ok: false, cancelled: true, error: EVERY_CHAT_NOT_SAVED }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

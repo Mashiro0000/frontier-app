@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chatEncryptionService.ts",
-      "from": "  if (before.choice === 'off' && counts.encrypted === 0 && sealedFiles === 0) {",
-      "to": "  if (false as boolean) {"
+      "from": "    if (\n      before.choice === 'off' &&\n      counts.encrypted === 0 &&\n      sealedFiles === 0 &&\n      sealedDocuments === 0\n    ) {",
+      "to": "    if (false as boolean) {"
     }
   ],
   "argv": [

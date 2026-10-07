@@ -102,6 +102,34 @@ export type SetLimitsResult =
 export type SetAskFirstResult =
   { ok: true; status: SettingsStatus } | { ok: false; error: string; cancelled?: true }
 
+/** A part of a text that looks like a key, a token or a password (D-039), as the page is shown it: what it looks like, and the part masked. */
+export interface SecretFinding {
+  /** For "... looks like <what>": "an Anthropic API key", "a password". */
+  what: string
+  /** The part, masked: its first four and last two characters and its length ("sk-a…7Q (51 characters)"). */
+  shown: string
+}
+
+/** The person's instructions for every chat (D-039), as main has them. */
+export interface EveryChatStatus {
+  /** The text ('' for none). */
+  text: string
+  /** Why the file that holds them cannot be read, or null when it can. While it cannot, main sends no request at all. */
+  problem: string | null
+}
+
+/**
+ * `cancelled`: the person said no in the system's own message box (or closed it); nothing was saved, and it is not shown as a failure. `warnings`: parts
+ * that look like a key or a password; nothing was saved, and the page may send the same text again with "Save anyway".
+ */
+export type SaveEveryChatResult =
+  | { ok: true; status: EveryChatStatus }
+  | { ok: false; error: string; cancelled?: true; warnings?: SecretFinding[] }
+
+/** What main found in a chat's own instructions before the page keeps them (D-039). Nothing is saved by this. */
+export type CheckChatInstructionsResult =
+  { ok: true } | { ok: false; error: string; warnings?: SecretFinding[] }
+
 /** A message as the model is told about it: who wrote it, and the plain text. */
 export type WireRole = 'user' | 'assistant'
 export interface WireMessage {
@@ -272,6 +300,8 @@ export interface ChatStorageReport {
   backup: { count: number; leftOut: number; where: string } | null
   /** The attached files (D-037), rewritten in the same form as the chats; absent when there are none. */
   files?: { changed: number; failed: number }
+  /** The person's instructions for every chat (D-039), rewritten in the same form too; absent when there are none. */
+  documents?: { changed: number; failed: number }
 }
 
 /** `cancelled`: the person closed the system's dialog, which is not a failure and is not shown as one. */
@@ -470,6 +500,18 @@ export interface FrontierApi {
     /** The small pictures and first lines of kept files, by id (a chat opened from History): main reads its own copies. At most `perChat` ids. */
     describe(ids: string[]): Promise<AttachmentPreview[]>
   }
+  instructions: {
+    /** The person's instructions for every chat, as main has them (D-039). Main adds them to every request itself; the page only shows them. */
+    getEveryChat(): Promise<EveryChatStatus>
+    /**
+     * Saves the instructions for every chat ('' turns them off). Main checks them again and looks for secrets (a saved API key is refused; text that
+     * looks like a key or a password needs `saveAnyway`), and saves new or changed text only after the person's yes in the system's own message box,
+     * which the page cannot answer. Turning them off asks nothing.
+     */
+    setEveryChat(text: string, saveAnyway?: boolean): Promise<SaveEveryChatResult>
+    /** The same look for secrets for a chat's own instructions (D-027), before the page keeps them. Saves nothing and asks nothing. */
+    checkForChat(text: string, saveAnyway?: boolean): Promise<CheckChatInstructionsResult>
+  }
 }
 
 export const CHANNELS = {
@@ -500,7 +542,10 @@ export const CHANNELS = {
   attachmentsPick: 'attachments:pick',
   attachmentsAddBytes: 'attachments:add-bytes',
   attachmentsDiscard: 'attachments:discard',
-  attachmentsDescribe: 'attachments:describe'
+  attachmentsDescribe: 'attachments:describe',
+  instructionsGetEveryChat: 'instructions:get-every-chat',
+  instructionsSetEveryChat: 'instructions:set-every-chat',
+  instructionsCheckForChat: 'instructions:check-for-chat'
 } as const
 
 /**

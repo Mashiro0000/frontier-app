@@ -1,0 +1,18 @@
+{
+  "label": "w102-ipc-no-window",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      everyChat.save(window, input)",
+      "to": "      everyChat.save(null, input)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run102.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 500000
+}

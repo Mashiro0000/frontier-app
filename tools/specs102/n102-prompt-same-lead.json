@@ -1,0 +1,14 @@
+{
+  "label": "n102-prompt-same-lead",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "  if (own !== '') pieces.push(every === '' ? INSTRUCTIONS_LEAD : CHAT_AFTER_OTHERS_LEAD, own)",
+      "to": "  if (own !== '') pieces.push(CHAT_AFTER_OTHERS_LEAD, own)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

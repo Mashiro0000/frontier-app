@@ -29,6 +29,7 @@ import { adapterFor } from './providers'
 import { describeFailure, unknownError } from './providers/errors'
 import { buildStreamRequest } from './providers/request'
 import type { ErrorKind, ProviderAdapter, ReplyEnd, Usage } from './providers/types'
+import { heldKey, keyInInstructions, type SavedKey } from './secrets'
 import { isTrustedSender } from './security'
 import { RequestRefused, type UsageLedger } from './usageLedger'
 
@@ -113,12 +114,19 @@ function endEvent(streamId: string, end: ReplyEnd): ChatStreamEvent {
   }
 }
 
-/** What a reply needs besides the request: the stores it counts and checks against, and the reader of the attachments' copies (D-037). */
+/**
+ * What a reply needs besides the request: the stores it counts and checks against, the reader of the attachments' copies (D-037), the person's
+ * instructions for every chat and the saved keys (D-039).
+ */
 interface ReplyContext {
   ledger: UsageLedger
   limitsStore: LimitsStore
   askFirstStore: AskFirstStore
   readAttachment: (id: string) => Promise<ReadResult>
+  /** The instructions for every chat, from main's own file: the text ('' for none), or the sentence that refuses the request while it cannot be read. */
+  everyChat: () => Promise<{ ok: true; text: string } | { ok: false; error: string }>
+  /** The API keys saved in this app: none of them goes out inside instructions. */
+  savedKeys: () => Promise<SavedKey[]>
 }
 
 async function runReply(
@@ -202,16 +210,37 @@ async function runReply(
       send({ streamId, type: 'error', message: resolved.error })
       return
     }
+    // The person's instructions for every chat (D-039), from main's own file and never from the page, read for every request. A file that cannot be read
+    // refuses the request: a chat is never sent without them in silence.
+    const everyChat = await context.everyChat()
+    if (!everyChat.ok) {
+      send({ streamId, type: 'error', message: everyChat.error })
+      return
+    }
+    // No API key saved in this app goes out inside instructions, whichever part holds it: the person may have pasted one before saving it in Settings.
+    const keys = await context.savedKeys()
+    for (const [whose, text] of [
+      ['for every chat', everyChat.text],
+      ['for this chat', request.instructions ?? '']
+    ] as const) {
+      const held = heldKey(text, keys)
+      if (held !== null) {
+        send({ streamId, type: 'error', message: keyInInstructions(held, whose) })
+        return
+      }
+    }
     const streamRequest = buildStreamRequest({
       credentials: { apiKey, baseURL: baseUrlOverride(entry.provider) },
       model: entry,
       effort,
       instructions: request.instructions, // the person's own, already checked (D-027): added after the app's rules
+      everyChat: everyChat.text, // before the chat's own (D-039)
       messages: resolved.messages,
       signal: controller.signal
     })
     // One guess at what this request sends, used three times and the same each time: for the question below (D-032), for the limit's check
-    // (D-031) and for the ledger's first line (D-030). The files are part of it (D-037): images by their size, PDFs by their pages, text by its bytes.
+    // (D-031) and for the ledger's first line (D-030). The files are part of it (D-037): images by their size, PDFs by their pages, text by its bytes;
+    // and so are all the instructions, which are in the system prompt (D-039).
     const fileTokens = estimateFileTokens(resolved.files)
     const files =
       resolved.files.count > 0 ? { count: resolved.files.count, tokens: fileTokens } : undefined

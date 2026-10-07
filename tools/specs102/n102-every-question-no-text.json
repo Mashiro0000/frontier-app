@@ -1,0 +1,14 @@
+{
+  "label": "n102-every-question-no-text",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/everyChat.ts",
+      "from": "    `\"${start}\"`,",
+      "to": "    '(your text)',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

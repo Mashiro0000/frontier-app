@@ -1,0 +1,18 @@
+{
+  "label": "w102-app-no-reload",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/App.tsx",
+      "from": "          everyChat.reload()\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run102.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 500000
+}

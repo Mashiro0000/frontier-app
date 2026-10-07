@@ -7,6 +7,8 @@ import {
   type AttachPickResult,
   type ChatStorageResult,
   type ChatStorageStatus,
+  type CheckChatInstructionsResult,
+  type EveryChatStatus,
   type HistoryExportResult,
   type HistoryList,
   type HistoryRestoreApplyResult,
@@ -14,6 +16,7 @@ import {
   type HistoryLoadResult,
   type HistoryRemoveResult,
   type HistorySaveResult,
+  type SaveEveryChatResult,
   type SetAskFirstResult,
   type SetEffortResult,
   type SetKeyResult,
@@ -52,6 +55,8 @@ import { registerChatIpc } from './chat'
 import { createChatEncryptionService } from './chatEncryptionService'
 import { createChatProtection } from './chatProtection'
 import { createConversationStore } from './conversationStore'
+import { createEveryChat } from './everyChat'
+import { keptDocuments } from './keptFile'
 import { canStoreKey, clearApiKey, readApiKey, saveApiKey, secureStorage } from './keyStore'
 import { createLimitChanges } from './limitChanges'
 import { createLimitsStore } from './limits'
@@ -60,6 +65,7 @@ import { adapterFor } from './providers'
 import { describeFailure, timeoutError } from './providers/errors'
 import { getRankings, reportRankingsProblems } from './rankings'
 import { getRegistry, reportRegistryProblems } from './registry'
+import type { SavedKey } from './secrets'
 import { isTrustedSender } from './security'
 import { createQuestionGate } from './systemQuestion'
 import { createUsageLedger } from './usageLedger'
@@ -75,6 +81,16 @@ const limitChanges = createLimitChanges({ limitsStore, askFirstStore, gate: ques
 
 /** "Test key" gives up after this long, so a provider that never answers cannot leave the button spinning for ever. */
 const TEST_KEY_TIMEOUT_MS = 20_000
+
+/** The API keys saved in this app, for the look for secrets (D-039): text that holds one is never kept or sent as instructions. Never sent to the page. */
+async function savedKeys(): Promise<SavedKey[]> {
+  const keys: SavedKey[] = []
+  for (const provider of SUPPORTED_PROVIDERS) {
+    const key = await readApiKey(provider)
+    if (key !== null) keys.push({ provider, key })
+  }
+  return keys
+}
 
 async function currentStatus(): Promise<SettingsStatus> {
   const registry = getRegistry()
@@ -279,6 +295,15 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     box: secureStorage,
     writeMode: protection.writeMode
   })
+  // The person's instructions for every chat (D-039), in instructions.json beside the chats, written like them and sealed like them (the same rule). Main
+  // adds them to every request itself; the page can read them and ask to change them, and a change that adds text waits for a yes in the system's box.
+  const everyChat = createEveryChat({
+    pathOf: () => join(app.getPath('userData'), 'instructions.json'),
+    box: secureStorage,
+    writeMode: protection.writeMode,
+    gate: questions,
+    savedKeys
+  })
   const reason = (error: unknown): unknown => (error instanceof Error ? error.message : error)
   // The attachments (D-037): main's own copies of the files the person attaches, in attachments/ beside the chats, checked by their bytes and sealed
   // like the chats (the same rule for how a file may be written). The page hands over bytes (a paste, a drop) or asks main to open the system's dialog;
@@ -319,7 +344,8 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     protection,
     backups,
     asks: systemAskers,
-    files: attachments
+    files: attachments,
+    documents: keptDocuments([everyChat.file]) // rewritten with the chats (D-039)
   })
 
   ipcMain.handle(
@@ -493,6 +519,33 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   })
 
+  // The person's instructions for every chat (D-039). The page reads them, and asks to change them: main checks the text again, looks for secrets, and
+  // asks the person in the system's own message box before it keeps new text, for the window that asked. Requests read main's own copy (chat.ts).
+  ipcMain.handle(
+    CHANNELS.instructionsGetEveryChat,
+    guarded(async (): Promise<EveryChatStatus> => {
+      try {
+        return await everyChat.status()
+      } catch (error) {
+        console.error('Reading the instructions for every chat failed:', reason(error))
+        throw new Error('Your instructions for every chat could not be read.')
+      }
+    })
+  )
+
+  ipcMain.handle(
+    CHANNELS.instructionsSetEveryChat,
+    guardedForWindow((window, input: unknown): Promise<SaveEveryChatResult> =>
+      everyChat.save(window, input)
+    )
+  )
+
+  // A chat's own instructions (D-027) stay the page's, saved with the chat; before the page keeps them it asks main for the same look for secrets.
+  ipcMain.handle(
+    CHANNELS.instructionsCheckForChat,
+    guarded((input: unknown): Promise<CheckChatInstructionsResult> => everyChat.checkForChat(input))
+  )
+
   // What was used and what it cost (D-030): one plain file, written by main alone. The page can ask for sums and nothing else.
   const ledger = createUsageLedger(join(app.getPath('userData'), 'usage', 'ledger.jsonl'))
 
@@ -519,7 +572,9 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     ledger,
     limitsStore,
     askFirstStore,
-    readAttachment: (id) => attachments.read(id)
+    readAttachment: (id) => attachments.read(id),
+    everyChat: () => everyChat.forRequest(),
+    savedKeys
   })
   // The lock the encryption flows run in is the backup service's, so waiting for it waits for them too.
   return () =>
@@ -527,6 +582,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       history.whenIdle(),
       ledger.whenIdle(),
       backups.whenIdle(),
-      attachments.whenIdle()
+      attachments.whenIdle(),
+      everyChat.file.whenIdle()
     ]).then(() => undefined)
 }

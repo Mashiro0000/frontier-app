@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/providers/request.ts",
-      "from": "return own === '' ? rules :",
-      "to": "return !instructions ? rules :"
+      "from": "  if (own !== '') pieces.push(",
+      "to": "  if (instructions) pieces.push("
     }
   ],
   "argv": [

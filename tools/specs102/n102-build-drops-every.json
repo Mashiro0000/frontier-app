@@ -1,0 +1,14 @@
+{
+  "label": "n102-build-drops-every",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "    system: systemPromptFor(model.provider, input.instructions, { everyChat: input.everyChat }),",
+      "to": "    system: systemPromptFor(model.provider, input.instructions),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

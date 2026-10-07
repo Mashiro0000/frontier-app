@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/providers/request.ts",
-      "from": "`${rules}\\n\\n${INSTRUCTIONS_LEAD}\\n\\n${own}`",
-      "to": "`${own}\\n\\n${INSTRUCTIONS_LEAD}\\n\\n${rules}`"
+      "from": "  return pieces.join('\\n\\n')",
+      "to": "  return own === '' ? pieces.join('\\n\\n') : [...pieces.slice(1), rules].join('\\n\\n')"
     }
   ],
   "argv": [

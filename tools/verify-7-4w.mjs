@@ -128,6 +128,8 @@ check('...opening it wrote nothing: same bytes, same modification time (reading 
 await openDialog()
 check('its instructions box is empty', (await dlg()).value === '')
 await setText(`  ${INSTR_B}  `)
+// Named before Save (10.2): a box that applied what is typed at once would leave Save off here and the suite would only stop at the next wait.
+check('typing alone saves nothing: no mark on the button yet, and Save is on', (await hdr()).mark === null && (await dlg()).saveDisabled === false)
 await footer('Save')
 await closed()
 const up = await H.waitConv(seed.v2.id, (c) => c.instructions === INSTR_B)
@@ -166,7 +168,7 @@ let hb = await hdr()
 check('the chat bar has an Instructions button right after History, with no "on" mark while the chat has none', hb !== null && hb.text === 'Instructions' && hb.mark === null && hb.before === 'History' && !hb.disabled && /Give the model instructions/.test(hb.title), JSON.stringify(hb))
 await openDialog()
 d = await dlg()
-check('clicking it opens a modal dialog with a box: empty, with the keyboard in it, and Save is off because there is nothing to save', d.open && d.value === '' && d.focused && d.saveDisabled === true && d.save === 'Save' && d.buttons.join() === 'Cancel,Save', JSON.stringify(d))
+check('clicking it opens a modal dialog with a box: empty, with the keyboard in it, and Save is off because there is nothing to save', d.open && d.value === '' && d.focused && d.saveDisabled === true && d.save === 'Save' && d.buttons.join() === 'Change...,Cancel,Save', JSON.stringify(d)) // since 10.2 (D-039) the dialog also shows the instructions for every chat, with their own "Change..."
 check('...it says what the text does: sent with every message, to the company that runs the model (and to another company if the model changes), billed, saved as plain text on this computer, not for passwords, a new chat starts without', ['every message', 'company that runs the model', 'if you change the model', 'billed', 'plain text', 'Do not put passwords or keys here', 'A new chat starts without instructions'].every((x) => d.text.includes(x)), d.text)
 check('...and how to turn them off', /empty the box/.test(d.text))
 check('...the count starts at 0 of 8,000 characters', d.count === '0 of 8,000 characters', d.count)

@@ -1,0 +1,14 @@
+{
+  "label": "n102-every-parse-loose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/everyChat.ts",
+      "from": "  if (fields.version !== EVERY_CHAT_FILE_VERSION || Object.keys(fields).length !== 2) return null",
+      "to": "  if (fields.version !== EVERY_CHAT_FILE_VERSION) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

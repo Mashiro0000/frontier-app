@@ -1,0 +1,18 @@
+{
+  "label": "w102-every-damaged-sends",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/everyChat.ts",
+      "from": "      if (now.state === 'unreadable') return { ok: false, error: everyChatUnreadable(now.why) }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run102.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 500000
+}

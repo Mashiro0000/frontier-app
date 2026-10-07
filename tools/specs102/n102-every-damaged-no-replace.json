@@ -1,0 +1,14 @@
+{
+  "label": "n102-every-damaged-no-replace",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/everyChat.ts",
+      "from": "        else await file.write(next, { replace: damaged })",
+      "to": "        else await file.write(next)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

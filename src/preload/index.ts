@@ -55,6 +55,13 @@ const api: FrontierApi = {
     addBytes: (name, bytes) => ipcRenderer.invoke(CHANNELS.attachmentsAddBytes, { name, bytes }),
     discard: (id) => ipcRenderer.send(CHANNELS.attachmentsDiscard, id),
     describe: (ids) => ipcRenderer.invoke(CHANNELS.attachmentsDescribe, ids)
+  },
+  instructions: {
+    getEveryChat: () => ipcRenderer.invoke(CHANNELS.instructionsGetEveryChat),
+    setEveryChat: (text, saveAnyway) =>
+      ipcRenderer.invoke(CHANNELS.instructionsSetEveryChat, { text, saveAnyway }),
+    checkForChat: (text, saveAnyway) =>
+      ipcRenderer.invoke(CHANNELS.instructionsCheckForChat, { text, saveAnyway })
   }
 }
 

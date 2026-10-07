@@ -51,7 +51,7 @@ const node = {
   // the registry and what the page is told
   'n93-reg-option-document-always': [[REG, '    documentInput: entry.capabilities.documentInput', '    documentInput: true']],
   // encryption
-  'n93-enc-files-not-reported': [[ENC, '      report: { ...done, backup, ...withFiles(filesDone) }', '      report: { ...done, backup }']],
+  'n93-enc-files-not-reported': [[ENC, '      report: { ...done, backup, ...withFiles(filesDone), ...documentsDone }', '      report: { ...done, backup, ...documentsDone }']], // the documents (10.2, D-039) are not this control's business
   'n93-enc-files-always-said': [[ENC, '  ): { files?: { changed: number; failed: number } } => (done === null ? {} : { files: done })', '  ): { files?: { changed: number; failed: number } } => ({ files: done ?? { changed: 0, failed: 0 } })']],
   'n93-storage-plain-wording': [[STORAGE, "        `Rewrote ${attached(report.files.changed)} as ${report.files.changed === 1 ? 'a plain file' : 'plain files'} too.`", '        `Rewrote ${attached(report.files.changed)} as plain files too.`']],
   // main's wiring (source checks)
@@ -77,7 +77,7 @@ const win = {
   'w93-previews-not-reset': [W, [[PREV, '    if (asked.current.chatId !== chatId) asked.current = { chatId, ids: new Set() }\n', '']]],
   'w93-hold-kept-after-save': [W, [[IPC, '            for (const file of message.attachments ?? []) attachments.release(file.id)', '            void message']]],
   'w93-delete-keeps-files': [W, [[IPC, '        if (removed.ok && files.length > 0) {', '        if (false as boolean) {']]],
-  'w93-encryption-skips-files': [W, [[IPC, '    files: attachments\n', '']]],
+  'w93-encryption-skips-files': [W, [[IPC, '    files: attachments,\n    documents:', '    documents:']]], // since 10.2 a line about the kept documents follows (D-039)
   'w93-backup-always-v3': [W, [[BAK, '  JSON.stringify({ version: fileVersion(chat), ...chat })', '  JSON.stringify({ version: 3, ...chat })']]],
   'w93-sweep-off': [WB, [[IPC, '    .then((refs) => (refs.complete ? attachments.sweep(refs.ids, 3_600_000) : undefined))', '    .then(() => undefined)']]],
   'w93-sweep-young': [WB, [[IPC, '    .then((refs) => (refs.complete ? attachments.sweep(refs.ids, 3_600_000) : undefined))', '    .then((refs) => (refs.complete ? attachments.sweep(refs.ids, 0) : undefined))']]],

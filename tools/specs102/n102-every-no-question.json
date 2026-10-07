@@ -1,0 +1,14 @@
+{
+  "label": "n102-every-no-question",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/everyChat.ts",
+      "from": "        const answer = await options.gate.ask(\n          owner,\n          everyChatQuestion(next, { warned: secrets.warned, replacing: damaged })\n        )",
+      "to": "        const answer = await Promise.resolve('yes' as string)\n        void everyChatQuestion(next, { warned: secrets.warned, replacing: damaged })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

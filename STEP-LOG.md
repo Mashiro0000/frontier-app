@@ -2445,3 +2445,23 @@ if you have not, please do before you rely on this. **The design was mine** (you
 1. **The question before a large request itself still appears in the app's own window**, as in Stage 8: it guards against a slip. What stops spending is the limits, and they can no longer be raised without the system's box.
 2. **Your own profile has no spending limits yet** (it never had): when this version first starts on it, the first-run question asks for them, and then the system's box asks once more.
 3. **Everything in the earlier stages' "Things to know" still applies**, including the first real API call, which only you can make.
+
+## Stage 10 - Slice 10.2: instructions for every chat (7 October 2026 session; D-039)
+
+**Your instructions.** The same as for 10.1 (go on slice by slice, verify each the usual way, commit and push on my own). After the session was compacted: "Now start from where you left off."
+
+**Step by step.**
+
+1. **What changed for you:** the Instructions dialog now shows two parts, in the order they are sent: **For every chat** (new) and **For this chat** (as before). "Change..." moves the one box between them. Text for every chat goes with every message of every chat, after the app's own rules and before a chat's own instructions; when both are set, the chat's own come last and the model is told they win where the two differ.
+2. **Saving text for every chat asks in a Windows message box**, which shows the text and its length; Cancel keeps things as they were. Emptying the box ("Turn off") asks nothing. A chat's own instructions are not asked about this way: the page already writes the chat's messages, so a question there would protect nothing (my choice; D-039 says why).
+3. **Secrets:** an API key saved in the app is refused in either part (the sentence says whose key and never shows it); text that looks like a key or a password gets a warning with the part masked, and is kept only with "Save anyway". The app looks again before every request, so a key saved later still never goes out inside instructions.
+4. **If the file cannot be read** (damaged, or sealed with a key this computer cannot use), nothing is sent at all and the Instructions button shows "!"; the dialog says why, and "Turn off" or new text gets you going again, keeping a copy of the old file.
+5. **Saved and sealed:** the text is kept in `instructions.json` in the app's data folder, written like a chat, encrypted when your chats are, and converted when you turn encryption on or off. Backups do not hold it yet (that is 10.7).
+6. **Found on the way:** my first look for secrets took ordinary text for keys (a long link, a hyphenated phrase); it is tighter now. Running every plain-Node suite found two checks that 10.1 had made stale and that 10.1's own runs had missed (8.3 and 8b.2, both test-only); I run that part in every slice now.
+7. **Checked:** 118 checks under Node, 56 in the window (on the dev app and the built one); the 70 recorded requests are byte for byte what they were when only a chat's own instructions or none are set. **64 negative controls, all caught** (four of my checks were made sharper on the way, so that each fails by name).
+
+## Stage 10.2 - Things to know (not problems, but worth your attention)
+
+1. **The look for secrets is a safety net, not a guarantee:** it knows common key and token shapes and labelled passwords ("password: ..."); a password written as a plain word is not found.
+2. **How a model weighs "follow these" is up to the model**: the app sends the parts in a fixed order with a line saying whose each is; no real API call has been made to see it.
+3. **The window and Stage 4 parts of the regression ran too (33 launches):** 32 clean at once; the Stage 1 chain failed a scrolling check while I was running another test suite at the same time (my mistake: the machine must stay idle), and passed 111/111 when run again alone.

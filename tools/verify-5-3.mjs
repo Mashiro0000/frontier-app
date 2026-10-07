@@ -53,7 +53,7 @@ const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'))
 
 // ============ 1. a fresh profile ============
 const api = await ev(`JSON.stringify({ top: Object.keys(window.api), settings: Object.keys(window.api.settings) })`)
-check('window.api.settings has getStatus / setApiKey / clearApiKey / testApiKey / setModel / setEffort / setLimits / setAskFirst, in that order (and window.api has usage since 8.1 and attachments since 9.2)', api === '{"top":["settings","chat","usage","history","attachments"],"settings":["getStatus","setApiKey","clearApiKey","testApiKey","setModel","setEffort","setLimits","setAskFirst"]}', api)
+check('window.api.settings has getStatus / setApiKey / clearApiKey / testApiKey / setModel / setEffort / setLimits / setAskFirst, in that order (and window.api has usage since 8.1, attachments since 9.2 and instructions since 10.2)', api === '{"top":["settings","chat","usage","history","attachments","instructions"],"settings":["getStatus","setApiKey","clearApiKey","testApiKey","setModel","setEffort","setLimits","setAskFirst"]}', api)
 const st0 = await ev(`window.api.settings.getStatus()`)
 check('getStatus: exactly providers, canStoreKey, models, selectedModelId, modelsError, modelsCheckedOn, tasks, suggestions, effort, limits (since 8.2), askFirst (since 8.3)', Object.keys(st0).join() === 'providers,canStoreKey,models,selectedModelId,modelsError,modelsCheckedOn,tasks,suggestions,effort,limits,askFirst', Object.keys(st0).join())
 check('getStatus: two providers, Anthropic then OpenAI, neither with a key', JSON.stringify(st0.providers) === '[{"id":"anthropic","name":"Anthropic","hasKey":false},{"id":"openai","name":"OpenAI","hasKey":false}]', JSON.stringify(st0.providers))

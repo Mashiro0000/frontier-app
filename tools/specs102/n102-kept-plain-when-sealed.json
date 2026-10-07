@@ -1,0 +1,14 @@
+{
+  "label": "n102-kept-plain-when-sealed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/keptFile.ts",
+      "from": "    const data = form === 'encrypted' && box !== undefined ? sealChat(plain, box) : plain",
+      "to": "    const data = plain"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}
