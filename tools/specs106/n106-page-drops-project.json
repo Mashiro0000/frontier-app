@@ -1,0 +1,14 @@
+{
+  "label": "n106-page-drops-project",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ipcReply.ts",
+      "from": "      ...(projectId === null ? {} : { projectId })",
+      "to": "      ...{}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-6.mjs"
+  ],
+  "env": {}
+}

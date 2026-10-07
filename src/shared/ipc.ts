@@ -168,6 +168,11 @@ export interface ChatRequest {
    * Absent for a request that does not belong to a saved chat.
    */
   conversationId?: string
+  /**
+   * The project the chat belongs to (D-039, 10.6): main reads that project from its own file and adds its instructions, notes and files to the
+   * request. A project that is not there is none. Absent for a chat in no project, which is sent exactly as before.
+   */
+  projectId?: string
 }
 
 /** What the main process reports while a reply is being produced. */

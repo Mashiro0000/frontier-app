@@ -2497,3 +2497,12 @@ if you have not, please do before you rely on this. **The design was mine** (you
 4. **Not yet:** in this slice a project's instructions, notes and files do not go with requests; that is the next slice (10.6). Backups do not hold projects until 10.7.
 5. **Files:** a chat in a project is saved in a new file version (5); a chat in no project is saved exactly as before.
 6. **Checked:** 54 checks under Node, 38 in the window (on the dev app and the built one); **47 negative controls, all caught** (two of my checks made sharper). The regression's Node, window and Stage 4 parts (65 runs) found four checks made stale (three of them because version 5 now means a chat in a project, one a race in a test); fixed, and they pass.
+
+## Stage 10 - Slice 10.6: a project's parts in every request (7 October 2026 session; D-039)
+
+**Step by step.**
+
+1. **What changed for you:** a chat in a project now sends, with every message, the project's notes and instructions (after your instructions for every chat, before the chat's own, which still win), and the project's files at the start of the conversation. A chat in no project is sent exactly as before. The project's name is never sent.
+2. **Size and cost:** the project's files count with the chat's own against what one request may carry; if together they are too much, Send is off and says the project's files count too. The question before a large request and a limit's refusal say how many files are the project's.
+3. **If projects.json cannot be read,** a chat in a project sends nothing and says why; other chats are not affected. A project deleted while its chat is open simply stops being sent.
+4. **Checked:** 25 checks under Node, 14 in the window (dev and built), 29 negative controls all caught; the regression's Node, window and Stage 4 parts (67 runs) found 4 older tests still expecting requests without a project, which were fixed.

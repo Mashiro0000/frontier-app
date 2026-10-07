@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/providers/request.ts",
-      "from": "  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)\n  if (own !== '') pieces.push(every === '' ? INSTRUCTIONS_LEAD : CHAT_AFTER_OTHERS_LEAD, own)",
-      "to": "  if (own !== '') pieces.push(every === '' ? INSTRUCTIONS_LEAD : CHAT_AFTER_OTHERS_LEAD, own)\n  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)"
+      "from": "  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)\n  if (project !== '') pieces.push(PROJECT_LEAD, project)\n  const others = every !== '' || project !== ''\n  if (own !== '') pieces.push(others ? CHAT_AFTER_OTHERS_LEAD : INSTRUCTIONS_LEAD, own)",
+      "to": "  if (project !== '') pieces.push(PROJECT_LEAD, project)\n  const others = every !== '' || project !== ''\n  if (own !== '') pieces.push(others ? CHAT_AFTER_OTHERS_LEAD : INSTRUCTIONS_LEAD, own)\n  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)"
     }
   ],
   "argv": [

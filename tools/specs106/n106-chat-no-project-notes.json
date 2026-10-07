@@ -1,0 +1,14 @@
+{
+  "label": "n106-chat-no-project-notes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "    const memory = await context.notes(project?.id ?? null)",
+      "to": "    const memory = await context.notes(null)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-6.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n106-project-not-others",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "  const others = every !== '' || project !== ''",
+      "to": "  const others = every !== ''"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-6.mjs"
+  ],
+  "env": {}
+}

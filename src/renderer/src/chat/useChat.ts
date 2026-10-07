@@ -115,7 +115,8 @@ export function useChat(reply: ReplyFn): UseChat {
         instructions,
         conversationId.current,
         (usage) => updateMessage(replyId, (m) => ({ ...m, usage })),
-        (request) => askAboutLargeRequest(request, controller.signal)
+        (request) => askAboutLargeRequest(request, controller.signal),
+        project
       )
       for await (const piece of answered) {
         if (controller.signal.aborted) break // ignore a piece that was already on its way

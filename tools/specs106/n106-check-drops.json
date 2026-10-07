@@ -1,0 +1,14 @@
+{
+  "label": "n106-check-drops",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "      ...(projectId === undefined ? {} : { projectId })",
+      "to": "      ...{}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-6.mjs"
+  ],
+  "env": {}
+}

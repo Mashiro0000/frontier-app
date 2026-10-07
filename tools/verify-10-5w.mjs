@@ -150,7 +150,7 @@ try {
   const chatId = await ev(`(() => { return null })()`) ?? H.byFirst('[[mock:count]] a chat in the thesis')?.id
   const conv = await H.waitFirst('[[mock:count]] a chat in the thesis', (c) => c.messages.length === 2)
   check('D: the chat is saved as version 5, naming the project', conv.conv.version === 5 && conv.conv.project === p1.id, show({ version: conv.conv.version, project: conv.conv.project }))
-  check('D: (requests do not carry the project yet: 10.6) the system prompt is the rules alone', !sent(r).includes('Cite your sources') && !sent(r).includes('My thesis'))
+  check('D: (since 10.6 the request carries the project\'s instructions) the project\'s name is never sent', !sent(r).includes('My thesis'))
   await H.openHistory()
   let rows = await H.rows()
   check('D: History names the chat\'s project', rows.some((x) => x.title === '[[mock:count]] a chat in the thesis' && /My thesis/.test(x.meta)), show(rows))

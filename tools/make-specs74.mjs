@@ -20,7 +20,7 @@ const UTIMES = "await fs.utimes(join(dir, `${id}.json`), new Date(), new Date())
 // Since 10.2 (D-039) request.ts builds the prompt from pieces (the rules, then every chat's instructions, then this chat's), so the 7.4 sabotages
 // are made on those lines, with the same meaning.
 const JOIN = "  return pieces.join('\\n\\n')"
-const OWN_PUSH = "  if (own !== '') pieces.push(every === '' ? INSTRUCTIONS_LEAD : CHAT_AFTER_OTHERS_LEAD, own)"
+const OWN_PUSH = "  if (own !== '') pieces.push(others ? CHAT_AFTER_OTHERS_LEAD : INSTRUCTIONS_LEAD, own)"
 const VERSIONS = '    file.version !== 2 &&\n    file.version !== 3 &&' // the condition spans lines since 10.5
 
 // ---- the plain-Node suite: [file, from, to] ----

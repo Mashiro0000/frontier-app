@@ -29,6 +29,8 @@ const MARKDOWN_RULES =
 const INSTRUCTIONS_LEAD = 'The person has given these instructions for this chat:'
 /** The same, for the person's instructions for every chat (D-039). */
 const EVERY_CHAT_LEAD = 'The person has given these instructions for every chat:'
+/** The same, for the instructions of the project the chat belongs to (D-039). The project's name is the person's label and is never sent. */
+const PROJECT_LEAD = 'The person has given these instructions for the project this chat belongs to:'
 /** A chat's own instructions after other instructions: the most particular come last, and say that they win. */
 const CHAT_AFTER_OTHERS_LEAD =
   'The person has given these instructions for this chat; where they differ from the instructions above, follow these:'
@@ -45,6 +47,8 @@ export interface PromptParts {
   /** Their notes that go with this chat, oldest first (10.4). Absent or empty for none. */
   notes?: readonly string[]
   everyChat?: string
+  /** The instructions of the chat's project (10.6). */
+  project?: string
 }
 
 /** The notes as a list: one item each, a note's own line breaks kept under it. */
@@ -66,11 +70,14 @@ export const systemPromptFor = (
   const rules = `You are ${ASSISTANT_NAME[provider]}, chatting with someone in Frontier App, a desktop chat window. ${MARKDOWN_RULES}`
   const notes = (parts.notes ?? []).map((note) => note.trim()).filter((note) => note !== '')
   const every = parts.everyChat?.trim() ?? ''
+  const project = parts.project?.trim() ?? ''
   const own = instructions?.trim() ?? ''
   const pieces = [rules]
   if (notes.length > 0) pieces.push(NOTES_LEAD, noteList(notes))
   if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)
-  if (own !== '') pieces.push(every === '' ? INSTRUCTIONS_LEAD : CHAT_AFTER_OTHERS_LEAD, own)
+  if (project !== '') pieces.push(PROJECT_LEAD, project)
+  const others = every !== '' || project !== ''
+  if (own !== '') pieces.push(others ? CHAT_AFTER_OTHERS_LEAD : INSTRUCTIONS_LEAD, own)
   return pieces.join('\n\n')
 }
 
@@ -117,6 +124,8 @@ export function buildStreamRequest(input: {
   instructions?: string
   everyChat?: string
   notes?: readonly string[]
+  /** The instructions of the chat's project (D-039, 10.6), from main's own file. */
+  project?: string
   messages: readonly NeutralMessage[]
   signal: AbortSignal
 }): StreamRequest {
@@ -127,7 +136,8 @@ export function buildStreamRequest(input: {
     effort: input.effort === undefined ? model.effort : input.effort,
     system: systemPromptFor(model.provider, input.instructions, {
       notes: input.notes,
-      everyChat: input.everyChat
+      everyChat: input.everyChat,
+      project: input.project
     }),
     messages: mergeAdjacent(messages),
     maxOutputTokens: Math.min(MAX_REPLY_TOKENS, model.maxOutputTokens),

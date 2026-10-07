@@ -3,6 +3,7 @@ import { askFirstAmount, estimateRequest, needsConfirmation } from '../shared/as
 import { CHANNELS, type ChatRequest, type ChatStreamEvent } from '../shared/ipc'
 import { checkAgainstLimits, withFilesNote, type Limits } from '../shared/limits'
 import type { Note } from '../shared/memory'
+import type { Project } from '../shared/projects'
 import { PROVIDER_NAMES, type ProviderId } from '../shared/registry'
 import {
   costOf,
@@ -135,6 +136,10 @@ interface ReplyContext {
   notes: (
     projectId: string | null
   ) => Promise<{ ok: true; notes: Note[] } | { ok: false; error: string }>
+  /** The project a chat in it brings (10.6), from main's own file: null when there is no such project, or the sentence that refuses the request. */
+  project: (
+    id: string
+  ) => Promise<{ ok: true; project: Project | null } | { ok: false; error: string }>
 }
 
 async function runReply(
@@ -211,11 +216,48 @@ async function runReply(
       return
     }
     apiKey = saved
+    // The chat's project (D-039, 10.6), read from main's own file for every request: a project that cannot be read refuses the request, and one that is
+    // not there any more is none. The page only names it.
+    let project: Project | null = null
+    if (request.projectId !== undefined) {
+      const found = await context.project(request.projectId)
+      if (!found.ok) {
+        send({ streamId, type: 'error', message: found.error })
+        return
+      }
+      project = found.project
+    }
+    // A project's files go with every message of its chats, at the start of the conversation, before the first message's own (a file the chat also
+    // carries is sent once). They count against the caps of one request together with the chat's own.
+    const projectFiles = (project?.files ?? []).map((file) => ({ id: file.id, name: file.name }))
+    const messages =
+      projectFiles.length === 0
+        ? request.messages
+        : request.messages.map((message, index) =>
+            index === 0
+              ? {
+                  ...message,
+                  attachments: [
+                    ...projectFiles,
+                    ...(message.attachments ?? []).filter(
+                      (file) => !projectFiles.some((p) => p.id === file.id)
+                    )
+                  ]
+                }
+              : message
+          )
     // The files of the conversation (D-037): read from main's own copies and checked, every time, before anything is counted or sent. A file that cannot be
     // read, a kind of file the model cannot read, or files over the caps of one request: nothing is sent, and the person is told why.
-    const resolved = await resolveAttachments(request.messages, entry, context.readAttachment)
+    const resolved = await resolveAttachments(messages, entry, context.readAttachment)
     if (!resolved.ok) {
-      send({ streamId, type: 'error', message: resolved.error })
+      send({
+        streamId,
+        type: 'error',
+        message:
+          projectFiles.length === 0
+            ? resolved.error
+            : `${resolved.error} The project's files count too: they go with every message of its chats.`
+      })
       return
     }
     // The person's instructions for every chat (D-039), from main's own file and never from the page, read for every request. A file that cannot be read
@@ -229,6 +271,7 @@ async function runReply(
     const keys = await context.savedKeys()
     for (const [whose, text] of [
       ['for every chat', everyChat.text],
+      ['for this project', project?.instructions ?? ''],
       ['for this chat', request.instructions ?? '']
     ] as const) {
       const held = heldKey(text, keys)
@@ -237,9 +280,9 @@ async function runReply(
         return
       }
     }
-    // The person's notes (10.4), from main's own file and never from the page, read for every request: every chat's (a chat's project comes in 10.6).
+    // The person's notes (10.4), from main's own file and never from the page, read for every request: every chat's, then the project's (10.6).
     // A file that cannot be read refuses the request, and so does a note that holds a saved key (looked at one note at a time).
-    const memory = await context.notes(null)
+    const memory = await context.notes(project?.id ?? null)
     if (!memory.ok) {
       send({ streamId, type: 'error', message: memory.error })
       return
@@ -258,6 +301,7 @@ async function runReply(
       instructions: request.instructions, // the person's own, already checked (D-027): added after the app's rules
       everyChat: everyChat.text, // before the chat's own (D-039)
       notes: memory.notes.map((note) => note.text), // first after the rules, as information (10.4)
+      project: project?.instructions, // after every chat's, before the chat's own (10.6)
       messages: resolved.messages,
       signal: controller.signal
     })
@@ -266,7 +310,13 @@ async function runReply(
     // and so are all the instructions, which are in the system prompt (D-039).
     const fileTokens = estimateFileTokens(resolved.files)
     const files =
-      resolved.files.count > 0 ? { count: resolved.files.count, tokens: fileTokens } : undefined
+      resolved.files.count > 0
+        ? {
+            count: resolved.files.count,
+            tokens: fileTokens,
+            ...(projectFiles.length > 0 ? { project: projectFiles.length } : {})
+          }
+        : undefined
     const inputTokens =
       estimateInputTokens(streamRequest.system, streamRequest.messages) + fileTokens
     // The spending limits (D-031), as they are now. They are asked for on EVERY request, whichever way it came (a new message, Regenerate,

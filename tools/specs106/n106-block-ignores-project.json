@@ -1,0 +1,14 @@
+{
+  "label": "n106-block-ignores-project",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/attachmentText.ts",
+      "from": "    ...projectFiles,\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-6.mjs"
+  ],
+  "env": {}
+}

@@ -55,13 +55,13 @@ const node = {
   'n93-enc-files-always-said': [[ENC, '  ): { files?: { changed: number; failed: number } } => (done === null ? {} : { files: done })', '  ): { files?: { changed: number; failed: number } } => ({ files: done ?? { changed: 0, failed: 0 } })']],
   'n93-storage-plain-wording': [[STORAGE, "        `Rewrote ${attached(report.files.changed)} as ${report.files.changed === 1 ? 'a plain file' : 'plain files'} too.`", '        `Rewrote ${attached(report.files.changed)} as plain files too.`']],
   // main's wiring (source checks)
-  'n93-chat-sends-anyway': [[CHAT, "      send({ streamId, type: 'error', message: resolved.error })\n      return\n", "      send({ streamId, type: 'error', message: resolved.error })\n"]],
+  'n93-chat-sends-anyway': [[CHAT, "            : `${resolved.error} The project's files count too: they go with every message of its chats.`\n      })\n      return\n", "            : `${resolved.error} The project's files count too: they go with every message of its chats.`\n      })\n"]], // the refusal names a project's files since 10.6
   'n93-ipc-delete-ignores-complete': [[IPC, '    if (used !== null) await attachments.deleteUnused([...ids], used)', '    await attachments.deleteUnused([...ids], used ?? new Set())']], // one helper for every deletion since 10.5
   'n93-ipc-hold-kept-after-save': [[IPC, '            for (const file of message.attachments ?? []) attachments.release(file.id)', '            void message']],
   // the page's side
   'n93-wire-drops-files-only': [[WIRE, "    .filter((message) => message.content !== '' || (message.files?.length ?? 0) > 0)", "    .filter((message) => message.content !== '')"]],
   'n93-save-keeps-pictures': [[CONVERT, '      ? { attachments: files.map((file) => file.info) }', '      ? { attachments: files }']],
-  'n93-block-ignores-earlier': [[TXT, '  const all = chatFiles(messages, draft)', '  const all = chatFiles([], draft)']],
+  'n93-block-ignores-earlier': [[TXT, '  const own = chatFiles(messages, draft)', '  const own = chatFiles([], draft)']], // named own since 10.6
   'n93-block-text-as-pdf': [[TXT, "  if (!model.documentInput && all.some((file) => file.info.kind === 'pdf')) {", "  if (!model.documentInput && all.some((file) => file.info.kind !== 'image')) {"]],
   'n93-chatfiles-twice': [[TXT, '    if (!seen.has(file.info.id)) seen.set(file.info.id, file)', '    seen.set(`${file.info.id}${seen.size}`, file)']]
 }

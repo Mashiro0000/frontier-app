@@ -69,7 +69,7 @@ export interface RequestEstimate {
    * The attached files the request sends, when there are any (D-037): how many, and how many of `inputTokens` they are. Absent for a request
    * without files, which is described exactly as before.
    */
-  files?: { count: number; tokens: number }
+  files?: { count: number; tokens: number; project?: number }
 }
 
 /**
@@ -82,7 +82,7 @@ export function estimateRequest(
   inputTokens: number,
   maxOutputTokens: number,
   prices: ModelPricing,
-  files?: { count: number; tokens: number }
+  files?: { count: number; tokens: number; project?: number }
 ): RequestEstimate {
   const inputUsd =
     (inputTokens * Math.max(prices.inputPerMTok, prices.cacheWritePerMTok)) / 1_000_000

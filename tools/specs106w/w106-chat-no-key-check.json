@@ -1,0 +1,18 @@
+{
+  "label": "w106-chat-no-key-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      ['for this project', project?.instructions ?? ''],\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run106.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

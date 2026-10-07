@@ -36,10 +36,10 @@ const s = {
   everyQuestionNoText: [EVERY, '    `"${start}"`,', "    '(your text)',"],
   everyCheckOpen: [EVERY, '    return secrets.ok ? { ok: true } : secrets', '    return { ok: true }'],
   promptEveryDropped: [REQ, "  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)\n", ''],
-  promptOrder: [REQ, "  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)\n  if (own !== '') pieces.push(every === '' ? INSTRUCTIONS_LEAD : CHAT_AFTER_OTHERS_LEAD, own)", "  if (own !== '') pieces.push(every === '' ? INSTRUCTIONS_LEAD : CHAT_AFTER_OTHERS_LEAD, own)\n  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)"],
-  promptSameLead: [REQ, "  if (own !== '') pieces.push(every === '' ? INSTRUCTIONS_LEAD : CHAT_AFTER_OTHERS_LEAD, own)", "  if (own !== '') pieces.push(CHAT_AFTER_OTHERS_LEAD, own)"],
+  promptOrder: [REQ, "  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)\n  if (project !== '') pieces.push(PROJECT_LEAD, project)\n  const others = every !== '' || project !== ''\n  if (own !== '') pieces.push(others ? CHAT_AFTER_OTHERS_LEAD : INSTRUCTIONS_LEAD, own)", "  if (project !== '') pieces.push(PROJECT_LEAD, project)\n  const others = every !== '' || project !== ''\n  if (own !== '') pieces.push(others ? CHAT_AFTER_OTHERS_LEAD : INSTRUCTIONS_LEAD, own)\n  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)"], // the project's part came between them in 10.6
+  promptSameLead: [REQ, "  if (own !== '') pieces.push(others ? CHAT_AFTER_OTHERS_LEAD : INSTRUCTIONS_LEAD, own)", "  if (own !== '') pieces.push(CHAT_AFTER_OTHERS_LEAD, own)"],
   // since 10.4 the parts are on lines of their own (the notes came first)
-  buildDropsEvery: [REQ, '      notes: input.notes,\n      everyChat: input.everyChat\n    }),', '      notes: input.notes\n    }),'],
+  buildDropsEvery: [REQ, '      notes: input.notes,\n      everyChat: input.everyChat,\n      project: input.project', '      notes: input.notes,\n      project: input.project'],
   encNoDocuments: [ENC, '    return { documents: await documents.conform() }', '    return {}'],
   encShortCircuit: [ENC, "    if (before.choice === 'on' && counts.plain === 0 && plainFiles === 0 && plainDocuments === 0) {", "    if (before.choice === 'on' && counts.plain === 0 && plainFiles === 0 && plainDocuments >= 0) {"],
   chatNoEvery: [CHAT, "    if (!everyChat.ok) {\n      send({ streamId, type: 'error', message: everyChat.error })\n      return\n    }\n", ''],

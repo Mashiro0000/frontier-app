@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/providers/request.ts",
-      "from": "  if (own !== '') pieces.push(every === '' ? INSTRUCTIONS_LEAD : CHAT_AFTER_OTHERS_LEAD, own)",
+      "from": "  if (own !== '') pieces.push(others ? CHAT_AFTER_OTHERS_LEAD : INSTRUCTIONS_LEAD, own)",
       "to": "  if (own !== '') pieces.push(own)"
     }
   ],

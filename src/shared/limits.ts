@@ -187,7 +187,7 @@ export function formatMoney(dollars: number): string {
  */
 export function withFilesNote(
   refusal: string | null,
-  files: { count: number; tokens: number } | undefined
+  files: { count: number; tokens: number; project?: number } | undefined
 ): string | null {
   if (
     refusal === null ||
@@ -200,7 +200,12 @@ export function withFilesNote(
     files.count === 1
       ? 'The file in this chat is'
       : `The ${files.count.toLocaleString('en-US')} files in this chat are`
-  return `${refusal} ${which} about ${files.tokens.toLocaleString('en-US')} tokens of it: every file in a chat is sent again with each message, so a new chat without ${files.count === 1 ? 'it' : 'them'} costs less.`
+  const base = `${refusal} ${which} about ${files.tokens.toLocaleString('en-US')} tokens of it: every file in a chat is sent again with each message, so a new chat without ${files.count === 1 ? 'it' : 'them'} costs less.`
+  // A project's files (D-039) go with every message of every chat in it: a new chat in the same project does not leave them out.
+  const project = files.project ?? 0
+  return project === 0
+    ? base
+    : `${base} ${project === files.count ? (project === 1 ? 'It is' : 'They are') : `${project.toLocaleString('en-US')} of them are`} the project's, which go with every message of each of its chats.`
 }
 
 export const LIMITS_UNSET_MESSAGE =

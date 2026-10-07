@@ -1,0 +1,14 @@
+{
+  "label": "n106-prompt-drops-project",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "  if (project !== '') pieces.push(PROJECT_LEAD, project)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-6.mjs"
+  ],
+  "env": {}
+}

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { ATTACHMENT_LIMITS } from '../../shared/attachments'
+import { ATTACHMENT_LIMITS, type AttachmentInfo } from '../../shared/attachments'
 import { limitsAreSet } from '../../shared/limits'
 import type { TaskId } from '../../shared/rankings'
 import ChatBar from './chat/ChatBar'
@@ -23,6 +23,9 @@ import ModelPicker from './settings/ModelPicker'
 import SettingsDialog from './settings/SettingsDialog'
 import TaskPicker from './settings/TaskPicker'
 import { useSettingsStatus } from './settings/useSettingsStatus'
+
+/** No project files: one empty list, so the chat does not draw again for a new one each time. */
+const NO_FILES: AttachmentInfo[] = []
 
 function App(): React.JSX.Element {
   const { status, loadError, setStatus } = useSettingsStatus()
@@ -117,6 +120,7 @@ function App(): React.JSX.Element {
         onOpenLimits={() => setLimitsPutOff(false)}
         attachments={attachments}
         onRemember={onRemember}
+        projectFiles={chatProject?.files ?? NO_FILES}
       />
       {/* New chat, History and Instructions live under the message box, not in the header, so the header stays one row (D-029). */}
       <ChatBar

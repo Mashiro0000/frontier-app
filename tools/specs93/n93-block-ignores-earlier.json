@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/chat/attachmentText.ts",
-      "from": "  const all = chatFiles(messages, draft)",
-      "to": "  const all = chatFiles([], draft)"
+      "from": "  const own = chatFiles(messages, draft)",
+      "to": "  const own = chatFiles([], draft)"
     }
   ],
   "argv": [

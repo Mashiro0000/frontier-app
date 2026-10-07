@@ -730,7 +730,8 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     readAttachment: (id) => attachments.read(id),
     everyChat: () => everyChat.forRequest(),
     savedKeys,
-    notes: (projectId) => memory.forRequest(projectId)
+    notes: (projectId) => memory.forRequest(projectId),
+    project: (id) => projects.forRequest(id)
   })
   // The lock the encryption flows run in is the backup service's, so waiting for it waits for them too.
   return () =>

@@ -1,0 +1,18 @@
+{
+  "label": "w106-chat-no-files",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "                    ...projectFiles,\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run106.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

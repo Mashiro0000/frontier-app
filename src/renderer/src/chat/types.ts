@@ -75,5 +75,7 @@ export type ReplyFn = (
    * Called when the main process is holding a large request for the person's yes (D-032): it puts the question in front of them and answers
    * true for yes, false for no (and false if the reply is stopped meanwhile). Nothing is sent until it says yes.
    */
-  onLargeRequest: (request: LargeRequest) => Promise<boolean>
+  onLargeRequest: (request: LargeRequest) => Promise<boolean>,
+  /** The project the chat belongs to (D-039, 10.6), or null: main adds that project's instructions, notes and files itself. */
+  projectId?: string | null
 ) => AsyncIterable<string>

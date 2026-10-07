@@ -1,0 +1,18 @@
+{
+  "label": "w106-chat-no-instructions",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      project: project?.instructions, // after every chat's, before the chat's own (10.6)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run106.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

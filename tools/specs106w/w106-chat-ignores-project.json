@@ -1,0 +1,18 @@
+{
+  "label": "w106-chat-ignores-project",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      project = found.project",
+      "to": "      void found.project"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run106.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

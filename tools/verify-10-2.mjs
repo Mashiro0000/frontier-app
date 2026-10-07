@@ -401,7 +401,7 @@ await guard('F', async () => {
   const read = at(chat, 'const everyChat = await context.everyChat()')
   const build = at(chat, 'const streamRequest = buildStreamRequest({')
   check('F: chat.ts reads the instructions for every chat from main\'s own file for every request, before the request is built', read > 0 && build > read && /if \(!everyChat\.ok\) \{\s*send\(\{ streamId, type: 'error', message: everyChat\.error \}\)\s*return/.test(chat))
-  check('F: ...and refuses a request whose instructions (either part) hold a saved key, before it is built', at(chat, 'const held = heldKey(text, keys)') > read && at(chat, 'const held = heldKey(text, keys)') < build && /\['for every chat', everyChat\.text\],\s*\['for this chat', request\.instructions \?\? ''\]/.test(chat))
+  check('F: ...and refuses a request whose instructions (either part) hold a saved key, before it is built', at(chat, 'const held = heldKey(text, keys)') > read && at(chat, 'const held = heldKey(text, keys)') < build && /\['for every chat', everyChat\.text\],\s*(\['for this project', project\?\.instructions \?\? ''\],\s*)?\['for this chat', request\.instructions \?\? ''\]/.test(chat))
   check('F: ...a key found ends the request at once, with the sentence that names whose key and where (nothing is built or sent after it)', /const held = heldKey\(text, keys\)\s*if \(held !== null\) \{\s*send\(\{ streamId, type: 'error', message: keyInInstructions\(held, whose\) \}\)\s*return\s*\}/.test(chat))
   check('F: ...and hands the text to the builder, never one from the page', /everyChat: everyChat\.text,/.test(chat) && !/request\.everyChat/.test(chat))
   const ipcMain = source('src/main/ipc.ts')

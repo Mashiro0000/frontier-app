@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/providers/request.ts",
-      "from": "      notes: input.notes,\n      everyChat: input.everyChat\n    }),",
-      "to": "      notes: input.notes\n    }),"
+      "from": "      notes: input.notes,\n      everyChat: input.everyChat,\n      project: input.project",
+      "to": "      notes: input.notes,\n      project: input.project"
     }
   ],
   "argv": [

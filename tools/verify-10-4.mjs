@@ -69,10 +69,10 @@ await guard('B', async () => {
 await guard('C', async () => {
   const chat = source('src/main/chat.ts')
   const at = (text) => chat.indexOf(text)
-  const read = at('const memory = await context.notes(null)')
+  const read = at('const memory = await context.notes(project?.id ?? null)') // the chat's project since 10.6
   const build = at('const streamRequest = buildStreamRequest({')
-  check('C: chat.ts reads the notes from main\'s own file for every request, before the request is built (no project until 10.6)', read > 0 && build > read)
-  check('C: ...a file that cannot be read ends the request with its sentence', /const memory = await context\.notes\(null\)\s*if \(!memory\.ok\) \{\s*send\(\{ streamId, type: 'error', message: memory\.error \}\)\s*return\s*\}/.test(chat))
+  check('C: chat.ts reads the notes from main\'s own file for every request, before the request is built (and its project\'s, 10.6)', read > 0 && build > read)
+  check('C: ...a file that cannot be read ends the request with its sentence', /const memory = await context\.notes\(project\?\.id \?\? null\)\s*if \(!memory\.ok\) \{\s*send\(\{ streamId, type: 'error', message: memory\.error \}\)\s*return\s*\}/.test(chat))
   check('C: ...each note is looked at for a saved key, and one found ends the request with the notes\' sentence, before anything is built', /for \(const note of memory\.notes\) \{\s*const held = heldKey\(note\.text, keys\)\s*if \(held !== null\) \{\s*send\(\{ streamId, type: 'error', message: keyInNotes\(held\) \}\)\s*return\s*\}\s*\}/.test(chat) && at('keyInNotes(held)') < build)
   check('C: ...and the builder gets main\'s notes, never the page\'s', /notes: memory\.notes\.map\(\(note\) => note\.text\),/.test(chat) && !/request\.notes/.test(chat))
   const ipc = source('src/main/ipc.ts')
