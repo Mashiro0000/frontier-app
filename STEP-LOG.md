@@ -2416,3 +2416,13 @@ if you have not, please do before you rely on this. **The design was mine** (you
 2. **Backups with files are plain files and can be large.** Keep them where you keep the chats' backups.
 3. **The app has still never talked to a real provider**: the files' forms are my reading of Anthropic's and OpenAI's documentation. Your first real request with a file is the real test.
 4. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 10 - The plan (7 October 2026; waiting for your yes, nothing built)
+
+**Your question.** "Next is Stage 10, which needs a written plan for you to approve first. Can you tell me what kind of plan or guide me?"
+
+**What I did.** The roadmap's rule is that each stage "starts with a short written plan that the owner approves": I write the plan, you read it and say yes (or change it), as for Stage 9. It is now in `docs/ROADMAP.md` (Stage 10), on the branch `stage-10-projects-memory`, with five questions for you. Nothing is built.
+
+**To go on:** answer the five questions (or say "your picks") and say go; I then build 10.1 to 10.8 one slice at a time, as for Stage 9.
+
+**The plan in one paragraph.** What goes with every request grows from the app's rules and a chat's instructions to five parts, in this order: the app's rules, your notes (the memory, given as information about you, not as instructions), your instructions for every chat, the project's instructions, and the chat's own; an empty part adds nothing, so a request with none of them is byte for byte today's. Notes are made only by you ("Remember..." on a message, "Add" on the Memory page), all of them visible, editable and deletable, exported or deleted in one go, and shown as "Memory (N)" under the message box while they are sent. A project groups chats with its instructions, notes and files; its files go with every message of its chats and count against a request's caps and the cost guess. Your own saved API keys are refused and anything that looks like a secret is warned about before it is saved, and saving anything that goes with every message (and raising a limit, D-033's finding) asks in a Windows dialog that the app's page cannot answer. Everything is a file in the data folder, sealed when encryption is on, and in backups. Eight slices, 10.1 to 10.8.
