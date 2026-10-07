@@ -2465,3 +2465,13 @@ if you have not, please do before you rely on this. **The design was mine** (you
 1. **The look for secrets is a safety net, not a guarantee:** it knows common key and token shapes and labelled passwords ("password: ..."); a password written as a plain word is not found.
 2. **How a model weighs "follow these" is up to the model**: the app sends the parts in a fixed order with a line saying whose each is; no real API call has been made to see it.
 3. **The window and Stage 4 parts of the regression ran too (33 launches):** 32 clean at once; the Stage 1 chain failed a scrolling check while I was running another test suite at the same time (my mistake: the machine must stay idle), and passed 111/111 when run again alone.
+
+## Stage 10 - Slice 10.3: the memory store (7 October 2026 session; D-039)
+
+**Step by step.**
+
+1. **What it is:** the place where your notes will be kept: `memory.json` in the app's data folder, written and sealed like your chats. Nothing in the window uses it yet; the Memory page, "Remember..." and sending the notes come in 10.4.
+2. **The rules it keeps:** a note is at most 500 characters; your notes for every chat (and later for each project) at most 8,000 characters and 100 notes. Making or changing a note will ask in a Windows message box that shows the note; deleting and turning memory off will not (the page asks first); turning memory back on will ask. A saved API key is refused; text that looks like one needs "Save anyway".
+3. **If the file cannot be read,** nothing will be sent until you delete the notes or turn memory off; either keeps a copy of the damaged file. "Export all..." will write every note to one plain text file you place yourself.
+4. **Found on the way, and fixed** (in 10.2's code): a fault could have written a file the app itself would then refuse to read (a note number used twice), which would have stopped every request; now nothing is written that cannot be read back. And a warning about a short password showed most of it; now it shows only its first character and its length.
+5. **Checked:** 74 checks under Node; 10.2's suites still pass (118 under Node, 56 in the window); **33 negative controls, all caught** (one check made sharper).

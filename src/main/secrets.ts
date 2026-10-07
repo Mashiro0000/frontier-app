@@ -15,10 +15,14 @@ import { PROVIDER_NAMES, type ProviderId } from '../shared/registry'
 /** A run of this many characters of a saved key is enough to say the key is there: no text holds 24 characters of a random key by chance. */
 export const KEY_PIECE = 24
 
-/** A part of a text, masked: its first four characters, its last two, and its length. A short part shows only its first character. */
+/**
+ * A part of a text, masked, never showing more than a quarter of it: up to 8 characters, its first and a dot for each of the rest; up to 23 (a password,
+ * say), its first and its length; from 24 (a key's length), its first four, its last two and its length.
+ */
 export function mask(part: string): string {
   const chars = [...part]
   if (chars.length <= 8) return `${chars[0] ?? ''}${'•'.repeat(Math.max(0, chars.length - 1))}`
+  if (chars.length < 24) return `${chars[0]}… (${chars.length} characters)`
   return `${chars.slice(0, 4).join('')}…${chars.slice(-2).join('')} (${chars.length} characters)`
 }
 

@@ -1,0 +1,14 @@
+{
+  "label": "n103-edit-new-id",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "            ? { ...note, text: checked.text, updatedAt: Math.max(now(), note.createdAt) }",
+      "to": "            ? { ...note, id: newId(), text: checked.text, updatedAt: Math.max(now(), note.createdAt) }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

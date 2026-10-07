@@ -1,0 +1,14 @@
+{
+  "label": "n103-on-no-question",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "      if (notes.length > 0) {\n        const no = await ask(owner, memoryOnQuestion(notes), MEMORY_STILL_OFF)",
+      "to": "      if (notes.length < 0) {\n        const no = await ask(owner, memoryOnQuestion(notes), MEMORY_STILL_OFF)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

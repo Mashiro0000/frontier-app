@@ -1,0 +1,14 @@
+{
+  "label": "n103-mask-shows-more",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/secrets.ts",
+      "from": "  if (chars.length < 24) return `${chars[0]}… (${chars.length} characters)`\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

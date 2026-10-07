@@ -1,0 +1,14 @@
+{
+  "label": "n103-parse-extra-field",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "  if (fields.version !== MEMORY_FILE_VERSION || Object.keys(fields).length !== 3) return null",
+      "to": "  if (fields.version !== MEMORY_FILE_VERSION) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

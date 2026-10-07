@@ -1,0 +1,14 @@
+{
+  "label": "n103-request-ignores-off",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "      if (current.state === 'none' || !current.value.on) return { ok: true, notes: [] }",
+      "to": "      if (current.state === 'none') return { ok: true, notes: [] }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n103-unknown-project-allowed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "      if (scope !== ALL_CHATS && projectName === null) return { ok: false, error: NO_PROJECT }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n103-id-reused",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "      if (isNoteId(id) && !notes.some((note) => note.id === id)) return id",
+      "to": "      if (isNoteId(id)) return id"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

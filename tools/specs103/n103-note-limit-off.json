@@ -1,0 +1,14 @@
+{
+  "label": "n103-note-limit-off",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/memory.ts",
+      "from": "  if (text.length > MEMORY_LIMITS.maxNoteChars) {",
+      "to": "  if (text.length > MEMORY_LIMITS.maxNoteChars + 1) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

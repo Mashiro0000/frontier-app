@@ -1,0 +1,14 @@
+{
+  "label": "n103-note-not-trimmed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/memory.ts",
+      "from": "  const text = input.trim()",
+      "to": "  const text = input"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n103-on-question-count",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "      `Your ${notesWord(notes.length)} (${fmt(chars)} characters)",
+      "to": "      `Your ${notesWord(0)} (${fmt(chars)} characters)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

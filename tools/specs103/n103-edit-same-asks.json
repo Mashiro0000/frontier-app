@@ -1,0 +1,14 @@
+{
+  "label": "n103-edit-same-asks",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "      if (old.text === checked.text) return { ok: true, status: await status() }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

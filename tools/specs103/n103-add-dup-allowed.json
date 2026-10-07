@@ -1,0 +1,14 @@
+{
+  "label": "n103-add-dup-allowed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "      if (memory.notes.some((note) => note.scope === scope && note.text === checked.text)) {",
+      "to": "      if (memory.notes.some((note) => note.scope === 42)) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

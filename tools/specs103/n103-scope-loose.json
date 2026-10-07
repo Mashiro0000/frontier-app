@@ -1,0 +1,14 @@
+{
+  "label": "n103-scope-loose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/memory.ts",
+      "from": "  value === ALL_CHATS || (typeof value === 'string' && UUID.test(value))",
+      "to": "  typeof value === 'string'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

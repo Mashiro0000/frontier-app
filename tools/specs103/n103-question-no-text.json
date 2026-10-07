@@ -1,0 +1,14 @@
+{
+  "label": "n103-question-no-text",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "  const lines = [`\"${input.text}\"`]",
+      "to": "  const lines = ['(your note)']"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n103-request-all-projects",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "          ...(projectId === null ? [] : notes.filter((note) => note.scope === projectId))",
+      "to": "          ...notes.filter((note) => note.scope !== ALL_CHATS)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

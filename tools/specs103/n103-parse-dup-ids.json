@@ -1,0 +1,14 @@
+{
+  "label": "n103-parse-dup-ids",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "    if (note === null || ids.has(note.id)) return null",
+      "to": "    if (note === null) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

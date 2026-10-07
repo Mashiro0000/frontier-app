@@ -172,9 +172,14 @@ export function createKeptFile<T>(options: KeptFileOptions<T>): KeptFile<T> {
 
     write: (value, writeOptions) =>
       inOrder(async () => {
+        // Whatever is written must be readable again (D-016): a value this file's own reader would refuse is never written (10.3 found a way to make
+        // one: a note id used twice), so a fault can never turn the person's document into one that refuses every request.
+        const plain = text(value)
+        if (parse(plain) === null)
+          throw new Error(`${name} would not read back, so nothing was written`)
         const form = await modeOrRefuse()
         await guardDamaged(writeOptions?.replace)
-        await writeText(text(value), form)
+        await writeText(plain, form)
       }),
 
     remove: (removeOptions) =>

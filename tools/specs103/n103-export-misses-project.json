@@ -1,0 +1,14 @@
+{
+  "label": "n103-export-misses-project",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "    const scopes = [...new Set(memory.notes.map((note) => note.scope))].sort((a, b) =>",
+      "to": "    const scopes = [ALL_CHATS].sort((a, b) =>"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}
