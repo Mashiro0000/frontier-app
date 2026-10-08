@@ -2597,3 +2597,21 @@ if you have not, please do before you rely on this. **The design was mine** (you
 1. **No real search has been made.** No real API call was made in this slice (you add keys, and nobody should spend them in a test). The requests follow the providers' pages as I read them on 8 October 2026 and the played servers I wrote from them; the first real search will be the real test of that, and of two things I could only read about: that every model in the registry takes the hosted search tool, and that OpenAI accepts the replayed reasoning with `store: false`.
 2. **Searches cost a little more than one cent now:** the search is a second request to the model (a few thousand input tokens for the pages it reads), on top of the provider's fee for the search itself (about one cent, not counted until 11.6). It uses the cheapest effort the model lists.
 3. **One yes is for one search.** The model may ask again in the same reply; each search is asked about. The step cap (5 by default) bounds that.
+
+## Stage 11 - Slice 11.4: the window for tools (8 October 2026 session; D-041)
+
+**Step by step.**
+
+1. **The Tools page now has two parts.** At the top, "What the model may ask for": a switch for "Search the web" (off until you turn it on) and the limits on one reply (tool steps, seconds of tool time). **Turning it on asks you in the Windows message box**, which the page cannot answer; turning it off does not ask; raising a limit asks, lowering does not. Below it, the audit log as before.
+2. **A search shows in the reply.** Where the model stopped to ask, a small card says what it asked (in quotes) and how it went, in the same words as the audit log ("Waiting for your answer in the Windows message box...", "You allowed it. 3 sources came back.", "You said no."). **The pages it found are listed under the reply, always** (title and site). They are buttons, not links: a click shows you the whole address and asks before your browser opens it.
+3. **"Stop everything".** Once a tool is on, the button that ends a reply reads "Stop everything" (it ends the reply, stops a search that is running and closes a question that is waiting); with every tool off it still reads "Stop".
+4. **Saved with the chat.** A reply with searches is saved with its cards and pages (never the pages' text), so they are there when you open the chat from History. Such a chat is a "version 6" file; every other chat is written exactly as before.
+5. **The approval box names the provider** that answers you ("The AI provider answering you: Anthropic.").
+6. **If the settings file is damaged** the page says so, every tool stays off, and "Start again..." makes a clean one (the old one is kept as a copy).
+7. **Checked:** 110 checks under Node, 44 in the real window (dev app and built app), 45 negative controls all caught; older suites updated on purpose where they said "the page has nothing about tools" (it now has the settings, and still nothing that runs or approves a tool).
+
+## Stage 11.4 - Things to know (not problems, but worth your attention)
+
+1. **Nothing was tried with your key.** All tests use the played provider. To try a real search: turn it on in Tools (the Windows box asks), then ask something current.
+2. **Cost:** a search is a second request to the model plus the provider's fee (about one cent). The fee is not counted in the usage totals or limits until 11.6.
+3. **The Windows box and the page:** while the Windows box is open, the page behind it cannot be clicked in the real app (the test stand-in does not block it, which is how "Stop everything" while waiting was tested).

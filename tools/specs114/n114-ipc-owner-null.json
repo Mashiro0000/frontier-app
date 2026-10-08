@@ -1,0 +1,14 @@
+{
+  "label": "n114-ipc-owner-null",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "toolsService.setEnabled(window, input)",
+      "to": "toolsService.setEnabled(null, input)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

@@ -52,7 +52,8 @@ async function converse(text, { timeoutMs = 40000, expectRequests = 1 } = {}) {
   const reqs = (await H.mockReqs()).slice(before)
   return { reqs, events: await eventsNow(), screen: await H.screen() }
 }
-const lastReply = async () => (await H.screen()).at(-1)
+// (11.4) the reply's tool notes stand inside its bubble; the words of the reply are what is left without them
+const lastReply = async () => { const m = (await H.screen()).at(-1); const words = await ev(`(() => { const b = [...document.querySelectorAll('.message-assistant .bubble')].at(-1); if (!b) return null; const notes = [...b.querySelectorAll('.tool-note')]; notes.forEach((n) => { n.style.display = 'none' }); const t = b.innerText; notes.forEach((n) => { n.style.display = '' }); const nl = String.fromCharCode(10); let s = t; while (s.includes(nl + nl + nl)) s = s.split(nl + nl + nl).join(nl + nl); return s.trim() })()`); return words === null || m?.role !== 'assistant' ? m : { ...m, text: words } }
 
 try {
   await page.waitFor(`document.readyState === 'complete' && !!document.querySelector('.header-select, .app-badge')`, { timeoutMs: 15000 })
@@ -130,7 +131,7 @@ try {
   await sleep(500)
   const saved = H.allConvs().find((c) => (c.messages ?? []).some((m) => /find the newest release of Rust/.test(m.content ?? '')) && (c.messages ?? []).some((m) => /The search found/.test(m.content ?? '')))
   const savedText = JSON.stringify(saved ?? {})
-  check('C: the saved chat holds the words of the reply and nothing of the tool: no call, no id, no result, no page', !!saved && /The search found/.test(savedText) && !/tool_use|toolu_|tool_result|result-1|example\.com/.test(savedText), savedText.slice(0, 300))
+  check('C: the saved chat holds the words of the reply and nothing of the tool: no call, no id, no result, no page', !!saved && /The search found/.test(savedText) && !/tool_use|toolu_|tool_result|"summary"|"text":/.test(savedText) && JSON.parse(savedText).version === 6 && /Search the web/.test(savedText) /* (11.4) the notes are saved: the call, its words and the pages' titles and addresses, but no page text */, savedText.slice(0, 300))
   const next = await converse('[[mock:count]] and then an ordinary message')
   check('C: the next message of the chat is an ordinary request: the earlier turn is its words only, with the tool offered afresh', next.reqs.length === 1 && next.reqs[0].problems.length === 0 && !JSON.stringify(next.reqs[0].body.messages).includes('toolu_') && !JSON.stringify(next.reqs[0].body.messages).includes('tool_result') && next.reqs[0].body.tools?.length === 1, show(next.reqs[0]?.body.messages).slice(0, 200))
 
@@ -309,9 +310,9 @@ try {
 
   // ============ J. what stayed out of reach ============
   const apiNames = await ev(`(() => { const names = []; const walk = (v, p, d) => { if (d > 4 || v === null || (typeof v !== 'object' && typeof v !== 'function')) return; for (const k of Object.keys(v)) { names.push(p + k); walk(v[k], p + k + '.', d + 1) } }; walk(window.api, '', 0); return names })()`)
-  check('J: the page still has no function that runs, approves or switches on a tool: window.api names nothing of the kind', !apiNames.some((n) => /tool|approv|allow/i.test(n)) && apiNames.filter((n) => /^audit/.test(n)).length === 4, show(apiNames.filter((n) => /tool|approv|allow|audit/i.test(n))))
+  check('J: the page still has no function that runs, approves or switches on a tool: window.api names nothing of the kind', !apiNames.some((n) => /approv|allow|answer|run/i.test(n)) && apiNames.filter((n) => /^tools/.test(n)).sort().join() === 'tools,tools.reset,tools.setCaps,tools.setEnabled,tools.status' /* (11.4) the settings group, and nothing that runs or approves */ && apiNames.filter((n) => /^audit/.test(n)).length === 4, show(apiNames.filter((n) => /tool|approv|allow|audit/i.test(n))))
   const handlers = JSON.parse(await main.inMain(`JSON.stringify([...process.mainModule.require('electron').ipcMain._invokeHandlers.keys()].sort())`))
-  check('J: ...and main has no message handler for one (the loop is in main, and the person\'s yes can only come from the system\'s box)', !handlers.some((h) => /tool|approv/i.test(h)), show(handlers.filter((h) => /tool|approv/i.test(h))))
+  check('J: ...and main has no message handler for one (the loop is in main, and the person\'s yes can only come from the system\'s box)', !handlers.some((h) => /approv|run|answer/i.test(h)) && handlers.filter((h) => /tool/i.test(h)).sort().join() === 'tools:reset,tools:set-caps,tools:set-enabled,tools:status', show(handlers.filter((h) => /tool|approv/i.test(h))))
   toolsOff()
 } catch (error) {
   check(`the suite stopped before its end: ${String(error?.stack ?? error).slice(0, 400)}`, false)

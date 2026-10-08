@@ -1,0 +1,18 @@
+{
+  "label": "w114-done-sentence",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": ": `You allowed it. ${plural(outcome.sources.length, 'source came', 'sources came')} back.`",
+      "to": ": 'Done.'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run114.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

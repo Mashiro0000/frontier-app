@@ -1,0 +1,14 @@
+{
+  "label": "n114-stop-label",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/Composer.tsx",
+      "from": "{stopEverything ? 'Stop everything' : 'Stop'}",
+      "to": "{`Stop`}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

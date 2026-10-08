@@ -1,0 +1,14 @@
+{
+  "label": "n114-user-notes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "const notes = role === 'assistant' ? checkToolNotes(tools, content.length) : null",
+      "to": "const notes = checkToolNotes(tools, content.length)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

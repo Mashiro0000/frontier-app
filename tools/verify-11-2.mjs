@@ -706,7 +706,7 @@ await guard('F', async () => {
 await guard('G', async () => {
   const expected = {
     'src/main/auditLog.ts': ["'fs'", "'fs/promises'", "'path'", "'../shared/tools'", "'./chatFile'", "'./credentialStore'", "'./keptFile'", "'./security'"],
-    'src/main/auditService.ts': ["'fs'", "'path'", "'../shared/audit'", "'../shared/tools'", "'./auditLog'", "'./backupService'", "'./systemQuestion'"],
+    'src/main/auditService.ts': ["'fs'", "'path'", "'../shared/audit'", "'./auditLog'", "'./backupService'", "'./systemQuestion'"],
     'src/shared/audit.ts': ["'./tools'"]
   }
   const importsOf = (rel) => [...source(rel).matchAll(/^\s*(?:import|export)[^'"]*?from\s+('[^']+')/gm)].map((m) => m[1])

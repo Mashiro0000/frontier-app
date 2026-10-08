@@ -1,0 +1,14 @@
+{
+  "label": "n114-caps-unbounded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettingsService.ts",
+      "from": "        steps > s.max ||",
+      "to": "        steps > 99999 ||"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

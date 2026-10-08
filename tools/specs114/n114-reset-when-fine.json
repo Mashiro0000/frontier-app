@@ -1,0 +1,14 @@
+{
+  "label": "n114-reset-when-fine",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettingsService.ts",
+      "from": "        if (current.problem === null) return { ok: false, error: NOTHING_TO_RESET }",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

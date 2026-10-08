@@ -1,0 +1,14 @@
+{
+  "label": "n114-v6-bad-project",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "  if (file.version === 6 && file.project !== undefined && !isProjectId(file.project)) {",
+      "to": "  if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

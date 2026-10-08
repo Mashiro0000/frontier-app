@@ -1,0 +1,14 @@
+{
+  "label": "n114-offset-not-bounded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "    if (!isCount(offset, 0, textLength)) return null\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

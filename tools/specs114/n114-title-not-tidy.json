@@ -1,0 +1,14 @@
+{
+  "label": "n114-title-not-tidy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "  text === text.trim() &&",
+      "to": "  true &&"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

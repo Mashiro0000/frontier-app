@@ -1,0 +1,18 @@
+{
+  "label": "w114-offset-zero",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/useChat.ts",
+      "from": "if (!toolOffsets.has(event.call)) toolOffsets.set(event.call, written)",
+      "to": "if (!toolOffsets.has(event.call)) toolOffsets.set(event.call, 0)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run114.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

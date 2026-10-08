@@ -2,7 +2,7 @@
   "label": "n112-service-declined",
   "edits": [
     {
-      "file": "{{REPO}}/src/main/auditService.ts",
+      "file": "{{REPO}}/src/shared/audit.ts",
       "from": "  if (call.answer !== null && call.answer !== 'yes') {",
       "to": "  if (call.answer !== null && false) {"
     }

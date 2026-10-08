@@ -1,0 +1,18 @@
+{
+  "label": "w114-no-settle",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/useChat.ts",
+      "from": "        ...(m.tools !== undefined ? { tools: settleNotes(m.tools, stopped) } : {})\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run114.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n114-raise-without-asking",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettingsService.ts",
+      "from": "        if (next.steps > from.steps || next.seconds > from.seconds) {",
+      "to": "        if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

@@ -50,8 +50,7 @@ export function approvalQuestion(
     lines.push(`${spec.label}: ${typeof value === 'number' ? String(value) : shown(String(value))}`)
   }
   lines.push(`The model's reason: ${shown(why)}`, '', def.effect)
-  if (place?.provider !== undefined)
-    lines.push(`Your AI provider for this chat: ${place.provider}.`)
+  if (place?.provider !== undefined) lines.push(`The AI provider answering you: ${place.provider}.`)
   lines.push('')
   if (place !== undefined) {
     lines.push(`This is step ${place.step} of at most ${place.steps} that this reply may take.`, '')

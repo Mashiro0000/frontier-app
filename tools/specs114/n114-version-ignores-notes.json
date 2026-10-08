@@ -1,0 +1,14 @@
+{
+  "label": "n114-version-ignores-notes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "  conversation.messages.some((message) => message.tools !== undefined)\n    ?",
+      "to": "  false\n    ?"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

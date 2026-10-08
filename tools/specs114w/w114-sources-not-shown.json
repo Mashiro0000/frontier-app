@@ -1,0 +1,18 @@
+{
+  "label": "w114-sources-not-shown",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/MessageBubble.tsx",
+      "from": "{sources.length > 0 && <Sources sources={sources} />}",
+      "to": "{false && <Sources sources={sources} />}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run114.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

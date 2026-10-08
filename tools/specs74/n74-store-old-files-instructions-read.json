@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",
-      "from": "  let instructions = ''\n  if (file.version === 3 || file.version === 4 || file.version === 5) {",
-      "to": "  let instructions = typeof file.instructions === 'string' ? file.instructions : ''\n  if (file.version === 3 || file.version === 4 || file.version === 5) {"
+      "from": "  let instructions = ''\n  if (file.version === 3 || file.version === 4 || file.version === 5 || file.version === 6) {",
+      "to": "  let instructions = typeof file.instructions === 'string' ? file.instructions : ''\n  if (file.version === 3 || file.version === 4 || file.version === 5 || file.version === 6) {"
     }
   ],
   "argv": [

@@ -1,0 +1,14 @@
+{
+  "label": "n114-stop-not-told",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/App.tsx",
+      "from": "toolsOn={anyToolOn(toolSettings.status)}",
+      "to": "toolsOn={false}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

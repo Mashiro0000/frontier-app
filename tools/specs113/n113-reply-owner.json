@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/replyTools.ts",
-      "from": "              { owner: input.owner, signal: input.signal, budget }",
-      "to": "              { owner: null, signal: input.signal, budget }"
+      "from": "                owner: input.owner,",
+      "to": "                owner: null,"
     }
   ],
   "argv": [

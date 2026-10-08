@@ -1,0 +1,14 @@
+{
+  "label": "n114-address-not-canonical",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "      parsed.href === url\n",
+      "to": "      true\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

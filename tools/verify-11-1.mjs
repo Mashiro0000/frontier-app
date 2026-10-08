@@ -660,15 +660,18 @@ await guard('F', async () => {
   // 11.2 moved this on purpose: the audit log (its store and its service) reads the shared event types. Neither is the core, and neither can run a tool.
   // 11.3 moved it again, on purpose: the reply's tools (replyTools.ts) make the core, the settings file (toolSettings.ts) is read for every turn, the chat's loop
   // (chat.ts) runs them and the wiring (ipc.ts) builds them. Nothing else may.
-  const wired = ['src/main/auditLog.ts', 'src/main/auditService.ts', 'src/main/replyTools.ts', 'src/main/toolSettings.ts', 'src/main/chat.ts', 'src/main/ipc.ts']
-  const users = files.filter((f) => !modules.includes(f) && !wired.includes(f) && names.test(readFileSync(join(REPO, f), 'utf8')))
+  // 11.4 again, on purpose: the settings service (toolSettingsService.ts) lists the registry's tools for the Tools page, and the page-side files read the shared types only (shared/tools, a file of types and constants).
+  const wired = ['src/main/auditLog.ts', 'src/main/auditService.ts', 'src/main/replyTools.ts', 'src/main/toolSettings.ts', 'src/main/toolSettingsService.ts', 'src/main/chat.ts', 'src/main/ipc.ts']
+  const typesOnly = /^(src\/shared|src\/renderer|src\/preload)\//
+  const namesCore = /(toolCore|createToolCore|toolRegistry|createToolRegistry|toolQuestion|approvalQuestion|replyBudget|createReplyBudget|dataFolderGuard|createDataFolderGuard|BUILT_IN_TOOLS)/
+  const users = files.filter((f) => !modules.includes(f) && !wired.includes(f) && (typesOnly.test(f) ? namesCore : names).test(readFileSync(join(REPO, f), 'utf8')))
   check('F: no other file of the app uses the registry, the core, the budget or the guard than the six that 11.3 wires (the audit log, the reply tools, the settings file, the chat loop, the wiring)', users.length === 0, show(users))
   const pageSide = ['src/preload/index.ts', 'src/preload/index.d.ts', 'src/shared/ipc.ts'].map((f) => [f, source(f)])
   // 11.2 moved this on purpose: the page may read, export and ask to delete the audit log (verify-11-2.mjs checks those three, and only those). It still has no tool or approval.
-  check('F: the page\'s side (the bridge, the channels, the handlers, the chat) names no tool or approval function', pageSide.every(([, text]) => !/\b(tools?|approv\w*|toolCore)\s*[:(=]|CHANNELS\.(tool|approv)/i.test(text.replace(/\/\/.*$/gm, ''))), show(pageSide.filter(([, t]) => /\b(tools?|approv\w*)\s*[:(=]/i.test(t.replace(/\/\/.*$/gm, ''))).map(([f]) => f)))
+  check('F: the page\'s side (the bridge, the channels, the handlers, the chat) names no function that approves, answers or runs a tool (11.4: it has a `tools` group for the settings, which verify-11-4.mjs checks)', pageSide.every(([, text]) => !/\b(approv\w*|answerTool|runTool|toolCore)\s*[:(=]|CHANNELS\.(approv|toolsRun|toolsAnswer)/i.test(text.replace(/\/\/.*$/gm, ''))))
   const ipcMod = await import(`${SRC}/shared/ipc.ts`)
   const channelNames = Object.entries(ipcMod.CHANNELS).flat().map(String)
-  check('F: no channel of the app\'s bridge has tool or approval in its name', !channelNames.some((c) => /tool|approv/i.test(c)), show(channelNames.filter((c) => /tool|approv/i.test(c))))
+  check('F: no channel of the app\'s bridge approves, answers or runs a tool; the channels with "tools" in the name are the four of the settings', !channelNames.some((c) => /approv|run|answer/i.test(c) && /tool/i.test(c)) && show(channelNames.filter((c) => /^tools:/.test(c)).sort()) === '["tools:reset","tools:set-caps","tools:set-enabled","tools:status"]', show(channelNames.filter((c) => /tool|approv/i.test(c))))
   const pkg = JSON.parse(source('package.json'))
   check('F: the build adds no package (the three dependencies of Stage 10)', show(Object.keys(pkg.dependencies).sort()) === '["@anthropic-ai/sdk","@electron-toolkit/utils","openai"]', show(pkg.dependencies))
 

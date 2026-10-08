@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/chat/ipcReply.ts",
-      "from": "      else if (event.type === 'tool')\n        continue",
-      "to": "      else if (false as boolean)\n        continue"
+      "from": "      else if (event.type === 'tool')\n        onTool(event.event)",
+      "to": "      else if (false as boolean)\n        onTool(event.event)"
     }
   ],
   "argv": [

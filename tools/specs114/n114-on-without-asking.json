@@ -1,0 +1,14 @@
+{
+  "label": "n114-on-without-asking",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettingsService.ts",
+      "from": "        const no = await ask(owner, toolOnQuestion(def, current.settings.caps), TOOL_NOT_ON)\n        if (no !== null) return no\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n114-provider-not-named",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolQuestion.ts",
+      "from": "if (place?.provider !== undefined) lines.push(",
+      "to": "if (false) lines.push("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}
