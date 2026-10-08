@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/providers/openai.ts",
-      "from": "      store: false",
-      "to": "      store: true"
+      "from": "      store: false,\n",
+      "to": "      store: true,\n"
     }
   ],
   "argv": [

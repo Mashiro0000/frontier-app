@@ -1,0 +1,14 @@
+{
+  "label": "n113-o-search-include",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "      include: ['web_search_call.action.sources'],",
+      "to": "      include: [],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

@@ -1,5 +1,5 @@
 import type { Effort, ModelEntry, ProviderId } from '../../shared/registry'
-import type { Credentials, NeutralMessage, StreamRequest } from './types'
+import type { Credentials, NeutralMessage, StreamRequest, ToolSpec } from './types'
 
 // The app's own rules for a reply (D-012, D-013), applied here, once, whichever provider answers. An adapter
 // translates a StreamRequest into one provider's API and decides none of this.
@@ -89,9 +89,12 @@ export const systemPromptFor = (
  */
 export function mergeAdjacent(messages: readonly NeutralMessage[]): NeutralMessage[] {
   const merged: NeutralMessage[] = []
+  // A turn of tool calls, and the turn that carries their results, are never joined to another (11.3): the provider matches them by their ids.
+  const isToolTurn = (m: NeutralMessage): boolean =>
+    m.toolTurn !== undefined || m.toolResults !== undefined
   for (const message of messages) {
     const last = merged.at(-1)
-    if (last && last.role === message.role) {
+    if (last && last.role === message.role && !isToolTurn(last) && !isToolTurn(message)) {
       last.content =
         last.content === '' || message.content === ''
           ? last.content + message.content
@@ -127,6 +130,8 @@ export function buildStreamRequest(input: {
   /** The instructions of the chat's project (D-039, 10.6), from main's own file. */
   project?: string
   messages: readonly NeutralMessage[]
+  /** The tools the model is offered (11.3); none, or an empty list, leaves the request exactly as it was before tools existed. */
+  tools?: readonly ToolSpec[]
   signal: AbortSignal
 }): StreamRequest {
   const { credentials, model, messages, signal } = input
@@ -141,6 +146,7 @@ export function buildStreamRequest(input: {
     }),
     messages: mergeAdjacent(messages),
     maxOutputTokens: Math.min(MAX_REPLY_TOKENS, model.maxOutputTokens),
+    ...(input.tools !== undefined && input.tools.length > 0 ? { tools: input.tools } : {}),
     signal
   }
 }

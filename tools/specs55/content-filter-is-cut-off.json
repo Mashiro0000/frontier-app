@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/providers/openai.ts",
-      "from": "response.incomplete_details?.reason === 'content_filter'",
-      "to": "false"
+      "from": "return response.incomplete_details?.reason === 'content_filter'",
+      "to": "return false"
     }
   ],
   "argv": [

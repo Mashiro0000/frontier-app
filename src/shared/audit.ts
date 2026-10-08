@@ -2,7 +2,14 @@
 // log (audit/log.jsonl, auditLog.ts) and groups it into calls (auditService.ts); the page only shows what it is given, and can read it, export it and ask
 // for it to be deleted (which main asks the person about in the system's own box). Types and plain functions only: this file is bundled into the preload too.
 
-import type { AnswerCode, RefusalCode, ShownArguments, ToolSource } from './tools'
+import {
+  toolTitle,
+  type AnswerCode,
+  type RefusalCode,
+  type ShownArguments,
+  type ToolEvent,
+  type ToolSource
+} from './tools'
 
 /** How many calls the window shows at once (the newest). The export holds more. */
 export const AUDIT_VIEW_CALLS = 300
@@ -61,7 +68,7 @@ export type AuditExportResult =
   | { ok: false; error: string; cancelled?: true }
 
 /** For each reason a call was refused without asking: a sentence for the person. */
-const REFUSED: Record<RefusalCode, string> = {
+export const REFUSED_TEXT: Record<RefusalCode, string> = {
   'unknown-tool': 'Refused: the model asked for a tool that does not exist.',
   'tool-off': 'Refused: that tool was switched off.',
   'bad-arguments': 'Refused: the call did not have the arguments the tool takes.',
@@ -76,7 +83,7 @@ const REFUSED: Record<RefusalCode, string> = {
   internal: 'Refused: the app failed while checking the call, so nothing was done.'
 }
 
-const DECLINED: Record<Exclude<AnswerCode, 'yes'>, string> = {
+export const DECLINED_TEXT: Record<Exclude<AnswerCode, 'yes'>, string> = {
   no: 'You said no.',
   busy: 'Not asked: another question was waiting for your answer.',
   resting: 'Not asked: you had said no a moment before.',
@@ -90,9 +97,9 @@ const fmt = (n: number): string => n.toLocaleString('en-US')
 export function outcomeText(outcome: AuditOutcome): string {
   switch (outcome.kind) {
     case 'refused':
-      return REFUSED[outcome.code]
+      return REFUSED_TEXT[outcome.code]
     case 'declined':
-      return DECLINED[outcome.answer]
+      return DECLINED_TEXT[outcome.answer]
     case 'done': {
       const n = outcome.sources.length
       return `You said yes. It ran: ${fmt(outcome.size)} characters came back, from ${n === 1 ? '1 source' : `${n} sources`}.`
@@ -104,4 +111,89 @@ export function outcomeText(outcome: AuditOutcome): string {
     case 'unanswered':
       return 'You were asked. No answer was recorded (the app may have been closed).'
   }
+}
+
+interface Building {
+  id: string
+  tool: string
+  step: number
+  at: number
+  args: AuditCall['args']
+  why: string | null
+  refused: RefusalCode | null
+  answer: AnswerCode | null
+  ran: boolean
+  result: Extract<ToolEvent, { type: 'result' }> | null
+}
+
+function outcomeOf(call: Building): AuditOutcome {
+  if (call.refused !== null) return { kind: 'refused', code: call.refused }
+  if (call.answer !== null && call.answer !== 'yes') {
+    return { kind: 'declined', answer: call.answer }
+  }
+  if (call.result !== null) {
+    return call.result.ok
+      ? {
+          kind: 'done',
+          size: call.result.size,
+          sources: call.result.sources.map(({ title, url }) => ({ title, url }))
+        }
+      : { kind: 'failed' }
+  }
+  if (call.ran || call.answer === 'yes') return { kind: 'running' }
+  return { kind: 'unanswered' }
+}
+
+/**
+ * The events of the log put together into calls (the events that share a call id), in the order the calls began. Main uses it to read the log (11.2); from
+ * 11.4 the window uses the same function for the calls of a reply as their events arrive, so the chat and the log always say the same thing.
+ */
+export function groupCalls(events: readonly ToolEvent[]): AuditCall[] {
+  const byId = new Map<string, Building>()
+  for (const event of events) {
+    let call = byId.get(event.call)
+    if (call === undefined) {
+      call = {
+        id: event.call,
+        tool: event.tool,
+        step: event.step,
+        at: event.at,
+        args: null,
+        why: null,
+        refused: null,
+        answer: null,
+        ran: false,
+        result: null
+      }
+      byId.set(event.call, call)
+    }
+    switch (event.type) {
+      case 'refused':
+        call.refused = event.code
+        break
+      case 'asked':
+        call.args = { ...event.args }
+        call.why = event.why
+        break
+      case 'answered':
+        call.answer = event.answer
+        break
+      case 'ran':
+        call.ran = true
+        break
+      case 'result':
+        call.result = event
+        break
+    }
+  }
+  return [...byId.values()].map((call) => ({
+    id: call.id,
+    tool: call.tool,
+    title: toolTitle(call.tool),
+    step: call.step,
+    at: call.at,
+    args: call.args,
+    why: call.why,
+    outcome: outcomeOf(call)
+  }))
 }

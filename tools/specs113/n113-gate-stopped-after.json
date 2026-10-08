@@ -1,0 +1,14 @@
+{
+  "label": "n113-gate-stopped-after",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/systemQuestion.ts",
+      "from": "        if (signal?.aborted) return 'stopped'\n        if (answered === true) return 'yes'",
+      "to": "        if (answered === true) return 'yes'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

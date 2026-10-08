@@ -1,0 +1,14 @@
+{
+  "label": "n113-settings-bool",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettings.ts",
+      "from": "if (!TOOL_ID.test(name) || typeof enabled[name] !== 'boolean') return null",
+      "to": "if (!TOOL_ID.test(name)) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

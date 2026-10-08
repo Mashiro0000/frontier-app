@@ -352,7 +352,7 @@ await guard('E3', async () => {
   check('E3: the record has the question, the answer, the run and the result, in that order', types(r.events) === 'asked,answered,ran,result', types(r.events))
   const [asked, answered, ran, result] = r.events
   check('E3: ...the question as it was shown (tool, exact arguments, reason, step), nothing else', asked.tool === 'web_search' && asked.step === 1 && show(asked.args) === '{"query":"rust release notes"}' && asked.why === 'The person asked for the newest release.' && Object.keys(asked).sort().join() === 'args,at,call,step,tool,type,why')
-  check('E3: ...the answer, the run, and the size of the result and how many sources came back', answered.answer === 'yes' && ran.type === 'ran' && result.ok === true && result.size === out.result.text.length && show(result.sources) === '[{"title":"Example","url":"https://example.com/a"}]' && Object.keys(result).sort().join() === 'at,call,ok,size,sources,step,tool,type')
+  check('E3: ...the answer, the run, and the size of the result and how many sources came back', answered.answer === 'yes' && ran.type === 'ran' && result.ok === true && result.size === out.result.text.length && show(result.sources) === '[{"title":"Example","url":"https://example.com/a"}]' && Object.keys(result).sort().join() === 'at,call,ok,searched,searches,size,sources,step,tool,type')
   check('E3: ...and the four events of one call share one call id', new Set(r.events.map((e) => e.call)).size === 1 && /^[a-z0-9][a-z0-9-]{0,39}$/.test(r.events[0].call))
   check('E3: ...every event has the time, taken from the core\'s own clock', r.events.every((e) => e.at === 1_700_000_000_000))
   check('E3: the record holds none of the result\'s words (no page text)', !JSON.stringify(r.events).includes('Result about'))
@@ -658,9 +658,12 @@ await guard('F', async () => {
   const files = ['src/main', 'src/shared', 'src/preload', 'src/renderer'].flatMap(walk).filter((f) => /\.(ts|tsx)$/.test(f))
   const names = /\b(toolCore|createToolCore|toolRegistry|createToolRegistry|toolQuestion|approvalQuestion|replyBudget|createReplyBudget|dataFolderGuard|createDataFolderGuard|BUILT_IN_TOOLS|shared\/tools)\b/
   // 11.2 moved this on purpose: the audit log (its store and its service) reads the shared event types. Neither is the core, and neither can run a tool.
-  const users = files.filter((f) => !modules.includes(f) && !['src/main/auditLog.ts', 'src/main/auditService.ts'].includes(f) && names.test(readFileSync(join(REPO, f), 'utf8')))
-  check('F: no other file of the app uses the registry, the core, the budget or the guard yet (but the audit log, which only keeps what the core records)', users.length === 0, show(users))
-  const pageSide = ['src/preload/index.ts', 'src/preload/index.d.ts', 'src/shared/ipc.ts', 'src/main/ipc.ts', 'src/main/chat.ts'].map((f) => [f, source(f)])
+  // 11.3 moved it again, on purpose: the reply's tools (replyTools.ts) make the core, the settings file (toolSettings.ts) is read for every turn, the chat's loop
+  // (chat.ts) runs them and the wiring (ipc.ts) builds them. Nothing else may.
+  const wired = ['src/main/auditLog.ts', 'src/main/auditService.ts', 'src/main/replyTools.ts', 'src/main/toolSettings.ts', 'src/main/chat.ts', 'src/main/ipc.ts']
+  const users = files.filter((f) => !modules.includes(f) && !wired.includes(f) && names.test(readFileSync(join(REPO, f), 'utf8')))
+  check('F: no other file of the app uses the registry, the core, the budget or the guard than the six that 11.3 wires (the audit log, the reply tools, the settings file, the chat loop, the wiring)', users.length === 0, show(users))
+  const pageSide = ['src/preload/index.ts', 'src/preload/index.d.ts', 'src/shared/ipc.ts'].map((f) => [f, source(f)])
   // 11.2 moved this on purpose: the page may read, export and ask to delete the audit log (verify-11-2.mjs checks those three, and only those). It still has no tool or approval.
   check('F: the page\'s side (the bridge, the channels, the handlers, the chat) names no tool or approval function', pageSide.every(([, text]) => !/\b(tools?|approv\w*|toolCore)\s*[:(=]|CHANNELS\.(tool|approv)/i.test(text.replace(/\/\/.*$/gm, ''))), show(pageSide.filter(([, t]) => /\b(tools?|approv\w*)\s*[:(=]/i.test(t.replace(/\/\/.*$/gm, ''))).map(([f]) => f)))
   const ipcMod = await import(`${SRC}/shared/ipc.ts`)

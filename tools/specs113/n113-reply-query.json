@@ -1,0 +1,14 @@
+{
+  "label": "n113-reply-query",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "                    text: toolResultText(approvedQuery(call), outcome.result),",
+      "to": "                    text: toolResultText(null, outcome.result),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

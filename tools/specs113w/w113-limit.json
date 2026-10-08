@@ -1,0 +1,18 @@
+{
+  "label": "w113-limit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "        (spend) => checkAgainstLimits(limits, spend)\n      )\n      try {\n        const found",
+      "to": "        () => null\n      )\n      try {\n        const found"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run113.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 900000
+}

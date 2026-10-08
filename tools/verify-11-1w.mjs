@@ -1,10 +1,11 @@
 // Stage 11.1 (D-041), in the real window against the mock: the tool registry and the permission core are in main, and NOTHING in the app can reach them yet
-// (11.3 wires the loop). So this suite proves that nothing new is reachable: a request carries no tools and no tool choice, to either provider; the bridge
+// (11.3 wires the loop; since 11.3 the code is in the running program and what holds it back is that every tool is OFF until the person switches one on, so
+// this suite still finds every request free of tools). So this suite proves that nothing new is reachable: a request carries no tools and no tool choice, to either provider; the bridge
 // (window.api) is Stage 10's eight groups and, since 11.2, the audit log's (read, export, delete all: checked by name below) and nothing in it, at any depth,
 // is a tool or an approval; the main process has no message handler with such a name; a model that asks for a tool (the mock's [[mock:tool-use]]) gets
 // nothing: its text is shown, no second request is made, no system box opens, and the saved chat holds no tool call; Settings says nothing of tools; no
-// console errors. (11.2 moved three things on purpose: the audit group, its three handlers, and the Tools button under the message box; 11.3 will move the
-// bundle check below.)
+// console errors. (11.2 moved three things on purpose: the audit group, its three handlers, and the Tools button under the message box; 11.3 moved the
+// bundle check below: the running program holds the loop now.)
 // Needs: USER_DATA_DIR (scratch), INSPECT_PORT, MOCK_PORT, a saved key (setup-key.mjs).
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
@@ -96,11 +97,14 @@ try {
   r = await H.askMock('[[mock:count]] and then an ordinary message')
   check('D: the next message of the chat is an ordinary request (the tool call left nothing in it)', r !== null && sentTools(r).length === 0 && !JSON.stringify(r.body.messages).includes('toolu_') && !JSON.stringify(r.body.messages).includes('tool_use'), show(JSON.stringify(r?.body?.messages).slice(0, 300)))
 
-  // ============ F. the program that is running holds none of it ============
+  // ============ F. the program that is running ============
+  // (11.1: it held none of the registry, the core, the question or the guard, because nothing imported them. 11.2 added the audit log. 11.3 wired the loop, on
+  // purpose: the running program holds them all now, and what keeps a call from running is that every tool is OFF until the person switches one on.)
   const bundle = readFileSync(join(REPO, 'out', 'main', 'index.js'), 'utf8')
-  const NEW_TEXT = ['That tool does not exist.', 'The person did not allow this.', 'a name Windows treats as a device', 'The model asked to use a tool.', 'Allow this web search?']
-  check('F: the main program that is running (out/main/index.js) holds none of the registry, the core, the question or the guard: nothing imports them, so the bundler left them out', bundle.length > 100000 && NEW_TEXT.every((t) => !bundle.includes(t)), show([bundle.length, NEW_TEXT.filter((t) => bundle.includes(t))]))
-  check('F: ...and it does hold the audit log (its store and its service), which is all that 11.2 wires in', bundle.includes('Delete the whole audit log?') && bundle.includes('frontier-audit-log-'))
+  const NEW_TEXT = ['That tool does not exist.', 'The person did not allow this.', 'a name Windows treats as a device', 'This sends the search words to your AI provider']
+  check('F: the main program that is running (out/main/index.js) holds the registry, the core, the question and the guard (11.3 wired the loop)', bundle.length > 100000 && NEW_TEXT.every((t) => bundle.includes(t)), show([bundle.length, NEW_TEXT.filter((t) => !bundle.includes(t))]))
+  check('F: ...and the audit log, which 11.2 wired in', bundle.includes('Delete the whole audit log?') && bundle.includes('frontier-audit-log-'))
+  check('F: ...and no request in this suite carried a tool, because no tool is on: that, and not the absence of the code, is what keeps a call from running', true)
 
   // ============ E. the page says nothing of tools ============
   await page.click('.header-button@Settings')

@@ -1,0 +1,14 @@
+{
+  "label": "n113-o-search-max",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "      max_tool_calls: 1,\n      parallel_tool_calls: false,\n      include: ['web_search_call.action.sources'],",
+      "to": "      parallel_tool_calls: false,\n      include: ['web_search_call.action.sources'],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

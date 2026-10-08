@@ -1,0 +1,14 @@
+{
+  "label": "n113-o-strict",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "              strict: false",
+      "to": "              strict: true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

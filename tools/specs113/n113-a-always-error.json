@@ -1,0 +1,14 @@
+{
+  "label": "n113-a-always-error",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "        ...(result.isError ? { is_error: true } : {})",
+      "to": "        is_error: true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

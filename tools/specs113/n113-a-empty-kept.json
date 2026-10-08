@@ -1,0 +1,14 @@
+{
+  "label": "n113-a-empty-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "record: message.content.filter((block) => !(block.type === 'text' && block.text === ''))",
+      "to": "record: message.content"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

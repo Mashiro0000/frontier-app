@@ -21,7 +21,7 @@ const node = {
   'n94-req-not-counted': [[REQ, '      files.count += 1\n', '']],
   'n94-req-text-chars': [[REQ, '        files.textBytes += Buffer.byteLength(facts.text)', '        files.textBytes += facts.chars']],
   'n94-estimate-files-always': [[ASK, '    ...(files !== undefined && files.count > 0 ? { files: { ...files } } : {})', '    files: files ?? { count: 0, tokens: 0 }']],
-  'n94-chat-text-only': [[CHAT, '      estimateInputTokens(streamRequest.system, streamRequest.messages) + fileTokens', '      estimateInputTokens(streamRequest.system, streamRequest.messages)']],
+  'n94-chat-text-only': [[CHAT, '      estimateInputTokens(streamRequest.system, streamRequest.messages) +\n      fileTokens +\n', '      estimateInputTokens(streamRequest.system, streamRequest.messages) +\n']],
   'n94-chat-question-no-files': [[CHAT, '      entry.pricing,\n      files\n    )', '      entry.pricing\n    )']],
   'n94-chat-ledger-no-note': [[CHAT, '        (spend) => withFilesNote(checkAgainstLimits(limits, spend), files)', '        (spend) => checkAgainstLimits(limits, spend)']],
   'n94-limits-note-when-unset': [[LIM, '    refusal === LIMITS_UNSET_MESSAGE ||\n', '']],
@@ -29,7 +29,7 @@ const node = {
 }
 
 const win = {
-  'w94-text-only': [[CHAT, '      estimateInputTokens(streamRequest.system, streamRequest.messages) + fileTokens', '      estimateInputTokens(streamRequest.system, streamRequest.messages)']],
+  'w94-text-only': [[CHAT, '      estimateInputTokens(streamRequest.system, streamRequest.messages) +\n      fileTokens +\n', '      estimateInputTokens(streamRequest.system, streamRequest.messages) +\n']],
   'w94-dialog-no-sentence': [[DIALOG, '          {request.estimate.files !== undefined && (', '          {false && (']],
   'w94-question-no-files': [[CHAT, '      entry.pricing,\n      files\n    )', '      entry.pricing\n    )']],
   'w94-limit-no-note': [[CHAT, '        (spend) => withFilesNote(checkAgainstLimits(limits, spend), files)', '        (spend) => checkAgainstLimits(limits, spend)']]

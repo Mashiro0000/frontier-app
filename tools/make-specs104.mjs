@@ -24,7 +24,7 @@ const s = {
   damagedSends: [MEM, "      if (current.state === 'unreadable') return { ok: false, error: memoryUnreadable(current.why) }", "      if (current.state === 'unreadable') return { ok: true, notes: [] }"],
   ipcAddNoWindow: [IPC, '      memory.add(window, input)', '      memory.add(null, input)'],
   ipcRemoveUnguarded: [IPC, '    guarded((input: unknown): Promise<MemoryChangeResult> => memory.remove(input))', '    (_event: unknown, input: unknown): Promise<MemoryChangeResult> => memory.remove(input)'],
-  docsWithoutMemory: [IPC, '    documents: keptDocuments([everyChat.file, memory.file, projects.file, auditLog.document]) // rewritten with the chats (D-039, D-041)', '    documents: keptDocuments([everyChat.file, projects.file, auditLog.document]) // rewritten with the chats (D-039, D-041)'],
+  docsWithoutMemory: [IPC, '      everyChat.file,\n      memory.file,\n', '      everyChat.file,\n'],
   exportOverwrites: [DLGS, "    title: 'Export your notes',\n    defaultPath: join(app.getPath('documents'), suggestedName),\n    filters: [NOTES_FILTER],\n    properties: ['showOverwriteConfirmation' as const]", "    title: 'Export your notes',\n    defaultPath: join(app.getPath('documents'), suggestedName),\n    filters: [NOTES_FILTER],\n    properties: []"],
   keyInNotesVague: [SEC, '  `Nothing was sent: one of your notes holds your ${PROVIDER_NAMES[provider]} API key, which is saved in this app. Open Memory and take it out.`', "  `Nothing was sent: a note holds a key. ${provider === 'openai' ? '' : ''}`"],
   noIgnored: [MEM, '    return { ok: false, cancelled: true, error: notSaved }', '    return null'],

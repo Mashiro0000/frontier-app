@@ -1,0 +1,14 @@
+{
+  "label": "n113-a-search-chatter",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "        // What the model wrote BEFORE the results (\"I'll search for...\") is not what it found: the summary is what follows them.\n        text = ''\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

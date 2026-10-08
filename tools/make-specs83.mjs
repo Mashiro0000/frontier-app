@@ -73,13 +73,13 @@ const node = {
   // chat.ts, seen by the source checks of the Node suite
   // (9.4, D-037: the call also takes the files' share, and is wrapped; the sabotage still fixes the ceiling)
   'n83-chat-ceiling-constant': [[CHAT, '      inputTokens,\n      streamRequest.maxOutputTokens,\n      entry.pricing,\n      files\n    )', '      inputTokens,\n      16000,\n      entry.pricing,\n      files\n    )']],
-  'n83-chat-guess-twice': [[CHAT, '          inputTokens\n        },\n        (spend)', '          inputTokens: estimateInputTokens(streamRequest.system, streamRequest.messages)\n        },\n        (spend)']],
+  'n83-chat-guess-twice': [[CHAT, '            inputTokens\n          },\n          (spend)', '            inputTokens: estimateInputTokens(streamRequest.system, streamRequest.messages)\n          },\n          (spend)']],
   'n83-chat-yes-key-without-window': [[CHAT, 'confirmations.send(`${event.sender.id}:${streamId}`)', 'confirmations.send(streamId)']],
   'n83-chat-yes-handler-untrusted': [[CHAT, "  ipcMain.on(CHANNELS.chatConfirm, (event, streamId: unknown) => {\n    if (!isTrustedSender(event, appUrl) || typeof streamId !== 'string') return", "  ipcMain.on(CHANNELS.chatConfirm, (event, streamId: unknown) => {\n    if (typeof streamId !== 'string') return"]],
   'n83-chat-answer-ignored': [[CHAT, "if (answer !== 'send' || controller.signal.aborted) return", 'void answer']],
   'n83-chat-no-limit-recheck': [
     [CHAT, '    const estimate = estimateRequest(', '    const limitsEarly = await readLimits()\n    if (limitsEarly === null) return\n    const estimate = estimateRequest('],
-    [CHAT, '    const limits = await readLimits()\n    if (limits === null) return\n', '    const limits = limitsEarly\n']
+    [CHAT, '      const limits = await readLimits()\n      if (limits === null) return false\n', '      const limits = limitsEarly\n']
   ]
 }
 

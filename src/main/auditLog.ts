@@ -142,9 +142,14 @@ export function parseAuditEvent(raw: unknown): ToolEvent | null {
     case 'ran':
       return exactKeys(o, HEAD) ? { type, at, call, tool, step } : null
     case 'result': {
-      if (!exactKeys(o, [...HEAD, 'ok', 'size', 'sources'])) return null
-      const { ok, size, sources } = o
+      if (!exactKeys(o, [...HEAD, 'ok', 'size', 'sources', 'searched', 'searches'])) return null
+      const { ok, size, sources, searched, searches } = o
       if (typeof ok !== 'boolean') return null
+      if (searched !== null) {
+        if (!isText(searched, 1, TOOL_RESULT_LIMITS.maxSearchedChars * 2)) return null
+        if (Array.from(searched).length > TOOL_RESULT_LIMITS.maxSearchedChars) return null
+      }
+      if (!isCount(searches, TOOL_RESULT_LIMITS.maxSearches)) return null
       if (!isCount(size, TOOL_RESULT_LIMITS.maxChars + 200)) return null
       if (!Array.isArray(sources) || sources.length > TOOL_RESULT_LIMITS.maxSources) return null
       const kept: ToolSource[] = []
@@ -153,7 +158,7 @@ export function parseAuditEvent(raw: unknown): ToolEvent | null {
         if (source === null) return null
         kept.push(source)
       }
-      return { type, at, call, tool, step, ok, size, sources: kept }
+      return { type, at, call, tool, step, ok, size, sources: kept, searched, searches }
     }
     default:
       return null
@@ -184,7 +189,9 @@ function lineObject(event: ToolEvent): Record<string, unknown> {
         ...head,
         ok: event.ok,
         size: event.size,
-        sources: event.sources.map(({ title, url }) => ({ title, url }))
+        sources: event.sources.map(({ title, url }) => ({ title, url })),
+        searched: event.searched,
+        searches: event.searches
       }
     default:
       throw new Error('that is not an event of this app')

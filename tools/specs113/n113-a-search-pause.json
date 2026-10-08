@@ -1,0 +1,14 @@
+{
+  "label": "n113-a-search-pause",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "    if (message.stop_reason === 'pause_turn') {",
+      "to": "    if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

@@ -44,6 +44,36 @@ export function anthropicBlockProblems(message, i, images) {
       if (typeof block.text !== 'string' || block.text === '') problems.push(`${where}: text content blocks must be non-empty`)
       return
     }
+    // 11.3: the blocks of a turn in which a model used a tool (assistant side) and of the turn that answers it (user side), as Anthropic's pages describe them.
+    if (block?.type === 'thinking' || block?.type === 'redacted_thinking') {
+      if (message.role !== 'assistant') problems.push(`${where}: ${block.type} blocks are only allowed in assistant messages`)
+      else if (block.type === 'thinking' && (typeof block.thinking !== 'string' || typeof block.signature !== 'string' || block.signature === '')) problems.push(`${where}: a thinking block needs the text and the signature it came with`)
+      else if (block.type === 'redacted_thinking' && (typeof block.data !== 'string' || block.data === '')) problems.push(`${where}: a redacted_thinking block needs its data`)
+      return
+    }
+    if (block?.type === 'tool_use' || block?.type === 'server_tool_use') {
+      if (message.role !== 'assistant') { problems.push(`${where}: ${block.type} blocks are only allowed in assistant messages`); return }
+      if (typeof block.id !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(block.id)) problems.push(`${where}.id: a tool call needs the id it came with`)
+      if (typeof block.name !== 'string' || !/^[a-zA-Z0-9_-]{1,128}$/.test(block.name)) problems.push(`${where}.name: must match ^[a-zA-Z0-9_-]{1,128}$`)
+      if (typeof block.input !== 'object' || block.input === null || Array.isArray(block.input)) problems.push(`${where}.input: must be an object`)
+      for (const extra of Object.keys(block)) if (!['type', 'id', 'name', 'input', 'caller'].includes(extra)) problems.push(`${where}.${extra}: Extra inputs are not permitted`)
+      return
+    }
+    if (block?.type === 'web_search_tool_result') {
+      if (message.role !== 'assistant') { problems.push(`${where}: web_search_tool_result blocks are only allowed in assistant messages`); return }
+      if (typeof block.tool_use_id !== 'string') problems.push(`${where}.tool_use_id: required`)
+      if (Array.isArray(block.content)) block.content.forEach((r, k) => { if (r?.type !== 'web_search_result' || typeof r.url !== 'string' || typeof r.title !== 'string' || typeof r.encrypted_content !== 'string' || r.encrypted_content === '') problems.push(`${where}.content.${k}: a search result must come back exactly as it was received, with its encrypted_content`) })
+      else if (block.content?.type !== 'web_search_tool_result_error') problems.push(`${where}.content: must be a list of results or an error`)
+      return
+    }
+    if (block?.type === 'tool_result') {
+      if (message.role !== 'user') { problems.push(`${where}: tool_result blocks are only allowed in user messages`); return }
+      if (typeof block.tool_use_id !== 'string' || block.tool_use_id === '') problems.push(`${where}.tool_use_id: required`)
+      if (block.content !== undefined && typeof block.content !== 'string' && !Array.isArray(block.content)) problems.push(`${where}.content: must be text or a list of blocks`)
+      if (block.is_error !== undefined && typeof block.is_error !== 'boolean') problems.push(`${where}.is_error: must be a boolean`)
+      for (const extra of Object.keys(block)) if (!['type', 'tool_use_id', 'content', 'is_error', 'cache_control'].includes(extra)) problems.push(`${where}.${extra}: Extra inputs are not permitted`)
+      return
+    }
     if (message.role !== 'user') { problems.push(`${where}: ${block?.type} blocks are only allowed in user messages`); return }
     if (block?.type === 'image') {
       const s = block.source

@@ -1,0 +1,14 @@
+{
+  "label": "n113-a-search-max",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 1 }],",
+      "to": "tools: [{ type: 'web_search_20250305', name: 'web_search' }],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

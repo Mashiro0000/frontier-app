@@ -1,0 +1,14 @@
+{
+  "label": "n113-settings-extra",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettings.ts",
+      "from": "if (Object.keys(raw).length !== 3 || raw.version !== TOOL_SETTINGS_VERSION) return null",
+      "to": "if (raw.version !== TOOL_SETTINGS_VERSION) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

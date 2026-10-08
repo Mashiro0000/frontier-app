@@ -1,0 +1,14 @@
+{
+  "label": "n113-reach-adapter",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "import { fieldsOf, tokenCount } from './usage'",
+      "to": "import { fieldsOf, tokenCount } from './usage'\nimport { createToolRegistry } from '../toolRegistry'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

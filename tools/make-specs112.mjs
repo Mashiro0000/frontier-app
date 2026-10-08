@@ -83,7 +83,7 @@ const s = {
   // ----- the wiring and the window -----
   wBridgeAppend: [PRE, "    deleteAll: () => ipcRenderer.invoke(CHANNELS.auditDeleteAll)", "    deleteAll: () => ipcRenderer.invoke(CHANNELS.auditDeleteAll),\n    append: (event: unknown) => ipcRenderer.invoke('audit:append', event)"],
   wHandlerExtra: [IPC, '  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))', "  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))\n  ipcMain.handle('audit:append', guarded(async () => true))"],
-  wNotSealed: [IPC, 'keptDocuments([everyChat.file, memory.file, projects.file, auditLog.document])', 'keptDocuments([everyChat.file, memory.file, projects.file])'],
+  wNotSealed: [IPC, '      auditLog.document,\n      toolSettings.file', '      toolSettings.file'],
   wReport: [UCS, 'your projects and the audit log of tool calls are encrypted too.', 'and your notes are encrypted too.'],
   wButton: [CB, '        Tools\n      </button>', '        Tool box\n      </button>'],
   wBusy: [CB, "        className=\"chat-button chat-tools\"\n        disabled={isReplying}", '        className="chat-button chat-tools"\n        disabled={false}'],

@@ -30,6 +30,8 @@ export function shown(text: string): string {
 export interface StepOfCaps {
   step: number
   steps: number
+  /** The provider that answers this chat and would run the call (11.4): "Anthropic" or "OpenAI". Named in the box so that the person knows who is asked. */
+  provider?: string
 }
 
 /**
@@ -47,7 +49,10 @@ export function approvalQuestion(
     const value = args[name]
     lines.push(`${spec.label}: ${typeof value === 'number' ? String(value) : shown(String(value))}`)
   }
-  lines.push(`The model's reason: ${shown(why)}`, '', def.effect, '')
+  lines.push(`The model's reason: ${shown(why)}`, '', def.effect)
+  if (place?.provider !== undefined)
+    lines.push(`Your AI provider for this chat: ${place.provider}.`)
+  lines.push('')
   if (place !== undefined) {
     lines.push(`This is step ${place.step} of at most ${place.steps} that this reply may take.`, '')
   }

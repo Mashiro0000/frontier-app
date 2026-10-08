@@ -1,0 +1,14 @@
+{
+  "label": "n113-reply-ended",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "            ended = endOf(outcome)",
+      "to": "            void endOf"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

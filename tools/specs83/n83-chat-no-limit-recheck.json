@@ -8,8 +8,8 @@
     },
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "    const limits = await readLimits()\n    if (limits === null) return\n",
-      "to": "    const limits = limitsEarly\n"
+      "from": "      const limits = await readLimits()\n      if (limits === null) return false\n",
+      "to": "      const limits = limitsEarly\n"
     }
   ],
   "argv": [

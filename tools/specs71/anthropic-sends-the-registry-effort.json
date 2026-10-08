@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/providers/anthropic.ts",
-      "from": "  const effort = effortOf(request.effort)",
-      "to": "  const effort = effortOf(model.effort)"
+      "from": "  const { model } = request\n  const effort = effortOf(request.effort)",
+      "to": "  const { model } = request\n  const effort = effortOf(model.effort)"
     }
   ],
   "argv": [

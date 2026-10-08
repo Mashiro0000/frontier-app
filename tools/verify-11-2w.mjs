@@ -47,7 +47,7 @@ const CANARY = 'canary-4711-search-words'
 const asked = (call, at, step, query, why) => ({ type: 'asked', at, call, tool: 'web_search', step, args: { query }, why })
 const answered = (call, at, step, answer) => ({ type: 'answered', at, call, tool: 'web_search', step, answer })
 const ran = (call, at, step) => ({ type: 'ran', at, call, tool: 'web_search', step })
-const result = (call, at, step, ok, size, sources) => ({ type: 'result', at, call, tool: 'web_search', step, ok, size, sources })
+const result = (call, at, step, ok, size, sources) => ({ type: 'result', at, call, tool: 'web_search', step, ok, size, sources, searched: ok ? 'rust 1.90 release' : null, searches: ok ? 1 : 0 })
 const EVENTS = [
   asked('c1', T0, 1, CANARY, 'The person asked for the newest release.'),
   answered('c1', T0 + 1000, 1, 'yes'),

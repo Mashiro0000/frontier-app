@@ -1,0 +1,14 @@
+{
+  "label": "n113-o-search-chatter",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "      text = ''\n      if (item.status === 'completed') searches += 1",
+      "to": "      if (item.status === 'completed') searches += 1"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

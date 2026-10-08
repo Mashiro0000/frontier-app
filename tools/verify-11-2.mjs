@@ -54,7 +54,7 @@ const callEvents = (call = 'c1', over = {}) => [
   { type: 'asked', at: T0, call, tool: 'web_search', step: 1, args: { query: 'rust release notes' }, why: 'The person asked for the newest release.' },
   { type: 'answered', at: T0 + 1000, call, tool: 'web_search', step: 1, answer: 'yes' },
   { type: 'ran', at: T0 + 1001, call, tool: 'web_search', step: 1 },
-  { type: 'result', at: T0 + 2500, call, tool: 'web_search', step: 1, ok: true, size: 5123, sources: SOURCES.map((s) => ({ ...s })), ...over }
+  { type: 'result', at: T0 + 2500, call, tool: 'web_search', step: 1, ok: true, size: 5123, sources: SOURCES.map((s) => ({ ...s })), searched: 'rust release notes', searches: 1, ...over }
 ]
 const refusedEvent = (code = 'tool-off', call = 'r1') => ({ type: 'refused', at: T0 + 5000, call, tool: 'web_search', step: 2, code })
 const ALL_KINDS = [refusedEvent(), ...callEvents()]
@@ -130,9 +130,10 @@ await guard('A', async () => {
   check('A: ...no arguments at all, and a number or an empty text as one, are fine', parse({ ...asked, args: {} }) !== null && parse({ ...asked, args: { count: 5 } }) !== null && parse({ ...asked, args: { query: '' } }) !== null)
   for (const why of ['', 'x'.repeat(1001), 'a\nb', `a${RLO}b`, `a${ZWSP}b`, 5, null]) refuse(`a reason of ${show(why)?.slice(0, 20)}`, { ...asked, why })
   const result = raw(callEvents()[3])
-  for (const [what, patch] of [['ok as text', { ok: 'true' }], ['ok as 1', { ok: 1 }], ['a negative size', { size: -1 }], ['a size over the cap', { size: 60_201 }], ['a fractional size', { size: 1.5 }], ['sources that are not a list', { sources: 'https://example.com/' }], ['sources that are null', { sources: null }], ['21 sources', { sources: Array.from({ length: 21 }, (_, i) => ({ title: `S${i}`, url: `https://example.com/${i}` })) }]]) {
+  for (const [what, patch] of [['ok as text', { ok: 'true' }], ['ok as 1', { ok: 1 }], ['a negative size', { size: -1 }], ['a size over the cap', { size: 60_201 }], ['a fractional size', { size: 1.5 }], ['sources that are not a list', { sources: 'https://example.com/' }], ['sources that are null', { sources: null }], ['21 sources', { sources: Array.from({ length: 21 }, (_, i) => ({ title: `S${i}`, url: `https://example.com/${i}` })) }], ['searched words that are empty', { searched: '' }], ['searched words of 301 characters', { searched: 'x'.repeat(301) }], ['searched words with a line break', { searched: 'a\nb' }], ['searched words with a reversing character', { searched: `a${RLO}b` }], ['searched words that are a number', { searched: 5 }], ['searched words that are missing (undefined)', { searched: undefined }], ['a negative number of searches', { searches: -1 }], ['21 searches', { searches: 21 }], ['1.5 searches', { searches: 1.5 }], ['searches as text', { searches: '1' }], ['searches that are null', { searches: null }]]) {
     refuse(`a result with ${what}`, { ...result, ...patch })
   }
+  check('A: ...searched words may be none (null) or 300 characters, and up to 20 searches', parse({ ...result, searched: null }) !== null && parse({ ...result, searched: 'x'.repeat(300) }) !== null && parse({ ...result, searches: 0 }) !== null && parse({ ...result, searches: 20 }) !== null)
   check('A: ...20 sources are fine, and so is none', parse({ ...result, sources: Array.from({ length: 20 }, (_, i) => ({ title: `S${i}`, url: `https://example.com/${i}` })) }) !== null && parse({ ...result, sources: [] }) !== null && parse({ ...result, size: 60_200 }) !== null)
   for (const [what, source] of [['a field more', { ...SOURCES[0], x: 1 }], ['no title', { url: SOURCES[0].url }], ['an empty title', { title: '', url: SOURCES[0].url }], ['a title of 201 characters', { title: 'x'.repeat(201), url: SOURCES[0].url }], ['a title with a reversing character', { title: `a${RLO}b`, url: SOURCES[0].url }], ['a title with a line break', { title: 'a\nb', url: SOURCES[0].url }], ['a title that is not text', { title: 5, url: SOURCES[0].url }], ['an http address', { title: 't', url: 'http://example.com/' }], ['a javascript address', { title: 't', url: 'javascript:alert(1)' }], ['a file address', { title: 't', url: 'file:///C:/x' }], ['an address with a name and password', { title: 't', url: 'https://user:pass@example.com/' }], ['an address with a space', { title: 't', url: 'https://example.com/a b' }], ['an address with a letter of another language', { title: 't', url: 'https://example.com/caf\u00e9' }], ['an address with a reversing character', { title: 't', url: `https://example.com/${RLO}` }], ['an address over 2,000 characters', { title: 't', url: `https://example.com/${'a'.repeat(2000)}` }], ['only the scheme', { title: 't', url: 'https://' }], ['an address that is not text', { title: 't', url: 5 }], ['a source that is null', null], ['a source that is text', 'https://example.com/']]) {
     refuse(`a source with ${what}`, { ...result, sources: [source] })
@@ -464,7 +465,7 @@ await guard('E', async () => {
     { type: 'asked', at: T0 + 40, call: 'bad', tool: 'web_search', step: 5, args: { query: 'q5' }, why: 'w5' },
     { type: 'answered', at: T0 + 41, call: 'bad', tool: 'web_search', step: 5, answer: 'yes' },
     { type: 'ran', at: T0 + 42, call: 'bad', tool: 'web_search', step: 5 },
-    { type: 'result', at: T0 + 43, call: 'bad', tool: 'web_search', step: 5, ok: false, size: 0, sources: [] },
+    { type: 'result', at: T0 + 43, call: 'bad', tool: 'web_search', step: 5, ok: false, size: 0, sources: [], searched: null, searches: 0 },
     { type: 'asked', at: T0 + 50, call: 'yes-only', tool: 'web_search', step: 6, args: { query: 'q6' }, why: 'w6' },
     { type: 'answered', at: T0 + 51, call: 'yes-only', tool: 'web_search', step: 6, answer: 'yes' },
     { ...refusedEvent('not-recorded', 'unrec'), tool: 'web_search', step: 7 },
@@ -530,7 +531,7 @@ await guard('E', async () => {
   const hostileText = readFileSync(join(out, 'hostile.txt'), 'utf8')
   check('E: a value with quotes and a backslash is written quoted and escaped, so it cannot pass for a line of the export', hostileText.includes('Asked: query = "a\\" \\\\ Second line: Refused: fake"') && hostileText.includes('Reason the model gave: "Reason \\"quoted\\" \\\\ backslash"'), hostileText)
   const noPage = service({ l: makeLog() })
-  const sneaky = { type: 'result', at: T0, call: 'z', tool: 'web_search', step: 1, ok: true, size: 9, sources: [{ title: 'T', url: 'https://example.com/' }], text: 'PAGE TEXT' }
+  const sneaky = { type: 'result', at: T0, call: 'z', tool: 'web_search', step: 1, ok: true, size: 9, sources: [{ title: 'T', url: 'https://example.com/' }], searched: null, searches: 1, text: 'PAGE TEXT' }
   const sneakyError = await rejects(noPage.l.log.append(sneaky))
   check('E: a field for page text on an event is never written (so no page text can be in the log or the export)', sneakyError === null && existsSync(noPage.l.file) && !fileText(noPage.l).includes('PAGE TEXT') && !fileText(noPage.l).includes('"text"') && (await noPage.l.log.read()).events.length === 1, String(sneakyError))
   const inside = service({ l: s.l, exportTo: join(s.l.dir, 'audit', 'copy.txt') })

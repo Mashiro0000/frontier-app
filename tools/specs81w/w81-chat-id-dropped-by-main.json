@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "chat: request.conversationId ?? null,",
-      "to": "chat: null,"
+      "from": "chat: request.conversationId ?? null,\n            provider: entry.provider,",
+      "to": "chat: null,\n            provider: entry.provider,"
     }
   ],
   "argv": [

@@ -2,14 +2,13 @@ import { promises as fs } from 'fs'
 import { isAbsolute } from 'path'
 import {
   AUDIT_VIEW_CALLS,
+  groupCalls,
   outcomeText,
   type AuditCall,
   type AuditDeleteResult,
   type AuditExportResult,
-  type AuditOutcome,
   type AuditView
 } from '../shared/audit'
-import { toolTitle, type AnswerCode, type RefusalCode, type ToolEvent } from '../shared/tools'
 import { AUDIT_LIMITS, type AuditLog, type AuditSnapshot } from './auditLog'
 import { isInside } from './backupService'
 import {
@@ -35,87 +34,8 @@ const when = (ms: number): string => {
 }
 const callsWord = (count: number): string => `${fmt(count)} ${count === 1 ? 'call' : 'calls'}`
 
-interface Building {
-  id: string
-  tool: string
-  step: number
-  at: number
-  args: AuditCall['args']
-  why: string | null
-  refused: RefusalCode | null
-  answer: AnswerCode | null
-  ran: boolean
-  result: Extract<ToolEvent, { type: 'result' }> | null
-}
-
-function outcomeOf(call: Building): AuditOutcome {
-  if (call.refused !== null) return { kind: 'refused', code: call.refused }
-  if (call.answer !== null && call.answer !== 'yes') {
-    return { kind: 'declined', answer: call.answer }
-  }
-  if (call.result !== null) {
-    return call.result.ok
-      ? {
-          kind: 'done',
-          size: call.result.size,
-          sources: call.result.sources.map(({ title, url }) => ({ title, url }))
-        }
-      : { kind: 'failed' }
-  }
-  if (call.ran || call.answer === 'yes') return { kind: 'running' }
-  return { kind: 'unanswered' }
-}
-
-/** The events of the log put together into calls (the events that share a call id), in the order the calls began. */
-export function groupCalls(events: readonly ToolEvent[]): AuditCall[] {
-  const byId = new Map<string, Building>()
-  for (const event of events) {
-    let call = byId.get(event.call)
-    if (call === undefined) {
-      call = {
-        id: event.call,
-        tool: event.tool,
-        step: event.step,
-        at: event.at,
-        args: null,
-        why: null,
-        refused: null,
-        answer: null,
-        ran: false,
-        result: null
-      }
-      byId.set(event.call, call)
-    }
-    switch (event.type) {
-      case 'refused':
-        call.refused = event.code
-        break
-      case 'asked':
-        call.args = { ...event.args }
-        call.why = event.why
-        break
-      case 'answered':
-        call.answer = event.answer
-        break
-      case 'ran':
-        call.ran = true
-        break
-      case 'result':
-        call.result = event
-        break
-    }
-  }
-  return [...byId.values()].map((call) => ({
-    id: call.id,
-    tool: call.tool,
-    title: toolTitle(call.tool),
-    step: call.step,
-    at: call.at,
-    args: call.args,
-    why: call.why,
-    outcome: outcomeOf(call)
-  }))
-}
+/** The events of the log put together into calls (the events that share a call id), in the order the calls began. Since 11.4 the function is shared with the window. */
+export { groupCalls }
 
 /** A value as the export writes it: quoted, with anything the eye cannot see or a line break written out, so that no value can pass for a line of the export. */
 const quoted = (text: string): string => JSON.stringify(text)

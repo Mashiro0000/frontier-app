@@ -1,0 +1,18 @@
+{
+  "label": "w113-usage",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "  if (records.length === 1) return replyUsageOf(records[0])\n",
+      "to": "  if (records.length > 0) return replyUsageOf(records[records.length - 1])\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run113.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 900000
+}

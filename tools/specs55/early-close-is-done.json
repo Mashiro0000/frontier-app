@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/providers/openai.ts",
-      "from": "if (response.status !== 'completed' && response.status !== 'incomplete')",
-      "to": "if (false)"
+      "from": "if (response.status !== 'completed' && response.status !== 'incomplete')\n    throw new ReplyEndedEarly()",
+      "to": "if (false)\n    throw new ReplyEndedEarly()"
     }
   ],
   "argv": [

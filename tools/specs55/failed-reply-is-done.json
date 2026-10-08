@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/providers/openai.ts",
-      "from": "if (response.status === 'failed') {",
-      "to": "if (false) {"
+      "from": "if (response.status === 'failed') {\n    throw new ReplyFailed(response.error?.message ?? 'the provider reported that the reply failed')",
+      "to": "if (false) {\n    throw new ReplyFailed(response.error?.message ?? 'the provider reported that the reply failed')"
     }
   ],
   "argv": [

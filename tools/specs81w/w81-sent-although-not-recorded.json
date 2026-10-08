@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "          'Nothing was sent: what this request would use could not be recorded on this computer.'\n      })\n      return\n    }",
-      "to": "          'Nothing was sent: what this request would use could not be recorded on this computer.'\n      })\n    }"
+      "from": "            'Nothing was sent: what this request would use could not be recorded on this computer.'\n        })\n        return false\n      }",
+      "to": "            'Nothing was sent: what this request would use could not be recorded on this computer.'\n        })\n      }"
     }
   ],
   "argv": [

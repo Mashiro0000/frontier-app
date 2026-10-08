@@ -1,0 +1,14 @@
+{
+  "label": "n113-a-parallel",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "tool_choice: { type: 'auto' as const, disable_parallel_tool_use: true }",
+      "to": "tool_choice: { type: 'auto' as const, disable_parallel_tool_use: false }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

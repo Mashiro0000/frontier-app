@@ -42,6 +42,10 @@ export type { ToolSource }
 export interface ToolResult {
   text: string
   sources: ToolSource[]
+  /** The words the provider says it searched, if it said (one visible line), else null. */
+  searched: string | null
+  /** How many searches the provider ran (and bills) for this call. */
+  searches: number
 }
 
 /**
@@ -56,7 +60,12 @@ export type Executor = (
     signal: AbortSignal
     check: (path: string, op: PathOp, recursive?: boolean) => Promise<PathVerdict>
   }
-) => Promise<{ text: string; sources?: ToolSource[] }>
+) => Promise<{
+  text: string
+  sources?: ToolSource[]
+  searched?: string | null
+  searches?: number
+}>
 
 /** A call as the model made it: nothing in it has been checked. */
 export interface ToolCall {
@@ -71,6 +80,8 @@ export interface RunContext {
   signal: AbortSignal
   /** The reply's steps and working time. */
   budget: ReplyBudget
+  /** The provider that answers this chat, by the name the person knows it by (11.4): the question names it. */
+  provider?: string
 }
 
 interface NotRun {
@@ -151,14 +162,17 @@ const reason = (error: unknown): unknown => (error instanceof Error ? error.mess
 const nameForRecord = (name: unknown): string =>
   typeof name === 'string' && /^[a-z][a-z0-9_]{1,31}$/.test(name) ? name : '(unknown)'
 
-function tidyTitle(title: string): string {
-  const text = title
+/** Text from outside as one visible line of at most `max` characters: controls and white space become one space, invisible and reversing characters go. */
+function tidyLine(text: string, max: number): string {
+  const line = text
     .slice(0, 1000)
     .replace(/[\p{Cc}\s]+/gu, ' ')
     .replace(/[\p{Cf}\p{Zl}\p{Zp}\p{Co}\p{Cn}\p{Cs}]/gu, '')
     .trim()
-  return Array.from(text).slice(0, TOOL_RESULT_LIMITS.maxTitleChars).join('')
+  return Array.from(line).slice(0, max).join('')
 }
+
+const tidyTitle = (title: string): string => tidyLine(title, TOOL_RESULT_LIMITS.maxTitleChars)
 
 /**
  * The address as the app keeps and shows it (the page's own form of it, which is plain ASCII: a name with other letters is written the way the web writes
@@ -179,7 +193,12 @@ function tidyUrl(url: string): string | null {
 /** What a tool handed back, as the app passes it on, or null when it is not a result at all. */
 export function shapeResult(raw: unknown): ToolResult | null {
   if (raw === null || typeof raw !== 'object') return null
-  const { text, sources } = raw as { text?: unknown; sources?: unknown }
+  const { text, sources, searched, searches } = raw as {
+    text?: unknown
+    sources?: unknown
+    searched?: unknown
+    searches?: unknown
+  }
   if (typeof text !== 'string') return null
   const kept: ToolSource[] = []
   if (Array.isArray(sources)) {
@@ -196,9 +215,20 @@ export function shapeResult(raw: unknown): ToolResult | null {
       })
     }
   }
+  // The words the provider says it searched: one visible line, or none.
+  const words =
+    typeof searched === 'string' ? tidyLine(searched, TOOL_RESULT_LIMITS.maxSearchedChars) : ''
   return {
     text: text.length > MAX_RESULT_CHARS ? text.slice(0, MAX_RESULT_CHARS) + RESULT_CUT : text,
-    sources: kept
+    sources: kept,
+    searched: words === '' ? null : words,
+    searches:
+      typeof searches === 'number' &&
+      Number.isInteger(searches) &&
+      searches >= 0 &&
+      searches <= TOOL_RESULT_LIMITS.maxSearches
+        ? searches
+        : 0
   }
 }
 
@@ -249,17 +279,20 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
     }
   }
 
-  /** The question, with Stop everything able to end the wait: the box itself is closed by the loop (11.3); the answer to it is no longer waited for. */
+  /**
+   * The question, with Stop everything able to end the wait at once. The same signal is handed to the gate (11.3), which has the box closed; if a box
+   * ignores it, the answer that comes later is not waited for.
+   */
   function askOrStop(
     owner: unknown,
     question: SystemQuestion,
     signal: AbortSignal
-  ): Promise<GateAnswer | 'stopped'> {
+  ): Promise<GateAnswer> {
     if (signal.aborted) return Promise.resolve('stopped')
     return new Promise((resolve) => {
       const onAbort = (): void => resolve('stopped')
       signal.addEventListener('abort', onAbort, { once: true })
-      gate.ask(owner, question).then(
+      gate.ask(owner, question, signal).then(
         (answer) => {
           signal.removeEventListener('abort', onAbort)
           resolve(answer)
@@ -287,7 +320,18 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       code: 'run-failed' | 'time-cap' | 'stopped',
       text: string
     ): Promise<ToolOutcome> => {
-      await keep({ type: 'result', at: now(), call, tool, step, ok: false, size: 0, sources: [] })
+      await keep({
+        type: 'result',
+        at: now(),
+        call,
+        tool,
+        step,
+        ok: false,
+        size: 0,
+        sources: [],
+        searched: null,
+        searches: 0
+      })
       return { kind: 'failed', tool, step, code, text, endsReply: ENDS_REPLY.has(code) }
     }
     if (signal.aborted) {
@@ -339,7 +383,9 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
         step,
         ok: true,
         size: result.text.length,
-        sources: result.sources.map(({ title, url }) => ({ title, url }))
+        sources: result.sources.map(({ title, url }) => ({ title, url })),
+        searched: result.searched,
+        searches: result.searches
       })
       return { kind: 'ran', tool, step, result }
     } catch (error) {
@@ -422,7 +468,11 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       args[argName] = verdict.real
     }
 
-    const question = approvalQuestion(def, args, checked.why, { step, steps: budget.caps.steps })
+    const question = approvalQuestion(def, args, checked.why, {
+      step,
+      steps: budget.caps.steps,
+      ...(context.provider === undefined ? {} : { provider: context.provider })
+    })
     if (question.detail.length > SHOWN_LIMIT) return refused('bad-arguments', TOO_LONG_TEXT, step)
 
     // Nothing is asked, and nothing runs, that has not been recorded first.
@@ -442,7 +492,7 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
 
     // The person is deciding: the reply's clock stops (D-041).
     budget.pause()
-    let answer: GateAnswer | 'stopped'
+    let answer: GateAnswer
     try {
       answer = await askOrStop(owner, question, signal)
     } finally {

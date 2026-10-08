@@ -30,9 +30,9 @@ const node = {
   'status-selected-is-the-default': [[E, '    selected: effort,', '    selected: entry.effort,']],
   'request-ignores-the-given-effort': [[REQ, 'effort: input.effort === undefined ? model.effort : input.effort,', 'effort: model.effort,']],
   'request-null-becomes-the-default': [[REQ, 'effort: input.effort === undefined ? model.effort : input.effort,', 'effort: input.effort ?? model.effort,']],
-  'anthropic-sends-the-registry-effort': [[A, '  const effort = effortOf(request.effort)', '  const effort = effortOf(model.effort)']],
+  'anthropic-sends-the-registry-effort': [[A, '  const { model } = request\n  const effort = effortOf(request.effort)', '  const { model } = request\n  const effort = effortOf(model.effort)']],
   'anthropic-sends-none': [[A, "  if (effort === 'none') throw new Error('Anthropic has no effort level \"none\"')", '']],
-  'openai-sends-the-registry-effort': [[O, '...(request.effort ? { reasoning: { effort: request.effort } } : {}),', '...(model.effort ? { reasoning: { effort: model.effort } } : {}),']]
+  'openai-sends-the-registry-effort': [[O, "(D-024).\n      ...(request.effort ? { reasoning: { effort: request.effort } } : {}),", "(D-024).\n      ...(model.effort ? { reasoning: { effort: model.effort } } : {}),"]]
 }
 const dir = join(TOOLS, 'specs71')
 mkdirSync(dir, { recursive: true })

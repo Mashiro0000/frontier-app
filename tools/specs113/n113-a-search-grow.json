@@ -1,0 +1,14 @@
+{
+  "label": "n113-a-search-grow",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "      messages = [messages[0], { role: 'assistant', content: paused }]",
+      "to": "      messages = [...messages, { role: 'assistant', content: message.content }]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

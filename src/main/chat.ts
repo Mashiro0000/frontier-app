@@ -1,10 +1,11 @@
-import { ipcMain, type WebContents } from 'electron'
+import { BrowserWindow, ipcMain, type WebContents } from 'electron'
 import { askFirstAmount, estimateRequest, needsConfirmation } from '../shared/askFirst'
 import { CHANNELS, type ChatRequest, type ChatStreamEvent } from '../shared/ipc'
 import { checkAgainstLimits, withFilesNote, type Limits } from '../shared/limits'
 import type { Note } from '../shared/memory'
 import type { Project } from '../shared/projects'
-import { PROVIDER_NAMES, type ProviderId } from '../shared/registry'
+import { PROVIDER_NAMES, type Effort, type ProviderId } from '../shared/registry'
+import type { ToolSettings } from '../shared/tools'
 import {
   costOf,
   costOfRecord,
@@ -30,7 +31,18 @@ import type { LimitsStore } from './limits'
 import { adapterFor } from './providers'
 import { describeFailure, unknownError } from './providers/errors'
 import { buildStreamRequest } from './providers/request'
-import type { ErrorKind, ProviderAdapter, ReplyEnd, Usage } from './providers/types'
+import { SEARCH_MAX_OUTPUT_TOKENS, SEARCH_SYSTEM, searchPrompt } from './providers/search'
+import type {
+  ErrorKind,
+  NeutralMessage,
+  NeutralToolCall,
+  ProviderAdapter,
+  ReplyEnd,
+  SearchResult,
+  ToolSpec,
+  Usage
+} from './providers/types'
+import type { ToolRuntime, TurnEnd } from './replyTools'
 import { heldKey, keyInInstructions, keyInNotes, type SavedKey } from './secrets'
 import { isTrustedSender } from './security'
 import { RequestRefused, type UsageLedger } from './usageLedger'
@@ -67,6 +79,23 @@ const replyUsageOf = (record: LedgerRecord): ReplyUsage => ({
   costUsd: costOfRecord(record),
   estimate: record.estimate
 })
+
+/** The usage of a reply that sent several requests (a tool was used): the requests added up. One request is reported exactly as it always was. */
+function replyUsageOfAll(records: readonly LedgerRecord[]): ReplyUsage {
+  if (records.length === 1) return replyUsageOf(records[0])
+  const tokens: TokenCounts = { ...NO_TOKENS }
+  let costUsd = 0
+  let estimate = false
+  for (const record of records) {
+    tokens.input += record.tokens.input
+    tokens.cacheRead += record.tokens.cacheRead
+    tokens.cacheWrite += record.tokens.cacheWrite
+    tokens.output += record.tokens.output
+    costUsd += costOfRecord(record)
+    estimate = estimate || record.estimate
+  }
+  return { tokens, costUsd, estimate }
+}
 
 /** Replies in progress, by "<window id>:<stream id>", so each one can be stopped on its own. */
 const running = new Map<string, AbortController>()
@@ -116,6 +145,21 @@ function endEvent(streamId: string, end: ReplyEnd): ChatStreamEvent {
   }
 }
 
+/** What the reply says when a cap on its tools was reached (the model's words so far stay). The person can change both on the Tools page. */
+function capMessage(
+  reason: Exclude<TurnEnd, 'stopped' | null>,
+  caps: { steps: number; seconds: number }
+): string {
+  return reason === 'step-cap'
+    ? `Stopped: this reply used all ${caps.steps} of its tool steps.`
+    : `Stopped: this reply used all ${caps.seconds} seconds of its tool time.`
+}
+
+/** A guess at the input a search request sends beyond the words: the pages it reads arrive as input tokens (a search typically reads thousands). */
+const SEARCH_RESULTS_GUESS_TOKENS = 8000
+/** A guess at what the tools' definitions add to a request: the definitions themselves, and the provider's own lines about using tools. */
+const TOOL_PROMPT_GUESS_TOKENS = 400
+
 /**
  * What a reply needs besides the request: the stores it counts and checks against, the reader of the attachments' copies (D-037), the person's
  * instructions for every chat and the saved keys (D-039).
@@ -140,10 +184,19 @@ interface ReplyContext {
   project: (
     id: string
   ) => Promise<{ ok: true; project: Project | null } | { ok: false; error: string }>
+  /**
+   * The tools (11.3, D-041). `settings` answers with which tools are switched on and the caps, from main's own file, at every turn (every tool off when
+   * the file cannot be read); `runtime` makes the tools of one reply. Absent: no tool is ever offered, and the reply is what it always was.
+   */
+  tools?: {
+    settings: () => Promise<ToolSettings>
+    runtime: ToolRuntime
+  }
 }
 
 async function runReply(
   windowId: number,
+  owner: unknown,
   request: ChatRequest,
   send: (event: ChatStreamEvent) => void,
   context: ReplyContext
@@ -160,14 +213,22 @@ async function runReply(
   let apiKey = ''
   let modelId = ''
   let adapter: ProviderAdapter | null = null
-  // The ledger's record of this request (D-030): made just before it is sent, and settled exactly once, with the provider's own report
-  // when there is one, with a guess marked as one when there is not, or as "nothing owed" when the provider turned it away.
+  // The ledger's record of the request in flight (D-030): made just before it is sent, and settled exactly once, with the provider's own report
+  // when there is one, with a guess marked as one when there is not, or as "nothing owed" when the provider turned it away. A reply that uses a tool
+  // sends several requests, one after another (11.3), and a search is one more; each has a record of its own, and the usage the page is told is their sum.
   let began: LedgerRecord | null = null
   const settledAs: { record: LedgerRecord | null } = { record: null }
   let arrivedBytes = 0
+  /** Every record of this reply that was settled, in order. */
+  const settledRecords: LedgerRecord[] = []
 
-  const settle = async (state: Exclude<LedgerState, 'sent'>, real: Usage | null): Promise<void> => {
-    if (began === null || settledAs.record !== null) return
+  /** Settles one record: the provider's report, or a guess marked as one, or nothing owed. Returns the record as it now stands (null if it could not be written). */
+  const settleRecord = async (
+    record: LedgerRecord,
+    state: Exclude<LedgerState, 'sent'>,
+    real: Usage | null,
+    arrived: number
+  ): Promise<LedgerRecord | null> => {
     const report = real !== null && !tokensAreEmpty(tokensOf(real)) ? tokensOf(real) : null
     // With no report (a reply stopped, a connection dropped, a provider that said nothing): the input that was sent and the text that
     // arrived, as a guess. Nothing at all for a request that was turned away.
@@ -176,23 +237,28 @@ async function runReply(
         ? { ...NO_TOKENS }
         : (report ?? {
             ...NO_TOKENS,
-            input: began.tokens.input,
-            output: estimateOutputTokens(arrivedBytes)
+            input: record.tokens.input,
+            output: estimateOutputTokens(arrived)
           })
-    const finished = await ledger.finish(began.id, {
+    const finished = await ledger.finish(record.id, {
       state,
       tokens,
       estimate: state !== 'rejected' && report === null
     })
-    if (finished) settledAs.record = finished.record
+    if (finished) settledRecords.push(finished.record)
+    return finished ? finished.record : null
+  }
+
+  const settle = async (state: Exclude<LedgerState, 'sent'>, real: Usage | null): Promise<void> => {
+    if (began === null || settledAs.record !== null) return
+    const finished = await settleRecord(began, state, real, arrivedBytes)
+    if (finished) settledAs.record = finished
   }
 
   /** Tells the page what the reply cost, if anything is owed. Called just before the reply's last event. */
   const sendUsage = (): void => {
-    const { record } = settledAs
-    if (record !== null && record.state !== 'rejected') {
-      send({ streamId, type: 'usage', usage: replyUsageOf(record) })
-    }
+    const owed = settledRecords.filter((record) => record.state !== 'rejected')
+    if (owed.length > 0) send({ streamId, type: 'usage', usage: replyUsageOfAll(owed) })
   }
 
   try {
@@ -294,20 +360,94 @@ async function runReply(
         return
       }
     }
-    const streamRequest = buildStreamRequest({
-      credentials: { apiKey, baseURL: baseUrlOverride(entry.provider) },
-      model: entry,
-      effort,
-      instructions: request.instructions, // the person's own, already checked (D-027): added after the app's rules
-      everyChat: everyChat.text, // before the chat's own (D-039)
-      notes: memory.notes.map((note) => note.text), // first after the rules, as information (10.4)
-      project: project?.instructions, // after every chat's, before the chat's own (10.6)
-      messages: resolved.messages,
-      signal: controller.signal
-    })
+
+    // The tools of this reply (11.3, D-041). Which are switched on is read from main's own file now and again before every turn; none is on unless the
+    // person switched it on (deny by default). The cheapest effort the model lists for a search request: it only has to run one search and say what it found.
+    const searchEffort: Effort | null = entry.capabilities.effortLevels.includes('low')
+      ? 'low'
+      : effort
+    const countedSearch = async (query: string, signal: AbortSignal): Promise<SearchResult> => {
+      if (adapter === null) throw new Error('there is no provider to ask')
+      const limits = await limitsStore.read()
+      // The search is a request like any other: counted in the ledger before it goes out, with the spending limits applied (D-030, D-031).
+      const input =
+        estimateInputTokens(SEARCH_SYSTEM, [{ content: searchPrompt(query) }]) +
+        SEARCH_RESULTS_GUESS_TOKENS
+      const record = await ledger.begin(
+        {
+          chat: request.conversationId ?? null,
+          provider: entry.provider,
+          model: entry.id,
+          effort: searchEffort,
+          prices: entry.pricing,
+          inputTokens: input
+        },
+        (spend) => checkAgainstLimits(limits, spend)
+      )
+      try {
+        const found = await adapter.search({
+          credentials: { apiKey, baseURL: baseUrlOverride(entry.provider) },
+          model: entry,
+          effort: searchEffort,
+          query,
+          maxOutputTokens: SEARCH_MAX_OUTPUT_TOKENS,
+          signal
+        })
+        await settleRecord(
+          record,
+          signal.aborted ? 'stopped' : 'done',
+          found.usage,
+          Buffer.byteLength(found.text)
+        )
+        return found
+      } catch (error) {
+        const failure = adapter.normalizeError(error, { modelId })
+        await settleRecord(
+          record,
+          signal.aborted
+            ? 'stopped'
+            : REFUSED_BEFORE_WORK.has(failure.kind)
+              ? 'rejected'
+              : 'failed',
+          null,
+          0
+        )
+        throw error
+      }
+    }
+    const toolsContext = context.tools
+    const replyTools =
+      toolsContext === undefined
+        ? null
+        : toolsContext.runtime.forReply({
+            owner,
+            signal: controller.signal,
+            settings: await toolsContext.settings(),
+            provider: PROVIDER_NAMES[entry.provider],
+            search: countedSearch,
+            onEvent: (event) => send({ streamId, type: 'tool', event })
+          })
+    let specs: ToolSpec[] = replyTools === null ? [] : replyTools.specs()
+    /** The tool turns of this reply so far, after the conversation: what the model asked for, and what came of each call. */
+    const turns: NeutralMessage[] = []
+
+    const buildFor = (): ReturnType<typeof buildStreamRequest> =>
+      buildStreamRequest({
+        credentials: { apiKey, baseURL: baseUrlOverride(entry.provider) },
+        model: entry,
+        effort,
+        instructions: request.instructions, // the person's own, already checked (D-027): added after the app's rules
+        everyChat: everyChat.text, // before the chat's own (D-039)
+        notes: memory.notes.map((note) => note.text), // first after the rules, as information (10.4)
+        project: project?.instructions, // after every chat's, before the chat's own (10.6)
+        messages: [...resolved.messages, ...turns],
+        tools: specs,
+        signal: controller.signal
+      })
+    let streamRequest = buildFor()
     // One guess at what this request sends, used three times and the same each time: for the question below (D-032), for the limit's check
     // (D-031) and for the ledger's first line (D-030). The files are part of it (D-037): images by their size, PDFs by their pages, text by its bytes;
-    // and so are all the instructions, which are in the system prompt (D-039).
+    // and so are all the instructions, which are in the system prompt (D-039). With tools on, so are their definitions (11.3).
     const fileTokens = estimateFileTokens(resolved.files)
     const files =
       resolved.files.count > 0
@@ -317,8 +457,13 @@ async function runReply(
             ...(projectFiles.length > 0 ? { project: projectFiles.length } : {})
           }
         : undefined
-    const inputTokens =
-      estimateInputTokens(streamRequest.system, streamRequest.messages) + fileTokens
+    const inputTokensFor = (): number =>
+      estimateInputTokens(streamRequest.system, streamRequest.messages) +
+      fileTokens +
+      (specs.length === 0
+        ? 0
+        : Math.ceil(JSON.stringify(specs).length / 4) + TOOL_PROMPT_GUESS_TOKENS)
+    let inputTokens = inputTokensFor()
     // The spending limits (D-031), as they are now. They are asked for on EVERY request, whichever way it came (a new message, Regenerate,
     // an edited message): this is the only place a provider is called. A file that cannot be read at all refuses the request (null, after
     // the page has been told), and so does a limit that has not been chosen yet.
@@ -376,66 +521,123 @@ async function runReply(
       // No yes: the person said no, or the window went away. Nothing was sent and nothing was written. (A yes and a Stop at the same moment: Stop wins.)
       if (answer !== 'send' || controller.signal.aborted) return
     }
-    // Read again, after any wait: what is checked is what the limits are NOW.
-    const limits = await readLimits()
-    if (limits === null) return
-    // Counted BEFORE it is sent (D-030): a request that cannot be written down is not made, so nothing is spent that is not on record. The
-    // limit is checked in the same turn (D-031): what has been spent and the line that adds this request to it cannot be parted by another.
-    try {
-      began = await ledger.begin(
-        {
-          chat: request.conversationId ?? null,
-          provider: entry.provider,
-          model: entry.id,
-          effort,
-          prices: entry.pricing,
-          inputTokens
-        },
-        (spend) => withFilesNote(checkAgainstLimits(limits, spend), files)
-      )
-    } catch (error) {
-      if (error instanceof RequestRefused) {
-        send({ streamId, type: 'error', message: error.message }) // a sentence for the person, naming the limit; nothing was written
-        return
+
+    /**
+     * Counts the request that is about to go out: read the limits as they are NOW (after any wait), and write the ledger's first line BEFORE it is sent
+     * (D-030), with the limit checked in the same turn (D-031): what has been spent and the line that adds this request to it cannot be parted by another.
+     * False when the request must not be sent (the person was told why).
+     */
+    const beginRequest = async (): Promise<boolean> => {
+      const limits = await readLimits()
+      if (limits === null) return false
+      try {
+        began = await ledger.begin(
+          {
+            chat: request.conversationId ?? null,
+            provider: entry.provider,
+            model: entry.id,
+            effort,
+            prices: entry.pricing,
+            inputTokens
+          },
+          (spend) => withFilesNote(checkAgainstLimits(limits, spend), files)
+        )
+      } catch (error) {
+        if (error instanceof RequestRefused) {
+          send({ streamId, type: 'error', message: error.message }) // a sentence for the person, naming the limit; nothing was written
+          return false
+        }
+        // Logged here only; the message could name a file path.
+        console.error(
+          'Writing to the usage ledger failed:',
+          error instanceof Error ? error.message : error
+        )
+        send({
+          streamId,
+          type: 'error',
+          message:
+            'Nothing was sent: what this request would use could not be recorded on this computer.'
+        })
+        return false
       }
-      // Logged here only; the message could name a file path.
-      console.error(
-        'Writing to the usage ledger failed:',
-        error instanceof Error ? error.message : error
-      )
-      send({
-        streamId,
-        type: 'error',
-        message:
-          'Nothing was sent: what this request would use could not be recorded on this computer.'
-      })
-      return
+      return true
     }
-    let end: ReplyEnd | null = null
-    let usage: Usage | null = null
-    for await (const event of adapter.stream(streamRequest)) {
-      if (event.type === 'text') {
-        arrivedBytes += Buffer.byteLength(event.text)
-        send({ streamId, type: 'text', text: event.text })
-      } else {
-        end = event.end
-        usage = event.usage
+
+    // The reply: one request, or, when the model asks for a tool and the person allows it, a request, the tool, and a request again (11.3). A hard bound on
+    // the passes stands behind the reply's own caps (steps and time), which every pass of the loop spends.
+    let breakBeforeText = false
+    for (let pass = 0; pass < 25; pass++) {
+      if (!(await beginRequest())) return
+      let end: ReplyEnd | null = null
+      let usage: Usage | null = null
+      let calls: NeutralToolCall[] = []
+      let record: unknown = null
+      let said = ''
+      // The reply's working time is the time spent on tools (11.3): the clock stands still while the model writes.
+      replyTools?.budget.pause()
+      try {
+        for await (const event of adapter.stream(streamRequest)) {
+          if (event.type === 'text') {
+            if (breakBeforeText) {
+              breakBeforeText = false
+              send({ streamId, type: 'text', text: '\n\n' }) // the model's words before a tool and after it are two paragraphs
+            }
+            arrivedBytes += Buffer.byteLength(event.text)
+            said += event.text
+            send({ streamId, type: 'text', text: event.text })
+          } else {
+            end = event.end
+            usage = event.usage
+            calls = event.calls ?? []
+            record = event.record ?? null
+          }
+        }
+      } finally {
+        replyTools?.budget.resume()
       }
-    }
-    // An adapter ends every reply that did not fail with an `end` event. Saying "done" without one would hide a bug.
-    if (end === null) throw new Error('the provider ended the reply without saying how it ended')
-    // The provider's report is counted even if the person pressed Stop at the last moment: the reply was made, and billed.
-    await settle(controller.signal.aborted ? 'stopped' : 'done', usage)
-    if (!controller.signal.aborted) {
+      // An adapter ends every reply that did not fail with an `end` event. Saying "done" without one would hide a bug.
+      if (end === null) throw new Error('the provider ended the reply without saying how it ended')
+      // The provider's report is counted even if the person pressed Stop at the last moment: the reply was made, and billed.
+      await settle(controller.signal.aborted ? 'stopped' : 'done', usage)
+      if (controller.signal.aborted) return
       // What the reply used, once, for the log (D-018, D-021). It is not stored with the message and never holds a key.
       if (usage) {
         console.log(
           `Reply from ${entry.provider}/${entry.id} used ${usage.inputTokens} input, ${usage.cacheReadTokens} cache-read, ${usage.cacheWriteTokens} cache-write and ${usage.outputTokens} output tokens.`
         )
       }
+      // The model stopped to use a tool, and tools are on: decide each call, ask, run, and go on with what came of them.
+      if (end.kind === 'tool-use' && replyTools !== null && specs.length > 0 && calls.length > 0) {
+        turns.push({ role: 'assistant', content: said, toolTurn: { calls, record } })
+        const turn = await replyTools.runTurn(calls)
+        turns.push({
+          role: 'user',
+          content: turn.results.map((result) => result.text).join('\n\n'),
+          toolResults: turn.results
+        })
+        if (controller.signal.aborted || turn.ended === 'stopped') return // the person pressed Stop everything: nobody is listening
+        if (turn.ended !== null) {
+          sendUsage()
+          send({ streamId, type: 'error', message: capMessage(turn.ended, replyTools.budget.caps) })
+          return
+        }
+        breakBeforeText = said.trim() !== ''
+        // Read again: the settings may have changed while the person decided, and the next request offers only what is on now.
+        if (toolsContext !== undefined) replyTools.setSettings(await toolsContext.settings())
+        specs = replyTools.specs()
+        streamRequest = buildFor()
+        inputTokens = inputTokensFor()
+        began = null
+        settledAs.record = null
+        arrivedBytes = 0
+        continue
+      }
       sendUsage()
-      send(endEvent(streamId, end))
+      // A model that asks for a tool when none was offered gets nothing, and its words so far are the reply.
+      send(endEvent(streamId, end.kind === 'tool-use' ? { kind: 'done' } : end))
+      return
     }
+    throw new Error('the reply asked for tools more often than the app allows')
   } catch (error) {
     // Stopped by the person (or the page went away): not a failure, and nobody is listening. What it used is still counted.
     if (controller.signal.aborted) {
@@ -470,7 +672,8 @@ export function registerChatIpc(appUrl: string, context: ReplyContext): void {
       return
     }
     stopWhenPageGoes(sender)
-    void runReply(sender.id, check.request, send, context)
+    // The window the questions of a tool are for (11.3): the one this reply belongs to, never one the page named.
+    void runReply(sender.id, BrowserWindow.fromWebContents(sender), check.request, send, context)
   })
 
   ipcMain.on(CHANNELS.chatCancel, (event, streamId: unknown) => {

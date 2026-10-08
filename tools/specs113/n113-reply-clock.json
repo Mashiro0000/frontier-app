@@ -1,0 +1,14 @@
+{
+  "label": "n113-reply-clock",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "      const budget = createReplyBudget(current.caps, options.clock)",
+      "to": "      const budget = createReplyBudget(current.caps)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

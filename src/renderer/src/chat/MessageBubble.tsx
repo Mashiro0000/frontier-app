@@ -1,9 +1,12 @@
 import { memo, useState } from 'react'
+import { piecesOf, sourcesOfNotes } from '../../../shared/toolNotes'
 import Markdown from '../markdown/Markdown'
 import { replyUsageText, replyUsageTitle } from '../settings/format'
 import MessageActions from './MessageActions'
 import MessageEdit from './MessageEdit'
 import MessageFiles from './MessageFiles'
+import Sources from './Sources'
+import ToolNote from './ToolNote'
 import type { ChatMessage } from './types'
 
 interface MessageBubbleProps {
@@ -39,8 +42,21 @@ function MessageBubble({
   onResend,
   onRemember
 }: MessageBubbleProps): React.JSX.Element {
-  // The reply has been asked for but no text has arrived yet: show animated dots.
-  const isWaiting = message.status === 'streaming' && message.content === ''
+  // The tool calls of a reply (D-041, 11.4), each in the place of the text where the model asked for it, and the pages they brought back under the reply.
+  const notes = message.role === 'assistant' ? (message.tools ?? []) : []
+  const live = message.status === 'streaming'
+  const lastNote = notes.at(-1)
+  // The reply has been asked for but no text has arrived yet: show animated dots. With tool calls, also while the model writes again after a call that
+  // has ended (a call that is waiting for the person or running shows its own line instead).
+  const isWaiting =
+    live &&
+    (message.content === '' && notes.length === 0
+      ? true
+      : lastNote !== undefined &&
+        lastNote.offset >= message.content.length &&
+        lastNote.outcome.kind !== 'unanswered' &&
+        lastNote.outcome.kind !== 'running')
+  const sources = sourcesOfNotes(notes)
   const note = noteFor(message)
   // The person's own message, open for editing in place (D-026).
   const [editing, setEditing] = useState(false)
@@ -66,9 +82,27 @@ function MessageBubble({
           }}
         />
       ) : (
-        (message.content !== '' || isWaiting) && (
+        (message.content !== '' || isWaiting || notes.length > 0) && (
           <div className={message.role === 'assistant' ? 'bubble bubble-markdown' : 'bubble'}>
-            {isWaiting ? (
+            {message.role === 'assistant' && notes.length > 0 ? (
+              <>
+                {piecesOf(message.content, notes).map((piece, index) =>
+                  piece.kind === 'note' ? (
+                    <ToolNote key={`note-${piece.note.id}`} note={piece.note} live={live} />
+                  ) : (
+                    // A reply is Markdown (D-025); the text on either side of a tool call is read as its own part.
+                    <Markdown key={`text-${index}`} text={piece.text} />
+                  )
+                )}
+                {isWaiting && (
+                  <span className="typing" aria-hidden="true">
+                    <span />
+                    <span />
+                    <span />
+                  </span>
+                )}
+              </>
+            ) : isWaiting ? (
               <span className="typing" aria-hidden="true">
                 <span />
                 <span />
@@ -83,6 +117,7 @@ function MessageBubble({
           </div>
         )
       )}
+      {sources.length > 0 && <Sources sources={sources} />}
       {note && (
         <p
           className={

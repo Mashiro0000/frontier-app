@@ -1,0 +1,14 @@
+{
+  "label": "n113-settings-fault",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettings.ts",
+      "from": "        return { settings: DEFAULT_TOOL_SETTINGS, problem: 'it could not be read from the disk' }",
+      "to": "        throw error"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

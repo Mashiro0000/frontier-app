@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src\\main\\chat.ts",
-      "from": "model: entry,\n      effort,",
-      "to": "model: { ...entry, id: 'claude-haiku-4-5-20251001' },\n      effort: null,"
+      "from": "model: entry,\n        effort,",
+      "to": "model: { ...entry, id: 'claude-haiku-4-5-20251001' },\n        effort: null,"
     }
   ],
   "argv": [

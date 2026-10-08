@@ -1,6 +1,8 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { outcomeText, type AuditCall } from '../../../shared/audit'
+import SwitchesSection from './SwitchesSection'
 import type { AuditState } from './useAudit'
+import type { ToolSettingsState } from './useToolSettings'
 
 const NO_ANSWER = 'the app did not answer'
 const WAITING = 'Waiting for your answer in the Windows message box...'
@@ -22,14 +24,18 @@ function when(ms: number): string {
 interface ToolsDialogProps {
   open: boolean
   audit: AuditState
+  /** Which tools are on and the caps (D-041, 11.4), as main has them. */
+  settings: ToolSettingsState
   onClose: () => void
 }
 
 /**
- * The Tools page (D-041). For now it holds the audit log: every tool call the model asked for, what it asked, why, what the person answered and how it ended.
- * Main keeps the log and the page only shows it. Deleting it is asked about in the system's own message box, which this page cannot answer.
+ * The Tools page (D-041). It holds the switches (which tools the model may ask for, off until the person turns one on) and the caps on one reply (11.4), and the
+ * audit log: every tool call the model asked for, what it asked, why, what the person answered and how it ended. Main keeps the settings and the log and the
+ * page only shows them and asks for a change. Switching a tool on, raising a cap and deleting the log are asked about in the system's own message box, which
+ * this page cannot answer.
  */
-function ToolsDialog({ open, audit, onClose }: ToolsDialogProps): React.JSX.Element {
+function ToolsDialog({ open, audit, settings, onClose }: ToolsDialogProps): React.JSX.Element {
   const dialogRef = useRef<HTMLDialogElement>(null)
   // While main is working (the system's message box may be open), Escape does not close the dialog: the answer is still to come.
   const busyRef = useRef(false)
@@ -60,6 +66,7 @@ function ToolsDialog({ open, audit, onClose }: ToolsDialogProps): React.JSX.Elem
       {open && (
         <ToolsBody
           audit={audit}
+          settings={settings}
           onBusy={(on) => {
             busyRef.current = on
           }}
@@ -72,11 +79,12 @@ function ToolsDialog({ open, audit, onClose }: ToolsDialogProps): React.JSX.Elem
 
 interface ToolsBodyProps {
   audit: AuditState
+  settings: ToolSettingsState
   onBusy: (busy: boolean) => void
   onClose: () => void
 }
 
-function ToolsBody({ audit, onBusy, onClose }: ToolsBodyProps): React.JSX.Element {
+function ToolsBody({ audit, settings, onBusy, onClose }: ToolsBodyProps): React.JSX.Element {
   const { view } = audit
   const [notice, setNotice] = useState<Notice | null>(null)
   const [busy, setBusy] = useState(false)
@@ -131,6 +139,7 @@ function ToolsBody({ audit, onBusy, onClose }: ToolsBodyProps): React.JSX.Elemen
 
   return (
     <div className="tools-body">
+      <SwitchesSection settings={settings} busy={busy} working={working} />
       <section className="tools-section" aria-labelledby="tools-audit-title">
         <h3 id="tools-audit-title" className="tools-section-title">
           Audit log

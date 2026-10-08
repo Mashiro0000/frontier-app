@@ -1,0 +1,14 @@
+{
+  "label": "n113-reply-told",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "          await options.record(event)\n          try {\n            input.onEvent?.(event)",
+      "to": "          try {\n            input.onEvent?.(event)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

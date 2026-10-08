@@ -1,0 +1,14 @@
+{
+  "label": "n113-settings-caps",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettings.ts",
+      "from": "if (!inRange(steps, TOOL_CAPS_BOUNDS.steps.min, TOOL_CAPS_BOUNDS.steps.max)) return null",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "keptDocuments([everyChat.file, memory.file, projects.file, auditLog.document])",
-      "to": "keptDocuments([everyChat.file, memory.file, projects.file])"
+      "from": "      auditLog.document,\n      toolSettings.file",
+      "to": "      toolSettings.file"
     }
   ],
   "argv": [

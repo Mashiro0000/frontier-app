@@ -26,17 +26,25 @@ export interface SystemQuestion {
   no: string
 }
 
-/** Asks the person, for the window `owner`, and resolves `true` only for their yes. Handed in by main (backupDialogs.ts); played by the tests. */
-export type AskPerson = (owner: unknown, question: SystemQuestion) => Promise<boolean>
+/**
+ * Asks the person, for the window `owner`, and resolves `true` only for their yes. Handed in by main (backupDialogs.ts); played by the tests. With a
+ * `signal` (11.3: Stop everything), aborting it closes the box, which then answers as if the person had said no.
+ */
+export type AskPerson = (
+  owner: unknown,
+  question: SystemQuestion,
+  signal?: AbortSignal
+) => Promise<boolean>
 
 /**
  * `yes` and `no` are the person's answers; `busy`: another question was open, so this one was not asked; `resting`: the person said no a moment ago,
- * so this one was not asked; `failed`: the box could not be shown (nothing is changed, as for a no).
+ * so this one was not asked; `failed`: the box could not be shown (nothing is changed, as for a no); `stopped` (11.3): the signal that was given
+ * aborted (Stop everything), before the question or while it was open: never a yes, and not a "no" either, so no quiet time follows it.
  */
-export type GateAnswer = 'yes' | 'no' | 'busy' | 'resting' | 'failed'
+export type GateAnswer = 'yes' | 'no' | 'busy' | 'resting' | 'failed' | 'stopped'
 
 export interface QuestionGate {
-  ask(owner: unknown, question: SystemQuestion): Promise<GateAnswer>
+  ask(owner: unknown, question: SystemQuestion, signal?: AbortSignal): Promise<GateAnswer>
   /** True while a question is open (or about to be shown). */
   open(): boolean
 }
@@ -63,12 +71,16 @@ export function createQuestionGate(
   let asking = false
   let quietUntil = 0
   return {
-    ask: async (owner, question) => {
+    ask: async (owner, question, signal) => {
+      if (signal?.aborted) return 'stopped'
       if (asking) return 'busy'
       if (now() < quietUntil) return 'resting'
       asking = true
       try {
-        if ((await askPerson(owner, question)) === true) return 'yes'
+        const answered = await askPerson(owner, question, signal)
+        // A Stop that came while the box was open wins over everything, a yes included.
+        if (signal?.aborted) return 'stopped'
+        if (answered === true) return 'yes'
         quietUntil = now() + QUIET_AFTER_NO_MS
         return 'no'
       } catch (error) {

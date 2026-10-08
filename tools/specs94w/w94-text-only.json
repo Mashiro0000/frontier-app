@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "      estimateInputTokens(streamRequest.system, streamRequest.messages) + fileTokens",
-      "to": "      estimateInputTokens(streamRequest.system, streamRequest.messages)"
+      "from": "      estimateInputTokens(streamRequest.system, streamRequest.messages) +\n      fileTokens +\n",
+      "to": "      estimateInputTokens(streamRequest.system, streamRequest.messages) +\n"
     }
   ],
   "argv": [

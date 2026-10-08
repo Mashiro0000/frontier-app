@@ -156,18 +156,21 @@ export interface ConversationStore {
 
 /** The title shown in the list: the first message the person wrote, on one line, cut at 60 characters. */
 /**
- * The version a chat's file is written as: 5 when it belongs to a project (D-039), 4 when a message of it carries files (D-037), else 3, so a chat in no
- * project and without files is written exactly as before.
+ * The version a chat's file is written as: 6 when a reply of it carries tool calls (D-041, 11.4; it may belong to a project too), 5 when it belongs to a
+ * project (D-039), 4 when a message of it carries files (D-037), else 3, so a chat in no project, without files and without tool calls is written exactly
+ * as before.
  */
 export const fileVersion = (conversation: {
   messages: readonly SavedMessage[]
   project?: string
-}): 3 | 4 | 5 =>
-  conversation.project !== undefined
-    ? 5
-    : conversation.messages.some((message) => message.attachments !== undefined)
-      ? 4
-      : 3
+}): 3 | 4 | 5 | 6 =>
+  conversation.messages.some((message) => message.tools !== undefined)
+    ? 6
+    : conversation.project !== undefined
+      ? 5
+      : conversation.messages.some((message) => message.attachments !== undefined)
+        ? 4
+        : 3
 
 export function titleFor(messages: readonly SavedMessage[]): string {
   const firstMessage = messages.find((message) => message.role === 'user')
@@ -203,7 +206,8 @@ export function parseSavedFile(raw: unknown, id: string): SavedConversation | st
     file.version !== 2 &&
     file.version !== 3 &&
     file.version !== 4 &&
-    file.version !== 5
+    file.version !== 5 &&
+    file.version !== 6
   ) {
     return 'it was made by another version of the app'
   }
@@ -216,7 +220,7 @@ export function parseSavedFile(raw: unknown, id: string): SavedConversation | st
   // opened without the instructions it was saved with would quietly answer differently. An older file has none, and whatever such a file
   // says about them is not read (it was not made by a version that knew them).
   let instructions = ''
-  if (file.version === 3 || file.version === 4 || file.version === 5) {
+  if (file.version === 3 || file.version === 4 || file.version === 5 || file.version === 6) {
     const checked =
       typeof file.instructions === 'string' ? checkInstructions(file.instructions) : null
     if (checked === null || !checked.ok) return 'its instructions are not usable'
@@ -226,7 +230,8 @@ export function parseSavedFile(raw: unknown, id: string): SavedConversation | st
   const messages = checkSavedMessages(
     file.messages,
     file.version === 1 ? 'file-v1' : 'file',
-    file.version === 4 || file.version === 5
+    file.version === 4 || file.version === 5 || file.version === 6,
+    file.version === 6 // tool calls (D-041, 11.4) are read only from a version 6 file
   )
   if (!messages.ok) return messages.error
   if (
@@ -235,8 +240,16 @@ export function parseSavedFile(raw: unknown, id: string): SavedConversation | st
   ) {
     return 'it says it holds files and holds none'
   }
-  // A project (D-039, 10.5) is read only from a version 5 file, which must name one by an id that is one; an older file knew no projects.
+  // Tool calls are read only from a version 6 file, which must hold at least one: a version 6 file without any is not one this app writes.
+  if (file.version === 6 && !messages.messages.some((message) => message.tools !== undefined)) {
+    return 'it says it holds tool calls and holds none'
+  }
+  // A project (D-039, 10.5) is read only from a version 5 file, which must name one by an id that is one; an older file knew no projects. A version 6 file
+  // may name one or not (a chat with tool calls may be in a project or in none).
   if (file.version === 5 && !isProjectId(file.project)) return 'its project is not usable'
+  if (file.version === 6 && file.project !== undefined && !isProjectId(file.project)) {
+    return 'its project is not usable'
+  }
   return {
     id,
     title: file.title,
@@ -244,7 +257,9 @@ export function parseSavedFile(raw: unknown, id: string): SavedConversation | st
     updatedAt: file.updatedAt,
     instructions,
     messages: messages.messages,
-    ...(file.version === 5 ? { project: file.project as string } : {})
+    ...(file.version === 5 || (file.version === 6 && file.project !== undefined)
+      ? { project: file.project as string }
+      : {})
   }
 }
 

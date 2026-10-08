@@ -293,7 +293,7 @@ await guard('G', async () => {
     check(`G: ${file} has no Electron import (checked here under plain Node)`, !/from 'electron'/.test(source(file)))
   }
   const gate = source('src/main/systemQuestion.ts')
-  check('G: the gate takes only `true` as a yes', /\(await askPerson\(owner, question\)\) === true\) return 'yes'/.test(gate))
+  check('G: the gate takes only `true` as a yes', /const answered = await askPerson\(owner, question, signal\)/.test(gate) && /if \(answered === true\) return 'yes'/.test(gate) && (gate.match(/return 'yes'/g) ?? []).length === 1)
 })
 
 process.exit(check.summary() ? 0 : 1)

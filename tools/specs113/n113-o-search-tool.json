@@ -1,0 +1,14 @@
+{
+  "label": "n113-o-search-tool",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "      tools: [{ type: 'web_search' }],",
+      "to": "      tools: [{ type: 'web_search_preview' as 'web_search' }],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

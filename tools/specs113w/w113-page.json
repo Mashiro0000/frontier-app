@@ -1,0 +1,18 @@
+{
+  "label": "w113-page",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ipcReply.ts",
+      "from": "      else if (event.type === 'tool')\n        continue",
+      "to": "      else if (false as boolean)\n        continue"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run113.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 900000
+}

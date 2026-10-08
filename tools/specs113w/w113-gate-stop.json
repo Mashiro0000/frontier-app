@@ -1,0 +1,18 @@
+{
+  "label": "w113-gate-stop",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/systemQuestion.ts",
+      "from": "        if (signal?.aborted) return 'stopped'\n        if (answered === true) return 'yes'",
+      "to": "        if (answered === true) return 'yes'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run113.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 900000
+}

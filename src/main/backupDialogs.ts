@@ -115,7 +115,7 @@ export const systemAskers: Askers = {
  * the change and is never the default: "no" has the focus, and Escape or closing the box gives the same answer, so only a deliberate click on yes says
  * yes. The page cannot reach the box: it is drawn by the operating system, modal to the app's window.
  */
-export const askPerson: AskPerson = async (owner, question) => {
+export const askPerson: AskPerson = async (owner, question, signal) => {
   const options = {
     type: 'warning' as const,
     title: question.title,
@@ -124,7 +124,9 @@ export const askPerson: AskPerson = async (owner, question) => {
     buttons: [question.yes, question.no],
     defaultId: 1,
     cancelId: 1,
-    noLink: true
+    noLink: true,
+    // (11.3) Stop everything closes an open question: the box then answers as if it had been cancelled.
+    ...(signal === undefined ? {} : { signal })
   }
   const window = windowOf(owner)
   const result = window

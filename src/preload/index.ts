@@ -79,6 +79,12 @@ const api: FrontierApi = {
     exportAll: () => ipcRenderer.invoke(CHANNELS.auditExport),
     deleteAll: () => ipcRenderer.invoke(CHANNELS.auditDeleteAll)
   },
+  tools: {
+    status: () => ipcRenderer.invoke(CHANNELS.toolsStatus),
+    setEnabled: (tool, on) => ipcRenderer.invoke(CHANNELS.toolsSetEnabled, { tool, on }),
+    setCaps: (caps) => ipcRenderer.invoke(CHANNELS.toolsSetCaps, caps),
+    reset: () => ipcRenderer.invoke(CHANNELS.toolsReset)
+  },
   projects: {
     status: () => ipcRenderer.invoke(CHANNELS.projectsStatus),
     create: (name) => ipcRenderer.invoke(CHANNELS.projectsCreate, { name }),

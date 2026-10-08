@@ -1,0 +1,18 @@
+{
+  "label": "w113-core-signal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      gate.ask(owner, question, signal).then(",
+      "to": "      gate.ask(owner, question).then("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run113.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 900000
+}

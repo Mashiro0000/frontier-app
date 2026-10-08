@@ -82,7 +82,11 @@ export const TOOL_RESULT_LIMITS = Object.freeze({
   /** A source's title is one visible line of at most this many characters. */
   maxTitleChars: 200,
   /** A source's address, a plain https one, is at most this many characters. */
-  maxUrlChars: 2000
+  maxUrlChars: 2000,
+  /** The words a provider says it searched are one visible line of at most this many characters. */
+  maxSearchedChars: 300,
+  /** The most searches one call can have run (and been billed for). */
+  maxSearches: 20
 })
 
 /** A page a result came from: what it is called and where it is. Plain text from outside; an address opens only after the person clicks. */
@@ -128,4 +132,34 @@ export type ToolEvent =
       size: number
       /** The sources that came back: titles and addresses only, never any page text. */
       sources: ToolSource[]
+      /** The words the provider says it actually searched, when it said (they can differ from the words the person approved); null otherwise. */
+      searched: string | null
+      /** How many searches the provider ran for this call, and bills (0 for a call that failed or was not a search). */
+      searches: number
     }
+
+/** A tool as the Tools page shows it (11.4): its id, what the person calls it, what it does, and whether it is switched on. */
+export interface ToolInfo {
+  id: string
+  title: string
+  /** What the tool does, for the person, in words main took from the registry. */
+  about: string
+  on: boolean
+}
+
+/**
+ * What main says about the tool settings (11.4): the tools this version of the app has, which are on, the caps, and, when the settings file could not be read,
+ * why (every tool is then off and the caps are the defaults, and nothing can be switched on until the person starts again).
+ */
+export interface ToolsStatus {
+  tools: ToolInfo[]
+  caps: ToolCaps
+  problem: string | null
+}
+
+/**
+ * The answer to a change of the tool settings. `cancelled`: the person said no (or closed the system's message box) when the change needed their yes, and
+ * nothing was changed. A change that lets the app do more (a tool on, a higher cap) waits for that yes; a change that does less (a tool off, lower caps) does not.
+ */
+export type ToolChangeResult =
+  { ok: true; status: ToolsStatus } | { ok: false; error: string; cancelled?: true }

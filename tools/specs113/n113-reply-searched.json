@@ -1,0 +1,14 @@
+{
+  "label": "n113-reply-searched",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "              searched: found.searched,",
+      "to": "              searched: null,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

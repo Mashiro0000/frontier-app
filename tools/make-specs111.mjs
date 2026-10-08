@@ -184,7 +184,7 @@ const win = {
   'w111-bridge-tools': [s.xBridge],
   'w111-handler': [[IPC, '  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))', "  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))\n  ipcMain.handle('tools:answer', guarded(async () => true))"]],
   'w111-request-tools': [[ANT, '      ...(effort ? { output_config: { effort } } : {}),', '      tools: [],\n      ...(effort ? { output_config: { effort } } : {}),']],
-  'w111-openai-tool-choice': [[OAI, '      store: false', "      store: false,\n      tool_choice: 'none'"]],
+  'w111-openai-tool-choice': [[OAI, '      store: false,\n', "      store: false,\n      tool_choice: 'none',\n"]],
   'w111-tool-call-shown': [[ANT, "    if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {", "    if (event.type === 'content_block_start' && event.content_block.type === 'tool_use') {\n      yield { type: 'text', text: `[tool_use ${event.content_block.name}]` }\n    }\n    if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {"]],
   'w111-page-says-tools': [[CB, 'Attach...', 'Attach tools...']],
   'w111-bundle-holds-registry': [[IPC, "import { createQuestionGate } from './systemQuestion'", "import { createQuestionGate } from './systemQuestion'\nimport { WEB_SEARCH } from './toolRegistry'"], [IPC, '  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))', '  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))\n  console.log(WEB_SEARCH.title)']]

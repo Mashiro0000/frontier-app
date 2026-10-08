@@ -1,0 +1,14 @@
+{
+  "label": "n113-o-search-count",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "      if (item.status === 'completed') searches += 1",
+      "to": "      void searches"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

@@ -19,6 +19,7 @@ import {
 } from './ipc'
 import { isProjectId } from './projects'
 import { SUPPORTED_PROVIDERS, type Effort, type ProviderId } from './registry'
+import { checkToolNotes } from './toolNotes'
 
 export const API_KEY_MIN_LENGTH = 20
 export const API_KEY_MAX_LENGTH = 300
@@ -482,7 +483,9 @@ export function checkSavedMessages(
   input: unknown,
   source: MessageSource = 'page',
   /** Files are read on the person's messages (D-037): from the page, and from a file of version 4. An older file's messages are read without them. */
-  filesAllowed: boolean = source === 'page'
+  filesAllowed: boolean = source === 'page',
+  /** Tool calls are read on a reply (D-041, 11.4): from the page, and from a file of version 6. An older file's messages are read without them. */
+  toolsAllowed: boolean = source === 'page'
 ): MessagesCheck {
   const refuse = (error: string): MessagesCheck => ({ ok: false, error })
   if (!Array.isArray(input) || input.length === 0) return refuse('There is nothing to save.')
@@ -498,7 +501,7 @@ export function checkSavedMessages(
   for (const item of input) {
     if (typeof item !== 'object' || item === null)
       return refuse('The conversation was not understood.')
-    const { role, content, status, error, attachments } = item as Record<string, unknown>
+    const { role, content, status, error, attachments, tools } = item as Record<string, unknown>
     // The files of a message of the person's (D-037): each described in full and named once; at most `perMessage`. A message may have files and no text.
     let files: AttachmentInfo[] | null = null
     if (attachments !== undefined && filesAllowed) {
@@ -551,6 +554,12 @@ export function checkSavedMessages(
       message.model = answerer.model
     }
     if (files !== null) message.attachments = files
+    // The tool calls of a reply (D-041, 11.4): each checked field by field, standing within the reply's own text; on a message that is not a reply they are an error.
+    if (tools !== undefined && toolsAllowed) {
+      const notes = role === 'assistant' ? checkToolNotes(tools, content.length) : null
+      if (notes === null) return refuse('The conversation was not understood.')
+      message.tools = notes
+    }
     messages.push(message)
   }
   if (chatFiles.size > ATTACHMENT_LIMITS.perChat) {
