@@ -16,6 +16,8 @@ import MemoryDialog from './memory/MemoryDialog'
 import { useMemory } from './memory/useMemory'
 import ProjectsDialog from './projects/ProjectsDialog'
 import { projectOf, useProjects } from './projects/useProjects'
+import ToolsDialog from './tools/ToolsDialog'
+import { useAudit } from './tools/useAudit'
 import EffortPicker from './settings/EffortPicker'
 import { providerMissingKey } from './settings/format'
 import LimitsDialog from './settings/LimitsDialog'
@@ -66,6 +68,10 @@ function App(): React.JSX.Element {
   const projects = useProjects()
   const [projectsOpen, setProjectsOpen] = useState(false)
   const chatProject = projectOf(projects.status, chat.project)
+  // The audit log of tool calls (D-041): kept by main; the Tools page shows it, and asks for the export and the deletion.
+  const audit = useAudit()
+  const [toolsOpen, setToolsOpen] = useState(false)
+  const { reload: reloadAudit } = audit
   // A message carries at most ten files, and a chat (whose files are sent again with every message) at most fifty.
   const attachFull =
     attachments.files.length >= ATTACHMENT_LIMITS.perMessage ||
@@ -135,6 +141,10 @@ function App(): React.JSX.Element {
           projects.reload()
           setProjectsOpen(true)
         }}
+        onOpenTools={() => {
+          reloadAudit()
+          setToolsOpen(true)
+        }}
         saveFailed={history.saveError !== null}
         onNewChat={() => history.startNew()}
         onOpenHistory={() => setHistoryOpen(true)}
@@ -168,6 +178,7 @@ function App(): React.JSX.Element {
         onNewChatIn={(id) => history.startNew(id)}
         onClose={() => setProjectsOpen(false)}
       />
+      <ToolsDialog open={toolsOpen} audit={audit} onClose={() => setToolsOpen(false)} />
       <MemoryDialog
         open={memoryOpen}
         memory={memory}

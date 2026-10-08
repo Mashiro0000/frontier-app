@@ -102,6 +102,10 @@ marked (7), Stage 8 the ones marked (8), Stage 8b the ones marked (8b), Stage 9 
 | `src/main/toolQuestion.ts`                   | (11.1) The words of the question before a tool call (D-041): the call in full, every value quoted and escaped so that it cannot pass for the box's own lines. No Electron imports                                                                                                                                                                                                                |
 | `src/main/replyBudget.ts`                    | (11.1) What one reply may use of tools (D-041): steps and working time; the clock stops while the person decides. No Electron imports                                                                                                                                                                                                                                                            |
 | `src/main/dataFolderGuard.ts`                | (11.1) The block that keeps every tool out of the data folder (D-041): a path judged by its text and by where it really is (links, 8.3 names, drives); fail-closed. No Electron imports                                                                                                                                                                                                          |
+| `src/main/auditLog.ts`                       | (11.2) The audit log (D-041), audit/log.jsonl: one line for each event of a tool call, appended and read back from the disk, sealed like the chats, never rewritten except when encryption changes (a cut-off rewrite is mended). Rejects when it cannot keep a line. No Electron imports                                                                                                        |
+| `src/main/auditService.ts`                   | (11.2) What the person can do with the log (D-041): the calls put together, the view, the export (never into the data folder), delete all (asked in the system's own box). No Electron imports                                                                                                                                                                                                   |
+| `src/shared/audit.ts`                        | (11.2) The log as the page sees it (D-041): a call, how it ended and the sentence for that, the view; bundled into the preload too                                                                                                                                                                                                                                                               |
+| `src/renderer/src/tools/*.ts*`               | (11.2) `ToolsDialog` (the Tools page, opened from "Tools" under the message box: for now the audit log) and `useAudit`: what main says of the log, and the two buttons that ask main to export or delete it                                                                                                                                                                                      |
 | `src/renderer/src/chat/MessageFiles.tsx`     | (9.3) The files on a sent message, read only; `previews.ts` asks main (`attachments.describe`) for the pictures and first lines of a chat opened from History, once per file and chat, kept apart from the messages so the chat is not saved again                                                                                                                                               |
 
 ### Settings and the API keys
@@ -351,6 +355,15 @@ question is recorded, the question (`toolQuestion.ts`, put through the same one-
 only a yes runs the tool, its start and result are recorded. Nothing is asked or run that could not be recorded. What a tool brings back is untrusted
 text, cut at 60,000 characters, its sources only plain https addresses. The one tool, `web_search`, takes no path; the guard exists for the tools of
 Stages 12 and 13 and is tested now against stand-in file tools (`tools/verify-11-1-folder.mjs`).
+
+**The audit log (11.2, D-041).** Main keeps `audit/log.jsonl` in the data folder (`auditLog.ts`): one line of JSON for each event of a tool call (refused,
+asked, answered, ran, result), every event naming its call, a result naming the sources that came back (titles and addresses; never any page text). A line
+is appended and proved by reading it back from the disk; it is plain, or sealed like a chat (one envelope per line) when encryption is on, by the same
+`writeMode` rule as every other file. `append` REJECTS when the line cannot be kept, and the core then refuses the call ("not-recorded") before it asks or
+runs anything. Only the newest part of the file is read (the window shows the newest 300 calls); a line that cannot be read is counted and left. Turning
+encryption on or off rewrites the lines (the log is one of the kept documents of `keptDocuments`; a rewrite that is cut off is mended at the next use). The
+page has `window.api.audit`: `read`, `exportAll` (the system's save dialog; never into the data folder) and `deleteAll`, which main asks the person about in the
+system's own message box. Nothing in a request, a provider, a store of notes or a tool imports the log.
 
 ## Chat UI (`src/renderer/src/chat/`)
 

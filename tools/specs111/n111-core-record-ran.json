@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "    if (!(await keep({ type: 'ran', at: now(), tool, step }))) {",
+      "from": "    if (!(await keep({ type: 'ran', at: now(), call, tool, step }))) {",
       "to": "    if (false) {"
     }
   ],

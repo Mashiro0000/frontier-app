@@ -1,0 +1,14 @@
+{
+  "label": "n112-service-titles",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/tools.ts",
+      "from": "  web_search: 'Search the web'",
+      "to": "  web_search: 'Web search'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

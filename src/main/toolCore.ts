@@ -1,10 +1,12 @@
 import {
   toolIsOn,
   DEFAULT_TOOL_SETTINGS,
+  TOOL_RESULT_LIMITS,
   type AnswerCode,
   type RefusalCode,
   type ToolEvent,
-  type ToolSettings
+  type ToolSettings,
+  type ToolSource
 } from '../shared/tools'
 import type { DataFolderGuard, PathOp, PathVerdict } from './dataFolderGuard'
 import type { ReplyBudget } from './replyBudget'
@@ -34,10 +36,7 @@ import {
 // tool brings back is UNTRUSTED text from outside: it is passed on as data with a size cap, and labelled as such by the loop (11.3, 11.5). No Electron
 // imports, so every rule is checked under plain Node with played answers.
 
-export interface ToolSource {
-  title: string
-  url: string
-}
+export type { ToolSource }
 
 /** What a tool brought back: text from outside (never trusted) and where it came from. */
 export interface ToolResult {
@@ -109,6 +108,8 @@ export interface ToolCoreOptions {
   /** How each tool is run, by id. Copied when the core is made. */
   executors: Readonly<Record<string, Executor>>
   now?: () => number
+  /** Where a call's id comes from (the record names every event by it, so that calls that overlap can be told apart). Tests hand in their own. */
+  newId?: () => string
 }
 
 // The sentences that go back to the model for a call that did not run. Fixed, so that nothing a hostile page said or a path can ride back in them.
@@ -140,8 +141,8 @@ export const RUN_FAILED = 'The tool failed.'
 const ENDS_REPLY: ReadonlySet<string> = new Set(['step-cap', 'time-cap', 'stopped'])
 
 /** The most text of a result that is passed on, and the most sources. A bigger result is cut (and says so): it goes into the next request and costs. */
-export const MAX_RESULT_CHARS = 60_000
-export const MAX_SOURCES = 20
+export const MAX_RESULT_CHARS = TOOL_RESULT_LIMITS.maxChars
+export const MAX_SOURCES = TOOL_RESULT_LIMITS.maxSources
 export const RESULT_CUT = '\n[The result was longer than the app passes on, so the rest was cut.]'
 
 const reason = (error: unknown): unknown => (error instanceof Error ? error.message : error)
@@ -156,7 +157,23 @@ function tidyTitle(title: string): string {
     .replace(/[\p{Cc}\s]+/gu, ' ')
     .replace(/[\p{Cf}\p{Zl}\p{Zp}\p{Co}\p{Cn}\p{Cs}]/gu, '')
     .trim()
-  return Array.from(text).slice(0, 200).join('')
+  return Array.from(text).slice(0, TOOL_RESULT_LIMITS.maxTitleChars).join('')
+}
+
+/**
+ * The address as the app keeps and shows it (the page's own form of it, which is plain ASCII: a name with other letters is written the way the web writes
+ * it, so that no invisible or reversing character can ride in an address), or null when it is not a plain https address without a name or a password,
+ * or is too long.
+ */
+function tidyUrl(url: string): string | null {
+  if (url.length > TOOL_RESULT_LIMITS.maxUrlChars || !isSafeExternalUrl(url)) return null
+  let href: string
+  try {
+    href = new URL(url).href
+  } catch {
+    return null
+  }
+  return href.length <= TOOL_RESULT_LIMITS.maxUrlChars && /^[\x21-\x7e]+$/.test(href) ? href : null
 }
 
 /** What a tool handed back, as the app passes it on, or null when it is not a result at all. */
@@ -168,11 +185,15 @@ export function shapeResult(raw: unknown): ToolResult | null {
   if (Array.isArray(sources)) {
     for (const source of sources.slice(0, MAX_SOURCES) as unknown[]) {
       if (source === null || typeof source !== 'object') continue
-      const { title, url } = source as { title?: unknown; url?: unknown }
+      const { title, url: raw } = source as { title?: unknown; url?: unknown }
       // An address opens only after the person clicks, and only if it is a plain https one (security.ts): anything else is dropped here.
-      if (typeof url !== 'string' || url.length > 2000 || !isSafeExternalUrl(url)) continue
+      const url = typeof raw === 'string' ? tidyUrl(raw) : null
+      if (url === null) continue
       const named = typeof title === 'string' ? tidyTitle(title) : ''
-      kept.push({ title: named === '' ? url : named, url })
+      kept.push({
+        title: named === '' ? url.slice(0, TOOL_RESULT_LIMITS.maxTitleChars) : named,
+        url
+      })
     }
   }
   return {
@@ -184,6 +205,14 @@ export function shapeResult(raw: unknown): ToolResult | null {
 export function createToolCore(options: ToolCoreOptions): ToolCore {
   const { tools, gate, guard, record, holdsSavedKey } = options
   const now = options.now ?? Date.now
+  let counter = 0
+  /** A call's id: lower-case letters, digits and hyphens, never the same twice in one run of the app, and (by its random part) almost never across runs. */
+  const newId =
+    options.newId ??
+    ((): string => {
+      counter += 1
+      return `${now().toString(36)}-${counter.toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+    })
   // Copied now: an executor added to the caller's object later is not one this core has.
   const executors = new Map<string, Executor>(Object.entries(options.executors))
 
@@ -248,6 +277,7 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
     def: ToolDefinition,
     executor: Executor,
     args: CheckedArgs,
+    call: string,
     step: number,
     context: RunContext
   ): Promise<ToolOutcome> {
@@ -257,13 +287,13 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       code: 'run-failed' | 'time-cap' | 'stopped',
       text: string
     ): Promise<ToolOutcome> => {
-      await keep({ type: 'result', at: now(), tool, step, ok: false, size: 0, sources: 0 })
+      await keep({ type: 'result', at: now(), call, tool, step, ok: false, size: 0, sources: [] })
       return { kind: 'failed', tool, step, code, text, endsReply: ENDS_REPLY.has(code) }
     }
     if (signal.aborted) {
       return { kind: 'failed', tool, step, code: 'stopped', text: STOPPED, endsReply: true }
     }
-    if (!(await keep({ type: 'ran', at: now(), tool, step }))) {
+    if (!(await keep({ type: 'ran', at: now(), call, tool, step }))) {
       return {
         kind: 'refused',
         tool,
@@ -304,11 +334,12 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       await keep({
         type: 'result',
         at: now(),
+        call,
         tool,
         step,
         ok: true,
         size: result.text.length,
-        sources: result.sources.length
+        sources: result.sources.map(({ title, url }) => ({ title, url }))
       })
       return { kind: 'ran', tool, step, result }
     } catch (error) {
@@ -324,12 +355,12 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
   }
 
   /** Decides what becomes of one call, step by step. It can throw only if the app itself is at fault: `run` catches that and refuses the call. */
-  async function decide(call: ToolCall, context: RunContext): Promise<ToolOutcome> {
+  async function decide(call: ToolCall, callId: string, context: RunContext): Promise<ToolOutcome> {
     const { owner, signal, budget } = context
     const name = nameForRecord(call.tool)
 
     const refused = async (code: RefusalCode, text: string, step: number): Promise<ToolOutcome> => {
-      await keep({ type: 'refused', at: now(), tool: name, step, code })
+      await keep({ type: 'refused', at: now(), call: callId, tool: name, step, code })
       return { kind: 'refused', tool: name, step, code, text, endsReply: ENDS_REPLY.has(code) }
     }
 
@@ -395,7 +426,17 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
     if (question.detail.length > SHOWN_LIMIT) return refused('bad-arguments', TOO_LONG_TEXT, step)
 
     // Nothing is asked, and nothing runs, that has not been recorded first.
-    if (!(await keep({ type: 'asked', at: now(), tool: def.id, step, args, why: checked.why }))) {
+    if (
+      !(await keep({
+        type: 'asked',
+        at: now(),
+        call: callId,
+        tool: def.id,
+        step,
+        args,
+        why: checked.why
+      }))
+    ) {
       return refused('not-recorded', NOT_RECORDED, step)
     }
 
@@ -408,7 +449,14 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       budget.resume()
     }
     if (answer === 'yes' && signal.aborted) answer = 'stopped' // Stop came first: the yes is not one
-    const recorded = await keep({ type: 'answered', at: now(), tool: def.id, step, answer })
+    const recorded = await keep({
+      type: 'answered',
+      at: now(),
+      call: callId,
+      tool: def.id,
+      step,
+      answer
+    })
     if (answer !== 'yes') {
       return {
         kind: 'declined',
@@ -421,7 +469,7 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
     }
     if (!recorded) return refused('not-recorded', NOT_RECORDED, step)
 
-    return execute(def, executor, Object.freeze(args), step, context)
+    return execute(def, executor, Object.freeze(args), callId, step, context)
   }
 
   return {
@@ -434,8 +482,14 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
     },
 
     run: async (call, context) => {
+      let callId = 'call'
       try {
-        return await decide(call, context)
+        callId = newId()
+      } catch {
+        // the fixed name above: the record is still kept, and the events of one call still share it
+      }
+      try {
+        return await decide(call, callId, context)
       } catch (error) {
         // A fault of the app's own (or an object that throws when it is read): nothing was run, and the model is told no more than that.
         console.error('Deciding on a tool call failed:', reason(error))
@@ -443,7 +497,7 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
           call !== null && typeof call === 'object' ? (call as ToolCall).tool : undefined
         )
         const step = context.budget.used().steps
-        await keep({ type: 'refused', at: now(), tool, step, code: 'internal' })
+        await keep({ type: 'refused', at: now(), call: callId, tool, step, code: 'internal' })
         return { kind: 'refused', tool, step, code: 'internal', text: INTERNAL, endsReply: false }
       }
     }

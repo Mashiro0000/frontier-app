@@ -1,0 +1,14 @@
+{
+  "label": "n112-file-sealed-count",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "        if (decoded.bad === 'sealed') sealedClosed += 1\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

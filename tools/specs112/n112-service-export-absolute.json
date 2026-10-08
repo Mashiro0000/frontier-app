@@ -1,0 +1,14 @@
+{
+  "label": "n112-service-export-absolute",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditService.ts",
+      "from": "    if (typeof dest !== 'string' || !isAbsolute(dest)) {",
+      "to": "    if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-time",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "Number.isSafeInteger(value) && value > 0\n",
+      "to": "true\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

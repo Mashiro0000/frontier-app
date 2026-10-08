@@ -1,0 +1,14 @@
+{
+  "label": "n112-service-export-order",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditService.ts",
+      "from": "  for (const call of calls) {",
+      "to": "  for (const call of [...calls].reverse()) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

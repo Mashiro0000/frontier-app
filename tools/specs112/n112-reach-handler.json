@@ -1,0 +1,14 @@
+{
+  "label": "n112-reach-handler",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))",
+      "to": "  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))\n  ipcMain.handle('audit:append', guarded(async () => true))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w112-reason-as-html",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/ToolsDialog.tsx",
+      "from": "<p className=\"tools-why\">The model&apos;s reason: {call.why}</p>",
+      "to": "<p className=\"tools-why\" dangerouslySetInnerHTML={{ __html: call.why }} />"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run112.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

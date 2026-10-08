@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-step",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "!isCount(step, 100_000)",
+      "to": "!isCount(step, Infinity)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

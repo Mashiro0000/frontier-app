@@ -1,0 +1,18 @@
+{
+  "label": "w112-handler-extra",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))",
+      "to": "  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))\n  ipcMain.handle('audit:append', guarded(async () => true))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run112.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

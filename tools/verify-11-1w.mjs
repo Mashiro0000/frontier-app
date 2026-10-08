@@ -1,8 +1,10 @@
 // Stage 11.1 (D-041), in the real window against the mock: the tool registry and the permission core are in main, and NOTHING in the app can reach them yet
-// (11.3 wires the loop). So this suite proves that nothing changed and nothing new is reachable: a request carries no tools and no tool choice, to either
-// provider; the bridge (window.api) is exactly Stage 10's and nothing in it, at any depth, is a tool, an approval or an audit function; the main process has
-// no message handler with such a name; a model that asks for a tool (the mock's [[mock:tool-use]]) gets nothing: its text is shown, no second request is made,
-// no system box opens, and the saved chat holds no tool call; Settings and the page say nothing of tools; no console errors.
+// (11.3 wires the loop). So this suite proves that nothing new is reachable: a request carries no tools and no tool choice, to either provider; the bridge
+// (window.api) is Stage 10's eight groups and, since 11.2, the audit log's (read, export, delete all: checked by name below) and nothing in it, at any depth,
+// is a tool or an approval; the main process has no message handler with such a name; a model that asks for a tool (the mock's [[mock:tool-use]]) gets
+// nothing: its text is shown, no second request is made, no system box opens, and the saved chat holds no tool call; Settings says nothing of tools; no
+// console errors. (11.2 moved three things on purpose: the audit group, its three handlers, and the Tools button under the message box; 11.3 will move the
+// bundle check below.)
 // Needs: USER_DATA_DIR (scratch), INSPECT_PORT, MOCK_PORT, a saved key (setup-key.mjs).
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
@@ -27,7 +29,7 @@ const main = await mainInspector(inspectPort)
 const Q = await installQuestions(main, { fallback: 'no' })
 const show = (v) => JSON.stringify(v)?.slice(0, 400)
 const OPENAI_KEY = 'sk-proj-' + 'T4kq9Vw2Lr7Xm3Jc8Hn1Pd6Bs0Gf5Uy2Ze7Wa4Ro9Mi3Vt8Qk1Hx6Nb0Dl5Pj2Cf8Sy3Lu7Ev4Rw9Mq1Ka6Gz0Cn5Hd'
-const TOOLISH = /tool|audit|approv/i
+const TOOLISH = /tool|approv/i
 const sentTools = (r) => ['tools', 'tool_choice', 'max_tool_calls', 'parallel_tool_calls'].filter((k) => k in (r?.body ?? {}))
 
 try {
@@ -60,16 +62,18 @@ try {
     walk(window.api, '', 0)
     return { top: Object.keys(window.api).sort(), names }
   })()`)
-  check('B: window.api is exactly Stage 10\'s eight groups (attachments, chat, history, instructions, memory, projects, settings, usage)', show(api.top) === show(['attachments', 'chat', 'history', 'instructions', 'memory', 'projects', 'settings', 'usage']), show(api.top))
-  check('B: nothing in it, at any depth, is called a tool, an approval or an audit', !api.names.some((n) => TOOLISH.test(n)), show(api.names.filter((n) => TOOLISH.test(n))))
-  check('B: ...and the walk reached the functions of the groups (54 names at the end of Stage 10)', api.names.length >= 50, String(api.names.length))
+  check('B: window.api is Stage 10\'s eight groups and the audit log\'s (attachments, audit, chat, history, instructions, memory, projects, settings, usage)', show(api.top) === show(['attachments', 'audit', 'chat', 'history', 'instructions', 'memory', 'projects', 'settings', 'usage']), show(api.top))
+  check('B: nothing in it, at any depth, is called a tool or an approval', !api.names.some((n) => TOOLISH.test(n)), show(api.names.filter((n) => TOOLISH.test(n))))
+  check('B: the audit group is exactly read, exportAll and deleteAll (no way to add, change or remove a line)', show(api.names.filter((n) => /^audit/.test(n)).sort()) === show(['audit', 'audit.deleteAll', 'audit.exportAll', 'audit.read']), show(api.names.filter((n) => /audit/i.test(n))))
+  check('B: ...and the walk reached the functions of the groups (54 names at the end of Stage 10, 58 with the audit log)', api.names.length >= 55, String(api.names.length))
 
   // ============ C. the main process ============
   const handlers = JSON.parse(await main.inMain(`JSON.stringify([...process.mainModule.require('electron').ipcMain._invokeHandlers.keys()].sort())`))
-  check('C: main has message handlers for the page (the list could be read: 41 at the end of Stage 10)', handlers.length >= 38 && handlers.some((h) => /settings/.test(h)), String(handlers.length))
-  check('C: ...none of them has tool, approval or audit in its name', !handlers.some((h) => TOOLISH.test(h)), show(handlers.filter((h) => TOOLISH.test(h))))
+  check('C: main has message handlers for the page (the list could be read: 41 at the end of Stage 10, 44 with the audit log)', handlers.length >= 42 && handlers.some((h) => /settings/.test(h)), String(handlers.length))
+  check('C: ...none of them has tool or approval in its name', !handlers.some((h) => TOOLISH.test(h)), show(handlers.filter((h) => TOOLISH.test(h))))
+  check('C: ...and the ones about the audit log are exactly three: read, export, delete all', show(handlers.filter((h) => /audit/.test(h))) === show(['audit:delete-all', 'audit:export', 'audit:read']), show(handlers.filter((h) => /audit/.test(h))))
   const listeners = JSON.parse(await main.inMain(`JSON.stringify(process.mainModule.require('electron').ipcMain.eventNames().map(String).sort())`))
-  check('C: ...nor does any one-way listener', !listeners.some((h) => TOOLISH.test(h)), show(listeners))
+  check('C: ...no one-way listener has such a name either (tool, approval, audit)', !listeners.some((h) => /tool|approv|audit/i.test(h)), show(listeners))
 
   // ============ D. a model that asks for a tool gets nothing ============
   await Q.reset()
@@ -94,22 +98,23 @@ try {
 
   // ============ F. the program that is running holds none of it ============
   const bundle = readFileSync(join(REPO, 'out', 'main', 'index.js'), 'utf8')
-  const NEW_TEXT = ['That tool does not exist.', 'The person did not allow this.', 'a name Windows treats as a device', 'The model asked to use a tool.', 'Search the web']
-  check('F: the main program that is running (out/main/index.js) holds none of the new code: nothing imports it, so the bundler left it out', bundle.length > 100000 && NEW_TEXT.every((t) => !bundle.includes(t)), show([bundle.length, NEW_TEXT.filter((t) => bundle.includes(t))]))
+  const NEW_TEXT = ['That tool does not exist.', 'The person did not allow this.', 'a name Windows treats as a device', 'The model asked to use a tool.', 'Allow this web search?']
+  check('F: the main program that is running (out/main/index.js) holds none of the registry, the core, the question or the guard: nothing imports them, so the bundler left them out', bundle.length > 100000 && NEW_TEXT.every((t) => !bundle.includes(t)), show([bundle.length, NEW_TEXT.filter((t) => bundle.includes(t))]))
+  check('F: ...and it does hold the audit log (its store and its service), which is all that 11.2 wires in', bundle.includes('Delete the whole audit log?') && bundle.includes('frontier-audit-log-'))
 
   // ============ E. the page says nothing of tools ============
   await page.click('.header-button@Settings')
   await page.waitFor(`!!document.querySelector('dialog.settings')?.open`, { timeoutMs: 8000, label: 'Settings' })
   await sleep(400)
   const settingsText = await ev(`document.querySelector('dialog.settings').innerText`)
-  check('E: Settings says nothing of tools, searches or approvals (nothing can be switched on yet)', !/\btools?\b|web search|search the web|approval|audit/i.test(settingsText), show(settingsText.slice(0, 200)))
+  check('E: Settings says nothing of tools, searches, approvals or the audit log (nothing can be switched on yet)', !/\btools?\b|web search|search the web|approval|audit/i.test(settingsText), show(settingsText.slice(0, 200)))
   await page.press('Escape')
   await sleep(300)
   // (the chat's own messages are left out: this suite's own text, "find the newest release", is in them)
   const chrome = await ev(`['.app-header', '.chat-bar', '.composer'].map((s) => document.querySelector(s)?.innerText ?? '').join('\\n')`)
-  check('E: nor does the page itself (the header, the chat bar, the message box)', chrome.length > 40 && !/\btools?\b|web search|search the web|audit/i.test(chrome), show(chrome.slice(0, 200)))
+  check('E: the page itself (the header, the chat bar, the message box) says nothing of a search or the audit log; its one word about tools is the "Tools" button', chrome.length > 40 && !/web search|search the web|audit/i.test(chrome) && (chrome.match(/\btools?\b/gi) ?? []).length === 1, show(chrome.slice(0, 300)))
   const buttons = await ev(`[...document.querySelectorAll('.app-header button, .chat-bar button, .composer button, dialog.settings button')].map((b) => b.textContent.trim()).filter(Boolean)`)
-  check('E: no button of the page is about tools, a search or an audit log', buttons.length >= 8 && !buttons.some((b) => /tool|search|audit|stop everything/i.test(b)), show(buttons))
+  check('E: no button of the page is about a search, an approval or Stop everything; the only one about tools is "Tools"', buttons.length >= 8 && !buttons.some((b) => /search|audit|stop everything|approv/i.test(b)) && buttons.filter((b) => /tool/i.test(b)).join() === 'Tools', show(buttons))
 } catch (error) {
   check(`the suite stopped before its end: ${String(error?.stack ?? error).slice(0, 400)}`, false)
 }

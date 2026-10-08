@@ -1,0 +1,14 @@
+{
+  "label": "n112-service-delete-silent",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditService.ts",
+      "from": "    if (snapshot !== null && snapshot.state === 'none') return { ok: true } // nothing to delete: nothing asked\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

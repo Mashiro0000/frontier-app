@@ -3,8 +3,13 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "    if (!(await keep({ type: 'asked', at: now(), tool: def.id, step, args, why: checked.why }))) {",
-      "to": "    if (!((await keep({ type: 'asked', at: now(), tool: def.id, step, args, why: checked.why })) || true)) {"
+      "from": "    if (\n      !(await keep({\n        type: 'asked',",
+      "to": "    if (\n      !((await keep({\n        type: 'asked',"
+    },
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "        why: checked.why\n      }))\n    ) {",
+      "to": "        why: checked.why\n      })) || true)\n    ) {"
     }
   ],
   "argv": [

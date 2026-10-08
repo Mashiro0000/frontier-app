@@ -1,0 +1,14 @@
+{
+  "label": "n112-service-view-order",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditService.ts",
+      "from": "calls: calls.slice(-AUDIT_VIEW_CALLS).reverse(),",
+      "to": "calls: calls.slice(0, AUDIT_VIEW_CALLS),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

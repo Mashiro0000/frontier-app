@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-roundtrip",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "  if (back === null || JSON.stringify(lineObject(back)) !== text) {",
+      "to": "  if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

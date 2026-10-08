@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-sources-max",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "Array.isArray(sources) || sources.length > TOOL_RESULT_LIMITS.maxSources) return null",
+      "to": "Array.isArray(sources)) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

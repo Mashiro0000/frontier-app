@@ -1,0 +1,14 @@
+{
+  "label": "n112-file-newline",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "${before.endsInNewline ? '' : '\\n'}${data}",
+      "to": "${data}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

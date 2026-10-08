@@ -68,6 +68,24 @@ export const pickNotesExportPath = async (
   return result.canceled || !result.filePath ? null : result.filePath
 }
 
+/** The system's save dialog for "Export..." on the audit log (D-041): the person places the plain text file of the log; null if they close it. */
+export const pickAuditExportPath = async (
+  owner: unknown,
+  suggestedName: string
+): Promise<string | null> => {
+  const options = {
+    title: 'Export the audit log',
+    defaultPath: join(app.getPath('documents'), suggestedName),
+    filters: [NOTES_FILTER],
+    properties: ['showOverwriteConfirmation' as const]
+  }
+  const window = windowOf(owner)
+  const result = window
+    ? await dialog.showSaveDialog(window, options)
+    : await dialog.showSaveDialog(options)
+  return result.canceled || !result.filePath ? null : result.filePath
+}
+
 export const systemAskers: Askers = {
   confirmPlain: async (owner, facts) => {
     const { title, message, detail } = plainQuestion(facts)

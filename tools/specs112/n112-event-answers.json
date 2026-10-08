@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-answers",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "typeof answer !== 'string' || !(ANSWER_CODES as readonly string[]).includes(answer)",
+      "to": "typeof answer !== 'string'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

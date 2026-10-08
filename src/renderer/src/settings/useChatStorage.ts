@@ -42,11 +42,13 @@ export function describeEncrypted(report: ChatStorageReport): string {
   // The instructions for every chat and the notes (D-039), said only when there are any.
   if (report.documents !== undefined) {
     if (report.documents.changed > 0) {
-      parts.push('Your instructions for every chat and your notes are encrypted too.')
+      parts.push(
+        'Your instructions for every chat, your notes, your projects and the audit log of tool calls are encrypted too.'
+      )
     }
     if (report.documents.failed > 0) {
       parts.push(
-        'Some of your instructions for every chat or your notes could not be rewritten and are as before.'
+        'Some of your instructions for every chat, notes, projects or the audit log could not be rewritten and are as before.'
       )
     }
   }
@@ -79,11 +81,13 @@ export function describePlain(report: ChatStorageReport, status: ChatStorageStat
   }
   if (report.documents !== undefined) {
     if (report.documents.changed > 0) {
-      parts.push('Your instructions for every chat and your notes are plain files again too.')
+      parts.push(
+        'Your instructions for every chat, your notes, your projects and the audit log of tool calls are plain files again too.'
+      )
     }
     if (report.documents.failed > 0) {
       parts.push(
-        'Some of your instructions for every chat or your notes could not be rewritten and are still encrypted.'
+        'Some of your instructions for every chat, notes, projects or the audit log could not be rewritten and are still encrypted.'
       )
     }
   }

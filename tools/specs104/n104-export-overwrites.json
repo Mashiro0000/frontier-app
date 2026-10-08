@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/backupDialogs.ts",
-      "from": "    filters: [NOTES_FILTER],\n    properties: ['showOverwriteConfirmation' as const]",
-      "to": "    filters: [NOTES_FILTER],\n    properties: []"
+      "from": "    title: 'Export your notes',\n    defaultPath: join(app.getPath('documents'), suggestedName),\n    filters: [NOTES_FILTER],\n    properties: ['showOverwriteConfirmation' as const]",
+      "to": "    title: 'Export your notes',\n    defaultPath: join(app.getPath('documents'), suggestedName),\n    filters: [NOTES_FILTER],\n    properties: []"
     }
   ],
   "argv": [

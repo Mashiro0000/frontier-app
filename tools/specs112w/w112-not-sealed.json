@@ -1,0 +1,18 @@
+{
+  "label": "w112-not-sealed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "keptDocuments([everyChat.file, memory.file, projects.file, auditLog.document])",
+      "to": "keptDocuments([everyChat.file, memory.file, projects.file])"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run112.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

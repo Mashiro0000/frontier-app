@@ -17,6 +17,8 @@ interface ChatBarProps {
   /** The name of the project the chat belongs to (D-039), or null for none. */
   projectName: string | null
   onOpenProjects: () => void
+  /** Opens the Tools page (D-041): the audit log of tool calls, and from 11.4 the switches for the tools. */
+  onOpenTools: () => void
   /** The chat on screen could not be saved (D-017): starting a new one would lose it, and the button says so. */
   saveFailed: boolean
   onNewChat: () => void
@@ -84,6 +86,7 @@ function ChatBar({
   onOpenMemory,
   projectName,
   onOpenProjects,
+  onOpenTools,
   saveFailed,
   onNewChat,
   onOpenHistory,
@@ -200,6 +203,20 @@ function ChatBar({
             Project: <span className="chat-project-name">{projectName}</span>
           </>
         )}
+      </button>
+      {/* The tools the model may ask for, and the audit log of what it asked (D-041). */}
+      <button
+        type="button"
+        className="chat-button chat-tools"
+        disabled={isReplying}
+        title={
+          isReplying
+            ? 'Tools can be opened when the reply has finished.'
+            : 'See what the model has asked tools to do, and what you answered.'
+        }
+        onClick={onOpenTools}
+      >
+        Tools
       </button>
     </div>
   )

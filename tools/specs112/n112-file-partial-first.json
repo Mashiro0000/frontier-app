@@ -1,0 +1,14 @@
+{
+  "label": "n112-file-partial-first",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "        const cut = text.indexOf('\\n')\n        text = cut < 0 ? '' : text.slice(cut + 1)",
+      "to": "        void 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

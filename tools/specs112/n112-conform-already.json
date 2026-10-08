@@ -1,0 +1,14 @@
+{
+  "label": "n112-conform-already",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "    if (!decoded.some(({ d }) => !('bad' in d) && d.form !== wanted)) return 'already'\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

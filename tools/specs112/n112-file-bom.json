@@ -1,0 +1,14 @@
+{
+  "label": "n112-file-bom",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "      if (text.charCodeAt(0) === 0xfeff) text = text.slice(1) // a byte-order mark, which some editors add\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

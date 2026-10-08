@@ -1,0 +1,14 @@
+{
+  "label": "n112-mend-whole-count",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "  return last === commitLine(count) && count > 0 ? body : null",
+      "to": "  return count > 0 ? body : null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-call-id",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "typeof call !== 'string' || !CALL_ID.test(call)",
+      "to": "typeof call !== 'string'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

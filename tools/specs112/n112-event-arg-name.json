@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-arg-name",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "        if (!ARG_NAME.test(name)) return null\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n112-service-export-quote",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditService.ts",
+      "from": "const quoted = (text: string): string => JSON.stringify(text)",
+      "to": "const quoted = (text: string): string => text"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

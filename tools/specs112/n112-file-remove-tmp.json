@@ -1,0 +1,14 @@
+{
+  "label": "n112-file-remove-tmp",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "    await fs.rm(`${file}.tmp`, { force: true })\n    await fs.rm(file, { force: true })",
+      "to": "    await fs.rm(file, { force: true })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

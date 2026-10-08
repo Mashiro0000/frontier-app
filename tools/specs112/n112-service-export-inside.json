@@ -1,0 +1,14 @@
+{
+  "label": "n112-service-export-inside",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditService.ts",
+      "from": "    if (await isInside(options.dataDir, dest)) {",
+      "to": "    if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

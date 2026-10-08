@@ -1,0 +1,14 @@
+{
+  "label": "n112-core-href",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "    href = new URL(url).href",
+      "to": "    href = url"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

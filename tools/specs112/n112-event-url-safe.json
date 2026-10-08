@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-url-safe",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "  if (!/^https:\\/\\/[\\x21-\\x7e]+$/.test(url) || !isSafeExternalUrl(url)) return null",
+      "to": "  if (!/^https:\\/\\/[\\x21-\\x7e]+$/.test(url)) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

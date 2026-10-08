@@ -1,0 +1,18 @@
+{
+  "label": "w112-button-label",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ChatBar.tsx",
+      "from": "        Tools\n      </button>",
+      "to": "        Tool box\n      </button>"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run112.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

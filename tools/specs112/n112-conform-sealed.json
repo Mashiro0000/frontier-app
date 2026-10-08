@@ -1,0 +1,14 @@
+{
+  "label": "n112-conform-sealed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "      if ('bad' in d && d.bad === 'sealed') return 'unreadable' // the file stays exactly as it is\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

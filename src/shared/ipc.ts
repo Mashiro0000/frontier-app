@@ -4,6 +4,7 @@
 
 import type { AskFirstChoice, AskFirstSetting, RequestEstimate } from './askFirst'
 import type { AttachedFile, AttachmentInfo } from './attachments'
+import type { AuditDeleteResult, AuditExportResult, AuditView } from './audit'
 import type { Limits, LimitsChoice } from './limits'
 import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from './memory'
 import type { ProjectChangeResult, ProjectsStatus } from './projects'
@@ -573,6 +574,16 @@ export interface FrontierApi {
    * are kept only after the person's yes in the system's own message box (the files come through the system's open dialog: the page sends no path);
    * making, renaming, taking a file off and deleting ask nothing there. A project's name is never sent to the model.
    */
+  /**
+   * The audit log of tool calls (Stage 11, D-041): what the model asked tools to do, what the person answered and how each call ended, kept by main in
+   * audit/log.jsonl. The page can read it, export it and ask for it to be deleted, and nothing else: it cannot add a line, change one or take one out. The
+   * export goes where the person places it in the system's save dialog; deleting it is asked about in the system's own message box, which the page cannot answer.
+   */
+  audit: {
+    read(): Promise<AuditView>
+    exportAll(): Promise<AuditExportResult>
+    deleteAll(): Promise<AuditDeleteResult>
+  }
   projects: {
     status(): Promise<ProjectsStatus>
     create(name: string): Promise<ProjectChangeResult>
@@ -632,7 +643,10 @@ export const CHANNELS = {
   projectsAddFiles: 'projects:add-files',
   projectsRemoveFile: 'projects:remove-file',
   projectsRemove: 'projects:remove',
-  projectsRemoveAll: 'projects:remove-all'
+  projectsRemoveAll: 'projects:remove-all',
+  auditRead: 'audit:read',
+  auditExport: 'audit:export',
+  auditDeleteAll: 'audit:delete-all'
 } as const
 
 /**

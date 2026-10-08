@@ -25,6 +25,7 @@ import {
   type SettingsStatus,
   type TestKeyResult
 } from '../shared/ipc'
+import type { AuditDeleteResult, AuditExportResult, AuditView } from '../shared/audit'
 import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from '../shared/memory'
 import type { ProjectChangeResult, ProjectsStatus } from '../shared/projects'
 import type { UsageSummary } from '../shared/usage'
@@ -47,12 +48,15 @@ import {
   checkProvider
 } from '../shared/validate'
 import { createAskFirstStore } from './askFirst'
+import { createAuditLog } from './auditLog'
+import { createAuditService } from './auditService'
 import { electronImageTools } from './attachmentImages'
 import { createAttachmentService } from './attachmentService'
 import { createAttachmentStore } from './attachmentStore'
 import {
   askPerson,
   pickAttachmentPaths,
+  pickAuditExportPath,
   pickNotesExportPath,
   systemAskers,
   systemPickers
@@ -395,13 +399,26 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       addNotes: (added) => memory.addRestored(added)
     }
   })
+  // The audit log of tool calls (D-041), in audit/log.jsonl: one line for each thing that happens to a call, appended and proved, sealed like the chats when
+  // encryption is on. The page can read it, export it and ask to delete it (which asks the person in the system's box); nothing else.
+  const auditLog = createAuditLog({
+    pathOf: () => join(app.getPath('userData'), 'audit', 'log.jsonl'),
+    box: secureStorage,
+    writeMode: protection.writeMode
+  })
+  const audit = createAuditService({
+    log: auditLog,
+    gate: questions,
+    pickExportPath: pickAuditExportPath,
+    dataDir: app.getPath('userData')
+  })
   const encryption = createChatEncryptionService({
     store: history,
     protection,
     backups,
     asks: systemAskers,
     files: attachments,
-    documents: keptDocuments([everyChat.file, memory.file, projects.file]) // rewritten with the chats (D-039)
+    documents: keptDocuments([everyChat.file, memory.file, projects.file, auditLog.document]) // rewritten with the chats (D-039, D-041)
   })
 
   ipcMain.handle(
@@ -663,6 +680,34 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
+  // The audit log (D-041). The page reads it and asks for the export and the deletion; deleting asks in the system's message box for the window that asked.
+  ipcMain.handle(
+    CHANNELS.auditRead,
+    guarded(async (): Promise<AuditView> => audit.view())
+  )
+  ipcMain.handle(
+    CHANNELS.auditExport,
+    guardedForWindow(async (window): Promise<AuditExportResult> => {
+      try {
+        return await audit.exportAll(window)
+      } catch (error) {
+        console.error('Exporting the audit log failed:', reason(error))
+        return { ok: false, error: 'The audit log could not be exported.' }
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.auditDeleteAll,
+    guardedForWindow(async (window): Promise<AuditDeleteResult> => {
+      try {
+        return await audit.deleteAll(window)
+      } catch (error) {
+        console.error('Deleting the audit log failed:', reason(error))
+        return { ok: false, error: 'The audit log could not be deleted.' }
+      }
+    })
+  )
+
   // The person's projects (D-039, 10.5). New instructions and added files ask in the system's message box for the window that asked (the files come
   // through the system's open dialog first); making, renaming, taking a file off and deleting ask nothing there (the page asks before deleting).
   ipcMain.handle(
@@ -754,6 +799,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       attachments.whenIdle(),
       everyChat.file.whenIdle(),
       memory.file.whenIdle(),
-      projects.file.whenIdle()
+      projects.file.whenIdle(),
+      auditLog.whenIdle()
     ]).then(() => undefined)
 }

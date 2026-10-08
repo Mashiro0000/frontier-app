@@ -1,0 +1,14 @@
+{
+  "label": "n112-file-no-tail-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "    if (!tail.equals(wrote)) throw new Error('the record did not reach the disk as it was written')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

@@ -349,7 +349,7 @@ try {
   await clickMarked(`[...document.getElementById('settings-storage-heading').closest('section').querySelectorAll('button')].find((x) => x.textContent.trim() === 'Encrypt my saved chats...')`)
   await page.waitFor(`/encrypted too/.test(document.getElementById('settings-storage-heading').closest('section').innerText)`, { timeoutMs: 30000, label: 'the encryption report' })
   const onText = await ev(`document.getElementById('settings-storage-heading').closest('section').innerText`)
-  check('I: turning encryption on says the instructions and notes are encrypted too, and memory.json is the chats\' envelope with the note nowhere in it', onText.includes('Your instructions for every chat and your notes are encrypted too.') && (memText() ?? '').startsWith('{"format":"frontier-chat-encrypted"') && !(memText() ?? '').includes('nurse'), onText.slice(0, 300))
+  check('I: turning encryption on says the instructions and notes are encrypted too, and memory.json is the chats\' envelope with the note nowhere in it', onText.includes('Your instructions for every chat, your notes, your projects and the audit log of tool calls are encrypted too.') && (memText() ?? '').startsWith('{"format":"frontier-chat-encrypted"') && !(memText() ?? '').includes('nurse'), onText.slice(0, 300))
   await page.press('Escape')
   await sleep(300)
   r = await H.askMock('[[mock:count]] with memory.json sealed')
@@ -366,7 +366,7 @@ try {
 
   // ============ J. the bridge ============
   const api = await ev(`({ top: Object.keys(window.api).sort(), memory: Object.keys(window.api.memory).sort() })`)
-  check('J: window.api has memory (since 10.4) with exactly add, edit, exportAll, remove, removeAll, setOn and status: nothing that answers a question or names a path', show(api) === show({ top: ['attachments', 'chat', 'history', 'instructions', 'memory', 'projects', 'settings', 'usage'], memory: ['add', 'edit', 'exportAll', 'remove', 'removeAll', 'setOn', 'status'] }), show(api))
+  check('J: window.api has memory (since 10.4) with exactly add, edit, exportAll, remove, removeAll, setOn and status: nothing that answers a question or names a path', show(api) === show({ top: ['attachments', 'audit', 'chat', 'history', 'instructions', 'memory', 'projects', 'settings', 'usage'], memory: ['add', 'edit', 'exportAll', 'remove', 'removeAll', 'setOn', 'status'] }), show(api))
   const bad = await ev(`Promise.all([window.api.memory.add(12345, 'all'), window.api.memory.add('x', 'ALL'), window.api.memory.edit('x', 'y'), window.api.memory.remove(null), window.api.memory.setOn('true')])`)
   check('J: input that is not what main takes is "not understood", and changes nothing', bad.every((x) => x.ok === false && /not understood/.test(x.error)) && memJson()?.notes?.length === 1, show(bad))
   const project = await ev(`window.api.memory.add('For a project', '11111111-2222-4333-8444-555555555555')`)

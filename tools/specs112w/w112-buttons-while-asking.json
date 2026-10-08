@@ -1,0 +1,18 @@
+{
+  "label": "w112-buttons-while-asking",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/ToolsDialog.tsx",
+      "from": "          disabled={busy || view === null || !view.ok || (view.total === 0 && view.skipped === 0)}",
+      "to": "          disabled={view === null || !view.ok || (view.total === 0 && view.skipped === 0)}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run112.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

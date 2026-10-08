@@ -1743,6 +1743,156 @@ body {
   margin-top: 6px;
 }
 
+/* ---------- the Tools page (D-041) ---------- */
+
+.tools {
+  margin: auto;
+  width: min(600px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 20px 22px;
+  overflow-y: auto;
+  color: var(--color-text);
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.tools::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.tools-heading {
+  margin-bottom: 14px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.tools-body,
+.tools-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tools-section-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.tools-hint,
+.tools-none,
+.tools-why,
+.tools-call-when {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.tools-notice,
+.tools-problem {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.tools-notice-error,
+.tools-problem {
+  color: var(--color-danger);
+}
+
+.tools-problem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.tools-calls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.tools-call {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.tools-call-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 10px;
+}
+
+.tools-call-title {
+  font-weight: 600;
+}
+
+.tools-args,
+.tools-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0;
+  list-style: none;
+}
+
+.tools-args li,
+.tools-why,
+.tools-outcome,
+.tools-source {
+  overflow-wrap: anywhere;
+}
+
+.tools-arg-name {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.tools-arg-value {
+  white-space: pre-wrap;
+}
+
+.tools-outcome {
+  font-size: 13px;
+}
+
+.tools-outcome-refused,
+.tools-outcome-failed {
+  color: var(--color-danger);
+}
+
+.tools-sources {
+  margin-top: 2px;
+  padding-left: 10px;
+  border-left: 2px solid var(--color-border);
+}
+
+.tools-source {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+.tools-source-url {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.tools-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
 /* ---------- the Projects page (D-039) ---------- */
 
 .projects {

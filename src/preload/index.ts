@@ -74,6 +74,11 @@ const api: FrontierApi = {
     setOn: (on) => ipcRenderer.invoke(CHANNELS.memorySetOn, on),
     exportAll: () => ipcRenderer.invoke(CHANNELS.memoryExport)
   },
+  audit: {
+    read: () => ipcRenderer.invoke(CHANNELS.auditRead),
+    exportAll: () => ipcRenderer.invoke(CHANNELS.auditExport),
+    deleteAll: () => ipcRenderer.invoke(CHANNELS.auditDeleteAll)
+  },
   projects: {
     status: () => ipcRenderer.invoke(CHANNELS.projectsStatus),
     create: (name) => ipcRenderer.invoke(CHANNELS.projectsCreate, { name }),

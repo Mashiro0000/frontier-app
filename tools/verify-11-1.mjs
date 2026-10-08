@@ -351,8 +351,9 @@ await guard('E3', async () => {
   check('E3: the question went to the window that asked, once, in the words of the registry', r.asked.length === 1 && r.asked[0].owner === OWNER && show(r.asked[0].question) === show(questionMod.approvalQuestion(registry.get('web_search'), { query: 'rust release notes' }, 'The person asked for the newest release.', { step: 1, steps: 5 })))
   check('E3: the record has the question, the answer, the run and the result, in that order', types(r.events) === 'asked,answered,ran,result', types(r.events))
   const [asked, answered, ran, result] = r.events
-  check('E3: ...the question as it was shown (tool, exact arguments, reason, step), nothing else', asked.tool === 'web_search' && asked.step === 1 && show(asked.args) === '{"query":"rust release notes"}' && asked.why === 'The person asked for the newest release.' && Object.keys(asked).sort().join() === 'args,at,step,tool,type,why')
-  check('E3: ...the answer, the run, and the size of the result and how many sources came back', answered.answer === 'yes' && ran.type === 'ran' && result.ok === true && result.size === out.result.text.length && result.sources === 1 && Object.keys(result).sort().join() === 'at,ok,size,sources,step,tool,type')
+  check('E3: ...the question as it was shown (tool, exact arguments, reason, step), nothing else', asked.tool === 'web_search' && asked.step === 1 && show(asked.args) === '{"query":"rust release notes"}' && asked.why === 'The person asked for the newest release.' && Object.keys(asked).sort().join() === 'args,at,call,step,tool,type,why')
+  check('E3: ...the answer, the run, and the size of the result and how many sources came back', answered.answer === 'yes' && ran.type === 'ran' && result.ok === true && result.size === out.result.text.length && show(result.sources) === '[{"title":"Example","url":"https://example.com/a"}]' && Object.keys(result).sort().join() === 'at,call,ok,size,sources,step,tool,type')
+  check('E3: ...and the four events of one call share one call id', new Set(r.events.map((e) => e.call)).size === 1 && /^[a-z0-9][a-z0-9-]{0,39}$/.test(r.events[0].call))
   check('E3: ...every event has the time, taken from the core\'s own clock', r.events.every((e) => e.at === 1_700_000_000_000))
   check('E3: the record holds none of the result\'s words (no page text)', !JSON.stringify(r.events).includes('Result about'))
   check('E3: the reply\'s step count went up by one', r.budget.used().steps === 1)
@@ -570,7 +571,7 @@ await guard('E6', async () => {
   check('E6: a title is one visible line (a missing one is the address)', out.result.sources[1].title === 'Spoof title' && out.result.sources[2].title === 'https://example.net/empty' && out.result.sources[4].title === 'https://example.net/bad-title')
   r = rig({ answers: ['yes'], executor: async () => ({ text: 't', sources: Array.from({ length: 30 }, (_, i) => ({ title: `S${i}`, url: `https://example.com/${i}` })) }) })
   out = await r.run(searchCall())
-  check('E6: at most 20 sources are kept', out.result.sources.length === 20 && r.events.at(-1).sources === 20)
+  check('E6: at most 20 sources are kept', out.result.sources.length === 20 && r.events.at(-1).sources.length === 20)
   r = rig({ answers: ['yes'], executor: async () => ({ text: 't', sources: 'https://example.com/' }) })
   check('E6: sources that are not a list are none', (await r.run(searchCall())).result.sources.length === 0)
 })
@@ -656,13 +657,15 @@ await guard('F', async () => {
   const walk = (d) => readdirSync(join(REPO, d), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(`${d}/${e.name}`) : [`${d}/${e.name}`])
   const files = ['src/main', 'src/shared', 'src/preload', 'src/renderer'].flatMap(walk).filter((f) => /\.(ts|tsx)$/.test(f))
   const names = /\b(toolCore|createToolCore|toolRegistry|createToolRegistry|toolQuestion|approvalQuestion|replyBudget|createReplyBudget|dataFolderGuard|createDataFolderGuard|BUILT_IN_TOOLS|shared\/tools)\b/
-  const users = files.filter((f) => !modules.includes(f) && names.test(readFileSync(join(REPO, f), 'utf8')))
-  check('F: no other file of the app uses the registry, the core, the budget or the guard yet', users.length === 0, show(users))
+  // 11.2 moved this on purpose: the audit log (its store and its service) reads the shared event types. Neither is the core, and neither can run a tool.
+  const users = files.filter((f) => !modules.includes(f) && !['src/main/auditLog.ts', 'src/main/auditService.ts'].includes(f) && names.test(readFileSync(join(REPO, f), 'utf8')))
+  check('F: no other file of the app uses the registry, the core, the budget or the guard yet (but the audit log, which only keeps what the core records)', users.length === 0, show(users))
   const pageSide = ['src/preload/index.ts', 'src/preload/index.d.ts', 'src/shared/ipc.ts', 'src/main/ipc.ts', 'src/main/chat.ts'].map((f) => [f, source(f)])
-  check('F: the page\'s side (the bridge, the channels, the handlers, the chat) names no tool, approval or audit function', pageSide.every(([, text]) => !/\b(tools?|audit|approv\w*|toolCore)\s*[:(=]|CHANNELS\.(tool|audit|approv)/i.test(text.replace(/\/\/.*$/gm, ''))), show(pageSide.filter(([, t]) => /\b(tools?|audit|approv\w*)\s*[:(=]/i.test(t.replace(/\/\/.*$/gm, ''))).map(([f]) => f)))
+  // 11.2 moved this on purpose: the page may read, export and ask to delete the audit log (verify-11-2.mjs checks those three, and only those). It still has no tool or approval.
+  check('F: the page\'s side (the bridge, the channels, the handlers, the chat) names no tool or approval function', pageSide.every(([, text]) => !/\b(tools?|approv\w*|toolCore)\s*[:(=]|CHANNELS\.(tool|approv)/i.test(text.replace(/\/\/.*$/gm, ''))), show(pageSide.filter(([, t]) => /\b(tools?|approv\w*)\s*[:(=]/i.test(t.replace(/\/\/.*$/gm, ''))).map(([f]) => f)))
   const ipcMod = await import(`${SRC}/shared/ipc.ts`)
   const channelNames = Object.entries(ipcMod.CHANNELS).flat().map(String)
-  check('F: no channel of the app\'s bridge has tool, audit or approval in its name', !channelNames.some((c) => /tool|audit|approv/i.test(c)), show(channelNames.filter((c) => /tool|audit|approv/i.test(c))))
+  check('F: no channel of the app\'s bridge has tool or approval in its name', !channelNames.some((c) => /tool|approv/i.test(c)), show(channelNames.filter((c) => /tool|approv/i.test(c))))
   const pkg = JSON.parse(source('package.json'))
   check('F: the build adds no package (the three dependencies of Stage 10)', show(Object.keys(pkg.dependencies).sort()) === '["@anthropic-ai/sdk","@electron-toolkit/utils","openai"]', show(pkg.dependencies))
 

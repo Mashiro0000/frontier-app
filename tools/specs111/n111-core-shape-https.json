@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "url.length > 2000 || !isSafeExternalUrl(url)) continue",
-      "to": "url.length > 2000) continue"
+      "from": "url.length > TOOL_RESULT_LIMITS.maxUrlChars || !isSafeExternalUrl(url)) return null",
+      "to": "url.length > TOOL_RESULT_LIMITS.maxUrlChars) return null"
     }
   ],
   "argv": [

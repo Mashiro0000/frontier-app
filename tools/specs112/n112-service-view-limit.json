@@ -1,0 +1,14 @@
+{
+  "label": "n112-service-view-limit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditService.ts",
+      "from": "calls: calls.slice(-AUDIT_VIEW_CALLS).reverse(),",
+      "to": "calls: calls.slice().reverse(),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}
