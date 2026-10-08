@@ -2730,3 +2730,20 @@ if you have not, please do before you rely on this. **The design was mine** (you
 2. **Try it for real once** when you add your key: choose a small project folder, switch it on, ask the model to look at a file, read the Windows box before you say yes. No real call was ever made by me.
 3. **The folder's path is limited to 300 characters** (the box that names it has to fit in full).
 4. **A project that uses hard links** (a file with two names) will find those files refused, whichever name is used: a check of paths cannot tell the two names apart.
+
+## Stage 12 - Slice 12.4: the model can propose a change, and nothing is changed (8 October 2026; D-042)
+
+**Step by step.**
+
+1. **What changed for you.** The "Let the model use the workspace" switch now covers four tools: list, read, **propose a change to a file** and **propose a new file**. A proposal changes nothing: it is held in the app's memory (gone when the app closes) until you look at it and apply or drop it. **There is no tool that applies a change**: the model can only ask, and you decide. (If you had switched the workspace on before this slice, switch it off and on once: it now asks about four tools.)
+2. **How the model proposes.** For an edit it gives the file, the text to find and the text to put in its place; the text to find must occur **exactly once** in the file (if not, it is told why and tries again with more of the text around it). A new file is its path and its whole text. Files with Windows line endings stay Windows; a byte-order mark stays; a file over 256 KB, a file that is not text and a change that would make the file bigger than 256 KB are refused.
+3. **Hidden and reversing characters are refused** in anything the model proposes to add (23 of them: the ones that make code look different from what it does, the "Trojan Source" trick). One that is already in the file may stay in the text to find, and taking it out is a change.
+4. **What is recorded for each proposal:** the file's text before and after, the difference line by line, the counts, the size and a **fingerprint of the exact bytes that would be written** (the Windows box in 12.6 will name it, so that what you apply is what you looked at), a checksum of the file as it was (so that a file that changed meanwhile is not overwritten), and two warnings for the next slice's window: red for hidden or secret-looking files, amber for files that run commands (`package.json`, scripts, task files, workflows).
+5. **Limits:** 20 proposals waiting at a time, 10 from one reply; the model is told in words when one is refused. The model is told what was recorded and that **it is NOT applied**; it is told nothing of your files. The audit log and the saved chat hold the path and only the **length** of each long text.
+6. **The difference is computed by code of our own** (no package). I checked it against the textbook method on 400 random pairs of texts, and its unified form against a small patch program written for the test, which applied 300 random changes (each at four amounts of context) and got the right new text every time.
+7. **Checked:** 99 checks under Node (nothing written anywhere after every phase: the workspace and the data folder byte for byte and time for time the same), 40 in the real window (the window suite of 12.3 gained a reply that proposes), 79 negative controls (77 caught, 2 covered by a second look by design). **You cannot yet see or apply a proposal**: that is 12.5 (the Review window) and 12.6.
+
+## Stage 12.4 - Things to know (not problems, but worth your attention)
+
+1. **Proposals wait in memory only.** If you close the app, they are gone (the chat still shows that the model proposed them, and the audit log records it).
+2. **How often a real model gets its "text to find" exactly right is untried** (no real call was made). If it often misses, the model is told why and can try again; each try is a file call.

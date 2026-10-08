@@ -91,6 +91,8 @@ import { BUILT_IN_TOOLS, createToolRegistry } from './toolRegistry'
 import { createWorkspaceStore, type AvoidPlaces } from './workspace'
 import { createWorkspaceGuard } from './workspaceGuard'
 import { createWorkspaceService, withWorkspace } from './workspaceService'
+import { createProposalStore } from './proposals'
+import { WORKSPACE_PROPOSE_TOOLS } from './proposalTools'
 import { WORKSPACE_READ_TOOLS } from './workspaceTools'
 import { createToolSettings } from './toolSettings'
 import { createToolSettingsService } from './toolSettingsService'
@@ -432,7 +434,11 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     writeMode: protection.writeMode
   })
   // The one registry of the build: the Tools page lists its tools, and the loop of a reply offers and runs them.
-  const toolRegistry = createToolRegistry([...BUILT_IN_TOOLS, ...WORKSPACE_READ_TOOLS])
+  const toolRegistry = createToolRegistry([
+    ...BUILT_IN_TOOLS,
+    ...WORKSPACE_READ_TOOLS,
+    ...WORKSPACE_PROPOSE_TOOLS
+  ])
   // The code workspace (D-042): the one folder the model may list and read files in, kept in workspace.json like the tool settings. The guard holds the
   // containment rule beside the data-folder block; the service is what the page can ask for (choose, clear, switch on and off).
   const dataGuard = createDataFolderGuard({ roots: () => [app.getPath('userData')] })
@@ -442,6 +448,8 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     writeMode: protection.writeMode
   })
   let workspaceRoot: string | null = null
+  // The changes the model has proposed and the person has not decided on (D-042, 12.4): held in memory only, gone when the app closes.
+  const proposals = createProposalStore()
   // The places that may not be the workspace and the folders above them (the user's folder, the app-data folder, the personal folders), and the system's own.
   const avoidPlaces = (): AvoidPlaces => {
     const named = (name: Parameters<typeof app.getPath>[0]): string[] => {
@@ -968,7 +976,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     tools: toolRegistry,
     gate: questions,
     guard: dataGuard,
-    workspace: { guard: workspaceGuard },
+    workspace: { guard: workspaceGuard, proposals },
     record: (event) => auditLog.append(event),
     holdsSavedKey: async (text) => heldKey(text, await savedKeys()) !== null
   })

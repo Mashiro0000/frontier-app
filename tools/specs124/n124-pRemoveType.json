@@ -1,0 +1,15 @@
+{
+  "label": "n124-pRemoveType",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/proposals.ts",
+      "from": "    remove: (id) => (typeof id === 'string' ? waiting.delete(id) : false),",
+      "to": "    remove: (id) => waiting.delete(id as string),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

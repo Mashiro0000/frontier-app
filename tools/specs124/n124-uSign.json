@@ -1,0 +1,15 @@
+{
+  "label": "n124-uSign",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/lineDiff.ts",
+      "from": "${line.kind === 'same' ? ' ' : line.kind === 'add' ? '+' : '-'}",
+      "to": "${line.kind === 'same' ? ' ' : line.kind === 'add' ? '-' : '+'}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -77,7 +77,12 @@ export const READ_FILE: ToolDefinition = {
 export const WORKSPACE_READ_TOOLS: readonly ToolDefinition[] = [LIST_FILES, READ_FILE]
 
 /** The ids of the tools that the one "Code workspace" switch turns on and off. */
-export const WORKSPACE_TOOL_IDS: readonly string[] = ['list_files', 'read_file']
+export const WORKSPACE_TOOL_IDS: readonly string[] = [
+  'list_files',
+  'read_file',
+  'propose_edit',
+  'propose_new_file'
+]
 
 const INVISIBLE = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}\p{Co}\p{Cn}\p{Cs}]|[^\P{Zs} ]/u
 const MAX_NAME_CHARS = 120

@@ -1,0 +1,15 @@
+{
+  "label": "n124-pFrozen",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/proposals.ts",
+      "from": "      const kept: Proposal = Object.freeze({ ...proposal, id: `p${counter}` })",
+      "to": "      const kept: Proposal = { ...proposal, id: `p${counter}` }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

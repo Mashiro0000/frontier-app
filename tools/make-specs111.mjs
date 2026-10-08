@@ -86,7 +86,7 @@ const s = {
   cPathReal: [COR, '      args[argName] = verdict.real', '      args[argName] = checked.args[argName]'],
   cGuardSkip: [COR, "      if (spec.kind !== 'path') continue", '      continue'],
   cGuardIgnore: [COR, '      if (!verdict.ok) {', '      if (false) {'],
-  cCheckAgain: [COR, 'executor(args, { signal: controller.signal, check: checkAgain, maxChars, again })', 'executor(args, { signal: controller.signal } as never)'],
+  cCheckAgain: [COR, 'executor(args, { signal: controller.signal, check: checkAgain, maxChars, again, why })', 'executor(args, { signal: controller.signal } as never)'],
   cCheckOpen: [COR, '      return await guard.check({ path, base: null, op, recursive })', '      return { ok: true, real: path }'],
   // ----- what must not be reachable -----
   xImport: [COR, "import { isSafeExternalUrl } from './security'", "import { isSafeExternalUrl } from './security'\nimport { createMemory } from './memory'"],

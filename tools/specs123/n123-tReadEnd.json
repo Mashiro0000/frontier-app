@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/workspaceTools.ts",
-      "from": "        ? '(End of the file.)'",
-      "to": "        ? ''"
+      "from": "last >= total ? '(End of the file.)' :",
+      "to": "last >= total ? '' :"
     }
   ],
   "argv": [

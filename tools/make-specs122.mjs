@@ -39,7 +39,7 @@ const s = {
   cWsCodeNever: [COR, "  never: { code: 'never', text: DATA_FOLDER_TEXT },", "  never: { code: 'outside', text: DATA_FOLDER_TEXT },"],
   cWsCodeWrong: [COR, "  'not-found': { code: 'wrong-path', text: WRONG_PATH_TEXT },", "  'not-found': { code: 'bad-path', text: WRONG_PATH_TEXT },"],
   cWsTextWithPath: [COR, "  'not-found': { code: 'wrong-path', text: WRONG_PATH_TEXT },", "  'not-found': { code: 'wrong-path', text: 'not found: ' + WRONG_PATH_TEXT + ' nothing-here' },"],
-  cWsAgain: [COR, 'executor(args, { signal: controller.signal, check: checkAgain, maxChars, again })', "executor(args, { signal: controller.signal, check: checkAgain, maxChars, again: async () => ({ ok: true, real: '', rel: [], kind: 'file', size: 0, fileClass: 'ok', note: '' }) })"],
+  cWsAgain: [COR, 'executor(args, { signal: controller.signal, check: checkAgain, maxChars, again, why })', "executor(args, { signal: controller.signal, check: checkAgain, maxChars, again: async () => ({ ok: true, real: '', rel: [], kind: 'file', size: 0, fileClass: 'ok', note: '' }), why })"],
   cBodyInRecord: [COR, "        def.args[argName]?.kind === 'body' ? `(${String(value).length} characters)` : value", '        value'],
   // ----- the core: the counts -----
   cCountFileAsStep: [COR, '    const taken = isFile ? budget.takeFile() : budget.take()', '    const taken = budget.take()'],

@@ -664,7 +664,7 @@ await guard('F', async () => {
   // 11.4 again, on purpose: the settings service (toolSettingsService.ts) lists the registry's tools for the Tools page, and the page-side files read the shared types only (shared/tools, a file of types and constants).
   // 12.3 again, on purpose: the workspace service (the switch and the folder) and the read tools (the definitions and the words of the questions) are part of the workspace.
   // 12.1 and 12.2 again, on purpose: the workspace guard and the choice of the folder (workspace.ts, workspaceGuard.ts) ask the data-folder guard, as the core does.
-  const wired = ['src/main/auditLog.ts', 'src/main/auditService.ts', 'src/main/replyTools.ts', 'src/main/toolSettings.ts', 'src/main/toolSettingsService.ts', 'src/main/chat.ts', 'src/main/ipc.ts', 'src/main/workspace.ts', 'src/main/workspaceGuard.ts', 'src/main/workspaceService.ts', 'src/main/workspaceTools.ts']
+  const wired = ['src/main/auditLog.ts', 'src/main/auditService.ts', 'src/main/replyTools.ts', 'src/main/toolSettings.ts', 'src/main/toolSettingsService.ts', 'src/main/chat.ts', 'src/main/ipc.ts', 'src/main/workspace.ts', 'src/main/workspaceGuard.ts', 'src/main/workspaceService.ts', 'src/main/workspaceTools.ts', 'src/main/proposalTools.ts']
   const typesOnly = /^(src\/shared|src\/renderer|src\/preload)\//
   const namesCore = /(toolCore|createToolCore|toolRegistry|createToolRegistry|toolQuestion|approvalQuestion|replyBudget|createReplyBudget|dataFolderGuard|createDataFolderGuard|BUILT_IN_TOOLS)/
   const users = files.filter((f) => !modules.includes(f) && !wired.includes(f) && (typesOnly.test(f) ? namesCore : names).test(readFileSync(join(REPO, f), 'utf8')))

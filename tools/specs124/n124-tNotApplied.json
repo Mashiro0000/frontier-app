@@ -1,0 +1,15 @@
+{
+  "label": "n124-tNotApplied",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/proposalTools.ts",
+      "from": "It is NOT applied yet: do not say that it is, and do not rely on it until the person has applied it (you can read the file again later to see).",
+      "to": "It is applied."
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

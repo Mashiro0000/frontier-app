@@ -1,0 +1,15 @@
+{
+  "label": "n124-tIds",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "  'propose_edit',\n  'propose_new_file'\n]",
+      "to": "  'propose_edit'\n]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

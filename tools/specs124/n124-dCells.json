@@ -1,0 +1,15 @@
+{
+  "label": "n124-dCells",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/lineDiff.ts",
+      "from": "  if (n === 0 || m === 0 || (n + 1) * (m + 1) > MAX_DIFF_CELLS) {",
+      "to": "  if (n === 0 || m === 0) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

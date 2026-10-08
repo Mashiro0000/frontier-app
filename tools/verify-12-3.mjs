@@ -127,7 +127,7 @@ const read = (path, from = 1, lines = 2000) => ({ path, start_line: from, max_li
 await guard('A', async () => {
   check('A: the registry holds web search and the two read tools, each asked about as it should be', registry.ids().join() === 'web_search,list_files,read_file' && registry.get('list_files').ask === 'reply' && registry.get('list_files').counts === 'file' && registry.get('read_file').ask === 'reply' && registry.get('web_search').ask === 'each')
   check('A: the titles the audit log reads without the registry agree with the registry\'s', registry.ids().every((id) => sharedTools.toolTitle(id) === registry.get(id).title))
-  check('A: the one switch turns on exactly these two ids', toolsMod.WORKSPACE_TOOL_IDS.join() === 'list_files,read_file')
+  check('A: the one switch turns on exactly these ids (the two that read and, since 12.4, the two that propose)', toolsMod.WORKSPACE_TOOL_IDS.join() === 'list_files,read_file,propose_edit,propose_new_file')
   const r = makeReply()
   const names = r.reply.specs().map((s) => s.name)
   check('A: with all three on, the model is offered all three', names.join() === 'web_search,list_files,read_file', names.join())
@@ -413,7 +413,7 @@ await guard('F', async () => {
   check('F: the page that shows the workspace draws everything as text: no link, picture, frame, innerHTML or window.open', !/href=|src=|<a[ >]|<iframe|innerHTML|dangerouslySetInnerHTML|window\.open/.test(section))
   check('F: the page has no way to name a path: the section calls only the four functions, with no argument but the switch', (section.match(/window\.api\.workspace\.(\w+)\(([^)]*)\)/g) ?? []).every((c) => /status\(\)|choose\(\)|clear\(\)|setOn\(!workspace\.on\)/.test(c)))
   check('F: the workspace is the page\'s only way to see a folder name, and the name it sees comes from main', /workspace\.folder \?\? 'No folder is chosen\.'/.test(section))
-  check('F: the built-in list of tools is unchanged (web search); the read tools join it at the wiring', /\[\.\.\.BUILT_IN_TOOLS, \.\.\.WORKSPACE_READ_TOOLS\]/.test(ipc) && regMod.BUILT_IN_TOOLS.length === 1)
+  check('F: the built-in list of tools is unchanged (web search); the read tools join it at the wiring', /\[\s*\.\.\.BUILT_IN_TOOLS,\s*\.\.\.WORKSPACE_READ_TOOLS(,\s*\.\.\.WORKSPACE_PROPOSE_TOOLS)?\s*\]/.test(ipc) && regMod.BUILT_IN_TOOLS.length === 1)
   check('F: the data and the workspace are as they were at the end', treeHash(WS) === workspaceAtStart && treeHash(DATA) === dataAtStart)
   void sharedWs
 })

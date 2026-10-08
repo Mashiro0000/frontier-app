@@ -69,6 +69,8 @@ export type Executor = (
     maxChars: number
     /** A workspace argument looked at AGAIN, just before it is used (the folder may have changed since the first look); refuses what is not one. */
     again: (argName: string) => Promise<WorkspaceVerdict>
+    /** The model's reason for the call, as the person was shown it (cleaned by the core). */
+    why: string
   }
 ) => Promise<{
   text: string
@@ -391,7 +393,8 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
     call: string,
     step: number,
     context: RunContext,
-    again: (argName: string) => Promise<WorkspaceVerdict>
+    again: (argName: string) => Promise<WorkspaceVerdict>,
+    why: string
   ): Promise<ToolOutcome> {
     const { signal, budget } = context
     const tool = def.id
@@ -446,7 +449,7 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
         def.counts === 'file' ? Math.min(MAX_RESULT_CHARS, budget.charsLeft()) : MAX_RESULT_CHARS
       const running = Promise.resolve()
         .then(() =>
-          executor(args, { signal: controller.signal, check: checkAgain, maxChars, again })
+          executor(args, { signal: controller.signal, check: checkAgain, maxChars, again, why })
         )
         .then((raw) => ({ raw }))
       running.catch(() => undefined) // if the run is given up on, a later failure of it is not an unhandled one
@@ -729,7 +732,7 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
         return { ok: false, code: 'bad-path', why: 'the check failed' }
       }
     }
-    return execute(def, executor, Object.freeze(args), callId, step, context, again)
+    return execute(def, executor, Object.freeze(args), callId, step, context, again, checked.why)
   }
 
   return {

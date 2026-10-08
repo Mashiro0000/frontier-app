@@ -98,6 +98,8 @@ node tools/make-specs122.mjs              writes the 12.2 negative controls (spe
 node tools/verify-12-3.mjs                the read tools and the workspace service (12.3) under plain Node, Windows only: list_files and read_file on a scratch workspace (hidden names, links, 250 files, names that are orders, binary and UTF-16 files, a saved key in a file, parts of a long file), the two questions' words, the hostile files (six that give orders, and a model that obeys them), the service (choose, clear, switch on and off, damaged files, the sealed form) and source checks
 node tools/run123.mjs [dev|preview]       the same in the real window (verify-12-3w.mjs): the Tools page's Code workspace section, the folder dialog and the system's box stood in for from the main process, a reply that lists and reads, a hidden file, refusals, switching off and clearing, 420 and 280 px. Run `npx electron-vite build` first for preview
 node tools/make-specs123.mjs              writes the 12.3 negative controls (specs123 under Node, specs123w in the window)
+node tools/verify-12-4.mjs                the proposals (12.4) under plain Node, Windows only: the line diff against a textbook reference and a patch applier on random texts, how an edit or a new file is made (exactly once, line endings, byte-order mark, size, 23 hidden characters), the fingerprint, the flags, the store, and the two tools through the real runtime on a scratch workspace (nothing written anywhere), and source checks
+node tools/make-specs124.mjs              writes the 12.4 negative controls (specs124 under Node, specs124w in the window)
 ```
 
 ## Reading a result

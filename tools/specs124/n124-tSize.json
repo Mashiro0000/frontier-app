@@ -1,0 +1,15 @@
+{
+  "label": "n124-tSize",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/proposalTools.ts",
+      "from": "    if (verdict.size > WORKSPACE_LIMITS.maxFileBytes) {",
+      "to": "    if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

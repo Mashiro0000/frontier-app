@@ -1,0 +1,18 @@
+{
+  "label": "w124-wRegistry",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    ...WORKSPACE_PROPOSE_TOOLS\n  ])",
+      "to": "  ])"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run123.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

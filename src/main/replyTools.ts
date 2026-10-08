@@ -6,6 +6,8 @@ import type { QuestionGate } from './systemQuestion'
 import { createToolCore, type ToolOutcome, type ToolResult } from './toolCore'
 import type { ToolRegistry } from './toolRegistry'
 import type { WorkspaceGuard } from './workspaceGuard'
+import { createProposalExecutors } from './proposalTools'
+import type { ProposalStore } from './proposals'
 import { createWorkspaceExecutors, workspaceQuestions } from './workspaceTools'
 
 // The tools of ONE reply (Stage 11.3, D-041): the part between the reply's loop (chat.ts) and the core that decides (toolCore.ts). It makes the core for
@@ -22,7 +24,7 @@ export interface ToolRuntimeOptions {
   record: (event: ToolEvent) => Promise<void>
   holdsSavedKey: (text: string) => Promise<boolean>
   /** The code workspace (12.3): its guard. Absent: no workspace tool can run (a call is refused as "no workspace"). */
-  workspace?: { guard: WorkspaceGuard }
+  workspace?: { guard: WorkspaceGuard; proposals: ProposalStore }
   now?: () => number
   newId?: () => string
   /** The clock of a reply's working time (milliseconds, monotonic); the checks hand in their own. */
@@ -157,7 +159,10 @@ export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
       const fileExecutors =
         options.workspace === undefined
           ? {}
-          : createWorkspaceExecutors({ holdsSavedKey: options.holdsSavedKey })
+          : {
+              ...createWorkspaceExecutors({ holdsSavedKey: options.holdsSavedKey }),
+              ...createProposalExecutors({ store: options.workspace.proposals, now: options.now })
+            }
       const core = createToolCore({
         tools: options.tools,
         settings: () => current,

@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/workspaceTools.ts",
-      "from": "        : `(The file goes on: ask again from line ${last + 1}.)`",
-      "to": "        : `(The file goes on: ask again from line ${last}.)`"
+      "from": "`(The file goes on: ask again from line ${last + 1}.)`",
+      "to": "`(The file goes on: ask again from line ${last}.)`"
     }
   ],
   "argv": [
