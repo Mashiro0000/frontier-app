@@ -2671,3 +2671,27 @@ if you have not, please do before you rely on this. **The design was mine** (you
 
 1. **Try it for real once:** add your key (done), turn the search on in Tools (a Windows box asks), ask something current, read the box before you say yes, and look at the bill afterwards.
 2. **Everything is off until you turn it on**, and a damaged or missing settings file also means off.
+
+## Stage 12 - The plan (8 October 2026; approved: "all picks kept")
+
+**Your instructions.** "All picks kept." That is the ten answers at the end of `Frontier App Stage 12 plan.pdf` (which I left in the project folder, untracked, as for Stage 11); the plan is now in `docs/ROADMAP.md` (Stage 12), on the branch `stage-12-workspace`.
+
+**The plan in one paragraph.** You choose one folder. The model can list and read files in it and propose new files and edits; nothing is written until you approve that one change, the original is kept for undo, and no command is run. Three places where I departed from the letter of Stage 11, and you accepted: reads are asked once per reply (not once per file), the whole diff is shown in a window owned by the app's main process that the chat page cannot touch (the Windows box cannot hold a diff) with the Windows box still the yes, and the model has no "apply" tool (you start the apply). Slices 12.1 to 12.8.
+
+## Stage 12 - Slice 12.1: the folder is the boundary (8 October 2026; D-042)
+
+**Step by step.**
+
+1. **What it is, and what you will not see yet.** The part of the app's main process that decides which paths in your workspace the model may reach, how you choose the workspace, and the file that remembers it. Nothing in the app calls it yet (12.2 and 12.3 do), so **nothing you can see or do changed in this slice**: the page has no new function, a request carries nothing new, and the program you run is byte for byte the program it was (I built the old commit and this tree and compared every output file).
+2. **The boundary.** A path the model writes must be relative to the workspace (an absolute path is refused even when it points inside), must stay inside it once `..` is resolved, and must not pass through **any link or junction at all**, even one that leads back inside (a junction is what Windows makes for a "folder shortcut" that programs follow). It must also pass the data-folder block of Stage 11, and a file with two names (a hard link) is refused whichever name is used. The workspace folder itself is looked at again every time: if someone swaps it for a link, deletes it, or it ends up holding the app's data folder, nothing is reachable.
+3. **Three kinds of name.** **Never reached:** `.git`, `.hg`, `.svn` and everything in them, the recycle bin and `System Volume Information`. **Asked about one file at a time** (12.2 builds the question): any name that begins with a dot (`.env`, `.ssh`, `.github`...) and names that look like secrets (`*.pem`, `*.key`, `id_rsa*`, `credentials*`, `secrets*`, `*.env` and the others in the plan). **Ordinary:** the rest. The kind is read off the real names on the disk, so a Windows short name (`ENV~1`, `GIT~1`) or another letter case cannot hide a dot. Windows's own "hidden" mark cannot be read from here, so only names count; the threat note will say so.
+4. **Choosing the folder.** The app will open the Windows folder dialog itself and judge the answer: not a link, not a drive's root, not your user folder or the system's folders, not the app's data folder or a folder that holds it, not on the network, and it must be the real folder (not reached through a shortcut or a substituted drive). Each refusal says why in a sentence. The choice is kept in `workspace.json` in the app's data folder, read strictly, and **no file or a damaged one means no workspace**.
+5. **Is it text.** A file is read only if it is UTF-8 text (a byte-order mark is allowed, a NUL byte or invalid UTF-8 or UTF-16 is not); the line-ending style is noted so that a change keeps it.
+6. **Checked:** 263 checks under Node on a scratch world with a data folder, a workspace and a folder outside, all with canaries, and every kind of link this PC can make (a junction out, back in, to the data folder, a chain, one that leads nowhere, hard links, a substituted drive, Windows short names). **2,616 calls aimed at the boundary in about forty spellings each; every one was refused and no canary came back.** The same calls with the boundary taken out all got through (372 canaries came back), so the test can fail. **92 negative controls, 88 caught**; the other four are cases where a second rule already stops the same thing (listed in D-042). Every file was put back byte for byte after the controls.
+7. **Found on the way:** my first test world made an ordinary file a hard link, which the guard rightly refused; and a project that uses hard links will lose those files, which I will say in the threat note.
+
+## Stage 12.1 - Things to know (not problems, but worth your attention)
+
+1. **You cannot try it yet.** The first thing you will see is in 12.3 (the Tools page row "Code workspace", the folder dialog and the box that names your folder).
+2. **Windows's "hidden" mark is not read**, only names that begin with a dot or look like secrets. A file marked hidden in Windows but named normally is an ordinary file to the app.
+3. **Not tried here:** a link to a file (this account may not make one), a network disk, a disk that is not NTFS, macOS and Linux, and cloud placeholder files (OneDrive) that Windows does not report as links.

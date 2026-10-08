@@ -1,0 +1,15 @@
+{
+  "label": "n121-wParseSafe",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspace.ts",
+      "from": "!Number.isSafeInteger(chosenAt) || chosenAt < 0",
+      "to": "chosenAt < 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n121-wParseVersion",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspace.ts",
+      "from": "  if (names.length !== 3 || fields.version !== WORKSPACE_FILE_VERSION) return null",
+      "to": "  if (names.length !== 3) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

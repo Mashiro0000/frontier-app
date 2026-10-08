@@ -1,0 +1,15 @@
+{
+  "label": "n121-xImport",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceText.ts",
+      "from": "// Whether the bytes of a file",
+      "to": "import { posix } from 'path'\nvoid posix\n// Whether the bytes of a file"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -91,6 +91,8 @@ node tools/run-scenario.mjs <scenario>    one registry scenario
 node tools/nc-all.mjs specs guard-off     one negative control (spec folders: specs, specs4, specs4w)
 node tools/with-load.mjs 8 tools/regress.mjs <tag> window      the same, with 8 busy CPU loops competing
 node tools/real-call.mjs                  ONE tiny real call per provider (asks for the key; costs a fraction of a cent)
+node tools/verify-12-1.mjs                the code workspace's boundary (12.1) under plain Node, Windows only: the workspace guard (containment beside the data-folder block; no link on the way, whole names, the three classes of name read off the real names), the choice of the folder, `workspace.json` and the test for UTF-8 text; 2,616 calls in about forty spellings at everything outside, in the data folder and behind links (all refused, no canary), the ordinary files in every spelling that works, and the same battery with the boundary taken out (must get through). About 12 s; makes and removes a `subst` drive and a temporary folder
+node tools/make-specs121.mjs              writes the 12.1 negative controls (specs121: `node tools/nc-all.mjs specs121 <names...>`)
 ```
 
 ## Reading a result

@@ -1,0 +1,15 @@
+{
+  "label": "n121-gRootEquality",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "    if (!isInside(realParts, parts, platform) || !isInside(parts, realParts, platform)) {\n      return no('workspace-changed', 'the chosen folder is reached through a link now')\n    }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

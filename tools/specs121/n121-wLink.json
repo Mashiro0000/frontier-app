@@ -1,0 +1,15 @@
+{
+  "label": "n121-wLink",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspace.ts",
+      "from": "    if (found.isSymbolicLink()) {\n      return refuse('That is a link or junction. Choose the folder itself, not a link to it.')\n    }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

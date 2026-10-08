@@ -1,0 +1,15 @@
+{
+  "label": "n121-wDataTree",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspace.ts",
+      "from": "      op: 'list',\n      recursive: true\n    })\n    if (!verdict.ok) {",
+      "to": "      op: 'list',\n      recursive: false\n    })\n    if (!verdict.ok) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

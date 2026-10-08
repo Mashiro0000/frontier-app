@@ -1,0 +1,15 @@
+{
+  "label": "n121-wFolderName",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspace.ts",
+      "from": "    return { ok: true, folder: tidy.abs, name: realParts[realParts.length - 1] }",
+      "to": "    return { ok: true, folder: lexical.abs, name: realParts[realParts.length - 1] }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

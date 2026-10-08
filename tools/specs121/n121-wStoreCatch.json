@@ -1,0 +1,15 @@
+{
+  "label": "n121-wStoreCatch",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspace.ts",
+      "from": "        console.error(\n          'Reading the workspace setting failed:',\n          error instanceof Error ? error.message : error\n        )\n        return { record: null, problem: 'it could not be read from the disk' }",
+      "to": "        throw error"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

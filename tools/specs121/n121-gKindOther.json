@@ -1,0 +1,15 @@
+{
+  "label": "n121-gKindOther",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "    if (kind === null) return no('bad-path', 'neither a file nor a folder')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

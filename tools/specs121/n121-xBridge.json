@@ -1,0 +1,15 @@
+{
+  "label": "n121-xBridge",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/ipc.ts",
+      "from": "export const CHANNELS = {",
+      "to": "export const CHANNELS = {\n  workspaceChoose: 'workspace:choose',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

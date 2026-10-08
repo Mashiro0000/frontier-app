@@ -1,0 +1,15 @@
+{
+  "label": "n121-tMixed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceText.ts",
+      "from": "  if (cr > 0 || (lf > 0 && crlf > 0)) return 'mixed'",
+      "to": "  if (cr > 0) return 'mixed'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

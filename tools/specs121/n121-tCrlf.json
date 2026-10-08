@@ -1,0 +1,15 @@
+{
+  "label": "n121-tCrlf",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceText.ts",
+      "from": "  if (crlf > 0) return 'crlf'",
+      "to": "  if (crlf > 0) return 'lf'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

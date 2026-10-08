@@ -1,0 +1,15 @@
+{
+  "label": "n121-gSize",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "      size: kind === 'file' && finalStat !== null ? Number(finalStat.size) : 0,",
+      "to": "      size: 0,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

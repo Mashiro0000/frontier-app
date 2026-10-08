@@ -1,0 +1,15 @@
+{
+  "label": "n121-gRootData",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "    if (!verdict.ok)\n      return no('workspace-changed', 'the chosen folder is, holds or lies in the data folder')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

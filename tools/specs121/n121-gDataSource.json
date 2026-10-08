@@ -1,0 +1,15 @@
+{
+  "label": "n121-gDataSource",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "    const data = await dataGuard.check({\n      path: lexical.abs,",
+      "to": "    const data = await dataGuard.check({\n      path: root.abs,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

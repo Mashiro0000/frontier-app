@@ -1,0 +1,15 @@
+{
+  "label": "n121-gNeverGit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "/^(\\.git|\\.hg|\\.svn|\\$recycle\\.bin|system volume information)$/iu",
+      "to": "/^(\\.hg|\\.svn|\\$recycle\\.bin|system volume information)$/iu"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

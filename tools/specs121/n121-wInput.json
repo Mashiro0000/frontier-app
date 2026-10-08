@@ -1,0 +1,15 @@
+{
+  "label": "n121-wInput",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspace.ts",
+      "from": "    if (!lexical.ok) return refuse('That is not a folder this app can use as a workspace.')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

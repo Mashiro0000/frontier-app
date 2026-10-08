@@ -1,0 +1,15 @@
+{
+  "label": "n121-gRealNames",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "    const relNames = realParts.slice(root.realParts.length).concat(tail)",
+      "to": "    const relNames = below"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

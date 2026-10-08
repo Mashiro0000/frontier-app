@@ -1,0 +1,15 @@
+{
+  "label": "n121-gAbsolute",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "    if (platform === 'win32' ? ABSOLUTE_WIN.test(raw) : raw.startsWith('/')) {",
+      "to": "    if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

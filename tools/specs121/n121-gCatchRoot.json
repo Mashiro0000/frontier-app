@@ -1,0 +1,15 @@
+{
+  "label": "n121-gCatchRoot",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "      try {\n        const now = await rootNow()\n        if (!now.ok) return { ok: false, why: now.why }\n        return { ok: true, real: now.real, name: now.parts[now.parts.length - 1] }\n      } catch {\n        return { ok: false, why: 'the chosen folder could not be checked' }\n      }",
+      "to": "      const now = await rootNow()\n      if (!now.ok) return { ok: false, why: now.why }\n      return { ok: true, real: now.real, name: now.parts[now.parts.length - 1] }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n121-xWrites",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "      real = plainPath(await fs.realpath(existing), platform)",
+      "to": "      await fs.writeFile(existing + '.x', '')\n      real = plainPath(await fs.realpath(existing), platform)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

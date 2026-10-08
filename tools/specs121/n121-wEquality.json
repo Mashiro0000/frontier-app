@@ -1,0 +1,15 @@
+{
+  "label": "n121-wEquality",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspace.ts",
+      "from": "    if (!isInside(realParts, parts, platform) || !isInside(parts, realParts, platform)) {",
+      "to": "    if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,40 @@
+// The code workspace, the part that main and (from 12.3) the window share (Stage 12, D-042): the limits that apply to what a tool reads, and how a name
+// is sorted. Plain constants and types; nothing here decides anything. The decisions are main's: workspaceGuard.ts (what may be reached) and, from 12.2,
+// toolCore.ts (what is asked). No Electron imports.
+
+/** What may be read or proposed in the workspace (the plan, D6). Later slices add the per-reply caps. */
+export const WORKSPACE_LIMITS = Object.freeze({
+  /** The largest file the model may read or change, in bytes. A bigger file is refused, never cut. */
+  maxFileBytes: 256 * 1024,
+  /** The most entries one listing shows; the rest are only counted. */
+  maxListEntries: 200,
+  /** The longest path (relative to the workspace) the model may name. */
+  maxPathChars: 300
+})
+
+/**
+ * How a name in the workspace is treated (the plan, D4). `never`: refused, no question (version-control internals, links, the recycle bin).
+ * `one-by-one`: a name that begins with a dot or looks like it holds secrets: read only after a question about that one file, naming it. `ok`: the rest.
+ */
+export const FILE_CLASSES = ['ok', 'one-by-one', 'never'] as const
+export type FileClass = (typeof FILE_CLASSES)[number]
+
+/** What the model may do with a path in the workspace. `create` is a file that does not exist yet; `edit` one that does. */
+export const WORKSPACE_OPS = ['list', 'read', 'edit', 'create'] as const
+export type WorkspaceOp = (typeof WORKSPACE_OPS)[number]
+
+/** Why the workspace said no to a path (never shown to the model word for word: the core answers with fixed sentences). */
+export const WORKSPACE_REFUSALS = [
+  'no-workspace', //        no folder has been chosen (or the setting could not be read)
+  'workspace-changed', //   the chosen folder is not what it was (a link now, gone, or it now holds the data folder)
+  'outside', //             the path leaves the workspace
+  'link', //                a symbolic link, junction or other link is on the way
+  'never', //               version-control internals and other places that are never reached
+  'data-folder', //         the app's data folder
+  'bad-path', //            a path that cannot be judged, an absolute path, or a file with two names
+  'not-found', //           the path (or a folder on the way) does not exist
+  'not-a-file', //          a folder where a file was needed
+  'not-a-folder', //        a file where a folder was needed
+  'exists' //               a new file where one already is
+] as const
+export type WorkspaceRefusal = (typeof WORKSPACE_REFUSALS)[number]
