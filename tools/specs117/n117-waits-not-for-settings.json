@@ -1,0 +1,14 @@
+{
+  "label": "n117-waits-not-for-settings",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      toolSettings.file.whenIdle()",
+      "to": "      Promise.resolve()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-7.mjs"
+  ],
+  "env": {}
+}

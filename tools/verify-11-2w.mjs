@@ -276,7 +276,7 @@ try {
   const onText = await ev(`document.getElementById('settings-storage-heading').closest('section').innerText`)
   const sealed = logText() ?? ''
   check('H: turning encryption on seals the audit log: every line is the chats\' envelope, and nothing that was asked is readable in the file', lines(sealed).length === EVENTS.length && lines(sealed).every((l) => l.startsWith('{"format":"frontier-chat-encrypted"')) && !sealed.includes(CANARY) && !sealed.includes('blog.rust-lang.org'), sealed.slice(0, 200))
-  check('H: ...and the report names it', onText.includes('Your instructions for every chat, your notes, your projects and the audit log of tool calls are encrypted too.'), onText.slice(0, 300))
+  check('H: ...and the report names it', onText.includes('Your instructions for every chat, your notes, your projects, your tool settings and the audit log of tool calls are encrypted too.'), onText.slice(0, 300))
   await page.press('Escape')
   await sleep(300)
   await openTools()

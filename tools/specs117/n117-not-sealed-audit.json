@@ -1,0 +1,14 @@
+{
+  "label": "n117-not-sealed-audit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      auditLog.document,\n      toolSettings.file",
+      "to": "      toolSettings.file"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-7.mjs"
+  ],
+  "env": {}
+}

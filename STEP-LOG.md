@@ -2646,3 +2646,16 @@ if you have not, please do before you rely on this. **The design was mine** (you
 
 1. **The one cent is the providers' list price**, read from their pages. The first real search will show it on a real bill.
 2. **The window tests stall now and then** on this computer (the test window goes hidden); re-running them works. It is the test window, not the app.
+
+## Stage 11 - Slice 11.7: backups and encryption (8 October 2026 session; D-041)
+
+**Step by step.**
+
+1. **Encryption covers the new files.** When you turn encryption on, the audit log and your tool settings are encrypted with your chats (and decrypted again when you turn it off). Tested with the real files. If the key is ever lost, the tool settings cannot be read and every tool is off: a file that cannot be opened never allows a tool. The message you read after turning encryption on or off names them.
+2. **Backups carry the chats with their searches.** A chat that used the search is backed up and restored with its cards and pages. A backup whose search cards are damaged, or whose page address is not a plain https one, is refused like any damaged chat.
+3. **Backups do NOT carry the audit log or the tool settings, on purpose.** A backup file can come from anywhere. Restoring tool settings from a file would let a file switch a tool on; restoring audit lines would let a file write the record of what the model did. A hostile backup file that pretends to hold them changes nothing (tested). If you want the log kept elsewhere, use "Export..." on the Tools page. Tell me if you want this changed.
+4. **Checked:** 20 checks under Node, 6 negative controls all caught; the older window suites that quote the encryption message and list the page's functions were brought up to date and re-run clean.
+
+## Stage 11.7 - Things to know (not problems, but worth your attention)
+
+1. **After restoring a backup on a new computer your tools are off** (they are not in the backup). Turn them on again on the Tools page.

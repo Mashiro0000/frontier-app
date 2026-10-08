@@ -1,0 +1,14 @@
+{
+  "label": "n117-backup-version-fixed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "JSON.stringify({ version: fileVersion(chat), ...chat })",
+      "to": "JSON.stringify({ version: 3, ...chat })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-7.mjs"
+  ],
+  "env": {}
+}
