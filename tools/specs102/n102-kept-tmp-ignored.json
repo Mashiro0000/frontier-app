@@ -1,0 +1,14 @@
+{
+  "label": "n102-kept-tmp-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/keptFile.ts",
+      "from": "      if (value !== null) return { state: 'ok', value, form: tmp.form }",
+      "to": "      void value"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

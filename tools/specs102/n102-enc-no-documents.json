@@ -1,0 +1,14 @@
+{
+  "label": "n102-enc-no-documents",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatEncryptionService.ts",
+      "from": "    return { documents: await documents.conform() }",
+      "to": "    return {}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

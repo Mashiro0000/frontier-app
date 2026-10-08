@@ -1,0 +1,14 @@
+{
+  "label": "n101-never-not-loose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "  if (next.kind === 'never') return true",
+      "to": "  if (next.kind === 'never') return false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

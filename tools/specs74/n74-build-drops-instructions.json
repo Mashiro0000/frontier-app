@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/providers/request.ts",
-      "from": "system: systemPromptFor(model.provider, input.instructions),",
-      "to": "system: systemPromptFor(model.provider),"
+      "from": "system: systemPromptFor(model.provider, input.instructions, {",
+      "to": "system: systemPromptFor(model.provider, undefined, {"
     }
   ],
   "argv": [

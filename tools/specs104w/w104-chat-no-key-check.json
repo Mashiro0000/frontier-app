@@ -1,0 +1,18 @@
+{
+  "label": "w104-chat-no-key-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      const held = heldKey(note.text, keys)\n      if (held !== null) {",
+      "to": "      const held = heldKey(note.text, keys)\n      if (held === \"never\") {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run104.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

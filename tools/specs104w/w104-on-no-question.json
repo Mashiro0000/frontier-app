@@ -1,0 +1,18 @@
+{
+  "label": "w104-on-no-question",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "      if (notes.length > 0) {\n        const no = await ask(owner, memoryOnQuestion(notes), MEMORY_STILL_OFF)",
+      "to": "      if (notes.length < 0) {\n        const no = await ask(owner, memoryOnQuestion(notes), MEMORY_STILL_OFF)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run104.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n103-kept-writes-unreadable",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/keptFile.ts",
+      "from": "        if (parse(plain) === null)\n          throw new Error(`${name} would not read back, so nothing was written`)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

@@ -5,6 +5,8 @@
 import type { AskFirstChoice, AskFirstSetting, RequestEstimate } from './askFirst'
 import type { AttachedFile, AttachmentInfo } from './attachments'
 import type { Limits, LimitsChoice } from './limits'
+import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from './memory'
+import type { ProjectChangeResult, ProjectsStatus } from './projects'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
 import type { ReplyUsage, UsageSummary } from './usage'
@@ -93,8 +95,42 @@ export type SetKeyResult = { ok: true; status: SettingsStatus } | { ok: false; e
 export type TestKeyResult = { ok: true; modelCount: number } | { ok: false; error: string }
 export type SetModelResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
 export type SetEffortResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
-export type SetLimitsResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
-export type SetAskFirstResult = { ok: true; status: SettingsStatus } | { ok: false; error: string }
+/**
+ * `cancelled`: a change that lets the app spend more was asked about in the system's own message box (D-039), and the person said no (or closed it).
+ * Nothing was saved, and it is not shown as a failure.
+ */
+export type SetLimitsResult =
+  { ok: true; status: SettingsStatus } | { ok: false; error: string; cancelled?: true }
+export type SetAskFirstResult =
+  { ok: true; status: SettingsStatus } | { ok: false; error: string; cancelled?: true }
+
+/** A part of a text that looks like a key, a token or a password (D-039), as the page is shown it: what it looks like, and the part masked. */
+export interface SecretFinding {
+  /** For "... looks like <what>": "an Anthropic API key", "a password". */
+  what: string
+  /** The part, masked: its first four and last two characters and its length ("sk-a…7Q (51 characters)"). */
+  shown: string
+}
+
+/** The person's instructions for every chat (D-039), as main has them. */
+export interface EveryChatStatus {
+  /** The text ('' for none). */
+  text: string
+  /** Why the file that holds them cannot be read, or null when it can. While it cannot, main sends no request at all. */
+  problem: string | null
+}
+
+/**
+ * `cancelled`: the person said no in the system's own message box (or closed it); nothing was saved, and it is not shown as a failure. `warnings`: parts
+ * that look like a key or a password; nothing was saved, and the page may send the same text again with "Save anyway".
+ */
+export type SaveEveryChatResult =
+  | { ok: true; status: EveryChatStatus }
+  | { ok: false; error: string; cancelled?: true; warnings?: SecretFinding[] }
+
+/** What main found in a chat's own instructions before the page keeps them (D-039). Nothing is saved by this. */
+export type CheckChatInstructionsResult =
+  { ok: true } | { ok: false; error: string; warnings?: SecretFinding[] }
 
 /** A message as the model is told about it: who wrote it, and the plain text. */
 export type WireRole = 'user' | 'assistant'
@@ -132,6 +168,11 @@ export interface ChatRequest {
    * Absent for a request that does not belong to a saved chat.
    */
   conversationId?: string
+  /**
+   * The project the chat belongs to (D-039, 10.6): main reads that project from its own file and adds its instructions, notes and files to the
+   * request. A project that is not there is none. Absent for a chat in no project, which is sent exactly as before.
+   */
+  projectId?: string
 }
 
 /** What the main process reports while a reply is being produced. */
@@ -198,6 +239,8 @@ export interface ConversationToSave {
   messages: MessageToSave[]
   /** The person's instructions for this chat (D-027), saved with it. Absent means none. Checked again by main, as for a request. */
   instructions?: string
+  /** The project the chat belongs to (D-039): a project's id, or absent for none. Main checks the project exists; the file is then version 5. */
+  project?: string
 }
 
 /** A saved conversation, as main hands it back to be put on screen. */
@@ -211,6 +254,8 @@ export interface SavedConversation {
   /** The person's instructions for this chat (D-027): '' for none, and for every chat saved before version 3 of the file. */
   instructions: string
   messages: SavedMessage[]
+  /** The project the chat belongs to (D-039, file version 5): absent for none. */
+  project?: string
 }
 
 /** One line in the list of saved conversations. */
@@ -219,6 +264,8 @@ export interface ConversationSummary {
   title: string
   updatedAt: number
   messageCount: number
+  /** The project the chat belongs to (D-039): absent for none. It may name a project that has since been deleted (then it is in none). */
+  project?: string
 }
 
 export interface HistoryList {
@@ -266,6 +313,8 @@ export interface ChatStorageReport {
   backup: { count: number; leftOut: number; where: string } | null
   /** The attached files (D-037), rewritten in the same form as the chats; absent when there are none. */
   files?: { changed: number; failed: number }
+  /** The person's instructions for every chat and their notes (D-039), rewritten in the same form too; absent when there are none. */
+  documents?: { changed: number; failed: number }
 }
 
 /** `cancelled`: the person closed the system's dialog, which is not a failure and is not shown as one. */
@@ -294,6 +343,10 @@ export type HistoryExportResult =
       where: string
       /** The attached files it holds, and those whose copies could not be read (D-037). Absent for a backup without files. */
       files?: { count: number; leftOut: number }
+      /** The projects and the notes it holds (10.7, D-039): a backup of every chat, when there are any. */
+      kept?: { projects: number; notes: number }
+      /** Why the projects or the notes are not in it (their file could not be read), in a sentence; absent when nothing was left out. */
+      keptLeftOut?: string
     }
   | { ok: false; error: string; cancelled?: true }
 
@@ -319,6 +372,16 @@ export interface RestorePreview {
    * cannot be used. Absent for a backup without files.
    */
   files?: { count: number; missing: number; refused: number }
+  /**
+   * The projects and the notes the backup holds (10.7, D-039; version 3): to be added (after a yes in the system's own box), already here, added as
+   * copies (their id is taken by a different project), and not to be added (past a cap, a saved API key inside, or unusable in the file). `problem`:
+   * why none can be added (the projects or notes here cannot be read). Absent for a backup without them.
+   */
+  kept?: {
+    projects: { add: number; same: number; copies: number; notAdded: number; names: string[] }
+    notes: { add: number; same: number; notAdded: number }
+    problem: string | null
+  }
   /** Chats in the file that cannot be used, and why (the first few). */
   refusedCount: number
   refused: { line: number; why: string }[]
@@ -344,6 +407,18 @@ export type HistoryRestoreApplyResult =
       failed: number
       /** The attached files put back, already here, and not put back: no room, not written, or not usable (D-037). Absent for a backup without files. */
       files?: { added: number; already: number; noRoom: number; failed: number; refused: number }
+      /**
+       * The projects and notes (10.7, D-039): added, already here, not added. `declined`: the person did not say yes in the system's box (only the chats
+       * were added); `problem`: why none was added otherwise. Absent for a backup without them.
+       */
+      kept?: {
+        projects: number
+        notes: number
+        same: number
+        notAdded: number
+        declined: boolean
+        problem: string | null
+      }
     }
   | { ok: false; error: string }
 
@@ -384,12 +459,14 @@ export interface FrontierApi {
     setEffort(modelId: string, level: string): Promise<SetEffortResult>
     /**
      * Chooses the daily and the monthly spending limit (D-031): both together, each an amount in whole dollars and cents or "No limit". Main
-     * checks them again and keeps them; the page cannot take a choice back to "not chosen", and has no other way to change a limit.
+     * checks them again and keeps them; the page cannot take a choice back to "not chosen", and has no other way to change a limit. A choice
+     * that lets the app spend more is saved only after the person says yes in the system's own message box, which the page cannot answer (D-039).
      */
     setLimits(choice: LimitsChoice): Promise<SetLimitsResult>
     /**
      * Chooses the amount above which the app asks before sending a large request (D-032), or "Never ask". Main checks it again and keeps it; the
-     * page cannot send anything but those two, and this is not a limit: the spending limits still stop a request, whatever is chosen here.
+     * page cannot send anything but those two, and this is not a limit: the spending limits still stop a request, whatever is chosen here. A
+     * choice that asks less often is saved only after the person says yes in the system's own message box (D-039).
      */
     setAskFirst(choice: AskFirstChoice): Promise<SetAskFirstResult>
   }
@@ -462,6 +539,51 @@ export interface FrontierApi {
     /** The small pictures and first lines of kept files, by id (a chat opened from History): main reads its own copies. At most `perChat` ids. */
     describe(ids: string[]): Promise<AttachmentPreview[]>
   }
+  instructions: {
+    /** The person's instructions for every chat, as main has them (D-039). Main adds them to every request itself; the page only shows them. */
+    getEveryChat(): Promise<EveryChatStatus>
+    /**
+     * Saves the instructions for every chat ('' turns them off). Main checks them again and looks for secrets (a saved API key is refused; text that
+     * looks like a key or a password needs `saveAnyway`), and saves new or changed text only after the person's yes in the system's own message box,
+     * which the page cannot answer. Turning them off asks nothing.
+     */
+    setEveryChat(text: string, saveAnyway?: boolean): Promise<SaveEveryChatResult>
+    /** The same look for secrets for a chat's own instructions (D-027), before the page keeps them. Saves nothing and asks nothing. */
+    checkForChat(text: string, saveAnyway?: boolean): Promise<CheckChatInstructionsResult>
+  }
+  /**
+   * The person's notes (D-039): main keeps them in memory.json and sends them itself with every request (every chat's; a project's with its chats). A
+   * new or changed note is kept only after the person's yes in the system's own message box, which the page cannot answer; a saved API key is refused,
+   * and text that looks like one needs `saveAnyway`. Deleting and turning memory off ask nothing there (the page asks first).
+   */
+  memory: {
+    status(): Promise<MemoryStatus>
+    /** A new note for every chat (`scope` "all") or for a project's chats (its id). */
+    add(text: string, scope: string, saveAnyway?: boolean): Promise<MemoryChangeResult>
+    edit(id: string, text: string, saveAnyway?: boolean): Promise<MemoryChangeResult>
+    remove(id: string): Promise<MemoryChangeResult>
+    removeAll(): Promise<MemoryChangeResult>
+    /** Memory on or off for every chat; on asks in the system's box when there are notes. */
+    setOn(on: boolean): Promise<MemoryChangeResult>
+    /** Every note to one plain text file the person places in the system's save dialog (main opens it; the page sends no path). */
+    exportAll(): Promise<MemoryExportResult>
+  }
+  /**
+   * The person's projects (D-039): a name, instructions and files for a group of chats, kept by main in projects.json. New instructions and added files
+   * are kept only after the person's yes in the system's own message box (the files come through the system's open dialog: the page sends no path);
+   * making, renaming, taking a file off and deleting ask nothing there. A project's name is never sent to the model.
+   */
+  projects: {
+    status(): Promise<ProjectsStatus>
+    create(name: string): Promise<ProjectChangeResult>
+    rename(id: string, name: string): Promise<ProjectChangeResult>
+    setInstructions(id: string, text: string, saveAnyway?: boolean): Promise<ProjectChangeResult>
+    addFiles(id: string): Promise<ProjectChangeResult>
+    removeFile(id: string, fileId: string): Promise<ProjectChangeResult>
+    remove(id: string): Promise<ProjectChangeResult>
+    /** The way out when projects.json cannot be read: every project deleted, the damaged file kept as a copy. */
+    removeAll(): Promise<ProjectChangeResult>
+  }
 }
 
 export const CHANNELS = {
@@ -492,7 +614,25 @@ export const CHANNELS = {
   attachmentsPick: 'attachments:pick',
   attachmentsAddBytes: 'attachments:add-bytes',
   attachmentsDiscard: 'attachments:discard',
-  attachmentsDescribe: 'attachments:describe'
+  attachmentsDescribe: 'attachments:describe',
+  instructionsGetEveryChat: 'instructions:get-every-chat',
+  instructionsSetEveryChat: 'instructions:set-every-chat',
+  instructionsCheckForChat: 'instructions:check-for-chat',
+  memoryStatus: 'memory:status',
+  memoryAdd: 'memory:add',
+  memoryEdit: 'memory:edit',
+  memoryRemove: 'memory:remove',
+  memoryRemoveAll: 'memory:remove-all',
+  memorySetOn: 'memory:set-on',
+  memoryExport: 'memory:export',
+  projectsStatus: 'projects:status',
+  projectsCreate: 'projects:create',
+  projectsRename: 'projects:rename',
+  projectsSetInstructions: 'projects:set-instructions',
+  projectsAddFiles: 'projects:add-files',
+  projectsRemoveFile: 'projects:remove-file',
+  projectsRemove: 'projects:remove',
+  projectsRemoveAll: 'projects:remove-all'
 } as const
 
 /**

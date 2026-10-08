@@ -1,0 +1,14 @@
+{
+  "label": "n107-note-no-dedupe",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/restoreKept.ts",
+      "from": "    if (allNotes().some((other) => other.scope === scope && other.text === note.text)) {",
+      "to": "    if (allNotes().some((other) => other.scope === scope && other.text === note.text + 1)) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

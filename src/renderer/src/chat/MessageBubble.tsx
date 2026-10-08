@@ -18,6 +18,7 @@ interface MessageBubbleProps {
   later: number
   onRegenerate: () => void
   onResend: (id: string, text: string) => void
+  onRemember: (text: string) => void
 }
 
 /** A short line shown under a message when something other than "all went well" happened. */
@@ -35,7 +36,8 @@ function MessageBubble({
   isLast,
   later,
   onRegenerate,
-  onResend
+  onResend,
+  onRemember
 }: MessageBubbleProps): React.JSX.Element {
   // The reply has been asked for but no text has arrived yet: show animated dots.
   const isWaiting = message.status === 'streaming' && message.content === ''
@@ -102,6 +104,7 @@ function MessageBubble({
           isLast={isLast}
           onRegenerate={onRegenerate}
           onEdit={() => setEditing(true)}
+          onRemember={onRemember}
         />
       )}
     </article>

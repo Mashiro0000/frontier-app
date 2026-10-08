@@ -1,0 +1,18 @@
+{
+  "label": "w104-bar-no-problem-mark",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ChatBar.tsx",
+      "from": "        {memory?.problem != null ? (",
+      "to": "        {memory?.problem === 12345 ? ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run104.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

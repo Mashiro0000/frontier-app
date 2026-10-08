@@ -1,0 +1,18 @@
+{
+  "label": "w106-chat-no-project-notes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "    const memory = await context.notes(project?.id ?? null)",
+      "to": "    const memory = await context.notes(null)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run106.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

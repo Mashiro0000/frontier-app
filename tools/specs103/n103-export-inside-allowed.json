@@ -1,0 +1,14 @@
+{
+  "label": "n103-export-inside-allowed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "    if (await isInside(options.dataDir, dest)) {",
+      "to": "    if (dest === 42) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

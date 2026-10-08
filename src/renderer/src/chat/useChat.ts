@@ -19,11 +19,15 @@ export interface UseChat {
   instructions: string
   /** Sets the instructions (the dialog has trimmed and checked them; main checks again). Does nothing while a reply is arriving. */
   setInstructions: (text: string) => void
+  /** The project the chat belongs to (D-039, 10.5): its id, or null for none. Saved with the chat. */
+  project: string | null
+  /** Moves the chat into a project, or out of every project. Does nothing while a reply is arriving. */
+  setProject: (id: string | null) => void
   /**
-   * Replaces the conversation with another one: a saved one (with its instructions), or an empty list for a new chat, which starts with
-   * none.
+   * Replaces the conversation with another one: a saved one (with its instructions and project), or an empty list for a new chat, which
+   * starts with none (or in the project it was started in).
    */
-  load: (messages: ChatMessage[], instructions?: string) => void
+  load: (messages: ChatMessage[], instructions?: string, project?: string | null) => void
   /**
    * Says which saved conversation is on screen (D-030), so that what a reply costs can be shown under it. Called by the history, which
    * owns the id; it changes nothing on screen, and is the same function from one render to the next.
@@ -48,6 +52,8 @@ export function useChat(reply: ReplyFn): UseChat {
   // The person's own instructions for this chat (D-027). They belong to the conversation, like its messages, and are read when a request
   // is made: a reply that is asked for again (Regenerate, an edited message) uses the instructions the chat has THEN.
   const [instructions, setInstructionsState] = useState('')
+  // The chat's project (D-039): it belongs to the conversation too, and is saved with it.
+  const [project, setProjectState] = useState<string | null>(null)
   // The id the conversation on screen is saved under. A ref, not state: nothing is drawn from it, and a request reads it when it is made.
   const conversationId = useRef<string | null>(null)
   const setConversationId = useCallback((id: string): void => {
@@ -109,7 +115,8 @@ export function useChat(reply: ReplyFn): UseChat {
         instructions,
         conversationId.current,
         (usage) => updateMessage(replyId, (m) => ({ ...m, usage })),
-        (request) => askAboutLargeRequest(request, controller.signal)
+        (request) => askAboutLargeRequest(request, controller.signal),
+        project
       )
       for await (const piece of answered) {
         if (controller.signal.aborted) break // ignore a piece that was already on its way
@@ -190,10 +197,20 @@ export function useChat(reply: ReplyFn): UseChat {
     setInstructionsState(text)
   }, [])
 
-  function load(next: ChatMessage[], nextInstructions = ''): void {
+  const setProject = useCallback((id: string | null): void => {
+    if (activeReply.current) return
+    setProjectState(id)
+  }, [])
+
+  function load(
+    next: ChatMessage[],
+    nextInstructions = '',
+    nextProject: string | null = null
+  ): void {
     activeReply.current?.abort() // the buttons that call this are off while a reply arrives; belt and braces
     setMessages(next)
     setInstructionsState(nextInstructions)
+    setProjectState(nextProject)
   }
 
   const isReplying = messages.at(-1)?.status === 'streaming'
@@ -207,6 +224,8 @@ export function useChat(reply: ReplyFn): UseChat {
     stop,
     instructions,
     setInstructions,
+    project,
+    setProject,
     load,
     setConversationId,
     regenerate,

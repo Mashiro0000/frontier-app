@@ -1,0 +1,14 @@
+{
+  "label": "n105-refs-when-damaged",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/projects.ts",
+      "from": "    if (current.state === 'unreadable') return null",
+      "to": "    if (current.state === 'unreadable') return new Set()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-5.mjs"
+  ],
+  "env": {}
+}

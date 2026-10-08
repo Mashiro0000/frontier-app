@@ -6,6 +6,7 @@ import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
 import { h4, readRetry } from './lib4.mjs'
+import { sayYesFromMain } from './lib10.mjs'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -17,6 +18,9 @@ if (!process.env.MOCK_PORT || !userData || !['garbage', 'capital', 'dir'].includ
 const check = checker()
 const page = await connect(port)
 await assertScratchProfile()
+// Since 10.1 (D-039) a change that lets the app spend more is asked about in the system's own message box: this suite stands in for the person from
+// main and says yes to every such question (it tests the limits, not the question; verify-10-1w.mjs tests the question).
+const standIn = await sayYesFromMain()
 const H = h4(page, { userData, mockUrl })
 const { ev } = H
 const askFile = join(userData, 'ask-first.json')
@@ -94,6 +98,7 @@ try {
   check(`[${CASE}] no console errors, warnings or exceptions in the page`, page.problems.length === 0, page.problems.join(' | '))
   await sleep(300)
 } finally {
+  standIn.main.close()
   page.close()
 }
 process.exit(check.summary() ? 0 : 1)

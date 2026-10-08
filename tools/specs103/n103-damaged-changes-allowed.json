@@ -1,0 +1,14 @@
+{
+  "label": "n103-damaged-changes-allowed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "    if (current.state === 'unreadable') return { ok: false, error: changeRefused(current.why) }\n    return { ok: true, memory:",
+      "to": "    if (current.state === 'unreadable') return { ok: true, memory: { on: true, notes: [] } }\n    return { ok: true, memory:"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

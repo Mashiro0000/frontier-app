@@ -24,6 +24,7 @@
     "WIPE_USER_DATA": "1",
     "MOCK_PORT": "8799",
     "PRESEED_FILE": "",
+    "INSPECT_PORT": "9230",
     "LOG_LABEL": "nc-w83-room-abort-not-heard-and-no-abort-check"
   }
 }

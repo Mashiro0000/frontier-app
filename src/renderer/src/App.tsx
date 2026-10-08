@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { ATTACHMENT_LIMITS } from '../../shared/attachments'
+import { useCallback, useState } from 'react'
+import { ATTACHMENT_LIMITS, type AttachmentInfo } from '../../shared/attachments'
 import { limitsAreSet } from '../../shared/limits'
 import type { TaskId } from '../../shared/rankings'
 import ChatBar from './chat/ChatBar'
@@ -11,6 +11,11 @@ import { useChat } from './chat/useChat'
 import HistoryDialog from './history/HistoryDialog'
 import { useHistory } from './history/useHistory'
 import InstructionsDialog from './instructions/InstructionsDialog'
+import { useEveryChat } from './instructions/useEveryChat'
+import MemoryDialog from './memory/MemoryDialog'
+import { useMemory } from './memory/useMemory'
+import ProjectsDialog from './projects/ProjectsDialog'
+import { projectOf, useProjects } from './projects/useProjects'
 import EffortPicker from './settings/EffortPicker'
 import { providerMissingKey } from './settings/format'
 import LimitsDialog from './settings/LimitsDialog'
@@ -18,6 +23,9 @@ import ModelPicker from './settings/ModelPicker'
 import SettingsDialog from './settings/SettingsDialog'
 import TaskPicker from './settings/TaskPicker'
 import { useSettingsStatus } from './settings/useSettingsStatus'
+
+/** No project files: one empty list, so the chat does not draw again for a new one each time. */
+const NO_FILES: AttachmentInfo[] = []
 
 function App(): React.JSX.Element {
   const { status, loadError, setStatus } = useSettingsStatus()
@@ -37,6 +45,27 @@ function App(): React.JSX.Element {
   const history = useHistory(chat)
   // The files on the message being written (D-037): copies kept by main, attached with "Attach...", a paste or a drop.
   const attachments = useAttachments()
+  // The person's instructions for every chat (D-039): kept by main, which adds them to every request; the page shows them and asks to change them.
+  const everyChat = useEveryChat()
+  // The person's notes (D-039): kept by main, which sends them with every request; the Memory page shows them and asks to change them.
+  const memory = useMemory()
+  const [memoryOpen, setMemoryOpen] = useState(false)
+  // Text picked with "Remember..." on a message, for the Memory page's box; null when the page was opened from the chat bar.
+  const [memoryDraft, setMemoryDraft] = useState<string | null>(null)
+  const { reload: reloadMemory } = memory
+  const openMemory = useCallback(
+    (draft: string | null): void => {
+      reloadMemory()
+      setMemoryDraft(draft)
+      setMemoryOpen(true)
+    },
+    [reloadMemory]
+  )
+  const onRemember = useCallback((text: string): void => openMemory(text), [openMemory])
+  // The person's projects (D-039, 10.5): kept by main; the chat on screen belongs to one or none (saved with it, in its file).
+  const projects = useProjects()
+  const [projectsOpen, setProjectsOpen] = useState(false)
+  const chatProject = projectOf(projects.status, chat.project)
   // A message carries at most ten files, and a chat (whose files are sent again with every message) at most fifty.
   const attachFull =
     attachments.files.length >= ATTACHMENT_LIMITS.perMessage ||
@@ -90,16 +119,29 @@ function App(): React.JSX.Element {
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenLimits={() => setLimitsPutOff(false)}
         attachments={attachments}
+        onRemember={onRemember}
+        projectFiles={chatProject?.files ?? NO_FILES}
       />
       {/* New chat, History and Instructions live under the message box, not in the header, so the header stays one row (D-029). */}
       <ChatBar
         isReplying={chat.isReplying}
         messageCount={chat.messages.length}
         instructions={chat.instructions}
+        everyChat={everyChat.status}
+        memory={memory.status}
+        onOpenMemory={() => openMemory(null)}
+        projectName={chatProject?.name ?? null}
+        onOpenProjects={() => {
+          projects.reload()
+          setProjectsOpen(true)
+        }}
         saveFailed={history.saveError !== null}
-        onNewChat={history.startNew}
+        onNewChat={() => history.startNew()}
         onOpenHistory={() => setHistoryOpen(true)}
-        onOpenInstructions={() => setInstructionsOpen(true)}
+        onOpenInstructions={() => {
+          everyChat.reload()
+          setInstructionsOpen(true)
+        }}
         onAttach={attachments.pick}
         attachDisabled={attachments.busy || attachFull}
         attachTitle={
@@ -112,11 +154,33 @@ function App(): React.JSX.Element {
               : 'Attach images, PDFs or text files to your message. You choose them in a Windows dialog; the app keeps a copy and sends it to the model.'
         }
       />
-      <HistoryDialog open={historyOpen} history={history} onClose={() => setHistoryOpen(false)} />
+      <HistoryDialog
+        open={historyOpen}
+        history={history}
+        projects={projects.status}
+        onClose={() => setHistoryOpen(false)}
+      />
+      <ProjectsDialog
+        open={projectsOpen}
+        projects={projects}
+        chatProject={chatProject?.id ?? null}
+        onChatProject={chat.setProject}
+        onNewChatIn={(id) => history.startNew(id)}
+        onClose={() => setProjectsOpen(false)}
+      />
+      <MemoryDialog
+        open={memoryOpen}
+        memory={memory}
+        draft={memoryDraft}
+        projects={projects.status}
+        onClose={() => setMemoryOpen(false)}
+      />
       <InstructionsDialog
         open={instructionsOpen}
         instructions={chat.instructions}
+        everyChat={everyChat.status}
         onSave={chat.setInstructions}
+        onEveryChatSaved={everyChat.setStatus}
         onClose={() => setInstructionsOpen(false)}
       />
       {status !== null && (

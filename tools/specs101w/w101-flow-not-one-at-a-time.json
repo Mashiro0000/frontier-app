@@ -1,0 +1,18 @@
+{
+  "label": "w101-flow-not-one-at-a-time",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/limitChanges.ts",
+      "from": "    if (gate.open()) return { ok: false, error: QUESTION_BUSY }\n    if (changing) return { ok: false, error: CHANGE_BUSY }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run101.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 400000
+}

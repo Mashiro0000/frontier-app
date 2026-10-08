@@ -1,0 +1,14 @@
+{
+  "label": "n101-flow-askfirst-no-question",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/limitChanges.ts",
+      "from": "        if (askFirstLoosens(current, next)) {",
+      "to": "        if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/history/useHistory.ts",
-      "from": "      settled.current = { messages, instructions }\n      chat.load(messages, instructions)",
-      "to": "      chat.load(messages, instructions)"
+      "from": "      settled.current = { messages, instructions, project }\n      chat.load(messages, instructions, project)",
+      "to": "      chat.load(messages, instructions, project)"
     }
   ],
   "argv": [

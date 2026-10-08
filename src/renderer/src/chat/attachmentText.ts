@@ -82,11 +82,36 @@ export function chatFiles(
 export function filesBlock(
   messages: readonly { files?: AttachedFile[] }[],
   draft: readonly AttachedFile[],
-  model: Pick<ModelOption, 'label' | 'imageInput' | 'documentInput'> | null
+  model: Pick<ModelOption, 'label' | 'imageInput' | 'documentInput'> | null,
+  /** The files of the chat's project (D-039, 10.6): sent with every message too, and counted with the chat's own. */
+  projectFiles: readonly AttachmentInfo[] = []
 ): string | null {
-  const all = chatFiles(messages, draft)
-  if (all.length > ATTACHMENT_LIMITS.perChat) {
+  const own = chatFiles(messages, draft)
+  if (own.length > ATTACHMENT_LIMITS.perChat) {
     return `A chat can hold at most ${ATTACHMENT_LIMITS.perChat} files. Start a new chat for more.`
+  }
+  const infos = [
+    ...projectFiles,
+    ...own.map((file) => file.info).filter((info) => !projectFiles.some((p) => p.id === info.id))
+  ]
+  const all = infos.map((info) => ({ info }))
+  // What one request may carry (the main process checks the same again): a project's files count with the chat's, and say so.
+  const L = ATTACHMENT_LIMITS
+  const theirs =
+    projectFiles.length > 0
+      ? " The project's files count too: they go with every message of its chats."
+      : ''
+  const bytes = infos.reduce((sum, info) => sum + info.bytes, 0)
+  const pages = infos.reduce((sum, info) => sum + (info.pages ?? 0), 0)
+  const chars = infos.reduce((sum, info) => sum + (info.chars ?? 0), 0)
+  if (bytes > L.maxRequestBytes) {
+    return `The files of this chat come to more than one request may carry (${Math.round(L.maxRequestBytes / (1024 * 1024))} MB).${theirs}`
+  }
+  if (pages > L.maxRequestPages) {
+    return `The PDFs of this chat have more pages than one request may carry (${L.maxRequestPages}).${theirs}`
+  }
+  if (chars > L.maxRequestTextChars) {
+    return `The text files of this chat have more characters than one request may carry (${L.maxRequestTextChars.toLocaleString('en-US')}).${theirs}`
   }
   if (model === null) return null
   if (!model.imageInput && all.some((file) => file.info.kind === 'image')) {

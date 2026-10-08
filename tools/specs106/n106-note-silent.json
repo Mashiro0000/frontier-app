@@ -1,0 +1,14 @@
+{
+  "label": "n106-note-silent",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "  return project === 0\n    ? base",
+      "to": "  return project >= 0\n    ? base"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-6.mjs"
+  ],
+  "env": {}
+}

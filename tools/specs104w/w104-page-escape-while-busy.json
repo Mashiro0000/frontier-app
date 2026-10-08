@@ -1,0 +1,18 @@
+{
+  "label": "w104-page-escape-while-busy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/memory/MemoryDialog.tsx",
+      "from": "        if (busyRef.current) event.preventDefault()",
+      "to": "        void busyRef.current"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run104.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

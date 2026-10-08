@@ -1,0 +1,14 @@
+{
+  "label": "n103-question-wrong-place",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "  const place = placeOf(input.scope, input.projectName)",
+      "to": "  const place = placeOf(ALL_CHATS, null)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

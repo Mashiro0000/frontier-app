@@ -1,0 +1,14 @@
+{
+  "label": "n102-kept-no-aside",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/keptFile.ts",
+      "from": "    await setAside(pathOf())\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n106-check-loose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "  if (projectId !== undefined && !isProjectId(projectId)) {",
+      "to": "  if (projectId === 42) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-6.mjs"
+  ],
+  "env": {}
+}

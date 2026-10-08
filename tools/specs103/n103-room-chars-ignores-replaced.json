@@ -1,0 +1,14 @@
+{
+  "label": "n103-room-chars-ignores-replaced",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "    const chars = use.chars - (replacing?.text.length ?? 0) + text.length",
+      "to": "    const chars = use.chars + text.length"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

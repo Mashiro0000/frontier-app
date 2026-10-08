@@ -1,0 +1,14 @@
+{
+  "label": "n101-gate-rest-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/systemQuestion.ts",
+      "from": "      if (now() < quietUntil) return 'resting'\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

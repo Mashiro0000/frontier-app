@@ -1,0 +1,14 @@
+{
+  "label": "n103-room-count-off",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "    const count = use.notes + (replacing === null ? 1 : 0)",
+      "to": "    const count = use.notes"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

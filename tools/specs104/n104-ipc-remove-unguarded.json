@@ -1,0 +1,14 @@
+{
+  "label": "n104-ipc-remove-unguarded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    guarded((input: unknown): Promise<MemoryChangeResult> => memory.remove(input))",
+      "to": "    (_event: unknown, input: unknown): Promise<MemoryChangeResult> => memory.remove(input)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-4.mjs"
+  ],
+  "env": {}
+}

@@ -44,7 +44,10 @@ try {
   await W.clickSection('Encrypt my saved chats...')
   await page.waitFor(`(() => { const s = document.getElementById('settings-storage-heading').closest('section'); return [...s.querySelectorAll('button')].every((b) => b.disabled) })()`, { timeoutMs: 8000, label: 'the buttons to go off while the dialog is open' })
   check('while the backup dialog is open every button of the section is off (nothing can be started twice)', (await W.section()).buttons.every((b) => b.disabled))
-  const during = await dialogs.calls()
+  // Main opens the save dialog after it has counted what is kept (since 10.2-10.5 also the instructions, notes and projects): wait for the call, not
+  // for the buttons alone.
+  let during = await dialogs.calls()
+  for (let i = 0; i < 50 && during.length === 0; i++) { await sleep(100); during = await dialogs.calls() }
   await dialogs.release()
   await W.waitNote(/Encrypted 5 chats/)
   s = await W.section()

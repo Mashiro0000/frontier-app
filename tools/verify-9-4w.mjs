@@ -8,9 +8,13 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { readRetry } from './lib4.mjs'
 import { SRC } from './lib9.mjs'
+import { installQuestions } from './lib10.mjs'
 
 const W = await start()
 const { page, H, ev, check, main, FILES, sleep, userData } = W
+// Since 10.1 (D-039) "Never ask" and lifting a limit are asked about in the system's own message box: stood in for from main, answered yes (this suite
+// tests what files cost, not the question).
+await installQuestions(main, { fallback: 'yes' })
 const usage = await import(`${SRC}/shared/usage.ts`)
 const format = await import(`${SRC}/renderer/src/settings/format.ts`)
 const mockUrl = `http://127.0.0.1:${process.env.MOCK_PORT}`

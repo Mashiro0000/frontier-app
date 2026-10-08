@@ -1,0 +1,14 @@
+{
+  "label": "n101-higher-same",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "  return after > now ? 'up' : after < now ? 'down' : 'same'",
+      "to": "  return after > now ? 'same' : after < now ? 'down' : 'same'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

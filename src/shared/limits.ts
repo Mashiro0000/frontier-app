@@ -47,6 +47,28 @@ const sameSetting = (a: LimitSetting, b: LimitSetting): boolean =>
 export const sameLimits = (a: Limits, b: Limits): boolean =>
   sameSetting(a.daily, b.daily) && sameSetting(a.monthly, b.monthly)
 
+/**
+ * How one limit would change if the person's choice were saved (Stage 10.1, D-039): 'up' when the app could then spend MORE in that period than it can
+ * now. "Not chosen" refuses every request, so any choice made from it is 'up'; so is "No limit" from an amount, and a higher amount. Compared in whole
+ * cents, so float noise cannot decide.
+ */
+export function limitChange(current: LimitSetting, next: LimitChoice): 'up' | 'same' | 'down' {
+  if (current.kind === 'unset') return 'up'
+  if (current.kind === 'none') return next.kind === 'none' ? 'same' : 'down'
+  if (next.kind === 'none') return 'up'
+  const now = Math.round(current.usd * 100)
+  const after = Math.round(next.usd * 100)
+  return after > now ? 'up' : after < now ? 'down' : 'same'
+}
+
+/**
+ * True when saving `next` would let the app spend more in a day or in a month than it may now. Main then asks the person first, in a window of the
+ * system's own that the page cannot answer (D-039); a choice that only lowers a limit, or keeps it, is saved without that question.
+ */
+export const limitsRaise = (current: Limits, next: LimitsChoice): boolean =>
+  limitChange(current.daily, next.daily) === 'up' ||
+  limitChange(current.monthly, next.monthly) === 'up'
+
 // --- What the person types ---------------------------------------------------------------------------------------------------
 
 export type LimitTextCheck = { ok: true; usd: number } | { ok: false; error: string }
@@ -75,7 +97,7 @@ export function parseLimitText(text: string): LimitTextCheck {
 
 // --- What the page hands over ------------------------------------------------------------------------------------------------
 
-export type LimitsCheck = { ok: true; limits: Limits } | { ok: false; error: string }
+export type LimitsCheck = { ok: true; limits: LimitsChoice } | { ok: false; error: string }
 
 const NOT_UNDERSTOOD = 'The limits were not understood.'
 
@@ -165,7 +187,7 @@ export function formatMoney(dollars: number): string {
  */
 export function withFilesNote(
   refusal: string | null,
-  files: { count: number; tokens: number } | undefined
+  files: { count: number; tokens: number; project?: number } | undefined
 ): string | null {
   if (
     refusal === null ||
@@ -178,7 +200,12 @@ export function withFilesNote(
     files.count === 1
       ? 'The file in this chat is'
       : `The ${files.count.toLocaleString('en-US')} files in this chat are`
-  return `${refusal} ${which} about ${files.tokens.toLocaleString('en-US')} tokens of it: every file in a chat is sent again with each message, so a new chat without ${files.count === 1 ? 'it' : 'them'} costs less.`
+  const base = `${refusal} ${which} about ${files.tokens.toLocaleString('en-US')} tokens of it: every file in a chat is sent again with each message, so a new chat without ${files.count === 1 ? 'it' : 'them'} costs less.`
+  // A project's files (D-039) go with every message of every chat in it: a new chat in the same project does not leave them out.
+  const project = files.project ?? 0
+  return project === 0
+    ? base
+    : `${base} ${project === files.count ? (project === 1 ? 'It is' : 'They are') : `${project.toLocaleString('en-US')} of them are`} the project's, which go with every message of each of its chats.`
 }
 
 export const LIMITS_UNSET_MESSAGE =

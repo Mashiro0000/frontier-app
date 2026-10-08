@@ -1,0 +1,14 @@
+{
+  "label": "n105-scope-takes-all",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "    const kept = current.value.notes.filter((note) => note.scope !== projectId)",
+      "to": "    const kept = current.value.notes.filter(() => false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-5.mjs"
+  ],
+  "env": {}
+}

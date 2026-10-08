@@ -1,0 +1,14 @@
+{
+  "label": "n101-higher-not-loose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "  return Math.round(next.usd * 100) > Math.round(now * 100)",
+      "to": "  return false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

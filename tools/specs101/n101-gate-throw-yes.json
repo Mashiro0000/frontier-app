@@ -1,0 +1,14 @@
+{
+  "label": "n101-gate-throw-yes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/systemQuestion.ts",
+      "from": "        return 'failed'",
+      "to": "        return 'yes'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

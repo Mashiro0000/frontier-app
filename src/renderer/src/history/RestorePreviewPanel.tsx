@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { RestorePreview } from '../../../shared/ipc'
 import { formatWhen } from './format'
-import { attached } from './useBackup'
+import { attached, keptWords, notesWord, projectsWord } from './useBackup'
 
 interface RestorePreviewPanelProps {
   preview: RestorePreview
@@ -27,6 +27,12 @@ function RestorePreviewPanel({
   // Attached files whose copies are not here (D-037): a restore puts them back even when every chat is here already.
   const missing = preview.files?.missing ?? 0
   const filesHere = (preview.files?.count ?? 0) - missing
+  // The projects and notes (10.7, D-039): added only after a yes in the system's own box, which the page cannot answer.
+  const kept = preview.kept
+  const keptAdd =
+    kept === undefined || kept.problem !== null ? 0 : kept.projects.add + kept.notes.add
+  const keptSame = kept === undefined ? 0 : kept.projects.same + kept.notes.same
+  const keptNot = kept === undefined ? 0 : kept.projects.notAdded + kept.notes.notAdded
   // The safe choice has the focus: Enter or Space adds nothing. (With nothing to add, it is the only button that does anything.)
   const dismissRef = useRef<HTMLButtonElement>(null)
   useEffect(() => dismissRef.current?.focus(), [])
@@ -81,7 +87,43 @@ function RestorePreviewPanel({
             <strong>{attached(preview.files?.refused ?? 0)}</strong> in the file cannot be used
           </li>
         )}
+        {kept !== undefined && keptAdd > 0 && (
+          <li>
+            <strong>{keptWords(kept.projects.add, kept.notes.add)}</strong> to be added
+            {kept.projects.copies > 0 &&
+              ` (${projectsWord(kept.projects.copies)} as ${kept.projects.copies === 1 ? 'a copy' : 'copies'})`}
+          </li>
+        )}
+        {keptSame > 0 && (
+          <li>
+            <strong>{kept !== undefined && keptWords(kept.projects.same, kept.notes.same)}</strong>{' '}
+            already here
+          </li>
+        )}
+        {kept !== undefined && kept.problem === null && keptNot > 0 && (
+          <li>
+            <strong>{keptWords(kept.projects.notAdded, kept.notes.notAdded)}</strong> not to be
+            added (no room, a saved API key inside, or not usable)
+          </li>
+        )}
       </ul>
+      {kept !== undefined && kept.problem !== null && (
+        <p className="history-notice history-notice-error" role="status">
+          The backup holds{' '}
+          {keptWords(kept.projects.notAdded, kept.notes.notAdded) || 'projects and notes'}.{' '}
+          {kept.problem}
+        </p>
+      )}
+      {kept !== undefined && keptAdd > 0 && (
+        <p className="history-notice" role="status">
+          {kept.projects.names.length > 0 &&
+            `Projects: ${kept.projects.names.join(', ')}${kept.projects.add > kept.projects.names.length ? ` and ${kept.projects.add - kept.projects.names.length} more` : ''}. `}
+          A project&apos;s instructions and files and your notes go to the model with every message
+          of the chats they are for, so the app asks you about them in a window of its own before
+          adding them. Without your yes only the chats are added.
+          {kept.notes.add > 0 && kept.projects.add === 0 && ` (${notesWord(kept.notes.add)}.)`}
+        </p>
+      )}
       {preview.refused.length > 0 && (
         <ul className="backup-preview-why" aria-label="Why some chats cannot be used">
           {preview.refused.map((one) => (
@@ -140,14 +182,16 @@ function RestorePreviewPanel({
         <button
           type="button"
           className="button"
-          disabled={disabled || (fits === 0 && missing === 0)}
+          disabled={disabled || (fits === 0 && missing === 0 && keptAdd === 0)}
           onClick={onAdd}
         >
           {fits > 0
             ? `Add ${chats(fits)}`
-            : missing > 0
-              ? `Put back ${attached(missing)}`
-              : 'Nothing to add'}
+            : keptAdd > 0 && kept !== undefined
+              ? `Add ${keptWords(kept.projects.add, kept.notes.add)}`
+              : missing > 0
+                ? `Put back ${attached(missing)}`
+                : 'Nothing to add'}
         </button>
         <button
           ref={dismissRef}
@@ -156,7 +200,7 @@ function RestorePreviewPanel({
           disabled={disabled}
           onClick={onDismiss}
         >
-          {fits === 0 && missing === 0 ? 'Back to the list' : "Don't add"}
+          {fits === 0 && missing === 0 && keptAdd === 0 ? 'Back to the list' : "Don't add"}
         </button>
       </div>
     </section>

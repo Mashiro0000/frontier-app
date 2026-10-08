@@ -23,7 +23,8 @@ export async function* ipcReply(
   instructions: string,
   conversationId: string | null,
   onUsage: (usage: ReplyUsage) => void,
-  onLargeRequest: (request: LargeRequest) => Promise<boolean>
+  onLargeRequest: (request: LargeRequest) => Promise<boolean>,
+  projectId: string | null = null
 ): AsyncGenerator<string> {
   if (!window.api) {
     throw new Error('The window could not connect to the app (the preload did not load).')
@@ -52,7 +53,8 @@ export async function* ipcReply(
       streamId,
       messages: toWireMessages(history),
       ...(instructions === '' ? {} : { instructions }),
-      ...(conversationId === null ? {} : { conversationId })
+      ...(conversationId === null ? {} : { conversationId }),
+      ...(projectId === null ? {} : { projectId })
     })
     while (!signal.aborted) {
       const event = arrived.shift()

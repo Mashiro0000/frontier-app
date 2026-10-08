@@ -1,0 +1,14 @@
+{
+  "label": "n102-ipc-no-window",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      everyChat.save(window, input)",
+      "to": "      everyChat.save(null, input)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

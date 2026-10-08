@@ -1,0 +1,18 @@
+{
+  "label": "w102-chat-no-key-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      const held = heldKey(text, keys)\n      if (held !== null) {",
+      "to": "      const held = heldKey(text, keys)\n      if (held === \"never\") {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run102.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 500000
+}

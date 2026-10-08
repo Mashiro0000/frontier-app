@@ -1,0 +1,14 @@
+{
+  "label": "n107-export-needs-chats",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "      if (ids.length === 0 && !anyKept)",
+      "to": "      if (ids.length === 0)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

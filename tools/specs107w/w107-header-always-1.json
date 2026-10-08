@@ -1,0 +1,18 @@
+{
+  "label": "w107-header-always-1",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "      version: withKept ? BACKUP_VERSION_KEPT : BACKUP_VERSION,",
+      "to": "      version: BACKUP_VERSION,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run107.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

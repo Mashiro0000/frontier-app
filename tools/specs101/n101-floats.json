@@ -1,0 +1,14 @@
+{
+  "label": "n101-floats",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "  const now = Math.round(current.usd * 100)\n  const after = Math.round(next.usd * 100)",
+      "to": "  const now = current.usd\n  const after = next.usd"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

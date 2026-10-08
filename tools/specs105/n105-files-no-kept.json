@@ -1,0 +1,14 @@
+{
+  "label": "n105-files-no-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/projects.ts",
+      "from": "          for (const info of fresh) await options.files.discard(info.id)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-5.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w105-instructions-no-question",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/projects.ts",
+      "from": "          const no = await ask(owner, projectInstructionsQuestion(project, text, secrets.warned))",
+      "to": "          const no = null as ProjectChangeResult | null\n          void projectInstructionsQuestion"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run105.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

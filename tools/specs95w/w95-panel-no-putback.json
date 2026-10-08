@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/history/RestorePreviewPanel.tsx",
-      "from": "          disabled={disabled || (fits === 0 && missing === 0)}",
-      "to": "          disabled={disabled || fits === 0}"
+      "from": "          disabled={disabled || (fits === 0 && missing === 0 && keptAdd === 0)}",
+      "to": "          disabled={disabled || (fits === 0 && keptAdd === 0)}"
     }
   ],
   "argv": [

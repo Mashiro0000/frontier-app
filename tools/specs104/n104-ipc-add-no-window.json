@@ -1,0 +1,14 @@
+{
+  "label": "n104-ipc-add-no-window",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      memory.add(window, input)",
+      "to": "      memory.add(null, input)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-4.mjs"
+  ],
+  "env": {}
+}

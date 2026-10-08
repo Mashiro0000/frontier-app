@@ -1,0 +1,14 @@
+{
+  "label": "n101-gate-no-rest",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/systemQuestion.ts",
+      "from": "        quietUntil = now() + QUIET_AFTER_NO_MS\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n107-reader-v3-refused",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "          header.version !== BACKUP_VERSION_FILES &&\n          header.version !== BACKUP_VERSION_KEPT",
+      "to": "          header.version !== BACKUP_VERSION_FILES"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

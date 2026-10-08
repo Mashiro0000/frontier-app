@@ -1,0 +1,14 @@
+{
+  "label": "n106-chat-no-key-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      ['for this project', project?.instructions ?? ''],\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-6.mjs"
+  ],
+  "env": {}
+}

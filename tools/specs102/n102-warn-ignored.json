@@ -1,0 +1,14 @@
+{
+  "label": "n102-warn-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/secrets.ts",
+      "from": "  if (lookalikes.length > 0 && !saveAnyway) {",
+      "to": "  if (lookalikes.length < 0 && !saveAnyway) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

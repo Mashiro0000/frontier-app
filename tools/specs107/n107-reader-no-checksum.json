@@ -1,0 +1,14 @@
+{
+  "label": "n107-reader-no-checksum",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "    claimed !== sha256(JSON.stringify(value))",
+      "to": "    false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

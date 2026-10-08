@@ -2416,3 +2416,117 @@ if you have not, please do before you rely on this. **The design was mine** (you
 2. **Backups with files are plain files and can be large.** Keep them where you keep the chats' backups.
 3. **The app has still never talked to a real provider**: the files' forms are my reading of Anthropic's and OpenAI's documentation. Your first real request with a file is the real test.
 4. **Everything in the earlier stages' "Things to know" still applies.**
+
+## Stage 10 - The plan (7 October 2026; waiting for your yes, nothing built)
+
+**Your question.** "Next is Stage 10, which needs a written plan for you to approve first. Can you tell me what kind of plan or guide me?"
+
+**What I did.** The roadmap's rule is that each stage "starts with a short written plan that the owner approves": I write the plan, you read it and say yes (or change it), as for Stage 9. It is now in `docs/ROADMAP.md` (Stage 10), on the branch `stage-10-projects-memory`, with five questions for you. Nothing is built.
+
+**To go on:** answer the five questions (or say "your picks") and say go; I then build 10.1 to 10.8 one slice at a time, as for Stage 9.
+
+**The plan in one paragraph.** What goes with every request grows from the app's rules and a chat's instructions to five parts, in this order: the app's rules, your notes (the memory, given as information about you, not as instructions), your instructions for every chat, the project's instructions, and the chat's own; an empty part adds nothing, so a request with none of them is byte for byte today's. Notes are made only by you ("Remember..." on a message, "Add" on the Memory page), all of them visible, editable and deletable, exported or deleted in one go, and shown as "Memory (N)" under the message box while they are sent. A project groups chats with its instructions, notes and files; its files go with every message of its chats and count against a request's caps and the cost guess. Your own saved API keys are refused and anything that looks like a secret is warned about before it is saved, and saving anything that goes with every message (and raising a limit, D-033's finding) asks in a Windows dialog that the app's page cannot answer. Everything is a file in the data folder, sealed when encryption is on, and in backups. Eight slices, 10.1 to 10.8.
+
+## Stage 10 - Slice 10.1: the system's question before the app may spend more (7 October 2026 session; D-039)
+
+**Your instructions.** "Start Stage 10 ... I approve the plan in docs/ROADMAP.md ... My answers to its five questions: your picks. Build slice 10.1 and verify it the usual way ..., and go on slice by slice through 10.8, ending with the stage's full regression. Commit, merge and push on your own ... Scratch profiles only, no new packages, no real API calls, no screenshots of real Windows dialogs. Run long regressions as a separate process ..."
+
+**Step by step.**
+
+1. **Your picks, as answers:** notes for one project as well as for every chat; notes only by you; the Windows dialog for saving notes, instructions and project files and for raising a limit; a project's files with every message; my caps.
+2. **What changed for you:** raising a spending limit, choosing No limit, choosing a higher amount to be asked above, or Never ask now brings up **a Windows message box** ("Raise your daily spending limit to $20.00?", with what each limit is now and would be) that the app's own page cannot answer. Lowering a limit asks nothing. The very first choice of limits is asked about too, since "not chosen" stops everything. The Settings form says before you press Save when this will happen; "Cancel" has the focus, so Enter or Escape keeps things as they were.
+3. **Why:** this closes the finding I reported in Stage 8 (D-033): the page could lift your limits with no answer from you. Now a fault, or hostile code in the page, cannot raise them; the limits are a hard stop.
+4. **One addition to the plan, found by the tests:** after you say no, the app asks nothing for three seconds. Without it, a page could put the box straight back each time you said no (it would sit in front of the app, and you could not even close the window).
+5. **Found on the way, and fixed:** in a very narrow window (280 px) Settings scrolled sideways because of the Usage row "$0.00 of $20.00" (since Stage 8). It now breaks before "of" when there is no room.
+6. **Checked:** 90 checks under Node; 41 in the window on the dev app and on the built one (with the box stood in for from the main process); the **real Windows box once** on a scratch profile (its words read, its buttons pressed by window messages, **no screenshot**): Cancel, Escape and "Raise the limit" each did what they say. The older 8.2, 8.3 and 9.4 window suites now answer the box the same way and still pass (91, 119 and 11 checks). **40 negative controls, all caught** (two of my checks were made sharper on the way).
+
+## Stage 10.1 - Things to know (not problems, but worth your attention)
+
+1. **The question before a large request itself still appears in the app's own window**, as in Stage 8: it guards against a slip. What stops spending is the limits, and they can no longer be raised without the system's box.
+2. **Your own profile has no spending limits yet** (it never had): when this version first starts on it, the first-run question asks for them, and then the system's box asks once more.
+3. **Everything in the earlier stages' "Things to know" still applies**, including the first real API call, which only you can make.
+
+## Stage 10 - Slice 10.2: instructions for every chat (7 October 2026 session; D-039)
+
+**Your instructions.** The same as for 10.1 (go on slice by slice, verify each the usual way, commit and push on my own). After the session was compacted: "Now start from where you left off."
+
+**Step by step.**
+
+1. **What changed for you:** the Instructions dialog now shows two parts, in the order they are sent: **For every chat** (new) and **For this chat** (as before). "Change..." moves the one box between them. Text for every chat goes with every message of every chat, after the app's own rules and before a chat's own instructions; when both are set, the chat's own come last and the model is told they win where the two differ.
+2. **Saving text for every chat asks in a Windows message box**, which shows the text and its length; Cancel keeps things as they were. Emptying the box ("Turn off") asks nothing. A chat's own instructions are not asked about this way: the page already writes the chat's messages, so a question there would protect nothing (my choice; D-039 says why).
+3. **Secrets:** an API key saved in the app is refused in either part (the sentence says whose key and never shows it); text that looks like a key or a password gets a warning with the part masked, and is kept only with "Save anyway". The app looks again before every request, so a key saved later still never goes out inside instructions.
+4. **If the file cannot be read** (damaged, or sealed with a key this computer cannot use), nothing is sent at all and the Instructions button shows "!"; the dialog says why, and "Turn off" or new text gets you going again, keeping a copy of the old file.
+5. **Saved and sealed:** the text is kept in `instructions.json` in the app's data folder, written like a chat, encrypted when your chats are, and converted when you turn encryption on or off. Backups do not hold it yet (that is 10.7).
+6. **Found on the way:** my first look for secrets took ordinary text for keys (a long link, a hyphenated phrase); it is tighter now. Running every plain-Node suite found two checks that 10.1 had made stale and that 10.1's own runs had missed (8.3 and 8b.2, both test-only); I run that part in every slice now.
+7. **Checked:** 118 checks under Node, 56 in the window (on the dev app and the built one); the 70 recorded requests are byte for byte what they were when only a chat's own instructions or none are set. **64 negative controls, all caught** (four of my checks were made sharper on the way, so that each fails by name).
+
+## Stage 10.2 - Things to know (not problems, but worth your attention)
+
+1. **The look for secrets is a safety net, not a guarantee:** it knows common key and token shapes and labelled passwords ("password: ..."); a password written as a plain word is not found.
+2. **How a model weighs "follow these" is up to the model**: the app sends the parts in a fixed order with a line saying whose each is; no real API call has been made to see it.
+3. **The window and Stage 4 parts of the regression ran too (33 launches):** 32 clean at once; the Stage 1 chain failed a scrolling check while I was running another test suite at the same time (my mistake: the machine must stay idle), and passed 111/111 when run again alone.
+
+## Stage 10 - Slice 10.3: the memory store (7 October 2026 session; D-039)
+
+**Step by step.**
+
+1. **What it is:** the place where your notes will be kept: `memory.json` in the app's data folder, written and sealed like your chats. Nothing in the window uses it yet; the Memory page, "Remember..." and sending the notes come in 10.4.
+2. **The rules it keeps:** a note is at most 500 characters; your notes for every chat (and later for each project) at most 8,000 characters and 100 notes. Making or changing a note will ask in a Windows message box that shows the note; deleting and turning memory off will not (the page asks first); turning memory back on will ask. A saved API key is refused; text that looks like one needs "Save anyway".
+3. **If the file cannot be read,** nothing will be sent until you delete the notes or turn memory off; either keeps a copy of the damaged file. "Export all..." will write every note to one plain text file you place yourself.
+4. **Found on the way, and fixed** (in 10.2's code): a fault could have written a file the app itself would then refuse to read (a note number used twice), which would have stopped every request; now nothing is written that cannot be read back. And a warning about a short password showed most of it; now it shows only its first character and its length.
+5. **Checked:** 74 checks under Node; 10.2's suites still pass (118 under Node, 56 in the window); **33 negative controls, all caught** (one check made sharper).
+
+## Stage 10 - Slice 10.4: memory in the window (7 October 2026 session; D-039)
+
+**Step by step.**
+
+1. **What changed for you:** a new **Memory** button under the message box. It shows how many notes go with this chat ("Memory 2"), nothing while memory is off, and "!" if the notes cannot be read. It opens the **Memory page**: your notes with when each was made, "Change..." and "Delete" (which asks first), "Add a note...", a switch "Send my notes with every message", "Export all..." and "Delete all..." (which asks first).
+2. **"Remember..."** now sits under every message (yours and the replies). Select part of a message first to keep just that part; otherwise the whole message goes into the box, where you can cut it down (a note is at most 500 characters).
+3. **Saving a note, changing one, or turning memory back on asks in a Windows message box** that shows the note. Deleting and turning memory off ask on the page only.
+4. **What goes to the model:** your notes go with every message, right after the app's own rules, introduced as information about you and not as instructions; then your instructions. With no notes, nothing changes (the 70 recorded requests are identical). If the notes cannot be read, or one holds an API key saved in the app, nothing is sent and the app says why.
+5. **Encryption** covers the notes too, as it does the instructions.
+6. **Checked:** 22 checks under Node, 59 in the window (on the dev app and the built one); **34 negative controls, all caught**. One sabotage was not noticed because the code it removed was not needed (a click keeps your selection anyway), so I took that code out; two of my checks were made sharper. The regression's Node, window and Stage 4 parts (63 runs) found three checks made stale by the new Memory button and my last change; fixed and passed when run again.
+
+## Stage 10 - Slice 10.5: projects (7 October 2026 session; D-039)
+
+**Step by step.**
+
+1. **What changed for you:** a **Project** button under the message box opens the Projects page. Make a project (a name only you see: it is never sent to the model), give it instructions and files, and put chats in it ("Project: name" under the message box), or start one with "New chat in this project". History names each chat's project and can show one project's chats. The Memory page has a place for each project's notes.
+2. **Asked in a Windows message box:** a project's instructions, and its files (after you pick them in the Windows open dialog, a second question names each one). Making, renaming, taking a file off and deleting a project ask nothing there; deleting asks on the page first.
+3. **Deleting a project** keeps its chats (in no project), and deletes its notes and its files unless a chat still uses them.
+4. **Not yet:** in this slice a project's instructions, notes and files do not go with requests; that is the next slice (10.6). Backups do not hold projects until 10.7.
+5. **Files:** a chat in a project is saved in a new file version (5); a chat in no project is saved exactly as before.
+6. **Checked:** 54 checks under Node, 38 in the window (on the dev app and the built one); **47 negative controls, all caught** (two of my checks made sharper). The regression's Node, window and Stage 4 parts (65 runs) found four checks made stale (three of them because version 5 now means a chat in a project, one a race in a test); fixed, and they pass.
+
+## Stage 10 - Slice 10.6: a project's parts in every request (7 October 2026 session; D-039)
+
+**Step by step.**
+
+1. **What changed for you:** a chat in a project now sends, with every message, the project's notes and instructions (after your instructions for every chat, before the chat's own, which still win), and the project's files at the start of the conversation. A chat in no project is sent exactly as before. The project's name is never sent.
+2. **Size and cost:** the project's files count with the chat's own against what one request may carry; if together they are too much, Send is off and says the project's files count too. The question before a large request and a limit's refusal say how many files are the project's.
+3. **If projects.json cannot be read,** a chat in a project sends nothing and says why; other chats are not affected. A project deleted while its chat is open simply stops being sent.
+4. **Checked:** 25 checks under Node, 14 in the window (dev and built), 29 negative controls all caught; the regression's Node, window and Stage 4 parts (67 runs) found 4 older tests still expecting requests without a project, which were fixed.
+
+## Stage 10 - Slice 10.7: backups with the projects and the notes (8 October 2026 session; D-039)
+
+**Step by step.**
+
+1. **What changed for you:** "Back up all chats..." now also saves your projects and notes in the same file, and says so. A backup of one chat is unchanged.
+2. **Restoring** shows how many projects and notes would be added, and "Add" asks you once in a Windows box. "Add them" adds them as they were (nothing here is replaced; a project whose name is taken becomes "name (2)"); "Add only the chats" adds the chats alone, outside their projects.
+3. **Not added:** a project or note holding one of your saved API keys, anything past the caps, and anything when your projects or notes here cannot be read (the app says why and leaves the damaged file alone).
+4. **Checked:** 54 checks under Node, 17 in the window (dev and built), 44 negative controls all caught (one after its check was sharpened); the regression's Node, window and Stage 4 parts, 69 runs, all clean.
+
+## Stage 10 - Slice 10.8: the stage as a whole, and the full regression (8 October 2026; D-040)
+
+**Step by step.**
+
+1. **The stage's threat note** is D-040: what Stage 10 added to the app, the risks where its parts meet, and what was not checked. The main points for you: **nothing that goes with every message (a note, any instructions, a project's files) is saved without your yes in a Windows box** that the app's page cannot answer, and the same box now guards raising a limit, which closes the gap Stage 8 found; a saved API key can never be put in a note or instructions; notes and instructions are sent to the model as information below the app's own rules, and a note made from a reply holds words a model wrote; a backup now holds your projects and notes as plain text; and **once tools arrive (Stages 11 to 13), the app's data folder must stay out of their reach**, or a tool could add words to every message without asking.
+2. **The full regression** (every suite of every stage, on the dev app and the built app): 131 runs, 129 clean the first time, and every Stage 10 suite passed on both apps. The two others were registry checks whose app never started, both at 06:50 in the morning (probably as the computer was woken); each passed whole when run again alone. It took about five hours.
+3. **No package was added, no network address, and nothing in the window's security settings changed** in the whole stage.
+
+## Stage 10 - Things to know (not problems, but worth your attention)
+
+1. **Notes, instructions and a project's files go with every message** of the chats they are for, so they cost every time. "Memory N" and "Project: name" under the message box show what is on; the Instructions dialog shows every part in the order it is sent.
+2. **The Windows box is the one that matters**: when it asks, read it; the app's page cannot say yes for you.
+3. **A backup holds your notes and projects in plain text.** Keep it where you keep your chats' backups.
+4. **The app has still never talked to a real provider.** How a real model uses your notes and a project's instructions is the first thing to try when you add your keys.

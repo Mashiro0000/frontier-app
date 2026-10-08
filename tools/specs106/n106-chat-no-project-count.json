@@ -1,0 +1,14 @@
+{
+  "label": "n106-chat-no-project-count",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "            ...(projectFiles.length > 0 ? { project: projectFiles.length } : {})",
+      "to": "            ...{}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-6.mjs"
+  ],
+  "env": {}
+}

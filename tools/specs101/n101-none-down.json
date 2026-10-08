@@ -1,0 +1,14 @@
+{
+  "label": "n101-none-down",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/limits.ts",
+      "from": "  if (next.kind === 'none') return 'up'",
+      "to": "  if (next.kind === 'none') return 'down'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

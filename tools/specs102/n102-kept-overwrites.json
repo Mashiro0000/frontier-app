@@ -1,0 +1,14 @@
+{
+  "label": "n102-kept-overwrites",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/keptFile.ts",
+      "from": "    if (!replace) {\n      throw new KeptRefused",
+      "to": "    if (replace === 42) {\n      throw new KeptRefused"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

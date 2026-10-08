@@ -1,0 +1,14 @@
+{
+  "label": "n102-every-empty-object-clears",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/everyChat.ts",
+      "from": "  if (typeof text !== 'string') return { ok: false, error: NOT_UNDERSTOOD }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

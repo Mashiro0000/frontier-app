@@ -96,6 +96,8 @@ function LargeRequestDialog({
               about {formatTokens(request.estimate.files.tokens)} tokens of it: every file in a chat
               is sent again with each message, so a new chat without{' '}
               {request.estimate.files.count === 1 ? 'it' : 'them'} costs less.
+              {(request.estimate.files.project ?? 0) > 0 &&
+                ` ${request.estimate.files.project === request.estimate.files.count ? (request.estimate.files.count === 1 ? 'It is' : 'They are') : `${request.estimate.files.project} of them are`} the project's, which go with every message of each of its chats.`}
             </p>
           )}
           <p className="settings-hint">

@@ -1,0 +1,14 @@
+{
+  "label": "n105-files-no-question",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/projects.ts",
+      "from": "        const no = await ask(owner, filesQuestion(project, fresh))",
+      "to": "        const no = null as ProjectChangeResult | null\n        void filesQuestion"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-5.mjs"
+  ],
+  "env": {}
+}

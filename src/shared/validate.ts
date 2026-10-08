@@ -17,6 +17,7 @@ import {
   type WireAttachment,
   type WireMessage
 } from './ipc'
+import { isProjectId } from './projects'
 import { SUPPORTED_PROVIDERS, type Effort, type ProviderId } from './registry'
 
 export const API_KEY_MIN_LENGTH = 20
@@ -289,7 +290,10 @@ export function checkChatRequest(input: unknown): ChatCheck {
   if (typeof input !== 'object' || input === null) {
     return { ok: false, error: 'The request was not understood.' }
   }
-  const { streamId, messages, instructions, conversationId } = input as Record<string, unknown>
+  const { streamId, messages, instructions, conversationId, projectId } = input as Record<
+    string,
+    unknown
+  >
   if (typeof streamId !== 'string' || !STREAM_ID.test(streamId)) {
     return { ok: false, error: 'The request was not understood.' }
   }
@@ -298,6 +302,10 @@ export function checkChatRequest(input: unknown): ChatCheck {
   if (!checkedInstructions.ok) return refuse(checkedInstructions.error)
   // The conversation the cost is shown under (D-030): absent, or exactly the spelling of an id the app makes. Anything else is a page
   // that is not ours, or a bug, and is refused instead of being quietly dropped.
+  // The project (D-039): absent, or the spelling of a project id; main reads the project itself.
+  if (projectId !== undefined && !isProjectId(projectId)) {
+    return refuse('The request was not understood.')
+  }
   if (conversationId !== undefined && !isConversationId(conversationId)) {
     return refuse('The request was not understood.')
   }
@@ -353,7 +361,8 @@ export function checkChatRequest(input: unknown): ChatCheck {
       ...(checkedInstructions.instructions === ''
         ? {}
         : { instructions: checkedInstructions.instructions }),
-      ...(conversationId === undefined ? {} : { conversationId })
+      ...(conversationId === undefined ? {} : { conversationId }),
+      ...(projectId === undefined ? {} : { projectId })
     }
   }
 }
@@ -554,7 +563,10 @@ export function checkSavedMessages(
 }
 
 export type SaveCheck =
-  | { ok: true; conversation: { id: string; messages: SavedMessage[]; instructions: string } }
+  | {
+      ok: true
+      conversation: { id: string; messages: SavedMessage[]; instructions: string; project?: string }
+    }
   | { ok: false; error: string }
 
 /**
@@ -565,14 +577,23 @@ export function checkConversationSave(input: unknown): SaveCheck {
   if (typeof input !== 'object' || input === null) {
     return { ok: false, error: 'The conversation was not understood.' }
   }
-  const { id, messages, instructions } = input as Record<string, unknown>
+  const { id, messages, instructions, project } = input as Record<string, unknown>
   if (!isConversationId(id)) return { ok: false, error: 'The conversation was not understood.' }
+  // The project (D-039): absent, or the spelling of a project id; whether it exists is main's to say.
+  if (project !== undefined && !isProjectId(project)) {
+    return { ok: false, error: 'The conversation was not understood.' }
+  }
   const checked = checkSavedMessages(messages)
   if (!checked.ok) return checked
   const checkedInstructions = checkInstructions(instructions)
   if (!checkedInstructions.ok) return checkedInstructions
   return {
     ok: true,
-    conversation: { id, messages: checked.messages, instructions: checkedInstructions.instructions }
+    conversation: {
+      id,
+      messages: checked.messages,
+      instructions: checkedInstructions.instructions,
+      ...(project !== undefined ? { project } : {})
+    }
   }
 }

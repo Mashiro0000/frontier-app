@@ -1,0 +1,14 @@
+{
+  "label": "n102-enc-short-circuit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatEncryptionService.ts",
+      "from": "    if (before.choice === 'on' && counts.plain === 0 && plainFiles === 0 && plainDocuments === 0) {",
+      "to": "    if (before.choice === 'on' && counts.plain === 0 && plainFiles === 0 && plainDocuments >= 0) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

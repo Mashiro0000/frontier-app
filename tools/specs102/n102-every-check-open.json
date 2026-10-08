@@ -1,0 +1,14 @@
+{
+  "label": "n102-every-check-open",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/everyChat.ts",
+      "from": "    return secrets.ok ? { ok: true } : secrets",
+      "to": "    return { ok: true }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w101-usage-no-wrap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/assets/main.css",
+      "from": "@media (max-width: 340px) {\n  .settings-usage .settings-usage-cost {\n    white-space: normal;\n  }\n}\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run101.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 400000
+}

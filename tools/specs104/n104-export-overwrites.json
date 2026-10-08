@@ -1,0 +1,14 @@
+{
+  "label": "n104-export-overwrites",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupDialogs.ts",
+      "from": "    filters: [NOTES_FILTER],\n    properties: ['showOverwriteConfirmation' as const]",
+      "to": "    filters: [NOTES_FILTER],\n    properties: []"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-4.mjs"
+  ],
+  "env": {}
+}

@@ -16,6 +16,8 @@ interface MessageListProps {
   onRegenerate: () => void
   /** Replaces one of the person's messages and asks again (D-026). */
   onResend: (id: string, text: string) => void
+  /** "Remember..." on a message (D-039): opens the Memory page with this text in the box. */
+  onRemember: (text: string) => void
 }
 
 /**
@@ -42,7 +44,8 @@ function MessageList({
   emptyHint,
   modelName,
   onRegenerate,
-  onResend
+  onResend,
+  onRemember
 }: MessageListProps): React.JSX.Element {
   const listRef = useRef<HTMLDivElement>(null)
   // True while the user is reading the newest message; false once they scroll up to read older ones.
@@ -92,6 +95,7 @@ function MessageList({
               later={messages.length - 1 - index}
               onRegenerate={onRegenerate}
               onResend={onResend}
+              onRemember={onRemember}
             />
           ))}
         </div>

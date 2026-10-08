@@ -1,0 +1,14 @@
+{
+  "label": "n103-ask-skipped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "    const answer = await options.gate.ask(owner, question)\n    if (answer === 'yes') return null",
+      "to": "    void owner\n    void question\n    const answer = 'yes' as string\n    if (answer === 'yes') return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

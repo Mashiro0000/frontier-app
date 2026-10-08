@@ -10,6 +10,7 @@ import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
 import { h4, readRetry } from './lib4.mjs'
+import { sayYesFromMain } from './lib10.mjs'
 import { existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -21,6 +22,9 @@ if (!process.env.MOCK_PORT || !userData) throw new Error('MOCK_PORT and USER_DAT
 const check = checker()
 const page = await connect(port)
 await assertScratchProfile()
+// Since 10.1 (D-039) a change that lets the app spend more is asked about in the system's own message box: this suite stands in for the person from
+// main and says yes to every such question (it tests the limits, not the question; verify-10-1w.mjs tests the question).
+const standIn = await sayYesFromMain()
 const H = h4(page, { userData, mockUrl })
 const { ev } = H
 const MSG = '.message-list-inner > .message'
@@ -286,13 +290,14 @@ try {
   }
   const clean = await ev(`window.api.settings.setLimits({ daily: { kind: 'usd', usd: 5, evil: '<b>x</b>' }, monthly: { kind: 'none', usd: 3, other: 1 }, extra: 1 })`)
   check('fields the page adds are not kept: the file holds exactly {"version":1,"daily":5,"monthly":"none"}', clean.ok === true && limitsText() === '{"version":1,"daily":5,"monthly":"none"}', limitsText())
-  check('the page has setLimits to choose limits, and no function to take them back, read the file or reach the ledger', (await ev(`JSON.stringify(Object.keys(window.api.settings).sort())`)) === JSON.stringify(['clearApiKey', 'getStatus', 'setApiKey', 'setAskFirst', 'setEffort', 'setLimits', 'setModel', 'testApiKey'].sort()) && (await ev(`JSON.stringify(Object.keys(window.api).sort())`)) === '["attachments","chat","history","settings","usage"]') // attachments since 9.2 (D-037)
+  check('the page has setLimits to choose limits, and no function to take them back, read the file or reach the ledger', (await ev(`JSON.stringify(Object.keys(window.api.settings).sort())`)) === JSON.stringify(['clearApiKey', 'getStatus', 'setApiKey', 'setAskFirst', 'setEffort', 'setLimits', 'setModel', 'testApiKey'].sort()) && (await ev(`JSON.stringify(Object.keys(window.api).sort())`)) === '["attachments","chat","history","instructions","memory","projects","settings","usage"]') // attachments since 9.2 (D-037), instructions since 10.2, memory since 10.4 and projects since 10.5 (D-039)
 
   // leave it as the restart suite expects: 10 a day (already over by the two big ones), 50 a month
   await ev(`window.api.settings.setLimits({ daily: { kind: 'usd', usd: 10 }, monthly: { kind: 'usd', usd: 50 } })`)
   check('left at 10 a day and 50 a month for the restart', limitsText() === '{"version":1,"daily":10,"monthly":50}')
   await sleep(300)
 } finally {
+  standIn.main.close()
   page.close()
 }
 const ok = check.summary()

@@ -1,0 +1,14 @@
+{
+  "label": "n102-no-squeeze",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/secrets.ts",
+      "from": "  const squeezed = text.replace(/\\s+/g, '')",
+      "to": "  const squeezed = text"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w105-save-drops-project",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/useHistory.ts",
+      "from": "        ...(project !== null ? { project } : {})\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run105.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

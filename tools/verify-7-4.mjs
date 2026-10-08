@@ -197,8 +197,8 @@ await guard('section F', async () => {
   for (const [name, value] of [['missing', undefined], ['null', null], ['a number', 5], ['true', true], ['an array', []], ['an object', {}], ['an array of text', ['x']]]) {
     check(`a version 3 file whose instructions are ${name} is refused, with its own reason`, parsed(3, { instructions: value }) === 'its instructions are not usable', String(parsed(3, { instructions: value })))
   }
-  // version 4 is a chat with files since 9.3 (D-037); version 5 is a later build's
-  for (const version of [0, 5, 9, '1', '2', '3', '4', null, undefined, 3.5, [3]]) {
+  // version 4 is a chat with files since 9.3 (D-037); version 5 a chat in a project since 10.5 (D-039); version 6 is a later build's
+  for (const version of [0, 6, 9, '1', '2', '3', '4', '5', null, undefined, 3.5, [3]]) {
     check(`version ${JSON.stringify(version)} was made by another version and is refused`, parsed(version, { instructions: 'x' }) === 'it was made by another version of the app')
   }
   check('a version 3 file is still checked for everything else: the id, the title, the dates, the messages', parseSavedFile({ ...file(3, { instructions: '' }), id: randomUUID() }, id) === 'the id inside does not match the file name' && parsed(3, { instructions: '', title: 5 }) === 'its title is not usable' && parsed(3, { instructions: '', createdAt: -1 }) === 'its dates are not usable' && typeof parsed(3, { instructions: '', messages: [] }) === 'string')
@@ -283,11 +283,11 @@ for (const [folderName, makeDir] of [['a normal folder', () => fsp.mkdtemp(join(
     await fsp.writeFile(join(dir, `${d}.json`), JSON.stringify({ version: 3, id: d, title: `bad ${name}`, createdAt: 1, updatedAt: 2, ...(value === undefined ? {} : { instructions: value }), messages: [u('x'), a()] }))
   }
   const v4 = randomUUID()
-  await fsp.writeFile(join(dir, `${v4}.json`), JSON.stringify({ version: 5, id: v4, title: 'later', createdAt: 1, updatedAt: 2, instructions: '', messages: [u('x'), a()] }))
+  await fsp.writeFile(join(dir, `${v4}.json`), JSON.stringify({ version: 6, id: v4, title: 'later', createdAt: 1, updatedAt: 2, instructions: '', messages: [u('x'), a()] }))
   const shas = Object.fromEntries([...damagedIds, v4].map((x) => [x, sha(join(dir, `${x}.json`))]))
   const damage = createConversationStore(dir)
   const dl = await damage.list()
-  check(T('a version 3 file whose instructions are missing, null, a number, an object or too long is counted as unreadable, together with a version 5 file, and none of them is listed'), dl.unreadable === damagedIds.length + 1 && ![...damagedIds, v4].some((x) => dl.conversations.some((c) => c.id === x)), JSON.stringify(dl.unreadable))
+  check(T('a version 3 file whose instructions are missing, null, a number, an object or too long is counted as unreadable, together with a version 6 file, and none of them is listed'), dl.unreadable === damagedIds.length + 1 && ![...damagedIds, v4].some((x) => dl.conversations.some((c) => c.id === x)), JSON.stringify(dl.unreadable))
   const dLoad = await damage.load(damagedIds[2])
   check(T('...one of them cannot be loaded (a file that was unreadable at the first look is not known to the store, as before)'), !dLoad.ok && /not found/.test(dLoad.error), JSON.stringify(dLoad))
   check(T('...and every one of them is left exactly as it was'), Object.entries(shas).every(([x, s]) => sha(join(dir, `${x}.json`)) === s))

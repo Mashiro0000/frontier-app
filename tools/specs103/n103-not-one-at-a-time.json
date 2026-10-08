@@ -1,0 +1,14 @@
+{
+  "label": "n103-not-one-at-a-time",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "    if (changing) return { ok: false, error: BUSY }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

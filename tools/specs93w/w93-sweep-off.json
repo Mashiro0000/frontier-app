@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "    .then((refs) => (refs.complete ? attachments.sweep(refs.ids, 3_600_000) : undefined))",
+      "from": "    .then((used) => (used !== null ? attachments.sweep(used, 3_600_000) : undefined))",
       "to": "    .then(() => undefined)"
     }
   ],

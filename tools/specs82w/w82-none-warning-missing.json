@@ -20,6 +20,7 @@
     "MOCK_PORT": "8799",
     "PRESEED_FILE": "",
     "PRESEED_LIMITS": "off",
+    "INSPECT_PORT": "9230",
     "LOG_LABEL": "nc-w82-none-warning-missing"
   }
 }

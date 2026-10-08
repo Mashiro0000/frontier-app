@@ -1,0 +1,18 @@
+{
+  "label": "w107-never-asks",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "            chosen.projects.add.length + chosen.notes.add.length > 0 &&\n            options.kept !== undefined",
+      "to": "            chosen.projects.add.length < 0 &&\n            options.kept !== undefined"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run107.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/chat/ChatBar.tsx",
-      "from": "{instructions !== '' && (\n          <>",
-      "to": "{false && (\n          <>"
+      "from": "(instructions !== '' || (everyChat?.text ?? '') !== '') && (\n            <>",
+      "to": "false && (\n            <>"
     }
   ],
   "argv": [

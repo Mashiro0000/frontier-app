@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/backup.ts",
-      "from": "        if (header.version !== BACKUP_VERSION && header.version !== BACKUP_VERSION_FILES) {",
-      "to": "        if (header.version !== BACKUP_VERSION && header.version !== BACKUP_VERSION_FILES && header.version !== 3) {"
+      "from": "          header.version !== BACKUP_VERSION_KEPT\n        ) {",
+      "to": "          header.version !== BACKUP_VERSION_KEPT &&\n          header.version !== 4\n        ) {"
     }
   ],
   "argv": [

@@ -35,6 +35,18 @@ export function askFirstAmount(setting: AskFirstSetting): number | null {
 export const sameAskFirst = (a: AskFirstSetting, b: AskFirstSetting): boolean =>
   a.kind === b.kind && (a.kind !== 'usd' || (b.kind === 'usd' && a.usd === b.usd))
 
+/**
+ * True when saving `next` would make the question come less often than it does now (Stage 10.1, D-039): "Never ask", or an amount above the one in force
+ * (the default's, until the person picks one). Main then asks the person first, in a window of the system's own; a lower amount is saved without that
+ * question. Compared in whole cents.
+ */
+export function askFirstLoosens(current: AskFirstSetting, next: AskFirstChoice): boolean {
+  const now = askFirstAmount(current)
+  if (now === null) return false // "Never ask" already: nothing asks less often than that
+  if (next.kind === 'never') return true
+  return Math.round(next.usd * 100) > Math.round(now * 100)
+}
+
 // --- The estimate ------------------------------------------------------------------------------------------------------------
 
 /**
@@ -57,7 +69,7 @@ export interface RequestEstimate {
    * The attached files the request sends, when there are any (D-037): how many, and how many of `inputTokens` they are. Absent for a request
    * without files, which is described exactly as before.
    */
-  files?: { count: number; tokens: number }
+  files?: { count: number; tokens: number; project?: number }
 }
 
 /**
@@ -70,7 +82,7 @@ export function estimateRequest(
   inputTokens: number,
   maxOutputTokens: number,
   prices: ModelPricing,
-  files?: { count: number; tokens: number }
+  files?: { count: number; tokens: number; project?: number }
 ): RequestEstimate {
   const inputUsd =
     (inputTokens * Math.max(prices.inputPerMTok, prices.cacheWritePerMTok)) / 1_000_000

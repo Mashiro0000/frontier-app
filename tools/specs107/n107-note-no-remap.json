@@ -1,0 +1,14 @@
+{
+  "label": "n107-note-no-remap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/restoreKept.ts",
+      "from": "          ? (map.get(note.scope) ?? null)",
+      "to": "          ? note.scope"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

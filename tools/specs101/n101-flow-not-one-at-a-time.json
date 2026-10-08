@@ -1,0 +1,14 @@
+{
+  "label": "n101-flow-not-one-at-a-time",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/limitChanges.ts",
+      "from": "    if (gate.open()) return { ok: false, error: QUESTION_BUSY }\n    if (changing) return { ok: false, error: CHANGE_BUSY }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-1.mjs"
+  ],
+  "env": {}
+}

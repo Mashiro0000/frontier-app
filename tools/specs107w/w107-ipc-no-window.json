@@ -1,0 +1,18 @@
+{
+  "label": "w107-ipc-no-window",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      backups.restoreApply(token, window)",
+      "to": "      backups.restoreApply(token, null)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run107.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

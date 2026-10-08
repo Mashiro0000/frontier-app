@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/providers/request.ts",
-      "from": "`${rules}\\n\\n${INSTRUCTIONS_LEAD}\\n\\n${own}`",
-      "to": "`${rules}\\n\\n${own}`"
+      "from": "  if (own !== '') pieces.push(others ? CHAT_AFTER_OTHERS_LEAD : INSTRUCTIONS_LEAD, own)",
+      "to": "  if (own !== '') pieces.push(own)"
     }
   ],
   "argv": [

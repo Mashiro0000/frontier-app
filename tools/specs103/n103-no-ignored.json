@@ -1,0 +1,14 @@
+{
+  "label": "n103-no-ignored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "    return { ok: false, cancelled: true, error: notSaved }",
+      "to": "    return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

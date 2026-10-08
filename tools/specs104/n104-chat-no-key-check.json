@@ -1,0 +1,14 @@
+{
+  "label": "n104-chat-no-key-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      const held = heldKey(note.text, keys)\n      if (held !== null) {",
+      "to": "      const held = heldKey(note.text, keys)\n      if (held === \"never\") {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-4.mjs"
+  ],
+  "env": {}
+}

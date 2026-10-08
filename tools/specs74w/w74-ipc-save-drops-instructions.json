@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "const saved = await history.save(check.conversation)",
-      "to": "const saved = await history.save({ id: check.conversation.id, messages: check.conversation.messages })"
+      "from": "const saved = await history.save(conversation)",
+      "to": "const saved = await history.save({ id: conversation.id, messages: conversation.messages })"
     }
   ],
   "argv": [

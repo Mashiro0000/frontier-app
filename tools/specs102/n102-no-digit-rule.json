@@ -1,0 +1,14 @@
+{
+  "label": "n102-no-digit-rule",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/secrets.ts",
+      "from": "  return /[a-z]/.test(run) && /[A-Z]/.test(run) && digits >= 2 && bitsPerChar(run) >= 4",
+      "to": "  return digits >= 0 && bitsPerChar(run) >= 4"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

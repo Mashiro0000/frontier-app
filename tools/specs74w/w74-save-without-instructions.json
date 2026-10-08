@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/history/useHistory.ts",
-      "from": "window.api.history.save({ id, messages: toMessagesToSave(messages), instructions }).then(",
-      "to": "window.api.history.save({ id, messages: toMessagesToSave(messages) }).then("
+      "from": "        messages: toMessagesToSave(messages),\n        instructions,\n",
+      "to": "        messages: toMessagesToSave(messages),\n"
     }
   ],
   "argv": [

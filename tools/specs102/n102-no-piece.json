@@ -1,0 +1,14 @@
+{
+  "label": "n102-no-piece",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/secrets.ts",
+      "from": "      if (text.includes(piece) || squeezed.includes(piece)) return provider",
+      "to": "      void piece"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

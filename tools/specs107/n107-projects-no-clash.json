@@ -1,0 +1,14 @@
+{
+  "label": "n107-projects-no-clash",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/projects.ts",
+      "from": "      if (clash || all.length > PROJECT_LIMITS.maxProjects) {",
+      "to": "      if (all.length > PROJECT_LIMITS.maxProjects + 1000) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

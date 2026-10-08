@@ -1,0 +1,14 @@
+{
+  "label": "n107-notes-no-clash",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "      if (ids.size !== notes.length || full) {",
+      "to": "      if (ids.size < 0) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

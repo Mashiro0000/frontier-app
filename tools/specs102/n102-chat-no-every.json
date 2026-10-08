@@ -1,0 +1,14 @@
+{
+  "label": "n102-chat-no-every",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "    if (!everyChat.ok) {\n      send({ streamId, type: 'error', message: everyChat.error })\n      return\n    }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

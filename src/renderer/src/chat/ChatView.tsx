@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import type { AttachmentInfo } from '../../../shared/attachments'
 import type { SettingsStatus } from '../../../shared/ipc'
 import LinkConfirm from '../markdown/LinkConfirm'
 import { providerMissingKey } from '../settings/format'
@@ -25,6 +26,10 @@ interface ChatViewProps {
   conversationId: string
   /** The files on the message being written (D-037). */
   attachments: UseAttachments
+  /** "Remember..." on a message (D-039): opens the Memory page with the text in its box. */
+  onRemember: (text: string) => void
+  /** The files of the chat's project (D-039, 10.6): they go with every message, so Send counts them with the chat's own. */
+  projectFiles: AttachmentInfo[]
 }
 
 function ChatView({
@@ -34,7 +39,9 @@ function ChatView({
   onOpenSettings,
   onOpenLimits,
   conversationId,
-  attachments
+  attachments,
+  onRemember,
+  projectFiles
 }: ChatViewProps): React.JSX.Element {
   const { messages, isReplying, largeRequest, answerLargeRequest, send, stop, regenerate, resend } =
     chat
@@ -90,7 +97,7 @@ function ChatView({
   // The pictures of a saved chat's files, made by main from its copies (kept apart from the messages, so the chat is not saved again for them).
   const previews = useAttachmentPreviews(messages, conversationId)
   // Why the message cannot go as it is: the whole chat is sent again with every message, its earlier files too (D-028).
-  const blocked = filesBlock(messages, attachments.files, chosen ?? null)
+  const blocked = filesBlock(messages, attachments.files, chosen ?? null, projectFiles)
   const sendWithFiles = useCallback(
     (text: string): void => {
       send(text, attachments.files)
@@ -128,6 +135,7 @@ function ChatView({
             modelName={modelName}
             onRegenerate={onRegenerate}
             onResend={onResend}
+            onRemember={onRemember}
           />
         </LinkConfirm>
       </PreviewsContext.Provider>

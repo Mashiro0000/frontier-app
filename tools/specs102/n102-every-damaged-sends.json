@@ -1,0 +1,14 @@
+{
+  "label": "n102-every-damaged-sends",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/everyChat.ts",
+      "from": "      if (now.state === 'unreadable') return { ok: false, error: everyChatUnreadable(now.why) }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n102-every-anyway-loose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/everyChat.ts",
+      "from": "  return { ok: true, text: checked.instructions, saveAnyway: saveAnyway === true }",
+      "to": "  return { ok: true, text: checked.instructions, saveAnyway: !!saveAnyway }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

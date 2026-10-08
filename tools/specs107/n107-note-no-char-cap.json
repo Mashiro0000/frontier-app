@@ -1,0 +1,14 @@
+{
+  "label": "n107-note-no-char-cap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/restoreKept.ts",
+      "from": "      use.chars + note.text.length > MEMORY_LIMITS.maxScopeChars",
+      "to": "      use.chars < 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n105-ipc-sweep-ignores-projects",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    return chats.complete && inProjects !== null ? new Set([...chats.ids, ...inProjects]) : null",
+      "to": "    return chats.complete ? new Set([...chats.ids]) : null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-5.mjs"
+  ],
+  "env": {}
+}

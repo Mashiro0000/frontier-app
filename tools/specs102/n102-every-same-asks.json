@@ -1,0 +1,14 @@
+{
+  "label": "n102-every-same-asks",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/everyChat.ts",
+      "from": "      if (!damaged && next === (before.state === 'ok' ? before.value : '')) {",
+      "to": "      if (!damaged && next === undefined) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

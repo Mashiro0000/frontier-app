@@ -951,6 +951,12 @@ body {
   border-radius: 999px;
 }
 
+/* ...and "!" when the instructions for every chat cannot be read: nothing is sent until the person deals with it (D-039). */
+.chat-mark-warn {
+  color: var(--color-background);
+  background: var(--color-danger);
+}
+
 /* ---------- buttons (settings dialog) ---------- */
 
 .button {
@@ -1112,6 +1118,17 @@ body {
   color: var(--color-text);
   text-align: right;
   white-space: nowrap;
+}
+
+.settings-usage .settings-usage-amount {
+  white-space: nowrap;
+}
+
+/* In a very narrow window "$0.00 of $20.00" may break before "of" (each amount stays whole): on one line it made Settings scroll sideways at 280 px. */
+@media (max-width: 340px) {
+  .settings-usage .settings-usage-cost {
+    white-space: normal;
+  }
 }
 
 .settings-label {
@@ -1494,10 +1511,455 @@ body {
   color: var(--color-danger);
 }
 
+/* Every part of the instructions that is sent with the chat, in the order it is sent (D-039); the one being changed holds the box. */
+.instructions-part {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.instructions-part-editing {
+  border-color: var(--color-input-border);
+}
+
+.instructions-part-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 8px;
+}
+
+.instructions-part-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.instructions-change {
+  height: 30px;
+  padding: 0 12px;
+}
+
+/* A part that is not being changed: its text as it is kept, line breaks and all, in a short box of its own when it is long. */
+.instructions-part-text {
+  max-height: 7.5em;
+  overflow-y: auto;
+  font-size: 13px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.instructions-part-none {
+  color: var(--color-text-muted);
+}
+
+.instructions-part-problem,
+.instructions-notice-error,
+.instructions-secrets {
+  color: var(--color-danger);
+}
+
+.instructions-secrets {
+  padding-left: 18px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.instructions-notice {
+  font-size: 13px;
+}
+
 .instructions-footer {
   display: flex;
   flex: none;
   justify-content: flex-end;
   gap: 8px;
   margin-top: 14px;
+}
+
+/* ---------- the Memory page (D-039) ---------- */
+
+.memory {
+  margin: auto;
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 20px 22px;
+  overflow-y: auto;
+  color: var(--color-text);
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.memory::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.memory-heading {
+  margin-bottom: 14px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.memory-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.memory-hint,
+.memory-meta,
+.memory-count,
+.memory-place-use,
+.memory-none {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.memory-switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.memory-place {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.memory-place-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 8px;
+}
+
+.memory-place-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.memory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.memory-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.memory-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.memory-row-actions,
+.memory-ask,
+.memory-place-actions,
+.memory-editor-actions,
+.memory-problem-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.memory-editor-actions {
+  justify-content: flex-end;
+}
+
+.memory-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.memory-label {
+  font-size: 13px;
+}
+
+.memory-input {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-background);
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.memory-input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.memory-count-over,
+.memory-notice-error,
+.memory-secrets,
+.memory-problem {
+  color: var(--color-danger);
+}
+
+.memory-secrets {
+  padding-left: 18px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.memory-notice {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.memory-problem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.memory-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* ---------- the Projects page (D-039) ---------- */
+
+.projects {
+  margin: auto;
+  width: min(600px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 20px 22px;
+  overflow-y: auto;
+  color: var(--color-text);
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.projects::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.projects-heading {
+  margin-bottom: 14px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.projects-body,
+.projects-detail,
+.projects-list-section,
+.projects-part,
+.projects-editor,
+.projects-problem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.projects-body {
+  gap: 12px;
+}
+
+.projects-hint,
+.projects-count,
+.projects-facts,
+.projects-none,
+.projects-file-facts,
+.projects-list-use {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.projects-chat {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.projects-chat-select,
+.history-filter select {
+  max-width: 100%;
+  padding: 4px 8px;
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-background);
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+}
+
+.projects-list-section,
+.projects-detail {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.projects-list-head,
+.projects-detail-head,
+.projects-part-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 8px;
+}
+
+.projects-list-title,
+.projects-detail-title {
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.projects-part-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.projects-list,
+.projects-files,
+.projects-refused {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  list-style: none;
+}
+
+.projects-open {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 6px 10px;
+  font: inherit;
+  text-align: left;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.projects-open[aria-current='true'] {
+  border-color: var(--color-accent);
+}
+
+.projects-name,
+.projects-file-name,
+.projects-text {
+  overflow-wrap: anywhere;
+}
+
+.projects-text {
+  max-height: 7.5em;
+  overflow-y: auto;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+.projects-file {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.projects-actions,
+.projects-editor-actions,
+.projects-ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.projects-editor-actions,
+.projects-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.projects-label {
+  font-size: 13px;
+}
+
+.projects-input,
+.projects-name-input {
+  width: 100%;
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-background);
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+}
+
+.projects-input {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.projects-input:focus-visible,
+.projects-name-input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.projects-count-over,
+.projects-notice-error,
+.projects-secrets,
+.projects-problem,
+.projects-refused {
+  color: var(--color-danger);
+}
+
+.projects-notice,
+.projects-refused,
+.projects-secrets {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+/* A long project name under the message box is cut short; the tooltip has it whole. */
+.chat-project-name {
+  display: inline-block;
+  max-width: 12em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.history-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
 }

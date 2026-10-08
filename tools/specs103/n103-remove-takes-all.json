@@ -1,0 +1,14 @@
+{
+  "label": "n103-remove-takes-all",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "      return write({ on: memory.on, notes: memory.notes.filter((note) => note.id !== id) })",
+      "to": "      return write({ on: memory.on, notes: [] })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

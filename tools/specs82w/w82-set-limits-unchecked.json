@@ -2,9 +2,9 @@
   "label": "w82-set-limits-unchecked",
   "edits": [
     {
-      "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "const check = checkLimitsChoice(input)\n      if (!check.ok) return check\n      try {\n        await limitsStore.save(check.limits)",
-      "to": "const check = { ok: true, limits: input as never }\n      try {\n        await limitsStore.save(check.limits)"
+      "file": "{{REPO}}/src/main/limitChanges.ts",
+      "from": "      const check = checkLimitsChoice(input) // never trust what the page sends: main's own copy, field by field\n      if (!check.ok) return Promise.resolve(check)\n      const next = check.limits",
+      "to": "      const next = input as never"
     }
   ],
   "argv": [
@@ -20,6 +20,7 @@
     "MOCK_PORT": "8799",
     "PRESEED_FILE": "",
     "PRESEED_LIMITS": "off",
+    "INSPECT_PORT": "9230",
     "LOG_LABEL": "nc-w82-set-limits-unchecked"
   }
 }

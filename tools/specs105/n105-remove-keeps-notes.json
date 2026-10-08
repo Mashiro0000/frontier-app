@@ -1,0 +1,14 @@
+{
+  "label": "n105-remove-keeps-notes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/projects.ts",
+      "from": "      await options\n        .removeNotes(id)",
+      "to": "      await Promise.resolve(id)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-5.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n107-reader-no-parse",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "  const checked = kind === 'project' ? parseProject(value) : parseNote(value)",
+      "to": "  const checked = value as Project | Note"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-7.mjs"
+  ],
+  "env": {}
+}

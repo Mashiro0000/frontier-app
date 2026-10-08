@@ -28,7 +28,7 @@ const node = {
   'n93-val-saved-old-files-read': [[VAL, '    if (attachments !== undefined && filesAllowed) {', '    if (attachments !== undefined) {']],
   'n93-val-saved-twice': [[VAL, '        if (info === null || files.some((there) => there.id === info.id)) {', '        if (info === null) {']],
   // the chat file and the backup
-  'n93-conv-always-v4': [[CONV, '  conversation.messages.some((message) => message.attachments !== undefined) ? 4 : 3', '  4']],
+  'n93-conv-always-v4': [[CONV, '      ? 4\n      : 3', '      ? 4\n      : 4']], // the choice spans lines since 10.5
   'n93-conv-refs-always-complete': [[CONV, '        return { ids, complete: unreadable.size === 0 }', '        return { ids, complete: true }']],
   'n93-conv-title-no-files': [[CONV, "        : (firstMessage.attachments ?? []).map((file) => file.name).join(', ')", "        : ''"]],
   'n93-backup-always-v3': [[BAK, '  JSON.stringify({ version: fileVersion(chat), ...chat })', '  JSON.stringify({ version: 3, ...chat })']],
@@ -51,17 +51,17 @@ const node = {
   // the registry and what the page is told
   'n93-reg-option-document-always': [[REG, '    documentInput: entry.capabilities.documentInput', '    documentInput: true']],
   // encryption
-  'n93-enc-files-not-reported': [[ENC, '      report: { ...done, backup, ...withFiles(filesDone) }', '      report: { ...done, backup }']],
+  'n93-enc-files-not-reported': [[ENC, '      report: { ...done, backup, ...withFiles(filesDone), ...documentsDone }', '      report: { ...done, backup, ...documentsDone }']], // the documents (10.2, D-039) are not this control's business
   'n93-enc-files-always-said': [[ENC, '  ): { files?: { changed: number; failed: number } } => (done === null ? {} : { files: done })', '  ): { files?: { changed: number; failed: number } } => ({ files: done ?? { changed: 0, failed: 0 } })']],
   'n93-storage-plain-wording': [[STORAGE, "        `Rewrote ${attached(report.files.changed)} as ${report.files.changed === 1 ? 'a plain file' : 'plain files'} too.`", '        `Rewrote ${attached(report.files.changed)} as plain files too.`']],
   // main's wiring (source checks)
-  'n93-chat-sends-anyway': [[CHAT, "      send({ streamId, type: 'error', message: resolved.error })\n      return\n", "      send({ streamId, type: 'error', message: resolved.error })\n"]],
-  'n93-ipc-delete-ignores-complete': [[IPC, '          if (refs.complete) await attachments.deleteUnused(files, refs.ids)', '          await attachments.deleteUnused(files, refs.ids)']],
+  'n93-chat-sends-anyway': [[CHAT, "            : `${resolved.error} The project's files count too: they go with every message of its chats.`\n      })\n      return\n", "            : `${resolved.error} The project's files count too: they go with every message of its chats.`\n      })\n"]], // the refusal names a project's files since 10.6
+  'n93-ipc-delete-ignores-complete': [[IPC, '    if (used !== null) await attachments.deleteUnused([...ids], used)', '    await attachments.deleteUnused([...ids], used ?? new Set())']], // one helper for every deletion since 10.5
   'n93-ipc-hold-kept-after-save': [[IPC, '            for (const file of message.attachments ?? []) attachments.release(file.id)', '            void message']],
   // the page's side
   'n93-wire-drops-files-only': [[WIRE, "    .filter((message) => message.content !== '' || (message.files?.length ?? 0) > 0)", "    .filter((message) => message.content !== '')"]],
   'n93-save-keeps-pictures': [[CONVERT, '      ? { attachments: files.map((file) => file.info) }', '      ? { attachments: files }']],
-  'n93-block-ignores-earlier': [[TXT, '  const all = chatFiles(messages, draft)', '  const all = chatFiles([], draft)']],
+  'n93-block-ignores-earlier': [[TXT, '  const own = chatFiles(messages, draft)', '  const own = chatFiles([], draft)']], // named own since 10.6
   'n93-block-text-as-pdf': [[TXT, "  if (!model.documentInput && all.some((file) => file.info.kind === 'pdf')) {", "  if (!model.documentInput && all.some((file) => file.info.kind !== 'image')) {"]],
   'n93-chatfiles-twice': [[TXT, '    if (!seen.has(file.info.id)) seen.set(file.info.id, file)', '    seen.set(`${file.info.id}${seen.size}`, file)']]
 }
@@ -76,11 +76,11 @@ const win = {
   'w93-no-previews': [W, [[VIEW, '      <PreviewsContext.Provider value={previews}>', '      <PreviewsContext.Provider value={new Map()}>']]],
   'w93-previews-not-reset': [W, [[PREV, '    if (asked.current.chatId !== chatId) asked.current = { chatId, ids: new Set() }\n', '']]],
   'w93-hold-kept-after-save': [W, [[IPC, '            for (const file of message.attachments ?? []) attachments.release(file.id)', '            void message']]],
-  'w93-delete-keeps-files': [W, [[IPC, '        if (removed.ok && files.length > 0) {', '        if (false as boolean) {']]],
-  'w93-encryption-skips-files': [W, [[IPC, '    files: attachments\n', '']]],
+  'w93-delete-keeps-files': [W, [[IPC, '        if (removed.ok) await deleteUnusedFiles(files)', '        if (removed.ok) void files']]],
+  'w93-encryption-skips-files': [W, [[IPC, '    files: attachments,\n    documents:', '    documents:']]], // since 10.2 a line about the kept documents follows (D-039)
   'w93-backup-always-v3': [W, [[BAK, '  JSON.stringify({ version: fileVersion(chat), ...chat })', '  JSON.stringify({ version: 3, ...chat })']]],
-  'w93-sweep-off': [WB, [[IPC, '    .then((refs) => (refs.complete ? attachments.sweep(refs.ids, 3_600_000) : undefined))', '    .then(() => undefined)']]],
-  'w93-sweep-young': [WB, [[IPC, '    .then((refs) => (refs.complete ? attachments.sweep(refs.ids, 3_600_000) : undefined))', '    .then((refs) => (refs.complete ? attachments.sweep(refs.ids, 0) : undefined))']]],
+  'w93-sweep-off': [WB, [[IPC, '    .then((used) => (used !== null ? attachments.sweep(used, 3_600_000) : undefined))', '    .then(() => undefined)']]],
+  'w93-sweep-young': [WB, [[IPC, '    .then((used) => (used !== null ? attachments.sweep(used, 3_600_000) : undefined))', '    .then((used) => (used !== null ? attachments.sweep(used, 0) : undefined))']]],
   'w93-no-blocked-line': [C, [[COMP, '      {blocked !== null && (', '      {false && (']]],
   'w93-block-not-passed': [C, [[VIEW, '        blocked={blocked}\n', '']]]
 }

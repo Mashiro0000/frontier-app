@@ -1,0 +1,14 @@
+{
+  "label": "n104-key-in-notes-vague",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/secrets.ts",
+      "from": "  `Nothing was sent: one of your notes holds your ${PROVIDER_NAMES[provider]} API key, which is saved in this app. Open Memory and take it out.`",
+      "to": "  `Nothing was sent: a note holds a key. ${provider === 'openai' ? '' : ''}`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-4.mjs"
+  ],
+  "env": {}
+}

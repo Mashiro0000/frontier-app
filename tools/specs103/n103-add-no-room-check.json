@@ -1,0 +1,14 @@
+{
+  "label": "n103-add-no-room-check",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/memory.ts",
+      "from": "      const full = roomFor(memory.notes, scope, checked.text, null)\n      if (full !== null) return { ok: false, error: full }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-3.mjs"
+  ],
+  "env": {}
+}

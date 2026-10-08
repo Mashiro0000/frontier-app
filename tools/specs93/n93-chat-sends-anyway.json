@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "      send({ streamId, type: 'error', message: resolved.error })\n      return\n",
-      "to": "      send({ streamId, type: 'error', message: resolved.error })\n"
+      "from": "            : `${resolved.error} The project's files count too: they go with every message of its chats.`\n      })\n      return\n",
+      "to": "            : `${resolved.error} The project's files count too: they go with every message of its chats.`\n      })\n"
     }
   ],
   "argv": [

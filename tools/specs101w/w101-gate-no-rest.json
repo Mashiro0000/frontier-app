@@ -1,0 +1,18 @@
+{
+  "label": "w101-gate-no-rest",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/systemQuestion.ts",
+      "from": "        quietUntil = now() + QUIET_AFTER_NO_MS\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run101.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 400000
+}

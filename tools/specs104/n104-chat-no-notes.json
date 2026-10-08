@@ -1,0 +1,14 @@
+{
+  "label": "n104-chat-no-notes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      notes: memory.notes.map((note) => note.text), // first after the rules, as information (10.4)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-4.mjs"
+  ],
+  "env": {}
+}

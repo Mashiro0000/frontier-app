@@ -1,0 +1,18 @@
+{
+  "label": "w102-bar-no-problem-mark",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ChatBar.tsx",
+      "from": "        {everyChat?.problem != null ? (",
+      "to": "        {everyChat?.problem === 12345 ? ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run102.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 500000
+}

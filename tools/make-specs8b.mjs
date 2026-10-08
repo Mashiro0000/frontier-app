@@ -27,7 +27,7 @@ const node = {
   'n8b-reader-no-size-cap': [FILE1, [[BK, 'if (info.size > BACKUP_LIMITS.maxFileBytes)', 'if (false)']]],
   'n8b-reader-no-chat-cap': [FILE1, [[BK, 'if (result.seen >= BACKUP_LIMITS.maxChats) {', 'if (false) {']]],
   // (9.5, D-037: version 2 is read too; the sabotage still reads any version)
-  'n8b-reader-any-version': [FILE1, [[BK, 'if (header.version !== BACKUP_VERSION && header.version !== BACKUP_VERSION_FILES) {', 'if (false) {']]],
+  'n8b-reader-any-version': [FILE1, [[BK, 'if (\n          header.version !== BACKUP_VERSION &&\n          header.version !== BACKUP_VERSION_FILES &&\n          header.version !== BACKUP_VERSION_KEPT\n        ) {', 'if (false) {']]], // three versions since 10.7
   'n8b-reader-lenient-utf8': [FILE1, [[BK, "new TextDecoder('utf-8', { fatal: true })", "new TextDecoder('utf-8')"]]],
   'n8b-reader-id-unchecked': [FILE1, [[BK, 'if (!isConversationId(id)) {', 'if (false) {']]],
   'n8b-reader-format-unchecked': [FILE1, [[BK, 'header === null || header.format !== BACKUP_FORMAT) {', 'header === null) {']]],
@@ -102,7 +102,8 @@ const win = {
   // main, seen from the window
   'w8b-service-no-inside-check': [[SV, 'if (await isInside(dataDir, dest)) {', 'if (false) {']],
   'w8b-ipc-look-no-window': [[IPC, 'guardedForWindow((window): Promise<HistoryRestoreLookResult> => backups.restoreLook(window))', 'guardedForWindow((): Promise<HistoryRestoreLookResult> => backups.restoreLook(null))']],
-  'w8b-dialogs-no-overwrite-confirm': [[DLG, "properties: ['showOverwriteConfirmation' as const]", 'properties: []']],
+  // since 10.4 the notes' export dialog asks before overwriting too: the backup's own is named by its filter
+  'w8b-dialogs-no-overwrite-confirm': [[DLG, "filters: [BACKUP_FILTER],\n      properties: ['showOverwriteConfirmation' as const]", 'filters: [BACKUP_FILTER],\n      properties: []']],
   'w8b-service-page-picks-path': [[SV, '    const dest = await pickers.savePath(\n      owner,\n      name,\n      beforeEncrypting ? BEFORE_ENCRYPTING_TITLE : undefined\n    )', '    const dest =\n      (request as { path?: string }).path ??\n      (await pickers.savePath(owner, name, beforeEncrypting ? BEFORE_ENCRYPTING_TITLE : undefined))']],
   'w8b-service-token-reusable': [[SV, '    pending = null // good for one use, whatever happens next\n', '']]
 }

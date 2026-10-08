@@ -1,0 +1,14 @@
+{
+  "label": "n102-every-empty-asks",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/everyChat.ts",
+      "from": "      if (next !== '') {\n        const secrets = checkForSecrets(",
+      "to": "      if (next !== '' || damaged === damaged) {\n        const secrets = checkForSecrets("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w105-new-chat-drops-project",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/useHistory.ts",
+      "from": "    chat.load([], '', project)",
+      "to": "    chat.load([], '', null)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run105.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

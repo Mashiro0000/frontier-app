@@ -39,6 +39,17 @@ export function describeEncrypted(report: ChatStorageReport): string {
       )
     }
   }
+  // The instructions for every chat and the notes (D-039), said only when there are any.
+  if (report.documents !== undefined) {
+    if (report.documents.changed > 0) {
+      parts.push('Your instructions for every chat and your notes are encrypted too.')
+    }
+    if (report.documents.failed > 0) {
+      parts.push(
+        'Some of your instructions for every chat or your notes could not be rewritten and are as before.'
+      )
+    }
+  }
   parts.push('Chats you save from now on are encrypted too.')
   return parts.join(' ')
 }
@@ -63,6 +74,16 @@ export function describePlain(report: ChatStorageReport, status: ChatStorageStat
     if (report.files.failed > 0) {
       parts.push(
         `${attached(report.files.failed)} could not be rewritten and ${report.files.failed === 1 ? 'is' : 'are'} still encrypted.`
+      )
+    }
+  }
+  if (report.documents !== undefined) {
+    if (report.documents.changed > 0) {
+      parts.push('Your instructions for every chat and your notes are plain files again too.')
+    }
+    if (report.documents.failed > 0) {
+      parts.push(
+        'Some of your instructions for every chat or your notes could not be rewritten and are still encrypted.'
       )
     }
   }

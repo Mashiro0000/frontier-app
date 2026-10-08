@@ -1,0 +1,14 @@
+{
+  "label": "n102-prompt-every-dropped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "  if (every !== '') pieces.push(EVERY_CHAT_LEAD, every)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-10-2.mjs"
+  ],
+  "env": {}
+}
