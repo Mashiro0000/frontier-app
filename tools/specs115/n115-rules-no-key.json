@@ -1,0 +1,14 @@
+{
+  "label": "n115-rules-no-key",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": " and never put a key, a password or private details into the words of a search.",
+      "to": "."
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-5.mjs"
+  ],
+  "env": {}
+}

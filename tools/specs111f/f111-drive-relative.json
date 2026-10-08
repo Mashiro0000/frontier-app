@@ -1,0 +1,15 @@
+{
+  "label": "f111-drive-relative",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "    if (drive !== null && !/^[\\\\/]/.test(rest)) return no('a path relative to a drive')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n111-reach-import",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "import { isSafeExternalUrl } from './security'",
+      "to": "import { isSafeExternalUrl } from './security'\nimport { createMemory } from './memory'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

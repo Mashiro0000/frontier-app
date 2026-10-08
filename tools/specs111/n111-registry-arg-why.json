@@ -1,0 +1,14 @@
+{
+  "label": "n111-registry-arg-why",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "|| name === 'why' ||",
+      "to": "|| false ||"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

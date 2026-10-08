@@ -1,4 +1,5 @@
 import type { ChatStreamEvent } from '../../../shared/ipc'
+import type { ToolEvent } from '../../../shared/tools'
 import type { ReplyUsage } from '../../../shared/usage'
 import { toWireMessages } from './history'
 import type { Answerer, ChatMessage, LargeRequest } from './types'
@@ -24,7 +25,8 @@ export async function* ipcReply(
   conversationId: string | null,
   onUsage: (usage: ReplyUsage) => void,
   onLargeRequest: (request: LargeRequest) => Promise<boolean>,
-  projectId: string | null = null
+  projectId: string | null = null,
+  onTool: (event: ToolEvent) => void = () => {}
 ): AsyncGenerator<string> {
   if (!window.api) {
     throw new Error('The window could not connect to the app (the preload did not load).')
@@ -67,6 +69,8 @@ export async function* ipcReply(
       if (event.type === 'start') onAnswerer({ provider: event.provider, model: event.model })
       else if (event.type === 'text') yield event.text
       else if (event.type === 'usage') onUsage(event.usage)
+      else if (event.type === 'tool')
+        onTool(event.event) // (11.4) tool activity: the chat shows it as it happens
       else if (event.type === 'confirm') {
         const yes = await onLargeRequest({
           model: event.model,

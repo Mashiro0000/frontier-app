@@ -1,0 +1,14 @@
+{
+  "label": "n115-rules-not-added",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "  if (parts.tools === true) pieces.push(TOOL_RULES)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-5.mjs"
+  ],
+  "env": {}
+}

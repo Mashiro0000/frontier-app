@@ -1,0 +1,14 @@
+{
+  "label": "n116-fee-not-added",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "(record.search === undefined ? 0 : record.search.count * record.search.usdEach)",
+      "to": "0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-6.mjs"
+  ],
+  "env": {}
+}

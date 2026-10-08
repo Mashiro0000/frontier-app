@@ -1,0 +1,14 @@
+{
+  "label": "n113-box-signal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupDialogs.ts",
+      "from": "    ...(signal === undefined ? {} : { signal })",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

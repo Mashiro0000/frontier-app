@@ -1,0 +1,14 @@
+{
+  "label": "n113-reply-owner",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "                owner: input.owner,",
+      "to": "                owner: null,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

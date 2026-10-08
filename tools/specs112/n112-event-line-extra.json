@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-line-extra",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "      return {\n        ...head,\n        ok: event.ok,",
+      "to": "      return {\n        ...head,\n        ...event,\n        ok: event.ok,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

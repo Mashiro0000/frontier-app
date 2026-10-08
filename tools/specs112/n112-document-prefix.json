@@ -1,0 +1,14 @@
+{
+  "label": "n112-document-prefix",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "      if (line.startsWith(SEALED_PREFIX)) sealed += 1",
+      "to": "      if (false) sealed += 1"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

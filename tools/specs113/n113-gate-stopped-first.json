@@ -1,0 +1,14 @@
+{
+  "label": "n113-gate-stopped-first",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/systemQuestion.ts",
+      "from": "      if (signal?.aborted) return 'stopped'\n      if (asking) return 'busy'",
+      "to": "      if (asking) return 'busy'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

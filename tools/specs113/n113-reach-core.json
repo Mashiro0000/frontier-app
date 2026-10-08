@@ -1,0 +1,14 @@
+{
+  "label": "n113-reach-core",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "import { RequestRefused, type UsageLedger } from './usageLedger'",
+      "to": "import { RequestRefused, type UsageLedger } from './usageLedger'\nimport { createToolCore } from './toolCore'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

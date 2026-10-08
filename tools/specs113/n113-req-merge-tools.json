@@ -1,0 +1,14 @@
+{
+  "label": "n113-req-merge-tools",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "if (last && last.role === message.role && !isToolTurn(last) && !isToolTurn(message)) {",
+      "to": "if (last && last.role === message.role) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-keys",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "    have.length === keys.length &&\n    keys.every((key) => Object.prototype.hasOwnProperty.call(raw, key))",
+      "to": "    true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

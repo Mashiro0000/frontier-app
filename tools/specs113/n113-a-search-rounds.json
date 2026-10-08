@@ -1,0 +1,14 @@
+{
+  "label": "n113-a-search-rounds",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "for (let round = 0; round < MAX_SEARCH_ROUNDS; round++) {",
+      "to": "for (let round = 0; round < 100; round++) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

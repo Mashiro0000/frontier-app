@@ -1,0 +1,14 @@
+{
+  "label": "n112-document-target",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "        ? target === 'encrypted'\n          ? 'plain'\n          : 'encrypted'",
+      "to": "        ? target"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

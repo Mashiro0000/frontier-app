@@ -2,13 +2,17 @@ import OpenAI from 'openai'
 import { PROVIDER_NAMES } from '../../shared/registry'
 import { isInterrupted, normalizedError, rawMessage, type ErrorFacts } from './errors'
 import { textFileLead } from './request'
+import { addSource, addUsage, NO_USAGE, SEARCH_SYSTEM, searchedWords, searchPrompt } from './search'
 import type {
   Credentials,
   NeutralMessage,
+  NeutralToolCall,
   NormalizedError,
   ProviderAdapter,
   ProviderModel,
   ReplyEnd,
+  SearchRequest,
+  SearchResult,
   StreamEvent,
   StreamRequest,
   Usage
@@ -120,6 +124,21 @@ function usage(report: unknown): Usage {
  * `input_image` (a data URL; the detail left to the model), a PDF as `input_file` (a data URL and its file name), a text file as `input_text` led by a line
  * that names it (the Responses API has no titled text document); then the person's text, if there is any. Only the person's messages carry files.
  */
+function openaiInputs(message: NeutralMessage): OpenAI.Responses.ResponseInputItem[] {
+  // (11.3) A turn in which the model asked for tools is sent back as the items it was made of (its reasoning, its words, its calls); then the results.
+  if (message.toolTurn !== undefined) {
+    return message.toolTurn.record as OpenAI.Responses.ResponseInputItem[]
+  }
+  if (message.toolResults !== undefined) {
+    return message.toolResults.map((result): OpenAI.Responses.ResponseInputItem => ({
+      type: 'function_call_output',
+      call_id: result.callId,
+      output: result.text
+    }))
+  }
+  return [openaiInput(message)]
+}
+
 function openaiInput(message: NeutralMessage): OpenAI.Responses.ResponseInputItem {
   if (message.attachments === undefined) return { role: message.role, content: message.content }
   const parts: OpenAI.Responses.ResponseInputContent[] = message.attachments.map((file) =>
@@ -147,7 +166,7 @@ async function* stream(request: StreamRequest): AsyncGenerator<StreamEvent> {
     {
       model: model.id,
       instructions: request.system,
-      input: request.messages.map(openaiInput),
+      input: request.messages.flatMap(openaiInputs),
       max_output_tokens: request.maxOutputTokens,
       // `effort` is how much the model thinks before it answers (its thinking is billed as output and counts against
       // max_output_tokens). Written out for every model that takes it, because the defaults differ between models (D-014);
@@ -155,7 +174,22 @@ async function* stream(request: StreamRequest): AsyncGenerator<StreamEvent> {
       ...(request.effort ? { reasoning: { effort: request.effort } } : {}),
       // Responses are kept on the provider's side by default. This app sends the whole conversation every time and uses none of
       // that, so nothing is kept (D-022).
-      store: false
+      store: false,
+      // (11.3) The tools on offer, one call at a time. "strict" is off because the schema carries length limits that strict mode does not take; the
+      // reasoning that goes with a call comes back encrypted (nothing is kept on the provider's side) and is sent back with the result.
+      ...(request.tools !== undefined && request.tools.length > 0
+        ? {
+            tools: request.tools.map((tool): OpenAI.Responses.FunctionTool => ({
+              type: 'function',
+              name: tool.name,
+              description: tool.description,
+              parameters: tool.parameters,
+              strict: false
+            })),
+            parallel_tool_calls: false,
+            include: ['reasoning.encrypted_content' as const]
+          }
+        : {})
     },
     { signal: request.signal }
   )
@@ -174,7 +208,154 @@ async function* stream(request: StreamRequest): AsyncGenerator<StreamEvent> {
   }
   if (response.status !== 'completed' && response.status !== 'incomplete')
     throw new ReplyEndedEarly()
+  // (11.3) The model stopped to use a tool: what it asked for, and the items of its turn as they must be sent back.
+  const calls: NeutralToolCall[] =
+    response.status === 'completed'
+      ? response.output.flatMap((item) =>
+          item.type === 'function_call'
+            ? [{ id: item.call_id, name: item.name, input: parseArguments(item.arguments) }]
+            : []
+        )
+      : []
+  if (calls.length > 0) {
+    yield {
+      type: 'end',
+      end: { kind: 'tool-use' },
+      usage: usage(response.usage),
+      calls,
+      record: response.output.flatMap((item) => {
+        const again = replayItem(item)
+        return again === null ? [] : [again]
+      })
+    }
+    return
+  }
   yield { type: 'end', end: endOf(response, refused), usage: usage(response.usage) }
+}
+
+/** The arguments of a call as the model wrote them (a JSON text), or null when they are not JSON. */
+function parseArguments(text: string): unknown {
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * An item of a turn as it is sent back with the results of its calls: only the fields the API takes in an input (the SDK adds some of its own to what it
+ * hands back, such as `parsed_arguments`, and an unknown field is refused). Items of other kinds are not part of a turn that asked for a tool.
+ */
+function replayItem(
+  item: OpenAI.Responses.ResponseOutputItem
+): OpenAI.Responses.ResponseInputItem | null {
+  switch (item.type) {
+    case 'reasoning':
+      return {
+        type: 'reasoning',
+        id: item.id,
+        summary: item.summary,
+        ...(typeof item.encrypted_content === 'string'
+          ? { encrypted_content: item.encrypted_content }
+          : {})
+      }
+    case 'function_call':
+      return {
+        type: 'function_call',
+        id: item.id,
+        call_id: item.call_id,
+        name: item.name,
+        arguments: item.arguments,
+        ...(item.status !== undefined ? { status: item.status } : {})
+      }
+    case 'message':
+      return {
+        type: 'message',
+        role: 'assistant',
+        id: item.id,
+        status: item.status,
+        content: item.content.map((part) =>
+          part.type === 'output_text'
+            ? { type: 'output_text' as const, text: part.text, annotations: part.annotations ?? [] }
+            : { type: 'refusal' as const, refusal: part.refusal }
+        )
+      }
+    default:
+      return null
+  }
+}
+
+/**
+ * One web search (11.3, D-041) with OpenAI's own tool, `web_search`, allowed once. The sources are every page it consulted (the API lists them on request)
+ * and the pages it cited, each once; the words it searched are the ones the call reports.
+ */
+async function search(request: SearchRequest): Promise<SearchResult> {
+  const reply = newClient(request.credentials).responses.stream(
+    {
+      model: request.model.id,
+      instructions: SEARCH_SYSTEM,
+      input: [{ role: 'user', content: searchPrompt(request.query) }],
+      max_output_tokens: request.maxOutputTokens,
+      tools: [{ type: 'web_search' }],
+      max_tool_calls: 1,
+      parallel_tool_calls: false,
+      include: ['web_search_call.action.sources'],
+      ...(request.effort ? { reasoning: { effort: request.effort } } : {}),
+      store: false
+    },
+    { signal: request.signal }
+  )
+  const response = await reply.finalResponse()
+  if (response.status === 'failed') {
+    throw new ReplyFailed(response.error?.message ?? 'the provider reported that the search failed')
+  }
+  if (response.status !== 'completed' && response.status !== 'incomplete') {
+    throw new ReplyEndedEarly()
+  }
+  let text = ''
+  const sources: SearchResult['sources'] = []
+  let searched: string | null = null
+  let searches = 0
+  let declined = false
+  for (const item of response.output) {
+    if (item.type === 'web_search_call') {
+      // What the model wrote BEFORE the search is not what it found: the summary is the message that follows it.
+      text = ''
+      if (item.status === 'completed') searches += 1
+      if (item.action.type === 'search') {
+        searched ??= searchedWords(item.action.queries?.[0] ?? item.action.query)
+        for (const source of item.action.sources ?? []) addSource(sources, null, source.url)
+      }
+    } else if (item.type === 'message') {
+      for (const part of item.content) {
+        if (part.type === 'output_text') {
+          text += part.text
+          for (const note of part.annotations ?? []) {
+            if (note.type === 'url_citation') addSource(sources, note.title, note.url)
+          }
+        } else {
+          declined = true
+          text += part.refusal
+        }
+      }
+    }
+  }
+  const end: SearchResult['end'] =
+    response.status === 'incomplete'
+      ? response.incomplete_details?.reason === 'content_filter'
+        ? 'declined'
+        : 'cut-off'
+      : declined
+        ? 'declined'
+        : 'done'
+  return {
+    text,
+    sources,
+    searched,
+    searches,
+    usage: addUsage(NO_USAGE, usage(response.usage)),
+    end
+  }
 }
 
 function apiMessage(error: InstanceType<typeof OpenAI.APIError>): string | null {
@@ -238,6 +419,7 @@ export const openaiAdapter: ProviderAdapter = {
   provider: 'openai',
   listModels,
   stream,
+  search,
   usage,
   normalizeError
 }

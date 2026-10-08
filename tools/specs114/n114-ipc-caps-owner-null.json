@@ -1,0 +1,14 @@
+{
+  "label": "n114-ipc-caps-owner-null",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "toolsService.setCaps(window, input)",
+      "to": "toolsService.setCaps(null, input)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

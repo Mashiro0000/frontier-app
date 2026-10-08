@@ -1,0 +1,14 @@
+{
+  "label": "n111-on-inherited",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/tools.ts",
+      "from": "Object.prototype.hasOwnProperty.call(settings.enabled, id) && ",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

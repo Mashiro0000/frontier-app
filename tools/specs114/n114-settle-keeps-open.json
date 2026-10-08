@@ -1,0 +1,14 @@
+{
+  "label": "n114-settle-keeps-open",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "    note.outcome.kind === 'unanswered'\n",
+      "to": "    false\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

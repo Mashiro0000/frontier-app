@@ -1,0 +1,14 @@
+{
+  "label": "n113-req-tools-always",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "    ...(input.tools !== undefined && input.tools.length > 0 ? { tools: input.tools } : {}),",
+      "to": "    tools: input.tools ?? [],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

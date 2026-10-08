@@ -1,0 +1,14 @@
+{
+  "label": "n111-args-extra",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "if (given.length > allowed.size || given.some((name) => !allowed.has(name))) {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

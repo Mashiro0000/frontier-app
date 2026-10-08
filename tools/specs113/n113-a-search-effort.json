@@ -1,0 +1,14 @@
+{
+  "label": "n113-a-search-effort",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "        messages,\n        tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 1 }],\n        ...(effort ? { output_config: { effort } } : {})",
+      "to": "        messages,\n        tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 1 }]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

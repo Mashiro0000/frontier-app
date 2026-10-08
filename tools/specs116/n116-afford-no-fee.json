@@ -1,0 +1,14 @@
+{
+  "label": "n116-afford-no-fee",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "costOf({ ...NO_TOKENS, input: guess }, entry.pricing) + SEARCH_FEE_USD[entry.provider]",
+      "to": "costOf({ ...NO_TOKENS, input: guess }, entry.pricing)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-6.mjs"
+  ],
+  "env": {}
+}

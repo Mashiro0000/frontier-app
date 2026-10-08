@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/systemQuestion.ts",
-      "from": "        if ((await askPerson(owner, question)) === true) return 'yes'",
-      "to": "        if (await askPerson(owner, question)) return 'yes'"
+      "from": "        if (answered === true) return 'yes'",
+      "to": "        if (answered) return 'yes'"
     }
   ],
   "argv": [

@@ -1,0 +1,18 @@
+{
+  "label": "w115-build-no-rules",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "      tools: input.tools !== undefined && input.tools.length > 0,\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run115.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

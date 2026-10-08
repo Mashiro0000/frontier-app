@@ -1,0 +1,18 @@
+{
+  "label": "w112-report-sentence",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/useChatStorage.ts",
+      "from": "your projects, your tool settings and the audit log of tool calls are encrypted too.",
+      "to": "and your notes are encrypted too."
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run112.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

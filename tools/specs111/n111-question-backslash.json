@@ -1,0 +1,14 @@
+{
+  "label": "n111-question-backslash",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolQuestion.ts",
+      "from": "|| char === '\\\\')",
+      "to": "|| false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

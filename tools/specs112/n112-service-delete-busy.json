@@ -1,0 +1,14 @@
+{
+  "label": "n112-service-delete-busy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditService.ts",
+      "from": "    if (answer === 'busy') return { ok: false, error: QUESTION_BUSY }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

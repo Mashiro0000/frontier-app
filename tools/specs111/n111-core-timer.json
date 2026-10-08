@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-timer",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "    const timer = setTimeout(endBecause('time'), Math.max(0, budget.remainingMs()))",
+      "to": "    const timer = setTimeout(() => undefined, 1)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

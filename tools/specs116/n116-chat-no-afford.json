@@ -1,0 +1,14 @@
+{
+  "label": "n116-chat-no-afford",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "            affordable: affordableSearch,\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-6.mjs"
+  ],
+  "env": {}
+}

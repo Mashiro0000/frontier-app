@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-executors-copy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "  const executors = new Map<string, Executor>(Object.entries(options.executors))",
+      "to": "  const executors = { get: (id: string) => options.executors[id], has: (id: string) => id in options.executors } as unknown as Map<string, Executor>"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n112-conform-refused",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "    if ('refused' in mode) return 'refused'\n    const wanted",
+      "to": "    const wanted"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

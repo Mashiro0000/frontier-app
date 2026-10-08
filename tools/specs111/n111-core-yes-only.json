@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-yes-only",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "    if (answer !== 'yes') {",
+      "to": "    if (answer === 'busy') {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

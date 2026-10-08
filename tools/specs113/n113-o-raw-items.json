@@ -1,0 +1,14 @@
+{
+  "label": "n113-o-raw-items",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "      record: response.output.flatMap((item) => {\n        const again = replayItem(item)\n        return again === null ? [] : [again]\n      })",
+      "to": "      record: response.output"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

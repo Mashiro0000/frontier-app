@@ -1,0 +1,14 @@
+{
+  "label": "n114-on-when-unreadable",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettingsService.ts",
+      "from": "        if (current.problem !== null) return { ok: false, error: changeRefused(current.problem) }\n        if (toolIsOn(current.settings, tool)) return { ok: true, status: await status() }\n",
+      "to": "        if (toolIsOn(current.settings, tool)) return { ok: true, status: await status() }\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

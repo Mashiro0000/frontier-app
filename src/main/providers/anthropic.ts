@@ -1,13 +1,25 @@
 import Anthropic, { type APIError } from '@anthropic-ai/sdk'
 import { PROVIDER_NAMES, type Effort } from '../../shared/registry'
 import { isInterrupted, normalizedError, rawMessage, type ErrorFacts } from './errors'
+import {
+  addSource,
+  addUsage,
+  MAX_SEARCH_ROUNDS,
+  NO_USAGE,
+  SEARCH_SYSTEM,
+  searchedWords,
+  searchPrompt
+} from './search'
 import type {
   Credentials,
   NeutralMessage,
+  NeutralToolCall,
   NormalizedError,
   ProviderAdapter,
   ProviderModel,
   ReplyEnd,
+  SearchRequest,
+  SearchResult,
   StreamEvent,
   StreamRequest,
   Usage
@@ -87,6 +99,22 @@ function usage(report: unknown): Usage {
  * file as a `document` block of plain text, each document titled with its name; then the person's text, if there is any.
  */
 function anthropicMessage(message: NeutralMessage): Anthropic.MessageParam {
+  // (11.3) A turn in which the model asked for tools is sent back exactly as it came, thinking blocks and all: Anthropic refuses the results without them.
+  if (message.toolTurn !== undefined) {
+    return { role: 'assistant', content: message.toolTurn.record as Anthropic.ContentBlockParam[] }
+  }
+  // The results of those calls: the result blocks come first in the turn, one for each call.
+  if (message.toolResults !== undefined) {
+    return {
+      role: 'user',
+      content: message.toolResults.map((result): Anthropic.ToolResultBlockParam => ({
+        type: 'tool_result',
+        tool_use_id: result.callId,
+        content: result.text,
+        ...(result.isError ? { is_error: true } : {})
+      }))
+    }
+  }
   if (message.attachments === undefined) return { role: message.role, content: message.content }
   const blocks: Anthropic.ContentBlockParam[] = message.attachments.map((file) =>
     file.kind === 'image'
@@ -124,7 +152,21 @@ async function* stream(request: StreamRequest): AsyncGenerator<StreamEvent> {
       // The whole conversation is sent again with every message. This lets the server reuse the part it has already
       // seen (billed far lower) instead of charging full price for it each time. The registry says which models can
       // (D-019): a model that cannot is not asked to.
-      ...(model.capabilities.promptCaching ? { cache_control: { type: 'ephemeral' as const } } : {})
+      ...(model.capabilities.promptCaching
+        ? { cache_control: { type: 'ephemeral' as const } }
+        : {}),
+      // (11.3) The tools on offer, and at most one call at a time (the person is asked about each; a model that tries several is told to take them in turn).
+      // `tool_choice` stays "auto": Opus 5.5, Sonnet 5.5 and Fable 5.1 refuse a forced tool (Anthropic's tool-use page, read on 2026-10-08).
+      ...(request.tools !== undefined && request.tools.length > 0
+        ? {
+            tools: request.tools.map((tool): Anthropic.Tool => ({
+              name: tool.name,
+              description: tool.description,
+              input_schema: tool.parameters as Anthropic.Tool.InputSchema
+            })),
+            tool_choice: { type: 'auto' as const, disable_parallel_tool_use: true }
+          }
+        : {})
     },
     { signal: request.signal }
   )
@@ -136,7 +178,91 @@ async function* stream(request: StreamRequest): AsyncGenerator<StreamEvent> {
     }
   }
   const message = await reply.finalMessage()
+  // (11.3) The model stopped to use a tool: what it asked for, and the whole turn as it came (the thinking blocks are needed to answer it).
+  const calls: NeutralToolCall[] =
+    message.stop_reason === 'tool_use'
+      ? message.content.flatMap((block) =>
+          block.type === 'tool_use' ? [{ id: block.id, name: block.name, input: block.input }] : []
+        )
+      : []
+  if (calls.length > 0) {
+    yield {
+      type: 'end',
+      end: { kind: 'tool-use' },
+      usage: usage(message.usage),
+      calls,
+      // The whole turn as it came, thinking and all. Anthropic refuses an empty text block when a turn is sent back, so a block of no words (a model that
+      // opened one before its call) is left out; nothing else is changed.
+      record: message.content.filter((block) => !(block.type === 'text' && block.text === ''))
+    }
+    return
+  }
   yield { type: 'end', end: endOf(message), usage: usage(message.usage) }
+}
+
+/**
+ * One web search (11.3, D-041) with Anthropic's own tool, `web_search_20250305` (the basic version, which runs directly and not through code execution),
+ * allowed once. A turn that the provider pauses is continued with the paused content sent back unchanged, at most `MAX_SEARCH_ROUNDS` times in all.
+ */
+async function search(request: SearchRequest): Promise<SearchResult> {
+  const effort = effortOf(request.effort)
+  const client = newClient(request.credentials)
+  let messages: Anthropic.MessageParam[] = [{ role: 'user', content: searchPrompt(request.query) }]
+  let paused: Anthropic.ContentBlock[] = []
+  let total: Usage = NO_USAGE
+  let text = ''
+  const sources: SearchResult['sources'] = []
+  let searched: string | null = null
+  let searches = 0
+  let end: SearchResult['end'] = 'unfinished'
+  for (let round = 0; round < MAX_SEARCH_ROUNDS; round++) {
+    const reply = client.messages.stream(
+      {
+        model: request.model.id,
+        max_tokens: request.maxOutputTokens,
+        system: SEARCH_SYSTEM,
+        messages,
+        tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 1 }],
+        ...(effort ? { output_config: { effort } } : {})
+      },
+      { signal: request.signal }
+    )
+    const message = await reply.finalMessage()
+    total = addUsage(total, usage(message.usage))
+    searches += tokenCount(message.usage.server_tool_use?.web_search_requests)
+    for (const block of message.content) {
+      if (block.type === 'text') {
+        text += block.text
+        for (const citation of block.citations ?? []) {
+          if (citation.type === 'web_search_result_location') {
+            addSource(sources, citation.title, citation.url)
+          }
+        }
+      } else if (block.type === 'server_tool_use' && block.name === 'web_search') {
+        searched ??= searchedWords((block.input as { query?: unknown } | null)?.query)
+      } else if (block.type === 'web_search_tool_result') {
+        // What the model wrote BEFORE the results ("I'll search for...") is not what it found: the summary is what follows them.
+        text = ''
+        if (Array.isArray(block.content)) {
+          for (const result of block.content) addSource(sources, result.title, result.url)
+        }
+      }
+    }
+    if (message.stop_reason === 'pause_turn') {
+      // The paused content goes back unchanged as the turn so far; a turn that pauses again grows the same assistant turn (never two of them in a row).
+      paused = [...paused, ...message.content]
+      messages = [messages[0], { role: 'assistant', content: paused }]
+      continue
+    }
+    end =
+      message.stop_reason === 'max_tokens'
+        ? 'cut-off'
+        : message.stop_reason === 'refusal'
+          ? 'declined'
+          : 'done'
+    break
+  }
+  return { text, sources, searched, searches, usage: total, end }
 }
 
 function apiMessage(error: APIError): string | null {
@@ -183,6 +309,7 @@ export const anthropicAdapter: ProviderAdapter = {
   provider: 'anthropic',
   listModels,
   stream,
+  search,
   usage,
   normalizeError
 }

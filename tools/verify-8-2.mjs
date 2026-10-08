@@ -130,6 +130,8 @@ await guard('block 2', async () => {
 await guard('block 3', async () => {
   const S = (today, month, request = 0) => ({ today, month, request })
   const ALL = lim(usd(5), usd(50))
+  const chatSource = readFileSync(join(REPO, 'src/main/chat.ts'), 'utf8')
+  check('source: chat.ts hands every request limit check to the ledger (beginRequest: checkAgainstLimits with the limits read just before), and the search too', /\(spend\) => withFilesNote\(checkAgainstLimits\(limits, spend\), files\)/.test(chatSource) && /\(spend\) => checkAgainstLimits\(limits, spend\)/.test(chatSource))
   check('checkAgainstLimits: limits not chosen refuse everything, with the sentence that says to set them', [lim(UNSET, UNSET), lim(UNSET, usd(50)), lim(usd(5), UNSET), lim(UNSET, NONE), lim(NONE, UNSET)].every((l) => checkAgainstLimits(l, S(0, 0, 0)) === LIMITS_UNSET_MESSAGE))
   check('LIMITS_UNSET_MESSAGE: says that nothing was sent, and where to set the limits, and that No limit is a choice', /^Nothing was sent/.test(LIMITS_UNSET_MESSAGE) && /Settings/.test(LIMITS_UNSET_MESSAGE) && /daily/.test(LIMITS_UNSET_MESSAGE) && /monthly/.test(LIMITS_UNSET_MESSAGE) && /No limit/.test(LIMITS_UNSET_MESSAGE))
   check('checkAgainstLimits: "No limit" for both never refuses, whatever has been spent', checkAgainstLimits(lim(NONE, NONE), S(1e6, 1e7, 1e5)) === null)

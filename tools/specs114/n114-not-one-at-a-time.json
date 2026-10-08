@@ -1,0 +1,14 @@
+{
+  "label": "n114-not-one-at-a-time",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettingsService.ts",
+      "from": "    if (changing) return { ok: false, error: BUSY }",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

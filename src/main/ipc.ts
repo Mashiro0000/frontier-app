@@ -25,6 +25,8 @@ import {
   type SettingsStatus,
   type TestKeyResult
 } from '../shared/ipc'
+import type { AuditDeleteResult, AuditExportResult, AuditView } from '../shared/audit'
+import type { ToolChangeResult, ToolsStatus } from '../shared/tools'
 import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from '../shared/memory'
 import type { ProjectChangeResult, ProjectsStatus } from '../shared/projects'
 import type { UsageSummary } from '../shared/usage'
@@ -47,12 +49,15 @@ import {
   checkProvider
 } from '../shared/validate'
 import { createAskFirstStore } from './askFirst'
+import { createAuditLog } from './auditLog'
+import { createAuditService } from './auditService'
 import { electronImageTools } from './attachmentImages'
 import { createAttachmentService } from './attachmentService'
 import { createAttachmentStore } from './attachmentStore'
 import {
   askPerson,
   pickAttachmentPaths,
+  pickAuditExportPath,
   pickNotesExportPath,
   systemAskers,
   systemPickers
@@ -63,6 +68,7 @@ import { registerChatIpc } from './chat'
 import { createChatEncryptionService } from './chatEncryptionService'
 import { createChatProtection } from './chatProtection'
 import { createConversationStore } from './conversationStore'
+import { createDataFolderGuard } from './dataFolderGuard'
 import { createEveryChat } from './everyChat'
 import { keptDocuments } from './keptFile'
 import { canStoreKey, clearApiKey, readApiKey, saveApiKey, secureStorage } from './keyStore'
@@ -75,9 +81,13 @@ import { adapterFor } from './providers'
 import { describeFailure, timeoutError } from './providers/errors'
 import { getRankings, reportRankingsProblems } from './rankings'
 import { getRegistry, reportRegistryProblems } from './registry'
-import type { SavedKey } from './secrets'
+import { createToolRuntime } from './replyTools'
+import { heldKey, type SavedKey } from './secrets'
 import { isTrustedSender } from './security'
 import { createQuestionGate } from './systemQuestion'
+import { BUILT_IN_TOOLS, createToolRegistry } from './toolRegistry'
+import { createToolSettings } from './toolSettings'
+import { createToolSettingsService } from './toolSettingsService'
 import { createUsageLedger } from './usageLedger'
 
 // The spending limits (D-031), in limits.json in the data folder. Main alone reads and writes them; the folder is asked for when first used.
@@ -395,13 +405,47 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       addNotes: (added) => memory.addRestored(added)
     }
   })
+  // The audit log of tool calls (D-041), in audit/log.jsonl: one line for each thing that happens to a call, appended and proved, sealed like the chats when
+  // encryption is on. The page can read it, export it and ask to delete it (which asks the person in the system's box); nothing else.
+  const auditLog = createAuditLog({
+    pathOf: () => join(app.getPath('userData'), 'audit', 'log.jsonl'),
+    box: secureStorage,
+    writeMode: protection.writeMode
+  })
+  const audit = createAuditService({
+    log: auditLog,
+    gate: questions,
+    pickExportPath: pickAuditExportPath,
+    dataDir: app.getPath('userData')
+  })
+  // Which tools are switched on and the caps on one reply (D-041), in tools.json, kept the same way. Main alone reads it, at every turn of a reply: with no
+  // file, or a file that cannot be read, every tool is off.
+  const toolSettings = createToolSettings({
+    pathOf: () => join(app.getPath('userData'), 'tools.json'),
+    box: secureStorage,
+    writeMode: protection.writeMode
+  })
+  // The one registry of the build: the Tools page lists its tools, and the loop of a reply offers and runs them.
+  const toolRegistry = createToolRegistry(BUILT_IN_TOOLS)
+  // What the page can do with the settings (D-041, 11.4): read them, and ask for a change. A tool switched ON and a higher cap ask in the system's message box.
+  const toolsService = createToolSettingsService({
+    store: toolSettings,
+    registry: toolRegistry,
+    gate: questions
+  })
   const encryption = createChatEncryptionService({
     store: history,
     protection,
     backups,
     asks: systemAskers,
     files: attachments,
-    documents: keptDocuments([everyChat.file, memory.file, projects.file]) // rewritten with the chats (D-039)
+    documents: keptDocuments([
+      everyChat.file,
+      memory.file,
+      projects.file,
+      auditLog.document,
+      toolSettings.file
+    ]) // rewritten with the chats (D-039, D-041)
   })
 
   ipcMain.handle(
@@ -663,6 +707,81 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
+  // The audit log (D-041). The page reads it and asks for the export and the deletion; deleting asks in the system's message box for the window that asked.
+  ipcMain.handle(
+    CHANNELS.auditRead,
+    guarded(async (): Promise<AuditView> => audit.view())
+  )
+  ipcMain.handle(
+    CHANNELS.auditExport,
+    guardedForWindow(async (window): Promise<AuditExportResult> => {
+      try {
+        return await audit.exportAll(window)
+      } catch (error) {
+        console.error('Exporting the audit log failed:', reason(error))
+        return { ok: false, error: 'The audit log could not be exported.' }
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.auditDeleteAll,
+    guardedForWindow(async (window): Promise<AuditDeleteResult> => {
+      try {
+        return await audit.deleteAll(window)
+      } catch (error) {
+        console.error('Deleting the audit log failed:', reason(error))
+        return { ok: false, error: 'The audit log could not be deleted.' }
+      }
+    })
+  )
+
+  // The tools (D-041, 11.4). The page reads which are on and the caps, and asks for a change; a tool switched on and a higher cap ask in the system's
+  // message box for the window that asked. The page has no way to run a tool or to answer a question.
+  ipcMain.handle(
+    CHANNELS.toolsStatus,
+    guarded(async (): Promise<ToolsStatus> => {
+      try {
+        return await toolsService.status()
+      } catch (error) {
+        console.error('Reading the tool settings failed:', reason(error))
+        throw new Error('Your tool settings could not be read.')
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.toolsSetEnabled,
+    guardedForWindow(async (window, input: unknown): Promise<ToolChangeResult> => {
+      try {
+        return await toolsService.setEnabled(window, input)
+      } catch (error) {
+        console.error('Changing a tool setting failed:', reason(error))
+        return { ok: false, error: 'The tool settings could not be changed.' }
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.toolsSetCaps,
+    guardedForWindow(async (window, input: unknown): Promise<ToolChangeResult> => {
+      try {
+        return await toolsService.setCaps(window, input)
+      } catch (error) {
+        console.error('Changing the tool limits failed:', reason(error))
+        return { ok: false, error: 'The tool settings could not be changed.' }
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.toolsReset,
+    guarded(async (): Promise<ToolChangeResult> => {
+      try {
+        return await toolsService.reset()
+      } catch (error) {
+        console.error('Starting the tool settings again failed:', reason(error))
+        return { ok: false, error: 'The tool settings could not be changed.' }
+      }
+    })
+  )
+
   // The person's projects (D-039, 10.5). New instructions and added files ask in the system's message box for the window that asked (the files come
   // through the system's open dialog first); making, renaming, taking a file off and deleting ask nothing there (the page asks before deleting).
   ipcMain.handle(
@@ -735,6 +854,15 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     .then((used) => (used !== null ? attachments.sweep(used, 3_600_000) : undefined))
     .catch((error: unknown) => console.error('Clearing unused attachments failed:', reason(error)))
 
+  // The tools of a reply (D-041): the one tool of the build, the one place that decides what becomes of a call, the block that keeps every tool out of the
+  // data folder, the audit log behind every question and run, and the app's one gate for questions in the system's box.
+  const toolRuntime = createToolRuntime({
+    tools: toolRegistry,
+    gate: questions,
+    guard: createDataFolderGuard({ roots: () => [app.getPath('userData')] }),
+    record: (event) => auditLog.append(event),
+    holdsSavedKey: async (text) => heldKey(text, await savedKeys()) !== null
+  })
   registerChatIpc(appUrl, {
     ledger,
     limitsStore,
@@ -743,7 +871,8 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     everyChat: () => everyChat.forRequest(),
     savedKeys,
     notes: (projectId) => memory.forRequest(projectId),
-    project: (id) => projects.forRequest(id)
+    project: (id) => projects.forRequest(id),
+    tools: { settings: async () => (await toolSettings.read()).settings, runtime: toolRuntime }
   })
   // The lock the encryption flows run in is the backup service's, so waiting for it waits for them too.
   return () =>
@@ -754,6 +883,8 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       attachments.whenIdle(),
       everyChat.file.whenIdle(),
       memory.file.whenIdle(),
-      projects.file.whenIdle()
+      projects.file.whenIdle(),
+      auditLog.whenIdle(),
+      toolSettings.file.whenIdle()
     ]).then(() => undefined)
 }

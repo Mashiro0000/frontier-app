@@ -1,0 +1,18 @@
+{
+  "label": "w113-no-tools",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "        tools: specs,\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run113.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 900000
+}

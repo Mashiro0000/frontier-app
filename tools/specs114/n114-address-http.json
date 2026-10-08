@@ -1,0 +1,14 @@
+{
+  "label": "n114-address-http",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "      parsed.protocol === 'https:' &&",
+      "to": "      true &&"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

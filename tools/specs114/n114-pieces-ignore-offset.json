@@ -1,0 +1,14 @@
+{
+  "label": "n114-pieces-ignore-offset",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "at: Math.min(Math.max(note.offset, 0), content.length) }))",
+      "to": "at: 0 }))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

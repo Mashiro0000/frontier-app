@@ -1,0 +1,18 @@
+{
+  "label": "w112-group-by-tool",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/audit.ts",
+      "from": "let call = byId.get(event.call)",
+      "to": "let call = byId.get(event.tool)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run112.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

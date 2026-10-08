@@ -1,0 +1,14 @@
+{
+  "label": "n113-reply-note",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "            const note = found.end === 'done' ? '' : `\\n\\n${UNFINISHED[found.end]}`",
+      "to": "            const note = ''"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

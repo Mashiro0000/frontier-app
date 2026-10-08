@@ -1,0 +1,18 @@
+{
+  "label": "w114-raise-without-asking",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettingsService.ts",
+      "from": "        if (next.steps > from.steps || next.seconds > from.seconds) {",
+      "to": "        if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run114.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

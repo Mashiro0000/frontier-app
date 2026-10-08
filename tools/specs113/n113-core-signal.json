@@ -1,0 +1,14 @@
+{
+  "label": "n113-core-signal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      gate.ask(owner, question, signal).then(",
+      "to": "      gate.ask(owner, question).then("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

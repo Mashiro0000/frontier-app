@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-path-real",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      args[argName] = verdict.real",
+      "to": "      args[argName] = checked.args[argName]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

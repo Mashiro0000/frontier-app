@@ -1,0 +1,18 @@
+{
+  "label": "w113-search-max",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 1 }],",
+      "to": "tools: [{ type: 'web_search_20250305', name: 'web_search' }],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run113.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 900000
+}

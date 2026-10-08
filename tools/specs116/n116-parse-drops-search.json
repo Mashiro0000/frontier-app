@@ -1,0 +1,14 @@
+{
+  "label": "n116-parse-drops-search",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "    ...(fee === undefined ? {} : { search: fee })\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-6.mjs"
+  ],
+  "env": {}
+}

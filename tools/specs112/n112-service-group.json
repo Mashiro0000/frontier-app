@@ -1,0 +1,14 @@
+{
+  "label": "n112-service-group",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/audit.ts",
+      "from": "let call = byId.get(event.call)",
+      "to": "let call = byId.get(event.tool)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

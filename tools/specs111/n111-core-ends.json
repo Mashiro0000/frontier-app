@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-ends",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "new Set(['step-cap', 'time-cap', 'stopped'])",
+      "to": "new Set([])"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

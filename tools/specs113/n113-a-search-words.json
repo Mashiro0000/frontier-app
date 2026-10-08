@@ -1,0 +1,14 @@
+{
+  "label": "n113-a-search-words",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "        searched ??= searchedWords((block.input as { query?: unknown } | null)?.query)",
+      "to": "        void searchedWords"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

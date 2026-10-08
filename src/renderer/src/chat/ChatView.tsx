@@ -30,6 +30,8 @@ interface ChatViewProps {
   onRemember: (text: string) => void
   /** The files of the chat's project (D-039, 10.6): they go with every message, so Send counts them with the chat's own. */
   projectFiles: AttachmentInfo[]
+  /** A tool is switched on (D-041, 11.4): the button that ends a reply says "Stop everything". */
+  toolsOn: boolean
 }
 
 function ChatView({
@@ -41,7 +43,8 @@ function ChatView({
   conversationId,
   attachments,
   onRemember,
-  projectFiles
+  projectFiles,
+  toolsOn
 }: ChatViewProps): React.JSX.Element {
   const { messages, isReplying, largeRequest, answerLargeRequest, send, stop, regenerate, resend } =
     chat
@@ -147,6 +150,7 @@ function ChatView({
         hasFiles={attachments.files.length > 0}
         blocked={blocked}
         onPasteFiles={attachments.addFiles}
+        stopEverything={toolsOn}
         attachments={
           <AttachmentChips
             files={attachments.files}

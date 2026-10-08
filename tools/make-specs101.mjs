@@ -23,7 +23,7 @@ const s = {
   higherNotLoose: [ASK, '  return Math.round(next.usd * 100) > Math.round(now * 100)', '  return false'],
   fromNeverLoose: [ASK, '  if (now === null) return false // "Never ask" already', '  if (now === null) return true // "Never ask" already'],
   gateNotOne: [GATE, "      if (asking) return 'busy'\n", ''],
-  gateTruthy: [GATE, "        if ((await askPerson(owner, question)) === true) return 'yes'", "        if (await askPerson(owner, question)) return 'yes'"],
+  gateTruthy: [GATE, "        if (answered === true) return 'yes'", "        if (answered) return 'yes'"],
   gateThrowYes: [GATE, "        return 'failed'", "        return 'yes'"],
   gateNoRest: [GATE, '        quietUntil = now() + QUIET_AFTER_NO_MS\n', ''],
   gateRestIgnored: [GATE, "      if (now() < quietUntil) return 'resting'\n", ''],

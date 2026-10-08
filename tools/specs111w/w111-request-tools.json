@@ -1,0 +1,18 @@
+{
+  "label": "w111-request-tools",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "      ...(effort ? { output_config: { effort } } : {}),",
+      "to": "      tools: [],\n      ...(effort ? { output_config: { effort } } : {}),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run111.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

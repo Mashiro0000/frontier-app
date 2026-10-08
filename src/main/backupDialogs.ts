@@ -68,6 +68,24 @@ export const pickNotesExportPath = async (
   return result.canceled || !result.filePath ? null : result.filePath
 }
 
+/** The system's save dialog for "Export..." on the audit log (D-041): the person places the plain text file of the log; null if they close it. */
+export const pickAuditExportPath = async (
+  owner: unknown,
+  suggestedName: string
+): Promise<string | null> => {
+  const options = {
+    title: 'Export the audit log',
+    defaultPath: join(app.getPath('documents'), suggestedName),
+    filters: [NOTES_FILTER],
+    properties: ['showOverwriteConfirmation' as const]
+  }
+  const window = windowOf(owner)
+  const result = window
+    ? await dialog.showSaveDialog(window, options)
+    : await dialog.showSaveDialog(options)
+  return result.canceled || !result.filePath ? null : result.filePath
+}
+
 export const systemAskers: Askers = {
   confirmPlain: async (owner, facts) => {
     const { title, message, detail } = plainQuestion(facts)
@@ -97,7 +115,7 @@ export const systemAskers: Askers = {
  * the change and is never the default: "no" has the focus, and Escape or closing the box gives the same answer, so only a deliberate click on yes says
  * yes. The page cannot reach the box: it is drawn by the operating system, modal to the app's window.
  */
-export const askPerson: AskPerson = async (owner, question) => {
+export const askPerson: AskPerson = async (owner, question, signal) => {
   const options = {
     type: 'warning' as const,
     title: question.title,
@@ -106,7 +124,9 @@ export const askPerson: AskPerson = async (owner, question) => {
     buttons: [question.yes, question.no],
     defaultId: 1,
     cancelId: 1,
-    noLink: true
+    noLink: true,
+    // (11.3) Stop everything closes an open question: the box then answers as if it had been cancelled.
+    ...(signal === undefined ? {} : { signal })
   }
   const window = windowOf(owner)
   const result = window

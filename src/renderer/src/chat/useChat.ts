@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { notesOf, settleNotes } from '../../../shared/toolNotes'
+import type { ToolEvent } from '../../../shared/tools'
 import { withEditedMessage, withoutLastReply } from './rewrite'
 import type { AttachedFile } from '../../../shared/attachments'
 import type { ChatMessage, LargeRequest, ReplyFn } from './types'
@@ -101,6 +103,11 @@ export function useChat(reply: ReplyFn): UseChat {
     replyId: string,
     controller: AbortController
   ): Promise<void> {
+    // The tool calls of this reply (D-041, 11.4): the events as main reports them, and the length of the reply's text when each call began, so that a note
+    // stands where the model stopped to ask. The events and the pieces of text arrive in one order, so a count of the text so far is exact.
+    const toolEvents: ToolEvent[] = []
+    const toolOffsets = new Map<string, number>()
+    let written = 0
     try {
       // The model that answers is known before any text, and is kept on the reply (D-021), whether it ends well or not.
       const answered = reply(
@@ -116,18 +123,35 @@ export function useChat(reply: ReplyFn): UseChat {
         conversationId.current,
         (usage) => updateMessage(replyId, (m) => ({ ...m, usage })),
         (request) => askAboutLargeRequest(request, controller.signal),
-        project
+        project,
+        (event) => {
+          toolEvents.push(event)
+          if (!toolOffsets.has(event.call)) toolOffsets.set(event.call, written)
+          const tools = notesOf(toolEvents, toolOffsets)
+          updateMessage(replyId, (m) => ({ ...m, tools }))
+        }
       )
       for await (const piece of answered) {
         if (controller.signal.aborted) break // ignore a piece that was already on its way
+        written += piece.length
         updateMessage(replyId, (m) => ({ ...m, content: m.content + piece }))
       }
       const status = controller.signal.aborted ? 'stopped' : 'done'
-      updateMessage(replyId, (m) => ({ ...m, status }))
+      const stopped = controller.signal.aborted
+      updateMessage(replyId, (m) => ({
+        ...m,
+        status,
+        ...(m.tools !== undefined ? { tools: settleNotes(m.tools, stopped) } : {})
+      }))
     } catch (error) {
       // A real provider may throw when it is aborted. That is a Stop, not a failure.
-      if (controller.signal.aborted) {
-        updateMessage(replyId, (m) => ({ ...m, status: 'stopped' }))
+      const stopped = controller.signal.aborted
+      if (stopped) {
+        updateMessage(replyId, (m) => ({
+          ...m,
+          status: 'stopped',
+          ...(m.tools !== undefined ? { tools: settleNotes(m.tools, true) } : {})
+        }))
       } else {
         const message = error instanceof Error ? error.message : String(error)
         updateMessage(replyId, (m) => ({ ...m, status: 'error', error: message }))

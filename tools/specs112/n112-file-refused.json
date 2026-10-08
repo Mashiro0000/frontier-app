@@ -1,0 +1,14 @@
+{
+  "label": "n112-file-refused",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "    if ('refused' in mode) throw new KeptRefused(mode.refused)\n    const plain",
+      "to": "    const plain"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n114-sources-no-dedupe",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "      if (seen.has(source.url)) continue\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

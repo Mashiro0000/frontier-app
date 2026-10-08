@@ -1,0 +1,14 @@
+{
+  "label": "n115-core-imports-memory",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "import type { ReplyBudget } from './replyBudget'\n",
+      "to": "import type { ReplyBudget } from './replyBudget'\nimport './memory'\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-5.mjs"
+  ],
+  "env": {}
+}

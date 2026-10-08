@@ -1,0 +1,14 @@
+{
+  "label": "n112-service-refused",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/audit.ts",
+      "from": "  if (call.refused !== null) return { kind: 'refused', code: call.refused }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

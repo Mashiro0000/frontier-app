@@ -1,0 +1,18 @@
+{
+  "label": "w112-delete-no-deletes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditService.ts",
+      "from": "    if (answer !== 'yes') return { ok: false, cancelled: true, error: 'Nothing was deleted.' }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run112.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

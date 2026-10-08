@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-hidden",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "const HIDDEN = /[\\p{Cc}\\p{Cf}\\p{Zl}\\p{Zp}\\p{Co}\\p{Cn}\\p{Cs}]/u",
+      "to": "const HIDDEN = /(?!)/u"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

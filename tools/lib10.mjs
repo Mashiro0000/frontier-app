@@ -30,9 +30,14 @@ export async function installQuestions(main, { fallback = 'yes' } = {}) {
     if (!q.installed) {
       q.installed = true
       dialog.showMessageBox = async (...args) => {
-        const options = args[args.length - 1]
-        q.asked.push({ withWindow: args.length > 1 && args[0] !== null && typeof args[0] === 'object' && typeof args[0].isDestroyed === 'function', options })
-        if (q.hold) await q.hold
+        // (11.3) Electron closes a box whose options carry a signal when the signal aborts, and the box then answers as if it had been cancelled.
+        const { signal, ...options } = args[args.length - 1]
+        q.asked.push({ withWindow: args.length > 1 && args[0] !== null && typeof args[0] === 'object' && typeof args[0].isDestroyed === 'function', options, hadSignal: signal !== undefined })
+        const aborted = signal === undefined ? new Promise(() => {}) : new Promise((resolve) => { if (signal.aborted) resolve('aborted'); else signal.addEventListener('abort', () => resolve('aborted'), { once: true }) })
+        if ((await Promise.race([q.hold ? q.hold.then(() => 'released') : Promise.resolve('released'), aborted])) === 'aborted') {
+          q.closedBySignal = (q.closedBySignal ?? 0) + 1
+          return { response: options.cancelId ?? 1, checkboxChecked: false }
+        }
         const next = q.answers.length > 0 ? q.answers.shift() : q.fallback
         const response = next === 'yes' ? 0 : next === 'no' ? (options.cancelId ?? 1) : next
         return { response, checkboxChecked: false }
@@ -47,7 +52,9 @@ export async function installQuestions(main, { fallback = 'yes' } = {}) {
     /** Every question asked so far: { withWindow, options }. */
     asked: read,
     count: async () => (await read()).length,
-    reset: () => main.inMain('globalThis.__questions.asked.length = 0; globalThis.__questions.answers.length = 0; true'),
+    /** How many open boxes were closed by their signal (Stop everything, 11.3). */
+    closedBySignal: async () => Number(await main.inMain('globalThis.__questions.closedBySignal ?? 0')),
+    reset: () => main.inMain('globalThis.__questions.asked.length = 0; globalThis.__questions.answers.length = 0; globalThis.__questions.closedBySignal = 0; true'),
     /** Keeps the next questions open (unanswered) until `release`. */
     hold: () => main.inMain(`(() => { const q = globalThis.__questions; q.hold = new Promise((r) => { q.release = r }); return true })()`),
     release: () => main.inMain(`(() => { const q = globalThis.__questions; const r = q.release; q.hold = null; q.release = null; if (r) r(); return true })()`),

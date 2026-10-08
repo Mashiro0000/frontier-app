@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-version",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "  if (o.v !== AUDIT_FORMAT_VERSION) return null\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

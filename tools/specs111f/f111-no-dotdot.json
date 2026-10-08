@@ -1,0 +1,15 @@
+{
+  "label": "f111-no-dotdot",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "      if (out.length > 1) out.pop() // never above the root",
+      "to": "      void 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

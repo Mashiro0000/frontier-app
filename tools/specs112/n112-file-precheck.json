@@ -1,0 +1,14 @@
+{
+  "label": "n112-file-precheck",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "    if ('bad' in check || check.plain !== plain || check.form !== mode.form) {",
+      "to": "    if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

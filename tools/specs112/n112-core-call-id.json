@@ -1,0 +1,14 @@
+{
+  "label": "n112-core-call-id",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "return `${now().toString(36)}-${counter.toString(36)}-${Math.random().toString(36).slice(2, 8)}`",
+      "to": "return 'one-id'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n116-finish-drops-search",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/usageLedger.ts",
+      "from": "          ...(outcome.search === undefined ? {} : { search: { ...outcome.search } })\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-6.mjs"
+  ],
+  "env": {}
+}

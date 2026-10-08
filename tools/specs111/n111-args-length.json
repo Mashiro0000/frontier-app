@@ -1,0 +1,14 @@
+{
+  "label": "n111-args-length",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "if (value.length < spec.min || value.length > spec.max || value.trim().length === 0) {",
+      "to": "if (value.length < spec.min || value.trim().length === 0) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

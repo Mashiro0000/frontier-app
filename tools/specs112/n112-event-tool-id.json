@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-tool-id",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "!TOOL_ID.test(tool) ||",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

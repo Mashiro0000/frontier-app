@@ -1,0 +1,14 @@
+{
+  "label": "n112-conform-proof",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "      if (!(await proved(file, body)) || !sameEvents(body)) {",
+      "to": "      if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

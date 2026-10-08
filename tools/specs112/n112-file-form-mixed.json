@@ -1,0 +1,14 @@
+{
+  "label": "n112-file-form-mixed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "plain > 0 && sealed > 0 ? 'mixed' :",
+      "to": "plain > 0 && sealed > 0 ? 'plain' :"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

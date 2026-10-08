@@ -1,0 +1,14 @@
+{
+  "label": "n113-h-prompt",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/search.ts",
+      "from": "`Search the web once for these words and report what you find: ${JSON.stringify(query)}`",
+      "to": "`Search the web once for these words and report what you find: ${query}`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

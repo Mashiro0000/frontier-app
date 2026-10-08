@@ -1,0 +1,14 @@
+{
+  "label": "n113-gate-signal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/systemQuestion.ts",
+      "from": "const answered = await askPerson(owner, question, signal)",
+      "to": "const answered = await askPerson(owner, question)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

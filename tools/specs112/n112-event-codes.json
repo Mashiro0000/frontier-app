@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-codes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "typeof code !== 'string' || !(REFUSAL_CODES as readonly string[]).includes(code)",
+      "to": "typeof code !== 'string'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

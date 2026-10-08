@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-stop-run",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "    signal.addEventListener('abort', onStop, { once: true })\n    const timer",
+      "to": "    const timer"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

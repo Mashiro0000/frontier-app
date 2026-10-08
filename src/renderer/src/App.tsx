@@ -16,6 +16,9 @@ import MemoryDialog from './memory/MemoryDialog'
 import { useMemory } from './memory/useMemory'
 import ProjectsDialog from './projects/ProjectsDialog'
 import { projectOf, useProjects } from './projects/useProjects'
+import ToolsDialog from './tools/ToolsDialog'
+import { useAudit } from './tools/useAudit'
+import { anyToolOn, useToolSettings } from './tools/useToolSettings'
 import EffortPicker from './settings/EffortPicker'
 import { providerMissingKey } from './settings/format'
 import LimitsDialog from './settings/LimitsDialog'
@@ -66,6 +69,13 @@ function App(): React.JSX.Element {
   const projects = useProjects()
   const [projectsOpen, setProjectsOpen] = useState(false)
   const chatProject = projectOf(projects.status, chat.project)
+  // The audit log of tool calls (D-041): kept by main; the Tools page shows it, and asks for the export and the deletion.
+  const audit = useAudit()
+  const [toolsOpen, setToolsOpen] = useState(false)
+  const { reload: reloadAudit } = audit
+  // Which tools are on and the caps (D-041, 11.4): kept by main, which reads them at every reply; the Tools page changes them, and the Stop button reads them.
+  const toolSettings = useToolSettings()
+  const { reload: reloadToolSettings } = toolSettings
   // A message carries at most ten files, and a chat (whose files are sent again with every message) at most fifty.
   const attachFull =
     attachments.files.length >= ATTACHMENT_LIMITS.perMessage ||
@@ -121,6 +131,7 @@ function App(): React.JSX.Element {
         attachments={attachments}
         onRemember={onRemember}
         projectFiles={chatProject?.files ?? NO_FILES}
+        toolsOn={anyToolOn(toolSettings.status)}
       />
       {/* New chat, History and Instructions live under the message box, not in the header, so the header stays one row (D-029). */}
       <ChatBar
@@ -134,6 +145,11 @@ function App(): React.JSX.Element {
         onOpenProjects={() => {
           projects.reload()
           setProjectsOpen(true)
+        }}
+        onOpenTools={() => {
+          reloadAudit()
+          reloadToolSettings()
+          setToolsOpen(true)
         }}
         saveFailed={history.saveError !== null}
         onNewChat={() => history.startNew()}
@@ -167,6 +183,12 @@ function App(): React.JSX.Element {
         onChatProject={chat.setProject}
         onNewChatIn={(id) => history.startNew(id)}
         onClose={() => setProjectsOpen(false)}
+      />
+      <ToolsDialog
+        open={toolsOpen}
+        audit={audit}
+        settings={toolSettings}
+        onClose={() => setToolsOpen(false)}
       />
       <MemoryDialog
         open={memoryOpen}

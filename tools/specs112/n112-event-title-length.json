@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-title-length",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "  if (Array.from(title).length > TOOL_RESULT_LIMITS.maxTitleChars) return null\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n112-conform-damaged",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "        if ('bad' in d || d.form === wanted) return raw // a damaged line is kept as it is",
+      "to": "        if (d.form === wanted) return raw"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

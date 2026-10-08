@@ -1,0 +1,14 @@
+{
+  "label": "n111-registry-no-freeze",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "  return Object.freeze(value)",
+      "to": "  return value"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

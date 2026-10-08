@@ -1,0 +1,14 @@
+{
+  "label": "n111-budget-time",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyBudget.ts",
+      "from": "if (workingMs() >= limitMs) return 'time-cap'",
+      "to": "void 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

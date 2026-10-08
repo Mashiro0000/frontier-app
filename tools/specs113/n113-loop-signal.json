@@ -1,0 +1,14 @@
+{
+  "label": "n113-loop-signal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "            signal: controller.signal,\n            settings: await toolsContext.settings(),",
+      "to": "            signal: new AbortController().signal,\n            settings: await toolsContext.settings(),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

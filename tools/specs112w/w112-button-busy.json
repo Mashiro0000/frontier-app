@@ -1,0 +1,18 @@
+{
+  "label": "w112-button-busy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ChatBar.tsx",
+      "from": "        className=\"chat-button chat-tools\"\n        disabled={isReplying}",
+      "to": "        className=\"chat-button chat-tools\"\n        disabled={false}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run112.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

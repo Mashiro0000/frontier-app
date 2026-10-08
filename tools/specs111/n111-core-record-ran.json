@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-record-ran",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "    if (!(await keep({ type: 'ran', at: now(), call, tool, step }))) {",
+      "to": "    if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

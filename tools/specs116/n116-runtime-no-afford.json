@@ -1,0 +1,14 @@
+{
+  "label": "n116-runtime-no-afford",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "                ...(input.affordable === undefined ? {} : { affordable: input.affordable })\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-6.mjs"
+  ],
+  "env": {}
+}

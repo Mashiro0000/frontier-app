@@ -1,0 +1,14 @@
+{
+  "label": "n113-reply-snapshot",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "        settings: () => current,",
+      "to": "        settings: () => input.settings,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

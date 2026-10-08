@@ -1,0 +1,14 @@
+{
+  "label": "n114-sources-unbounded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "if (!Array.isArray(raw) || raw.length > TOOL_RESULT_LIMITS.maxSources) return null",
+      "to": "if (!Array.isArray(raw)) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

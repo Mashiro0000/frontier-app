@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "output: estimateOutputTokens(arrivedBytes)",
+      "from": "output: estimateOutputTokens(arrived)",
       "to": "output: 0"
     }
   ],

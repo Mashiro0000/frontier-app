@@ -1,0 +1,18 @@
+{
+  "label": "w112-not-sealed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      auditLog.document,\n      toolSettings.file",
+      "to": "      toolSettings.file"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run112.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

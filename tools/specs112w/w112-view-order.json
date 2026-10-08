@@ -1,0 +1,18 @@
+{
+  "label": "w112-view-order",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditService.ts",
+      "from": "calls: calls.slice(-AUDIT_VIEW_CALLS).reverse(),",
+      "to": "calls: calls.slice(0, AUDIT_VIEW_CALLS),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run112.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

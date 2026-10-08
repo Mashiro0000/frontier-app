@@ -1,0 +1,14 @@
+{
+  "label": "n114-old-files-notes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "toolsAllowed: boolean = source === 'page'",
+      "to": "toolsAllowed: boolean = true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

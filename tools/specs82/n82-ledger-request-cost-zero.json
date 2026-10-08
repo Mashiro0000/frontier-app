@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/usageLedger.ts",
-      "from": "request: costOf({ ...NO_TOKENS, input: input.inputTokens }, input.prices)",
+      "from": "request:\n              costOf({ ...NO_TOKENS, input: input.inputTokens }, input.prices) +\n              (input.reserveUsd ?? 0)",
       "to": "request: 0"
     }
   ],

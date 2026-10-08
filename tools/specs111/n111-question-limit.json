@@ -1,0 +1,14 @@
+{
+  "label": "n111-question-limit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolQuestion.ts",
+      "from": "export const SHOWN_LIMIT = 2000",
+      "to": "export const SHOWN_LIMIT = 20000"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

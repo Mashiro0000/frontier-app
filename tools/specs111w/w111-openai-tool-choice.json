@@ -1,0 +1,18 @@
+{
+  "label": "w111-openai-tool-choice",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "      store: false,\n",
+      "to": "      store: false,\n      tool_choice: 'none',\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run111.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

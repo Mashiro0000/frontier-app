@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-no-runner",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "    if (executor === undefined) return refused('no-runner', NO_RUNNER, step)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

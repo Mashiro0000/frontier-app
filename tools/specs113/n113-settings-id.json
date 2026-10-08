@@ -1,0 +1,14 @@
+{
+  "label": "n113-settings-id",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettings.ts",
+      "from": "const TOOL_ID = /^[a-z][a-z0-9_]{1,31}$/",
+      "to": "const TOOL_ID = /^.+$/"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

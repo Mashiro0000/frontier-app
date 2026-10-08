@@ -14,6 +14,8 @@ interface ComposerProps {
   blocked?: string | null
   /** Files pasted into the box (an image copied to the clipboard): they are attached, not typed. */
   onPasteFiles?: (files: File[]) => void
+  /** The button that ends a reply says "Stop everything" when a tool is switched on (D-041, 11.4): it also stops a tool that is running and closes a question. */
+  stopEverything?: boolean
 }
 
 function Composer({
@@ -24,7 +26,8 @@ function Composer({
   attachments,
   hasFiles = false,
   blocked = null,
-  onPasteFiles
+  onPasteFiles,
+  stopEverything = false
 }: ComposerProps): React.JSX.Element {
   const [text, setText] = useState('')
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -92,12 +95,17 @@ function Composer({
             key="stop"
             type="button"
             className="composer-button composer-button-stop"
+            title={
+              stopEverything
+                ? 'Ends the reply, stops a tool that is running and closes a question that is waiting.'
+                : undefined
+            }
             onClick={() => {
               onStop()
               inputRef.current?.focus()
             }}
           >
-            Stop
+            {stopEverything ? 'Stop everything' : 'Stop'}
           </button>
         ) : (
           <button

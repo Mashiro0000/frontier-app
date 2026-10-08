@@ -14,6 +14,36 @@ export interface NeutralMessage {
   /** May be '' only on a message of the person's that carries files. */
   content: string
   attachments?: NeutralAttachment[]
+  /**
+   * (11.3, D-041) An assistant turn in which the model asked for tools: the calls it made, and the provider's own record of the whole turn (thinking and
+   * all), which is sent back exactly as it came because the provider will not take the tool results without it. Opaque to everything but the adapter that
+   * made it.
+   */
+  toolTurn?: { calls: NeutralToolCall[]; record: unknown }
+  /** (11.3) A turn of the person's side that carries what came of the calls of the turn before it. */
+  toolResults?: NeutralToolResult[]
+}
+
+/** A tool the model is offered (11.3, D-041): its name, what it does and the JSON schema of its arguments. No provider's field names. */
+export interface ToolSpec {
+  name: string
+  description: string
+  /** A JSON schema of type "object". */
+  parameters: Record<string, unknown>
+}
+
+/** One call the model made: the provider's id for it, the tool's name and its arguments as the model wrote them (parsed, not yet checked by anyone). */
+export interface NeutralToolCall {
+  id: string
+  name: string
+  input: unknown
+}
+
+/** What came of one call, as the model is told: text, and whether it is an error (a refusal, a no, a failure). */
+export interface NeutralToolResult {
+  callId: string
+  text: string
+  isError: boolean
 }
 
 /**
@@ -58,6 +88,11 @@ export interface StreamRequest {
   messages: NeutralMessage[]
   /** The longest reply to ask for. For models that think first, the thinking counts against it. */
   maxOutputTokens: number
+  /**
+   * The tools the model is offered (11.3). Absent, or empty, for a request that offers none: the request is then exactly what it was before tools existed
+   * (checked byte for byte). When there are some, at most one call is asked for at a time.
+   */
+  tools?: readonly ToolSpec[]
   /** Aborting cancels the network request. The stream then throws, and that is a Stop, not a failure. */
   signal: AbortSignal
 }
@@ -70,6 +105,8 @@ export type ReplyEnd =
   /** The model declined to answer (a safety decision). `category` is the reason class, if one was given. */
   | { kind: 'declined'; category: string | null }
   | { kind: 'context-full' }
+  /** (11.3) The model stopped to use a tool: its calls are on the `end` event. */
+  | { kind: 'tool-use' }
 
 /**
  * What a reply used, in four buckets that never overlap: every token is counted in exactly one of them, so they can
@@ -89,8 +126,11 @@ export interface Usage {
 
 export type StreamEvent =
   | { type: 'text'; text: string }
-  /** The last event of a reply that did not fail. Exactly one. */
-  | { type: 'end'; end: ReplyEnd; usage: Usage }
+  /**
+   * The last event of a reply that did not fail. Exactly one. For `end.kind === 'tool-use'`, `calls` are what the model asked for (at least one) and
+   * `record` the provider's own record of the turn, to be handed back in a `NeutralMessage.toolTurn`.
+   */
+  | { type: 'end'; end: ReplyEnd; usage: Usage; calls?: NeutralToolCall[]; record?: unknown }
 
 /** What a provider says about one model it offers. */
 export interface ProviderModel {
@@ -128,6 +168,36 @@ export interface NormalizedError {
   message: string
 }
 
+/**
+ * One web search by the provider's own hosted tool (11.3, D-041): a separate small request, made only after the person said yes to these words. The
+ * provider's model runs the search and writes what it found; everything that comes back is text from outside and is never trusted.
+ */
+export interface SearchRequest {
+  credentials: Credentials
+  model: ModelEntry
+  effort: Effort | null
+  /** The words the person approved. */
+  query: string
+  maxOutputTokens: number
+  /** Aborting cancels the network request; the search then throws, and that is a Stop, not a failure. */
+  signal: AbortSignal
+}
+
+export interface SearchResult {
+  /** What the provider wrote about what it found (text from outside). */
+  text: string
+  /** The pages it consulted or cited: title (the address when it gave none) and address, each address once. */
+  sources: { title: string; url: string }[]
+  /** The words the provider says it actually searched, if it said (they can differ from the approved words); null otherwise. */
+  searched: string | null
+  /** How many searches the provider ran, and bills. */
+  searches: number
+  /** What the request(s) used. */
+  usage: Usage
+  /** How it ended: finished; cut off at the length limit; declined; or still going when the app stopped asking (a provider that kept pausing the turn). */
+  end: 'done' | 'cut-off' | 'declined' | 'unfinished'
+}
+
 /** One provider, as the rest of the app sees it. There is one adapter per entry of SUPPORTED_PROVIDERS. */
 export interface ProviderAdapter {
   readonly provider: ProviderId
@@ -142,6 +212,11 @@ export interface ProviderAdapter {
    * makes it throw too.
    */
   stream(request: StreamRequest): AsyncGenerator<StreamEvent>
+  /**
+   * One web search with the provider's hosted tool (11.3). Throws if the request fails, at any point: pass the error to `normalizeError`. Never called
+   * for anything the person has not allowed.
+   */
+  search(request: SearchRequest): Promise<SearchResult>
   /** The provider's own usage report as the four neutral buckets. Never throws: a report it cannot read counts as nothing. */
   usage(report: unknown): Usage
   /** What went wrong, from anything a call to this provider can throw. `modelId` names the model for the errors that need to. */

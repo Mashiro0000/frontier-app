@@ -1,0 +1,14 @@
+{
+  "label": "n112-file-plain-when-sealed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "    if (mode.form === 'encrypted') {\n      if (box === undefined",
+      "to": "    if (false) {\n      if (box === undefined"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

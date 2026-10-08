@@ -1,0 +1,14 @@
+{
+  "label": "n114-v6-without-notes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "  if (file.version === 6 && !messages.messages.some((message) => message.tools !== undefined)) {",
+      "to": "  if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

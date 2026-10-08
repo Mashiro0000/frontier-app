@@ -1,0 +1,14 @@
+{
+  "label": "n112-service-export-empty",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditService.ts",
+      "from": "    if (calls.length === 0) {\n      return { ok: false, error:",
+      "to": "    if (false) {\n      return { ok: false, error:"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

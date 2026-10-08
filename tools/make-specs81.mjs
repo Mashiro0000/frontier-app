@@ -59,17 +59,17 @@ const win = {
   'w81-settings-shows-old-sums': [[R + 'src/renderer/src/settings/UsageSection.tsx', '    if (open) {\n      setSummary(null)\n      setError(null)\n    }\n', '']],
   'w81-guess-not-marked': [[CHAT, "estimate: state !== 'rejected' && report === null", 'estimate: false']],
   // the text that arrived is not counted in a guess; the system prompt is not counted in the input guess
-  'w81-guess-output-zero': [[CHAT, 'output: estimateOutputTokens(arrivedBytes)', 'output: 0']],
+  'w81-guess-output-zero': [[CHAT, 'output: estimateOutputTokens(arrived)', 'output: 0']],
   // (9.4, D-037: the guess adds the files' tokens, and the line is wrapped; the sabotage still leaves the system prompt out)
-  'w81-guess-input-without-system-prompt': [[CHAT, 'estimateInputTokens(streamRequest.system, streamRequest.messages) + fileTokens', "estimateInputTokens('', streamRequest.messages) + fileTokens"]],
+  'w81-guess-input-without-system-prompt': [[CHAT, 'estimateInputTokens(streamRequest.system, streamRequest.messages) +\n      fileTokens +', "estimateInputTokens('', streamRequest.messages) +\n      fileTokens +"]],
   // a stopped reply is not counted as stopped (the safety net in `finally` settles it as failed instead)
   'w81-stopped-not-settled': [[CHAT, "      await settle('stopped', null)\n      return", '      return']],
   // the page is not told what the reply cost
-  'w81-usage-event-not-sent': [[CHAT, "      send({ streamId, type: 'usage', usage: replyUsageOf(record) })", '      void record']],
+  'w81-usage-event-not-sent': [[CHAT, "send({ streamId, type: 'usage', usage: replyUsageOfAll(owed) })", 'void owed']],
   // the request goes out even when it cannot be recorded
-  'w81-sent-although-not-recorded': [[CHAT, "          'Nothing was sent: what this request would use could not be recorded on this computer.'\n      })\n      return\n    }", "          'Nothing was sent: what this request would use could not be recorded on this computer.'\n      })\n    }"]],
+  'w81-sent-although-not-recorded': [[CHAT, "            'Nothing was sent: what this request would use could not be recorded on this computer.'\n        })\n        return false\n      }", "            'Nothing was sent: what this request would use could not be recorded on this computer.'\n        })\n      }"]],
   // the chat is not named in the ledger: main drops it, the page does not tell it
-  'w81-chat-id-dropped-by-main': [[CHAT, 'chat: request.conversationId ?? null,', 'chat: null,']],
+  'w81-chat-id-dropped-by-main': [[CHAT, 'chat: request.conversationId ?? null,\n            provider: entry.provider,', 'chat: null,\n            provider: entry.provider,']],
   'w81-chat-id-not-sent-by-page': [[REPLY, '...(conversationId === null ? {} : { conversationId })', '']],
   'w81-history-does-not-tell-chat-its-id': [[HISTORY, '  useEffect(() => setConversationId(activeId), [activeId, setConversationId])\n', '']],
   // the summary hands the page's own id to the ledger

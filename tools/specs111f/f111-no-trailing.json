@@ -1,0 +1,15 @@
+{
+  "label": "f111-no-trailing",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "      name = name.replace(/[. ]+$/, '') // Windows ignores trailing dots and spaces",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

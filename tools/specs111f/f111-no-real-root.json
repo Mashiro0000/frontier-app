@@ -1,0 +1,15 @@
+{
+  "label": "f111-no-real-root",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "          roots.push(partsOf(plain(await fs.realpath(folder)), platform)) // the data folder may itself be reached through a link",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

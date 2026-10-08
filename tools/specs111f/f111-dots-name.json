@@ -1,0 +1,15 @@
+{
+  "label": "f111-dots-name",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "      if (/^[. ]+$/.test(name)) return no('a name made of dots or spaces')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

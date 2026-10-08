@@ -1,0 +1,14 @@
+{
+  "label": "n112-service-delete-no",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditService.ts",
+      "from": "    if (answer !== 'yes') return { ok: false, cancelled: true, error: 'Nothing was deleted.' }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

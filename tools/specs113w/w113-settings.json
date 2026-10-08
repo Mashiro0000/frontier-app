@@ -1,0 +1,18 @@
+{
+  "label": "w113-settings",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "            settings: await toolsContext.settings(),",
+      "to": "            settings: { enabled: {}, caps: { steps: 5, seconds: 60 } },"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run113.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 900000
+}

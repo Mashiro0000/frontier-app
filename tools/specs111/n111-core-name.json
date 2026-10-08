@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-name",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "typeof name === 'string' && /^[a-z][a-z0-9_]{1,31}$/.test(name) ? name : '(unknown)'",
+      "to": "String(name)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

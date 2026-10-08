@@ -1,6 +1,8 @@
 import type { RequestEstimate } from '../../../shared/askFirst'
 import type { AttachedFile } from '../../../shared/attachments'
 import type { ProviderId } from '../../../shared/registry'
+import type { ToolEvent } from '../../../shared/tools'
+import type { ReplyToolNote } from '../../../shared/toolNotes'
 import type { ReplyUsage } from '../../../shared/usage'
 
 export type ChatRole = 'user' | 'assistant'
@@ -36,6 +38,12 @@ export interface ChatMessage {
    * the message as their descriptions; the copies are main's. Absent when there are none.
    */
   files?: AttachedFile[]
+  /**
+   * The tool calls of a reply (D-041, 11.4): what the model asked for, what the person answered and how each call ended, each standing at the place in the
+   * reply's text where it happened. Built from the events main sends as they arrive (the same function the audit log is read with), and saved with the chat.
+   * Absent when the reply used no tool.
+   */
+  tools?: ReplyToolNote[]
 }
 
 /** Which model is answering, as the main process reports it when a reply begins. */
@@ -77,5 +85,7 @@ export type ReplyFn = (
    */
   onLargeRequest: (request: LargeRequest) => Promise<boolean>,
   /** The project the chat belongs to (D-039, 10.6), or null: main adds that project's instructions, notes and files itself. */
-  projectId?: string | null
+  projectId?: string | null,
+  /** Called for every event of a tool call of this reply (D-041, 11.4), in order, as main reports them. */
+  onTool?: (event: ToolEvent) => void
 ) => AsyncIterable<string>

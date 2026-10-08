@@ -4,11 +4,14 @@
 
 import type { AskFirstChoice, AskFirstSetting, RequestEstimate } from './askFirst'
 import type { AttachedFile, AttachmentInfo } from './attachments'
+import type { AuditDeleteResult, AuditExportResult, AuditView } from './audit'
+import type { ReplyToolNote } from './toolNotes'
 import type { Limits, LimitsChoice } from './limits'
 import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from './memory'
 import type { ProjectChangeResult, ProjectsStatus } from './projects'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
+import type { ToolCaps, ToolChangeResult, ToolEvent, ToolsStatus } from './tools'
 import type { ReplyUsage, UsageSummary } from './usage'
 
 /**
@@ -191,6 +194,11 @@ export type ChatStreamEvent =
       askAboveUsd: number
     }
   | { streamId: string; type: 'text'; text: string }
+  /**
+   * (11.3, D-041) Something happened to a tool call of this reply: the very events the audit log keeps, in order, sent after they were kept. The window
+   * shows the tool activity from them (11.4).
+   */
+  | { streamId: string; type: 'tool'; event: ToolEvent }
   /** What the reply used and cost (D-030). Sent just before 'done' or 'error', and only when something is owed. */
   | { streamId: string; type: 'usage'; usage: ReplyUsage }
   | { streamId: string; type: 'done' }
@@ -214,6 +222,8 @@ export interface SavedMessage {
   model?: string | null
   /** The files on a message of the person's (D-037): what each was when it was attached. Only in a file of version 4; absent when there are none. */
   attachments?: AttachmentInfo[]
+  /** The tool calls of a reply (D-041, 11.4): what was asked, what the person answered, the sources that came back. Only in a file of version 6; absent when there are none. */
+  tools?: ReplyToolNote[]
 }
 
 /** A message as the page hands it over to be saved. Main turns 'streaming' into 'stopped'. */
@@ -227,6 +237,8 @@ export interface MessageToSave {
   model?: string | null
   /** The files on a message of the person's (D-037). Checked again by main, field by field. */
   attachments?: AttachmentInfo[]
+  /** The tool calls of a reply (11.4). Checked again by main, field by field; the file is then version 6. */
+  tools?: ReplyToolNote[]
 }
 
 /**
@@ -573,6 +585,28 @@ export interface FrontierApi {
    * are kept only after the person's yes in the system's own message box (the files come through the system's open dialog: the page sends no path);
    * making, renaming, taking a file off and deleting ask nothing there. A project's name is never sent to the model.
    */
+  /**
+   * The audit log of tool calls (Stage 11, D-041): what the model asked tools to do, what the person answered and how each call ended, kept by main in
+   * audit/log.jsonl. The page can read it, export it and ask for it to be deleted, and nothing else: it cannot add a line, change one or take one out. The
+   * export goes where the person places it in the system's save dialog; deleting it is asked about in the system's own message box, which the page cannot answer.
+   */
+  audit: {
+    read(): Promise<AuditView>
+    exportAll(): Promise<AuditExportResult>
+    deleteAll(): Promise<AuditDeleteResult>
+  }
+  /**
+   * The tools (Stage 11.4, D-041): which are switched on and the caps on one reply, kept by main in tools.json. The page can read them and ask for a change;
+   * a change that lets the app do more (a tool on, a higher cap) is made only after the person's yes in the system's own message box, which the page cannot
+   * answer, and a change that does less (a tool off, lower caps) is made at once. The page has no way to run a tool, to approve a call or to answer a question.
+   */
+  tools: {
+    status(): Promise<ToolsStatus>
+    setEnabled(tool: string, on: boolean): Promise<ToolChangeResult>
+    setCaps(caps: ToolCaps): Promise<ToolChangeResult>
+    /** When the settings file could not be read: start again with every tool off and the caps at their defaults (the file is kept as a copy beside it). */
+    reset(): Promise<ToolChangeResult>
+  }
   projects: {
     status(): Promise<ProjectsStatus>
     create(name: string): Promise<ProjectChangeResult>
@@ -632,7 +666,14 @@ export const CHANNELS = {
   projectsAddFiles: 'projects:add-files',
   projectsRemoveFile: 'projects:remove-file',
   projectsRemove: 'projects:remove',
-  projectsRemoveAll: 'projects:remove-all'
+  projectsRemoveAll: 'projects:remove-all',
+  auditRead: 'audit:read',
+  auditExport: 'audit:export',
+  auditDeleteAll: 'audit:delete-all',
+  toolsStatus: 'tools:status',
+  toolsSetEnabled: 'tools:set-enabled',
+  toolsSetCaps: 'tools:set-caps',
+  toolsReset: 'tools:reset'
 } as const
 
 /**

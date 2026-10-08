@@ -1,0 +1,14 @@
+{
+  "label": "n112-event-size",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "isCount(size, TOOL_RESULT_LIMITS.maxChars + 200)",
+      "to": "isCount(size, Infinity)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

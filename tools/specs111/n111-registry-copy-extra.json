@@ -1,0 +1,14 @@
+{
+  "label": "n111-registry-copy-extra",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "  return deepFreeze({\n    id,",
+      "to": "  return deepFreeze({\n    ...def,\n    id,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

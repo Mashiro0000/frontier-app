@@ -1,0 +1,14 @@
+{
+  "label": "n112-mend-always",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "    if (!current.startsWith(body)) {",
+      "to": "    if (true) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

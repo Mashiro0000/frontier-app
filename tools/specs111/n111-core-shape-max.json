@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-shape-max",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "sources.slice(0, MAX_SOURCES)",
+      "to": "sources"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

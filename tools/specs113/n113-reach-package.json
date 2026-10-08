@@ -1,0 +1,14 @@
+{
+  "label": "n113-reach-package",
+  "edits": [
+    {
+      "file": "{{REPO}}/package.json",
+      "from": "\"openai\": \"^7.25.0\"",
+      "to": "\"openai\": \"^7.25.0\",\n    \"left-pad\": \"1.3.0\""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

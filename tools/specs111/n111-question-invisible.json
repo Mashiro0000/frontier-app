@@ -1,0 +1,14 @@
+{
+  "label": "n111-question-invisible",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolQuestion.ts",
+      "from": "else if (INVISIBLE.test(char))",
+      "to": "else if (false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

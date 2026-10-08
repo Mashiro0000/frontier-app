@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-guard-skip",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      if (spec.kind !== 'path') continue",
+      "to": "      continue"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n111-schema-why",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "required: [...Object.keys(def.args), 'why'],",
+      "to": "required: [...Object.keys(def.args)],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,15 @@
+{
+  "label": "f111-illegal-chars",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "    if (/[<>:\"|?*]/.test(rest)) return no('characters that are not allowed in a name, or a stream')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

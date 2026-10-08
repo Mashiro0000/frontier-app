@@ -1,0 +1,14 @@
+{
+  "label": "n111-budget-pause-off",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyBudget.ts",
+      "from": "      if (pauses === 0) pausedAt = now()\n      pauses++",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

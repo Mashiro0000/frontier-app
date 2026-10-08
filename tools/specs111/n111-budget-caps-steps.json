@@ -1,0 +1,14 @@
+{
+  "label": "n111-budget-caps-steps",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyBudget.ts",
+      "from": "steps: inRange(caps.steps, steps.min, steps.max) ? caps.steps : TOOL_CAPS_DEFAULT.steps,",
+      "to": "steps: caps.steps as number,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

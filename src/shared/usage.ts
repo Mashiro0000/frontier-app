@@ -40,6 +40,23 @@ export const NO_TOKENS: Readonly<TokenCounts> = Object.freeze({
 export const LEDGER_STATES = ['sent', 'done', 'stopped', 'failed', 'rejected'] as const
 export type LedgerState = (typeof LEDGER_STATES)[number]
 
+/**
+ * What a provider bills for ONE hosted web search, in US dollars, on top of the tokens the search puts in the request (D-041, 11.6). Anthropic: $10 per 1,000
+ * searches (a search that fails is not billed); OpenAI: $10 per 1,000 calls of its `web_search` tool, whatever the model. Read from the providers' own pricing
+ * pages on 8 October 2026 (11.1). It lives here and not in the registry because the registry's shape is strict and would change every fixture; a change of
+ * price is a change of this one line, and a record keeps the price it was counted at.
+ */
+export const SEARCH_FEE_USD: Readonly<Record<ProviderId, number>> = Object.freeze({
+  anthropic: 0.01,
+  openai: 0.01
+})
+
+/** The searches a request was billed for, and the fee each was counted at. */
+export interface SearchFee {
+  count: number
+  usdEach: number
+}
+
 /** One line of the ledger: one request to a provider, with the prices it was counted at (they may change in the registry later). */
 export interface LedgerRecord {
   version: 1
@@ -59,6 +76,8 @@ export interface LedgerRecord {
   tokens: TokenCounts
   /** The prices (US dollars per million tokens) the cost was worked out with. */
   prices: ModelPricing
+  /** The hosted searches the provider billed for this request (11.6); absent for a request that had none. */
+  search?: SearchFee
 }
 
 /** What a reply used and cost, as the page is told when the reply ends (and the ledger has the same). */
@@ -105,7 +124,9 @@ export function costOf(tokens: TokenCounts, prices: ModelPricing): number {
   )
 }
 
-export const costOfRecord = (record: LedgerRecord): number => costOf(record.tokens, record.prices)
+export const costOfRecord = (record: LedgerRecord): number =>
+  costOf(record.tokens, record.prices) +
+  (record.search === undefined ? 0 : record.search.count * record.search.usdEach)
 
 export const tokensAreEmpty = (tokens: TokenCounts): boolean =>
   tokens.input === 0 && tokens.cacheRead === 0 && tokens.cacheWrite === 0 && tokens.output === 0
@@ -195,7 +216,7 @@ const isFields = (value: unknown): value is Record<string, unknown> =>
  */
 export function parseLedgerRecord(raw: unknown): LedgerRecord | null {
   if (!isFields(raw) || raw.version !== 1) return null
-  const { id, at, chat, provider, model, effort, state, estimate, tokens, prices } = raw
+  const { id, at, chat, provider, model, effort, state, estimate, tokens, prices, search } = raw
   if (!isConversationId(id)) return null // the one spelling of a uuid the app makes (the same shape as a conversation id)
   if (typeof at !== 'number' || !Number.isSafeInteger(at) || at < 0) return null
   if (chat !== null && !isConversationId(chat)) return null
@@ -223,6 +244,20 @@ export function parseLedgerRecord(raw: unknown): LedgerRecord | null {
   ) {
     return null
   }
+  // The searches (11.6): absent, or exactly a whole count and a fee; anything else makes the line unusable, as for the prices.
+  let fee: SearchFee | undefined
+  if (search !== undefined) {
+    if (
+      !isFields(search) ||
+      !isCount(search.count) ||
+      (search.count as number) > 20 ||
+      !isPrice(search.usdEach) ||
+      (search.usdEach as number) > 10
+    ) {
+      return null
+    }
+    fee = { count: search.count as number, usdEach: search.usdEach as number }
+  }
   return {
     version: 1,
     id,
@@ -244,7 +279,8 @@ export function parseLedgerRecord(raw: unknown): LedgerRecord | null {
       cacheReadPerMTok: prices.cacheReadPerMTok,
       cacheWritePerMTok: prices.cacheWritePerMTok,
       outputPerMTok: prices.outputPerMTok
-    }
+    },
+    ...(fee === undefined ? {} : { search: fee })
   }
 }
 

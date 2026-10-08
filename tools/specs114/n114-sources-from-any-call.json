@@ -1,0 +1,14 @@
+{
+  "label": "n114-sources-from-any-call",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "    if (note.outcome.kind !== 'done') continue\n",
+      "to": "    if (note.outcome.kind === 'refused') continue\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-4.mjs"
+  ],
+  "env": {}
+}

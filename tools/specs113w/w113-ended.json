@@ -1,0 +1,18 @@
+{
+  "label": "w113-ended",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "            ended = endOf(outcome)",
+      "to": "            void endOf"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run113.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 900000
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n111-args-proto",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "if (proto !== Object.prototype && proto !== null)",
+      "to": "if (false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

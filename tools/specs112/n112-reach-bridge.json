@@ -1,0 +1,14 @@
+{
+  "label": "n112-reach-bridge",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/preload/index.ts",
+      "from": "    deleteAll: () => ipcRenderer.invoke(CHANNELS.auditDeleteAll)",
+      "to": "    deleteAll: () => ipcRenderer.invoke(CHANNELS.auditDeleteAll),\n    append: (event: unknown) => ipcRenderer.invoke('audit:append', event)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

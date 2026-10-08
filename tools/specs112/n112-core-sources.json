@@ -1,0 +1,14 @@
+{
+  "label": "n112-core-sources",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "        sources: result.sources.map(({ title, url }) => ({ title, url }))",
+      "to": "        sources: []"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

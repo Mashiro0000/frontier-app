@@ -1,0 +1,14 @@
+{
+  "label": "n111-question-no-label",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolQuestion.ts",
+      "from": "no: \"Don't allow\"",
+      "to": "no: 'Allow every time'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

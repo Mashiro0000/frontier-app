@@ -1,0 +1,18 @@
+{
+  "label": "w112-sources-as-links",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/ToolsDialog.tsx",
+      "from": "<span className=\"tools-source-url\">{source.url}</span>",
+      "to": "<a className=\"tools-source-url\" href={source.url}>{source.url}</a>"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run112.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

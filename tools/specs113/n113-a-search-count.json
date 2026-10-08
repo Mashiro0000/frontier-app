@@ -1,0 +1,14 @@
+{
+  "label": "n113-a-search-count",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "    searches += tokenCount(message.usage.server_tool_use?.web_search_requests)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

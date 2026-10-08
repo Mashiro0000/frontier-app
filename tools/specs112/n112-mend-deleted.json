@@ -1,0 +1,14 @@
+{
+  "label": "n112-mend-deleted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "    if (current === null || body === null) {",
+      "to": "    if (body === null) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-2.mjs"
+  ],
+  "env": {}
+}

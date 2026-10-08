@@ -1,0 +1,18 @@
+{
+  "label": "w114-ipc-owner-null",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "toolsService.setEnabled(window, input)",
+      "to": "toolsService.setEnabled(null, input)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run114.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

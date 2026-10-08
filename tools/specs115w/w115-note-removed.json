@@ -1,0 +1,18 @@
+{
+  "label": "w115-note-removed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/Sources.tsx",
+      "from": "      <p className=\"sources-note\">\n        Pages from the web: other people wrote them, and the app has not checked them.\n      </p>\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run115.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

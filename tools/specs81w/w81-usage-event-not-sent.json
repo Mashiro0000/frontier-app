@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "      send({ streamId, type: 'usage', usage: replyUsageOf(record) })",
-      "to": "      void record"
+      "from": "send({ streamId, type: 'usage', usage: replyUsageOfAll(owed) })",
+      "to": "void owed"
     }
   ],
   "argv": [

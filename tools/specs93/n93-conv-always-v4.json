@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",
-      "from": "      ? 4\n      : 3",
-      "to": "      ? 4\n      : 4"
+      "from": "        ? 4\n        : 3",
+      "to": "        ? 4\n        : 4"
     }
   ],
   "argv": [

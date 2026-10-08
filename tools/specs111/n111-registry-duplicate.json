@@ -1,0 +1,14 @@
+{
+  "label": "n111-registry-duplicate",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "if (byId.has(def.id)) throw",
+      "to": "if (false) throw"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

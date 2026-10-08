@@ -1,0 +1,14 @@
+{
+  "label": "n113-o-no-reasoning",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "    case 'reasoning':\n      return {",
+      "to": "    case 'reasoning':\n      return null\n      return {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-3.mjs"
+  ],
+  "env": {}
+}

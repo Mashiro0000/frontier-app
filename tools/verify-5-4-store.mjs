@@ -91,7 +91,7 @@ for (const [name, value] of [['empty', ''], ['65 characters', 'a'.repeat(65)], [
   // Since 9.3 (D-037) version 4 is a chat with files: one without any is refused for that, with its own reason; version 5 is a chat in a project since 10.5 (D-039); version 6 is a later build's.
   const v4NoFiles = { version: 4, id, title: 't', createdAt: 1, updatedAt: 2, instructions: '', messages: [u(), a()] }
   check('parseSavedFile: a version 4 file with no files in it is refused, with its own reason', parseSavedFile(v4NoFiles, id) === 'it says it holds files and holds none', String(parseSavedFile(v4NoFiles, id)))
-  for (const version of [0, 6, 7, 9, '1', '2', '3', '4', '5', null, undefined, 1.5]) {
+  for (const version of [0, 7, 8, 9, '1', '2', '3', '4', '5', null, undefined, 1.5]) {
     check(`parseSavedFile: version ${JSON.stringify(version)} was made by another version and is refused`, parseSavedFile(text(version, [u(), a()]), id) === 'it was made by another version of the app')
   }
   check('parseSavedFile: the id inside must still match the name', typeof parseSavedFile(text(2, [u(), a()]), randomUUID()) === 'string')
