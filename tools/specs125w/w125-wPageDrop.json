@@ -1,0 +1,18 @@
+{
+  "label": "w125-wPageDrop",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "    if (!dropping) { dropping = true;",
+      "to": "    if (false) { dropping = true;"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run125.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

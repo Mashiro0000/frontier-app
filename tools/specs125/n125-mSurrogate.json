@@ -1,0 +1,15 @@
+{
+  "label": "n125-mSurrogate",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewModel.ts",
+      "from": "\\p{Cn}\\p{Cs}]",
+      "to": "\\p{Cn}]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

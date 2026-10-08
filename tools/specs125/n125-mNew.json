@@ -1,0 +1,15 @@
+{
+  "label": "n125-mNew",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewModel.ts",
+      "from": "  const diff = unifiedLines(name, proposal.kind === 'create' ? null : name, {",
+      "to": "  const diff = unifiedLines(name, name, {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

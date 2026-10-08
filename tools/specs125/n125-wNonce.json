@@ -1,0 +1,15 @@
+{
+  "label": "n125-wNonce",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "    const nonce = randomBytes(18).toString('base64url')",
+      "to": "    const nonce = 'aaaaaaaaaaaaaaaaaaaaaaaa'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

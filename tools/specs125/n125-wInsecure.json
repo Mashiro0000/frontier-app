@@ -1,0 +1,15 @@
+{
+  "label": "n125-wInsecure",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "        allowRunningInsecureContent: false,",
+      "to": "        allowRunningInsecureContent: true,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

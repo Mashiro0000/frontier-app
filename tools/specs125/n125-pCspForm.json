@@ -1,0 +1,15 @@
+{
+  "label": "n125-pCspForm",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "    \"form-action 'none'\"\n",
+      "to": "    \"form-action *\"\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

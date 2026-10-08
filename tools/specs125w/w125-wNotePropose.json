@@ -1,0 +1,18 @@
+{
+  "label": "w125-wNotePropose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "      if (tool === 'propose_edit' || tool === 'propose_new_file') {",
+      "to": "      if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run125.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

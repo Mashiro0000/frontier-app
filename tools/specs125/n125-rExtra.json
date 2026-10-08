@@ -1,0 +1,15 @@
+{
+  "label": "n125-rExtra",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/preload/review.ts",
+      "from": "  close: (): Promise<void> => ipcRenderer.invoke(REVIEW_CHANNELS.close),",
+      "to": "  close: (): Promise<void> => ipcRenderer.invoke(REVIEW_CHANNELS.close),\n  raw: (channel: string, ...args: unknown[]): Promise<unknown> => ipcRenderer.invoke(channel, ...args),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

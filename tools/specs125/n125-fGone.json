@@ -1,0 +1,15 @@
+{
+  "label": "n125-fGone",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewService.ts",
+      "from": "      if (verdict.code === 'not-found') return proposal.kind === 'edit' ? 'gone' : 'unavailable'",
+      "to": "      if (verdict.code === 'not-found') return 'unavailable'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -2378,3 +2378,12 @@ body {
   flex-wrap: wrap;
   gap: 8px;
 }
+
+.change-row {
+  flex-wrap: wrap;
+}
+
+.change-warning {
+  color: var(--color-warning-text, #9a6700);
+  font-weight: 600;
+}

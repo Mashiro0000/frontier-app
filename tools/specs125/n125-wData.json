@@ -1,0 +1,15 @@
+{
+  "label": "n125-wData",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "    frame.url.startsWith('data:text/html')",
+      "to": "    true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

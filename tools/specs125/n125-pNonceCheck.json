@@ -1,0 +1,15 @@
+{
+  "label": "n125-pNonceCheck",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "  if (!NONCE_PATTERN.test(nonce)) throw new Error('A nonce of letters, digits, - and _ is needed.')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

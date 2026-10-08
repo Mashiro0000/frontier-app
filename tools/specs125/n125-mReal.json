@@ -1,0 +1,15 @@
+{
+  "label": "n125-mReal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewModel.ts",
+      "from": "    reachedEnd\n  }\n}",
+      "to": "    reachedEnd,\n    real: proposal.real\n  } as ReviewModel\n}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

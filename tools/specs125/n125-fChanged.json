@@ -1,0 +1,15 @@
+{
+  "label": "n125-fChanged",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewService.ts",
+      "from": "    return proposal.baseHash !== null && sha256(bytes) === proposal.baseHash ? 'ok' : 'changed'",
+      "to": "    return 'ok'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

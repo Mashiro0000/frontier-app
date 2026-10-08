@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { outcomeText, type AuditCall } from '../../../shared/audit'
 import SwitchesSection from './SwitchesSection'
+import ChangesSection from './ChangesSection'
 import WorkspaceSection from './WorkspaceSection'
 import type { AuditState } from './useAudit'
 import type { ToolSettingsState } from './useToolSettings'
@@ -142,6 +143,7 @@ function ToolsBody({ audit, settings, onBusy, onClose }: ToolsBodyProps): React.
     <div className="tools-body">
       <SwitchesSection settings={settings} busy={busy} working={working} />
       <WorkspaceSection settings={settings} busy={busy} working={working} />
+      <ChangesSection settings={settings} busy={busy} />
       <section className="tools-section" aria-labelledby="tools-audit-title">
         <h3 id="tools-audit-title" className="tools-section-title">
           Audit log

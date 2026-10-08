@@ -390,7 +390,7 @@ await guard('E', async () => {
   check('E: no file of the proposals writes, deletes, renames, copies or makes a folder, and none has a network, process, shell or Electron call', ['lineDiff.ts', 'proposals.ts', 'proposalTools.ts'].every((f) => !/\.(writeFile|appendFile|rm|rmdir|unlink|rename|mkdir|copyFile|truncate|symlink|link|open|createWriteStream)\(/.test(code(source(f))) && !/electron|child_process|\bfetch\(|https?:\/\/|\bspawn|\bexec\(|require\(/.test(code(source(f)))))
   check('E: proposalTools.ts uses the file system only to read a file (readFile) and nothing else of it', (code(source('proposalTools.ts')).match(/fs\.(\w+)/g) ?? []).every((u) => u === 'fs.readFile') && (code(source('proposalTools.ts')).match(/fs\.\w+/g) ?? []).length >= 1)
   const users = fs.readdirSync(dir).filter((f) => f.endsWith('.ts') && /from '\.\/(proposals|proposalTools|lineDiff)'/.test(source(f))).sort().join()
-  check('E: the proposals are imported by the reply\'s tools, the wiring and each other only', users === 'ipc.ts,proposalTools.ts,proposals.ts,replyTools.ts', users)
+  check('E: the proposals are imported by the reply\'s tools, the wiring and each other only', users === 'ipc.ts,proposalTools.ts,proposals.ts,replyTools.ts,reviewModel.ts,reviewService.ts', users)
   const preload = fs.readFileSync(`${REPO}/src/preload/index.ts`, 'utf8') + fs.readFileSync(`${REPO}/src/shared/ipc.ts`, 'utf8')
   check('E: the page\'s bridge has no function that touches a proposal (the Review window and its Changes list are 12.5)', !/proposal/i.test(preload))
   check('E: the workspace switch turns on the four tools together', readToolsMod.WORKSPACE_TOOL_IDS.join() === 'list_files,read_file,propose_edit,propose_new_file')

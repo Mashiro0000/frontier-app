@@ -1,0 +1,18 @@
+{
+  "label": "w125-wWinRequests",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "      callback({ cancel: !details.url.startsWith('data:') && !details.url.startsWith('devtools:') })",
+      "to": "      callback({ cancel: false })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run125.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w125-wPageAtEnd",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "    const atEnd = view.scrollTop + view.clientHeight >= view.scrollHeight - 2",
+      "to": "    const atEnd = true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run125.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

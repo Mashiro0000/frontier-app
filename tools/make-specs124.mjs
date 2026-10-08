@@ -30,7 +30,7 @@ const node = {
   uOldStart: [LD, '    const oldStart = oldCount === 0 ? oldBefore : oldBefore + 1', '    const oldStart = oldBefore + 1'],
   uNewStart: [LD, '    const newStart = newCount === 0 ? newBefore : newBefore + 1', '    const newStart = newBefore + 1'],
   uOldCount: [LD, "    const oldCount = part.filter((l) => l.kind !== 'add').length", "    const oldCount = part.filter((l) => l.kind === 'same').length"],
-  uSign: [LD, "${line.kind === 'same' ? ' ' : line.kind === 'add' ? '+' : '-'}", "${line.kind === 'same' ? ' ' : line.kind === 'add' ? '-' : '+'}"],
+  uSign: [LD, "  add: '+',\n  del: '-'\n}", "  add: '-',\n  del: '+'\n}"],
   // ----- making a proposal -----
   pOverlap: [PR, '  for (let at = text.indexOf(needle); at !== -1; at = text.indexOf(needle, at + 1)) {', '  for (let at = text.indexOf(needle); at !== -1; at = text.indexOf(needle, at + needle.length)) {'],
   pOnce: [PR, '  if (count > 1) {', '  if (false as boolean) {'],

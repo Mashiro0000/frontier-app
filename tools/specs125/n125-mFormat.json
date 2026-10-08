@@ -1,0 +1,15 @@
+{
+  "label": "n125-mFormat",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewModel.ts",
+      "from": "const INVISIBLE = /[\\p{Cc}\\p{Cf}",
+      "to": "const INVISIBLE = /[\\p{Cc}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

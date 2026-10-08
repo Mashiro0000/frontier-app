@@ -100,6 +100,9 @@ node tools/run123.mjs [dev|preview]       the same in the real window (verify-12
 node tools/make-specs123.mjs              writes the 12.3 negative controls (specs123 under Node, specs123w in the window)
 node tools/verify-12-4.mjs                the proposals (12.4) under plain Node, Windows only: the line diff against a textbook reference and a patch applier on random texts, how an edit or a new file is made (exactly once, line endings, byte-order mark, size, 23 hidden characters), the fingerprint, the flags, the store, and the two tools through the real runtime on a scratch workspace (nothing written anywhere), and source checks
 node tools/make-specs124.mjs              writes the 12.4 negative controls (specs124 under Node, specs124w in the window)
+node tools/verify-12-5.mjs                the Review window and the list of changes (12.5) under plain Node, Windows only: a text made visible (23 kinds of character and the brackets), the summary and the model (what is and is not in them), the service on a real scratch workspace (every state of the file, the rules for applying), who the window answers, the page's policy and script, and source checks
+node tools/run125.mjs [dev|preview]       the same in the real window (verify-12-5w.mjs): a reply that proposes two changes, the list on the Tools page, the Review window driven as a second page (its bridge, the policy tried from inside, main's view of its settings, the markup as text, the scroll rule, Escape, the two-click drop). Run `npx electron-vite build` first for preview
+node tools/make-specs125.mjs              writes the 12.5 negative controls (specs125 under Node, specs125w in the window)
 ```
 
 ## Reading a result

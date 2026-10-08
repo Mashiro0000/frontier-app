@@ -1,0 +1,15 @@
+{
+  "label": "n125-pCspScript",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "    `script-src 'nonce-${nonce}'`,",
+      "to": "    `script-src 'unsafe-inline'`,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

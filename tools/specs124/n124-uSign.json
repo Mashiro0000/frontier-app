@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/lineDiff.ts",
-      "from": "${line.kind === 'same' ? ' ' : line.kind === 'add' ? '+' : '-'}",
-      "to": "${line.kind === 'same' ? ' ' : line.kind === 'add' ? '-' : '+'}"
+      "from": "  add: '+',\n  del: '-'\n}",
+      "to": "  add: '-',\n  del: '+'\n}"
     }
   ],
   "argv": [

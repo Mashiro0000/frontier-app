@@ -12,6 +12,7 @@ import type { ProjectChangeResult, ProjectsStatus } from './projects'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
 import type { ToolCaps, ToolChangeResult, ToolEvent, ToolsStatus } from './tools'
+import type { ChangeActionResult, ChangeSummary } from './changes'
 import type { WorkspaceChangeResult, WorkspaceStatus } from './workspace'
 import type { ReplyUsage, UsageSummary } from './usage'
 
@@ -620,6 +621,15 @@ export interface FrontierApi {
     clear(): Promise<WorkspaceChangeResult>
     setOn(on: boolean): Promise<WorkspaceChangeResult>
   }
+  /**
+   * The changes the model has proposed and the person has not decided on (Stage 12.5, D-042): a summary of each (the path, the counts, the warnings: never a line
+   * of the change) and a way to ask main to open the Review window for one. The Review window is a window of its own that main opens and this page cannot
+   * script; applying and dropping a change are done there, never here. The page has no way to see a change's text, to apply it or to answer a question.
+   */
+  changes: {
+    list(): Promise<ChangeSummary[]>
+    review(id: string): Promise<ChangeActionResult>
+  }
   projects: {
     status(): Promise<ProjectsStatus>
     create(name: string): Promise<ProjectChangeResult>
@@ -690,7 +700,9 @@ export const CHANNELS = {
   workspaceStatus: 'workspace:status',
   workspaceChoose: 'workspace:choose',
   workspaceClear: 'workspace:clear',
-  workspaceSetOn: 'workspace:set-on'
+  workspaceSetOn: 'workspace:set-on',
+  changesList: 'changes:list',
+  changesReview: 'changes:review'
 } as const
 
 /**

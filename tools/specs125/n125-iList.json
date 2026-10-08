@@ -1,0 +1,15 @@
+{
+  "label": "n125-iList",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    CHANNELS.changesList,\n    guarded(",
+      "to": "    CHANNELS.changesList,\n    ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

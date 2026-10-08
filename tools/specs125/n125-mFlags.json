@@ -1,0 +1,15 @@
+{
+  "label": "n125-mFlags",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewModel.ts",
+      "from": "    secret: proposal.flags.secret,\n    runsCommands: proposal.flags.runsCommands,\n    state,",
+      "to": "    secret: false,\n    runsCommands: proposal.flags.runsCommands,\n    state,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

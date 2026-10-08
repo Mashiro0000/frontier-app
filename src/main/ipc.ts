@@ -27,6 +27,7 @@ import {
 } from '../shared/ipc'
 import type { AuditDeleteResult, AuditExportResult, AuditView } from '../shared/audit'
 import type { ToolChangeResult, ToolsStatus } from '../shared/tools'
+import type { ChangeActionResult, ChangeSummary } from '../shared/changes'
 import type { WorkspaceChangeResult, WorkspaceStatus } from '../shared/workspace'
 import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from '../shared/memory'
 import type { ProjectChangeResult, ProjectsStatus } from '../shared/projects'
@@ -92,6 +93,8 @@ import { createWorkspaceStore, type AvoidPlaces } from './workspace'
 import { createWorkspaceGuard } from './workspaceGuard'
 import { createWorkspaceService, withWorkspace } from './workspaceService'
 import { createProposalStore } from './proposals'
+import { createChangesService, fileStateOf } from './reviewService'
+import { createReviewWindows } from './reviewWindow'
 import { WORKSPACE_PROPOSE_TOOLS } from './proposalTools'
 import { WORKSPACE_READ_TOOLS } from './workspaceTools'
 import { createToolSettings } from './toolSettings'
@@ -484,6 +487,17 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     }
   }
   const workspaceGuard = createWorkspaceGuard({ root: () => workspaceRoot, dataGuard })
+  // What the person can do with them (12.5): see the waiting ones, open the Review window (a window main owns, which this page cannot script), drop one, ask to apply
+  // one. Applying is 12.6; until then the Review window says so.
+  const changes = createChangesService({
+    store: proposals,
+    state: fileStateOf(workspaceGuard),
+    requestApply: async (): Promise<ChangeActionResult> => ({
+      ok: false,
+      error: 'Applying a change is not available yet in this version.'
+    })
+  })
+  const reviewWindows = createReviewWindows({ service: changes })
   const workspaceService = createWorkspaceService({
     store: workspaceStore,
     toolSettings,
@@ -848,6 +862,24 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       } catch (error) {
         console.error('Changing the workspace tools failed:', reason(error))
         return { ok: false, error: 'The workspace could not be changed.' }
+      }
+    })
+  )
+  // The changes the model proposed (D-042, 12.5). The page reads a summary of each and asks main to open the Review window for one; it can do nothing else with them.
+  ipcMain.handle(
+    CHANNELS.changesList,
+    guarded(async (): Promise<ChangeSummary[]> => changes.list())
+  )
+  ipcMain.handle(
+    CHANNELS.changesReview,
+    guardedForWindow(async (window, input: unknown): Promise<ChangeActionResult> => {
+      try {
+        const id =
+          typeof input === 'object' && input !== null ? (input as { id?: unknown }).id : undefined
+        return await reviewWindows.open(id, window)
+      } catch (error) {
+        console.error('Opening the Review window failed:', reason(error))
+        return { ok: false, error: 'The Review window could not be opened.' }
       }
     })
   )

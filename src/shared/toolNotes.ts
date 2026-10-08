@@ -59,6 +59,12 @@ export function noteOutcomeText(outcome: AuditOutcome, live: boolean, tool = 'we
     case 'declined':
       return DECLINED_TEXT[outcome.answer]
     case 'done':
+      // A proposal waits for the person (nothing is changed until they apply it in the Review window).
+      if (tool === 'propose_edit' || tool === 'propose_new_file') {
+        return outcome.covered === true
+          ? 'Allowed for this reply. The change waits for you: open Tools to review it. Nothing is changed until you apply it.'
+          : 'You allowed it. The change waits for you: open Tools to review it. Nothing is changed until you apply it.'
+      }
       if (outcome.covered === true) {
         return `Allowed for this reply. ${plural(outcome.size, 'character came', 'characters came')} back.`
       }

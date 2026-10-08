@@ -1,0 +1,15 @@
+{
+  "label": "n125-pAskOff",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "<button id=\"ask\" type=\"button\" disabled>Ask to apply...</button>",
+      "to": "<button id=\"ask\" type=\"button\">Ask to apply...</button>"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

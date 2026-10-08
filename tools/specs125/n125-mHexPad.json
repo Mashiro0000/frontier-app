@@ -1,0 +1,15 @@
+{
+  "label": "n125-mHexPad",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewModel.ts",
+      "from": ".toString(16).toUpperCase().padStart(4, '0')",
+      "to": ".toString(16).toUpperCase()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

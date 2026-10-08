@@ -1,0 +1,15 @@
+{
+  "label": "n125-pImg",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "<footer>",
+      "to": "<img src=\"https://example.com/x.png\"><footer>"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

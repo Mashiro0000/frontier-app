@@ -1,0 +1,15 @@
+{
+  "label": "n125-mSummaryPath",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewModel.ts",
+      "from": "    path: visible(proposal.path),",
+      "to": "    path: proposal.path,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

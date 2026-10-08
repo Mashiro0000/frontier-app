@@ -69,7 +69,7 @@ try {
   // ============ A. the page, with no folder ============
   await openTools()
   const first = await ev(`(() => { const d = document.querySelector('dialog.tools'); return { sections: [...d.querySelectorAll('.tools-section-title')].map((x) => x.textContent), switches: [...d.querySelectorAll('ul[aria-label=Tools] .tools-switch-title')].map((x) => x.textContent) } })()`)
-  check('A: the Tools page has the switches, the code workspace and the audit log, in that order', show(first.sections) === show(['What the model may ask for', 'Code workspace', 'Audit log']), show(first))
+  check('A: the Tools page has the switches, the code workspace, the changes waiting and the audit log, in that order', show(first.sections) === show(['What the model may ask for', 'Code workspace', 'Changes waiting', 'Audit log']), show(first))
   check('A: the list of tools has only web search (the workspace has its own switch)', show(first.switches) === show(['Search the web']))
   let w = await wsText()
   check('A: no folder is chosen, the way to choose one is there, no Clear, and the switch is off and cannot be turned on', w.path === 'No folder is chosen.' && show(w.buttons) === show([{ text: 'Choose a folder...', disabled: false }]) && w.toggle.on === false && w.toggle.disabled === true, show(w))

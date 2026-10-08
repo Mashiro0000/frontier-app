@@ -1,0 +1,15 @@
+{
+  "label": "n125-mWhyLine",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewModel.ts",
+      "from": "    why: oneLine(proposal.why),",
+      "to": "    why: proposal.why,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

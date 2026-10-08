@@ -1,0 +1,15 @@
+{
+  "label": "n125-wWebview",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "    window.webContents.on('will-attach-webview', (event) => event.preventDefault())\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

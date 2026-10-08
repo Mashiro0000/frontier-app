@@ -1,0 +1,15 @@
+{
+  "label": "n125-mState",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewModel.ts",
+      "from": "    state,\n    diff,",
+      "to": "    state: 'ok' as const,\n    diff,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -109,17 +109,26 @@ export const oldLinesOf = (diff: LineDiff): string[] =>
 export const newLinesOf = (diff: LineDiff): string[] =>
   diff.lines.filter((l) => l.kind !== 'del').map((l) => l.text)
 
+/** One line of a unified diff: a header, the heading of a place that changed, or a line that is the same, added or removed (its text without the sign). */
+export interface UnifiedLine {
+  kind: 'header' | 'hunk' | 'same' | 'add' | 'del'
+  text: string
+}
+
 /**
- * The unified diff of a change: a header, then each place that changed with `context` lines around it (places closer than twice that are one). `oldName` is
- * null for a new file. Only the lines the diff holds are used, so it is as long as what changed and no longer.
+ * The unified diff of a change, line by line: a header, then each place that changed with `context` lines around it (places closer than twice that are one).
+ * `oldName` is null for a new file. Only the lines the diff holds are used, so it is as long as what changed and no longer.
  */
-export function unifiedDiff(
+export function unifiedLines(
   name: string,
   oldName: string | null,
   diff: LineDiff,
   context = 3
-): string {
-  const out = [`--- ${oldName === null ? '/dev/null' : `a/${oldName}`}`, `+++ b/${name}`]
+): UnifiedLine[] {
+  const out: UnifiedLine[] = [
+    { kind: 'header', text: `--- ${oldName === null ? '/dev/null' : `a/${oldName}`}` },
+    { kind: 'header', text: `+++ b/${name}` }
+  ]
   const changed: number[] = []
   diff.lines.forEach((line, index) => {
     if (line.kind !== 'same') changed.push(index)
@@ -142,9 +151,28 @@ export function unifiedDiff(
     const newBefore = diff.lines.slice(0, from).filter((l) => l.kind !== 'del').length
     const oldStart = oldCount === 0 ? oldBefore : oldBefore + 1
     const newStart = newCount === 0 ? newBefore : newBefore + 1
-    out.push(`@@ -${oldStart},${oldCount} +${newStart},${newCount} @@`)
-    for (const line of part)
-      out.push(`${line.kind === 'same' ? ' ' : line.kind === 'add' ? '+' : '-'}${line.text}`)
+    out.push({ kind: 'hunk', text: `@@ -${oldStart},${oldCount} +${newStart},${newCount} @@` })
+    for (const line of part) out.push({ kind: line.kind, text: line.text })
   }
-  return out.join('\n')
+  return out
+}
+
+const SIGN: Readonly<Record<UnifiedLine['kind'], string>> = {
+  header: '',
+  hunk: '',
+  same: ' ',
+  add: '+',
+  del: '-'
+}
+
+/** The unified diff as one text (what `diff -u` writes). */
+export function unifiedDiff(
+  name: string,
+  oldName: string | null,
+  diff: LineDiff,
+  context = 3
+): string {
+  return unifiedLines(name, oldName, diff, context)
+    .map((line) => `${SIGN[line.kind]}${line.text}`)
+    .join('\n')
 }

@@ -1,0 +1,18 @@
+{
+  "label": "w125-wPageGate",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "    ask.disabled = !(model.reachedEnd && model.state === 'ok')",
+      "to": "    ask.disabled = !(model.state === 'ok')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run125.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

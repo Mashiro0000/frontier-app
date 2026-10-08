@@ -1,0 +1,18 @@
+{
+  "label": "w125-wListRow",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/ChangesSection.tsx",
+      "from": "              <button\n                type=\"button\"\n                className=\"history-button\"\n                disabled={busy}\n                onClick={() => void review(change.id)}",
+      "to": "              <button\n                type=\"button\"\n                className=\"history-button\"\n                disabled={true}\n                onClick={() => void review(change.id)}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run125.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}
