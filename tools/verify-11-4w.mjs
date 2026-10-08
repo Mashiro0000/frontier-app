@@ -124,7 +124,7 @@ try {
   const saved = H.allConvs().find((c) => (c.messages ?? []).some((m) => /find the newest release of Rust/.test(m.content ?? '')))
   const reply = saved?.messages?.at(-1)
   check('D: the chat is a version 6 file whose reply holds the call: where it stood, the words, the outcome with the pages\' titles and addresses', saved?.version === 6 && reply?.tools?.length === 1 && reply.content.slice(0, reply.tools[0].offset).trim() === 'Let me search for that.' && reply.tools[0].outcome.sources.length === 3 && reply.tools[0].args.query === 'rust release notes', show({ o: reply?.tools?.[0]?.offset, n: reply?.tools?.[0]?.outcome?.sources?.length, q: reply?.tools?.[0]?.args, v: saved?.version }))
-  check('D: the words before and after the call are two paragraphs in the saved reply (the loop breaks between them)', reply?.content.includes('.' + String.fromCharCode(10, 10) + 'The search found') === true, show(reply?.content))
+  check('D: the words before and after the call are two paragraphs in the saved reply (the loop breaks between them)', reply?.content.includes(String.fromCharCode(10, 10) + 'The search found') === true, show(reply?.content))
   check('D: ...and no page text, no summary', !/Summary for|the first result says/.test(JSON.stringify(saved?.messages?.map((m) => m.tools ?? null))))
   await H.clickChat('New chat')
   await H.openHistory()

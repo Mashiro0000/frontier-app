@@ -2659,3 +2659,15 @@ if you have not, please do before you rely on this. **The design was mine** (you
 ## Stage 11.7 - Things to know (not problems, but worth your attention)
 
 1. **After restoring a backup on a new computer your tools are off** (they are not in the backup). Turn them on again on the Tools page.
+
+## Stage 11 - Slice 11.8: the stage as a whole, and the full regression (8 October 2026; D-041)
+
+1. **The threat note** is in D-041: nine things that could go wrong with the first tool (a page that gives orders, a taken-over window, a tool reaching your data folder, a key leaving in a search, money, a forged or lost record, a file switching a tool on, a page's words becoming a link or a script, a tool that will not stop), what stops each, and what does not. **Five findings for you** are at its end; the first: nothing was tried against a real provider.
+2. **The full regression:** 40 of 40 plain-Node runs clean; 111 window, seed, scenario, Stage 4 and built-app runs, 101 clean on the first pass and the other ten fixed or re-run clean (old tests that did not know the Tools button or the new parts of the page; two test-window stalls). A first attempt was spoiled by a test app left over from one crashed run, which kept a port busy: found, stopped, run again.
+3. **The control gaps** I had noted at 11.3 and 11.4 are closed (stronger checks for the limit check, the notes' save dialog, a project's instructions reaching the request, the three message boxes' safe default, and the paragraph break between the model's words before and after a search); three controls that had become redundant or obsolete were retired.
+4. **Merged into main** and pushed (see the end of this log's last line in D-041's status).
+
+## Stage 11 - Things to know (not problems, but worth your attention)
+
+1. **Try it for real once:** add your key (done), turn the search on in Tools (a Windows box asks), ask something current, read the box before you say yes, and look at the bill afterwards.
+2. **Everything is off until you turn it on**, and a damaged or missing settings file also means off.

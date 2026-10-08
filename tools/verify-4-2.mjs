@@ -31,7 +31,7 @@ check('a fresh profile has no conversations folder (starting up and looking wrot
 const withoutAttach = (list) => list.filter((b) => b.text !== 'Attach...')
 const buttons = withoutAttach(await H.chatButtons())
 const headerBtns = await H.headerButtons()
-check('under the message box the chat bar has New chat, History, Instructions (7.4), Memory (10.4) and Project (10.5), in that order (they left the header in 7.6, D-029)', JSON.stringify(buttons.map((b) => b.text)) === JSON.stringify(['New chat', 'History', 'Instructions', 'Memory', 'Project']), JSON.stringify(buttons.map((b) => b.text)))
+check('under the message box the chat bar has New chat, History, Instructions (7.4), Memory (10.4) and Project (10.5), in that order (they left the header in 7.6, D-029)', JSON.stringify(buttons.map((b) => b.text)) === JSON.stringify(['New chat', 'History', 'Instructions', 'Memory', 'Project', 'Tools']), JSON.stringify(buttons.map((b) => b.text)))
 check('...and the header keeps only Settings among its buttons', JSON.stringify(headerBtns.map((b) => b.text)) === JSON.stringify(['Settings']), JSON.stringify(headerBtns.map((b) => b.text)))
 check('New chat is disabled while the chat is empty, and says why', buttons[0].disabled && /empty/i.test(buttons[0].title), buttons[0].title)
 check('History, Instructions and Settings are enabled', !buttons[1].disabled && !buttons[2].disabled && !headerBtns[0].disabled)
@@ -303,7 +303,7 @@ for (const width of [420, 320]) {
   await page.send('Emulation.setDeviceMetricsOverride', { width, height: 700, deviceScaleFactor: 1, mobile: false })
   await sleep(300)
   const fit = await ev(`(() => { const bs = [...document.querySelectorAll('.app-header .header-button, .app-header .header-select, .chat-bar .chat-button')]; const r = bs.map((b) => b.getBoundingClientRect()); return { overflowX: document.documentElement.scrollWidth > window.innerWidth, allInside: r.every((x) => x.left >= 0 && x.right <= window.innerWidth), count: bs.length } })()`)
-  check(`at ${width}px wide the header has no sideways scroll and every control is fully on screen`, !fit.overflowX && fit.allInside && fit.count === 8, JSON.stringify(fit)) // Project (since 10.5), Memory (since 10.4), Attach... (since 9.2), New chat, History, Instructions, Settings and the model menu
+  check(`at ${width}px wide the header has no sideways scroll and every control is fully on screen`, !fit.overflowX && fit.allInside && fit.count === 9, JSON.stringify(fit)) // Tools (since 11.2), Project (since 10.5), Memory (since 10.4), Attach... (since 9.2), New chat, History, Instructions, Settings and the model menu
   await page.screenshot(`${shots}/4-2-header-${width}.png`)
   await H.openHistory()
   const dlg = await ev(`(() => { const d = document.querySelector('dialog.history').getBoundingClientRect(); const c = [...document.querySelectorAll('dialog.history .history-footer button')].pop().getBoundingClientRect(); return { left: d.left, right: d.right, top: d.top, bottom: d.bottom, closeInside: c.left >= 0 && c.right <= window.innerWidth && c.bottom <= window.innerHeight, w: window.innerWidth, h: window.innerHeight } })()`)
