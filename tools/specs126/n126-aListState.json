@@ -1,0 +1,15 @@
+{
+  "label": "n126-aListState",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "              sha256(await fs.readFile(verdict.real)) === entry.afterHash ? 'undoable' : 'changed'",
+      "to": "              'undoable'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

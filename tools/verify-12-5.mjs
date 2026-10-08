@@ -108,7 +108,7 @@ await guard('C', async () => {
   const applied = []
   const svc = svcMod.createChangesService({ store, state: svcMod.fileStateOf(wsGuard), requestApply: async (proposal, owner) => { applied.push([proposal.id, owner]); return { ok: true } } })
   const make = (rel, find, replace) => { const real = J(WS, ...rel); const bytes = fs.readFileSync(real); return keep(store, propMod.makeEdit({ bytes, decoded: textMod.decodeText(bytes), rel, real, find, replace, why: 'because', secret: false, now: 1 }).proposal) }
-  const e1 = make(['src', 'a.ts'], 'two', 'TWO')
+  let e1 = make(['src', 'a.ts'], 'two', 'TWO')
   const e2 = make(['src', 'b.ts'], 'beta', 'BETA')
   const n1 = keep(store, propMod.makeCreate({ rel: ['docs', 'n.md'], real: J(WS, 'docs', 'n.md'), content: 'new\n', why: 'w', secret: false, now: 1 }).proposal)
   check('C: the list is newest first and holds summaries only', svc.list().map((c) => c.id).join() === 'p3,p2,p1' && svc.list().every((c) => Object.keys(c).length === 8))
@@ -123,6 +123,9 @@ await guard('C', async () => {
   check('C: another change did not inherit it', !r.ok && r.error === svcMod.SCROLL_FIRST)
   r = await svc.apply(e1.id, 'the window')
   check('C: with the end reached and the file as it was, the request goes on to the apply, for the window that asked, and what it answers is passed back', r.ok && applied.length === 1 && applied[0][0] === 'p1' && applied[0][1] === 'the window')
+  check('C: a change that was applied (12.6) no longer waits: it is gone from the list and from the store, and its "end reached" is forgotten', store.get('p1') === undefined && svc.list().every((c) => c.id !== 'p1') && (await svc.model('p1')) === null)
+  e1 = make(['src', 'a.ts'], 'two', 'TWO')
+  svc.markReachedEnd(e1.id)
   check('C: nothing was written by any of this', fs.readFileSync(J(WS, 'src', 'a.ts'), 'utf8') === 'one\ntwo\nthree\n' && !fs.existsSync(J(WS, 'docs')))
   // the file changes meanwhile
   fs.writeFileSync(J(WS, 'src', 'a.ts'), 'one\ntwo\nthree\nfour\n')
@@ -208,7 +211,7 @@ await guard('F', async () => {
   const code = (s) => s.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '')
   const importsOf = (f) => [...source(f).matchAll(/^import[^';]*from '([^']+)'/gm)].map((m) => m[1]).sort()
   check('F: the preload of the Review window is separate from the chat page\'s, and gives six things and no more', /contextBridge\.exposeInMainWorld\('review', \{/.test(source('preload/review.ts')) && ['get', 'reachedEnd', 'apply', 'drop', 'close', 'onChanged'].every((n) => new RegExp(`\\b${n}:`).test(source('preload/review.ts'))) && (source('preload/review.ts').match(/^\s{2}\w+:/gm) ?? []).length === 6 && !/review/i.test(source('preload/index.ts').replace(/changes: \{[\s\S]*?\},\n  projects/, '')))
-  check('F: the chat page\'s bridge gets two functions for changes, list and review, and nothing that applies, drops or reads a change', /changes: \{\s*list: \(\) => ipcRenderer\.invoke\(CHANNELS\.changesList\),\s*review: \(id\) => ipcRenderer\.invoke\(CHANNELS\.changesReview, \{ id \}\)\s*\}/.test(source('preload/index.ts')) && !/apply|drop|reachedEnd/i.test(/changes: \{[\s\S]*?\},\n  projects/.exec(source('preload/index.ts'))?.[0] ?? 'x'))
+  check('F: the chat page\'s bridge gets five functions for changes (12.6 added applied, undo and clearHistory: ids only, no path), and nothing that applies, drops or reads the text of a change', /changes: \{\s*list: \(\) => ipcRenderer\.invoke\(CHANNELS\.changesList\),\s*review: \(id\) => ipcRenderer\.invoke\(CHANNELS\.changesReview, \{ id \}\),\s*applied: \(\) => ipcRenderer\.invoke\(CHANNELS\.changesApplied\),\s*undo: \(id\) => ipcRenderer\.invoke\(CHANNELS\.changesUndo, \{ id \}\),\s*clearHistory: \(\) => ipcRenderer\.invoke\(CHANNELS\.changesClearUndo\)\s*\}/.test(source('preload/index.ts')) && !/apply|drop|reachedEnd/i.test(/changes: \{[\s\S]*?\},\n  projects/.exec(source('preload/index.ts'))?.[0] ?? 'x'))
   const ww = code(source('main/reviewWindow.ts'))
   check('F: the window is made like the chat window and shut tighter: sandbox, context isolation, no Node, no spelling service, tools of the browser only when not packaged, a session of its own that is in memory', /sandbox: true/.test(ww) && /contextIsolation: true/.test(ww) && /nodeIntegration: false/.test(ww) && /spellcheck: false/.test(ww) && /devTools: !app\.isPackaged/.test(ww) && /const PARTITION = 'frontier-review'/.test(ww) && !/persist:/.test(ww) && /partition: PARTITION/.test(ww) && /webSecurity: true/.test(ww) && /allowRunningInsecureContent: false/.test(ww))
   check('F: the session allows no permission and cancels every request that is not the page\'s own data address', /setPermissionRequestHandler\(\(_contents, _permission, callback\) => callback\(false\)\)/.test(ww) && /setPermissionCheckHandler\(\(\) => false\)/.test(ww) && /cancel: !details\.url\.startsWith\('data:'\) && !details\.url\.startsWith\('devtools:'\)/.test(ww))
@@ -223,7 +226,7 @@ await guard('F', async () => {
   check('F: the service imports only the file system, the shared types, the proposals, the model and the guard (as a type)', show(importsOf('main/reviewService.ts')) === show(['../shared/changes', './proposals', './reviewModel', './workspaceGuard', 'fs'].sort()), show(importsOf('main/reviewService.ts')))
   check('F: the service reads a file and writes nothing: no write, delete, rename, copy or folder call', !/\.(writeFile|appendFile|rm|rmdir|unlink|rename|mkdir|copyFile|truncate|symlink|link)\(/.test(code(source('main/reviewService.ts'))))
   const section = source('renderer/src/tools/ChangesSection.tsx')
-  check('F: the page that lists the changes draws text only (no link, picture, frame, innerHTML or window.open) and calls only list (through the hook) and review', !/href=|src=|<a[ >]|<iframe|innerHTML|dangerouslySetInnerHTML|window\.open/.test(section) && (section.match(/window\.api\.changes\.(\w+)/g) ?? []).join() === 'window.api.changes.review')
+  check('F: the page that lists the changes draws text only (no link, picture, frame, innerHTML or window.open) and calls only list and applied (through the hook), review, and (12.6) undo and clearHistory', !/href=|src=|<a[ >]|<iframe|innerHTML|dangerouslySetInnerHTML|window\.open/.test(section) && (section.match(/window\.api\.changes\.(\w+)/g) ?? []).join() === 'window.api.changes.review,window.api.changes.undo,window.api.changes.clearHistory')
   check('F: the notes in the chat say that a proposal waits for the person, and that nothing is changed until they apply it', /The change waits for you: open Tools to review it\. Nothing is changed until you apply it\./.test(source('shared/toolNotes.ts')))
   check('F: the shared file of the two windows holds types and constants only', !/\b(import|require)\b.*from '(?!\.)/.test(source('shared/changes.ts')) && !/function |=> /.test(code(source('shared/changes.ts'))))
   void diffMod

@@ -1,0 +1,15 @@
+{
+  "label": "n126-aAskRecord",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "    if (!(await keep({ type: 'asked', at: now(), call, tool, step: 1, args, why }))) {\n      return { ok: false, error: NOT_RECORDED_TEXT }\n    }",
+      "to": "    await keep({ type: 'asked', at: now(), call, tool, step: 1, args, why })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

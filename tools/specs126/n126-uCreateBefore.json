@@ -1,0 +1,15 @@
+{
+  "label": "n126-uCreateBefore",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/undoRecords.ts",
+      "from": "    if (before !== null || beforeHash !== null) return null",
+      "to": "    void 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

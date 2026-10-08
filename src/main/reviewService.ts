@@ -84,7 +84,13 @@ export function createChangesService(options: ChangesServiceOptions): ChangesSer
       const state = await stateOf(proposal)
       if (state !== 'ok') return { ok: false, error: WHY_NOT[state] }
       try {
-        return await options.requestApply(proposal, owner)
+        const done = await options.requestApply(proposal, owner)
+        if (done.ok) {
+          // Applied: it no longer waits.
+          reached.delete(key(proposal))
+          store.remove(proposal.id)
+        }
+        return done
       } catch {
         return { ok: false, error: 'The change could not be applied.' }
       }

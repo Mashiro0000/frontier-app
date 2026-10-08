@@ -1,0 +1,15 @@
+{
+  "label": "n126-aBusy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "    if (busy) return { ok: false, error: BUSY_APPLY }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

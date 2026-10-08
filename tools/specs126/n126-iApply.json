@@ -1,0 +1,15 @@
+{
+  "label": "n126-iApply",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    requestApply: (proposal, owner) => applier.apply(proposal, owner)",
+      "to": "    requestApply: (proposal, owner) => applier.apply(proposal, owner),\n    secondWay: (p: Proposal, o: unknown) => applier.apply(p, o)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

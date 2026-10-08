@@ -1,0 +1,15 @@
+{
+  "label": "n126-aNeutralFail",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "      await neutralise(id)\n      await finish(call, false, 0)\n      return {\n        ok: false,\n        error: 'The change could not be written",
+      "to": "      await finish(call, false, 0)\n      return {\n        ok: false,\n        error: 'The change could not be written"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

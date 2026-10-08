@@ -1,0 +1,15 @@
+{
+  "label": "n126-jNewline",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/journal.ts",
+      "from": "const wrote = Buffer.from(`${before.endsInNewline ? '' : '\\n'}${data}\\n`, 'utf8')",
+      "to": "const wrote = Buffer.from(`${data}\\n`, 'utf8')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n126-uSizeMax",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/undoRecords.ts",
+      "from": "    afterBytes > WORKSPACE_LIMITS.maxFileBytes\n",
+      "to": "    false\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n126-aBaseHash",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "      if (proposal.baseHash === null || sha256(original) !== proposal.baseHash) {",
+      "to": "      if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

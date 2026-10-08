@@ -1,0 +1,15 @@
+{
+  "label": "n126-aClearNone",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "      all.state === 'none' ||",
+      "to": "      (false as boolean) ||"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

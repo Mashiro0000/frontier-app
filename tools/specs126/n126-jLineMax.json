@@ -1,0 +1,15 @@
+{
+  "label": "n126-jLineMax",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/journal.ts",
+      "from": "      if (opened.text.length > maxLineChars) return { bad: 'damaged' }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

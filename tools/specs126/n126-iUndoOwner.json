@@ -1,0 +1,15 @@
+{
+  "label": "n126-iUndoOwner",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "        return await applier.undo(id, window)",
+      "to": "        return await applier.undo(id, null)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

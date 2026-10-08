@@ -1,0 +1,15 @@
+{
+  "label": "n126-uVersion",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/undoRecords.ts",
+      "from": "  if (o.v !== UNDO_VERSION || typeof o.type !== 'string') return null",
+      "to": "  if (typeof o.type !== 'string') return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -143,7 +143,7 @@ function ToolsBody({ audit, settings, onBusy, onClose }: ToolsBodyProps): React.
     <div className="tools-body">
       <SwitchesSection settings={settings} busy={busy} working={working} />
       <WorkspaceSection settings={settings} busy={busy} working={working} />
-      <ChangesSection settings={settings} busy={busy} />
+      <ChangesSection settings={settings} busy={busy} working={working} />
       <section className="tools-section" aria-labelledby="tools-audit-title">
         <h3 id="tools-audit-title" className="tools-section-title">
           Audit log
@@ -215,7 +215,7 @@ function ToolsBody({ audit, settings, onBusy, onClose }: ToolsBodyProps): React.
                   <p className="tools-why">The model&apos;s reason: {call.why}</p>
                 )}
                 <p className={`tools-outcome tools-outcome-${call.outcome.kind}`}>
-                  {outcomeText(call.outcome)}
+                  {outcomeText(call.outcome, call.tool)}
                 </p>
                 {call.outcome.kind === 'done' && call.outcome.sources.length > 0 && (
                   <ul className="tools-sources" aria-label="Sources that came back">

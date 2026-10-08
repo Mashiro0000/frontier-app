@@ -1,0 +1,15 @@
+{
+  "label": "n126-uAppliedKeys",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/undoRecords.ts",
+      "from": "  if (\n    !exactKeys(o, [",
+      "to": "  if (\n    false &&\n    !exactKeys(o, ["
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

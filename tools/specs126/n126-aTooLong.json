@@ -1,0 +1,15 @@
+{
+  "label": "n126-aTooLong",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "    if (question.detail.length > SHOWN_LIMIT) return { ok: false, error: TOO_LONG }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

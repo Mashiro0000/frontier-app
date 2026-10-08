@@ -103,6 +103,9 @@ node tools/make-specs124.mjs              writes the 12.4 negative controls (spe
 node tools/verify-12-5.mjs                the Review window and the list of changes (12.5) under plain Node, Windows only: a text made visible (23 kinds of character and the brackets), the summary and the model (what is and is not in them), the service on a real scratch workspace (every state of the file, the rules for applying), who the window answers, the page's policy and script, and source checks
 node tools/run125.mjs [dev|preview]       the same in the real window (verify-12-5w.mjs): a reply that proposes two changes, the list on the Tools page, the Review window driven as a second page (its bridge, the policy tried from inside, main's view of its settings, the markup as text, the scroll rule, Escape, the two-click drop). Run `npx electron-vite build` first for preview
 node tools/make-specs125.mjs              writes the 12.5 negative controls (specs125 under Node, specs125w in the window)
+node tools/verify-12-6.mjs                apply and undo (12.6) under plain Node, Windows only, on a real scratch workspace with the real guard, undo journal and audit log: the order of an apply, every way it stops without a change, a write that fails and puts things back, undo only while the file is exactly as written, the history's limits, the journal sealed both ways and read strictly, that only applyService.ts writes into the workspace, and the words of the questions
+node tools/run126.mjs [dev|preview]       the same in the real window (verify-12-6w.mjs): the Windows box (a stand-in answers), a no and a yes, the list of applied changes, undo, deleting the history, what the pages cannot do
+node tools/make-specs126.mjs              writes the 12.6 negative controls (specs126 under Node, specs126w in the window)
 ```
 
 ## Reading a result

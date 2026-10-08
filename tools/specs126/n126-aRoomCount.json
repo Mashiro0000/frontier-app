@@ -1,0 +1,15 @@
+{
+  "label": "n126-aRoomCount",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "    return foldJournal(all.entries).length < UNDO_LIMITS.maxChanges",
+      "to": "    return foldJournal(all.entries).length <= UNDO_LIMITS.maxChanges"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

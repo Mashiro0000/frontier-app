@@ -1,0 +1,15 @@
+{
+  "label": "n126-iKept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "workspaceStore.file,\n      undoJournal.document",
+      "to": "workspaceStore.file"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

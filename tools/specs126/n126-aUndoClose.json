@@ -1,0 +1,15 @@
+{
+  "label": "n126-aUndoClose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "        await journal.append({ type: 'undone', id: entry.id, at: now() })\n      } catch (error) {",
+      "to": "      } catch (error) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

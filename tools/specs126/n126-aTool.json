@@ -1,0 +1,15 @@
+{
+  "label": "n126-aTool",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "const no = await ask(owner, applyQuestion(proposal), call, 'apply_change', args, proposal.why)",
+      "to": "const no = await ask(owner, applyQuestion(proposal), call, 'web_search', args, proposal.why)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

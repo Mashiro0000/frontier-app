@@ -1,0 +1,15 @@
+{
+  "label": "n126-aOwner",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "    const answer = await gate.ask(owner, question)",
+      "to": "    const answer = await gate.ask(null, question)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

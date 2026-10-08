@@ -107,7 +107,20 @@ export const DECLINED_TEXT: Record<Exclude<AnswerCode, 'yes' | 'covered'>, strin
 const fmt = (n: number): string => n.toLocaleString('en-US')
 
 /** What happened to a call, in a sentence. The window and the export say the same words. */
-export function outcomeText(outcome: AuditOutcome): string {
+export function outcomeText(outcome: AuditOutcome, tool = 'web_search'): string {
+  // The three tools of 12.6 write and undo: their result is a number of bytes written, not text that came back.
+  if (tool === 'apply_change' || tool === 'undo_change' || tool === 'undo_clear') {
+    if (outcome.kind === 'done') {
+      const n = fmt(outcome.size)
+      return tool === 'apply_change'
+        ? `You said yes. It was written: ${n} bytes.`
+        : tool === 'undo_change'
+          ? 'You said yes. It was undone.'
+          : 'You said yes. The undo history was deleted.'
+    }
+    if (outcome.kind === 'failed')
+      return 'You said yes. It could not be done, and the file was put back as it was.'
+  }
   switch (outcome.kind) {
     case 'refused':
       return REFUSED_TEXT[outcome.code]

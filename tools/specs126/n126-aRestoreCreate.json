@@ -1,0 +1,15 @@
+{
+  "label": "n126-aRestoreCreate",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "        else await fs.rm(verdict.real, { force: true })",
+      "to": "        else void 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

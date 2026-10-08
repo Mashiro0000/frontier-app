@@ -1,0 +1,18 @@
+{
+  "label": "w126-wIpcRequest",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    requestApply: (proposal, owner) => applier.apply(proposal, owner)",
+      "to": "    requestApply: async () => ({ ok: false, error: 'Applying a change is not available yet in this version.' })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run126.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n126-wDone",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/audit.ts",
+      "from": "? 'You said yes. It was undone.'",
+      "to": "? 'You said yes. It was removed.'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

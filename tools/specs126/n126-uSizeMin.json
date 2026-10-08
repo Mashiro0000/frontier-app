@@ -1,0 +1,15 @@
+{
+  "label": "n126-uSizeMin",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/undoRecords.ts",
+      "from": "    afterBytes < 0 ||",
+      "to": "    false ||"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -158,7 +158,7 @@ const SCRIPT = `
     if (model === null || $('ask').disabled) return
     $('ask').disabled = true
     say('Waiting for your answer in the Windows message box...', false)
-    window.review.apply().then((r) => { say(r.ok ? 'Done.' : r.error, !r.ok); return load().then(() => { if (!r.ok) say(r.error, true) }) }, () => { say('The app did not answer.', true) })
+    window.review.apply().then((r) => { say(r.ok ? (r.message || 'Done.') : r.error, !r.ok); return load().then(() => { say(r.ok ? (r.message || 'Done.') : r.error, !r.ok) }) }, () => { say('The app did not answer.', true) })
   })
   $('drop').addEventListener('click', () => {
     if (model === null) return

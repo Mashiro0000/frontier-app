@@ -1,0 +1,18 @@
+{
+  "label": "w126-wUndoOnly",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "      if (sha256(bytes) !== entry.afterHash) {",
+      "to": "      if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run126.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

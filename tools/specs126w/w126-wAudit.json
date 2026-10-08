@@ -1,0 +1,18 @@
+{
+  "label": "w126-wAudit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/audit.ts",
+      "from": "? 'You said yes. It was undone.'",
+      "to": "? 'You said yes. It was removed.'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run126.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

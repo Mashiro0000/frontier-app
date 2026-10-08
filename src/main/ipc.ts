@@ -27,7 +27,7 @@ import {
 } from '../shared/ipc'
 import type { AuditDeleteResult, AuditExportResult, AuditView } from '../shared/audit'
 import type { ToolChangeResult, ToolsStatus } from '../shared/tools'
-import type { ChangeActionResult, ChangeSummary } from '../shared/changes'
+import type { AppliedChange, ChangeActionResult, ChangeSummary } from '../shared/changes'
 import type { WorkspaceChangeResult, WorkspaceStatus } from '../shared/workspace'
 import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from '../shared/memory'
 import type { ProjectChangeResult, ProjectsStatus } from '../shared/projects'
@@ -93,7 +93,10 @@ import { createWorkspaceStore, type AvoidPlaces } from './workspace'
 import { createWorkspaceGuard } from './workspaceGuard'
 import { createWorkspaceService, withWorkspace } from './workspaceService'
 import { createProposalStore } from './proposals'
+import { createApplier } from './applyService'
+import { createJournal } from './journal'
 import { createChangesService, fileStateOf } from './reviewService'
+import { parseUndoEntry, renderUndoEntry, UNDO_LIMITS, UNDO_VERSION } from './undoRecords'
 import { createReviewWindows } from './reviewWindow'
 import { WORKSPACE_PROPOSE_TOOLS } from './proposalTools'
 import { WORKSPACE_READ_TOOLS } from './workspaceTools'
@@ -489,13 +492,28 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   const workspaceGuard = createWorkspaceGuard({ root: () => workspaceRoot, dataGuard })
   // What the person can do with them (12.5): see the waiting ones, open the Review window (a window main owns, which this page cannot script), drop one, ask to apply
   // one. Applying is 12.6; until then the Review window says so.
+  // The undo journal: the original of every file the person let the app change (sealed like the chats, not in a backup), and the applier, the one place that writes.
+  const undoJournal = createJournal({
+    pathOf: () => join(app.getPath('userData'), 'workspace', 'changes.jsonl'),
+    box: secureStorage,
+    writeMode: protection.writeMode,
+    parse: parseUndoEntry,
+    render: renderUndoEntry,
+    version: UNDO_VERSION,
+    maxLineChars: UNDO_LIMITS.maxLineChars,
+    maxConformBytes: UNDO_LIMITS.maxBytes,
+    name: 'the undo journal'
+  })
+  const applier = createApplier({
+    guard: workspaceGuard,
+    journal: undoJournal,
+    gate: questions,
+    record: (event) => auditLog.append(event)
+  })
   const changes = createChangesService({
     store: proposals,
     state: fileStateOf(workspaceGuard),
-    requestApply: async (): Promise<ChangeActionResult> => ({
-      ok: false,
-      error: 'Applying a change is not available yet in this version.'
-    })
+    requestApply: (proposal, owner) => applier.apply(proposal, owner)
   })
   const reviewWindows = createReviewWindows({ service: changes })
   const workspaceService = createWorkspaceService({
@@ -528,7 +546,8 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       projects.file,
       auditLog.document,
       toolSettings.file,
-      workspaceStore.file
+      workspaceStore.file,
+      undoJournal.document
     ]) // rewritten with the chats (D-039, D-041)
   })
 
@@ -883,6 +902,43 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       }
     })
   )
+  // The applied changes (D-042, 12.6): the page lists them and may ask for an undo or for the history to be deleted; each of those asks in the system's own box for the
+  // window that asked. The page has no way to apply a change.
+  ipcMain.handle(
+    CHANNELS.changesApplied,
+    guarded(async (): Promise<AppliedChange[]> => {
+      try {
+        return await applier.applied()
+      } catch (error) {
+        console.error('Reading the applied changes failed:', reason(error))
+        return []
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.changesUndo,
+    guardedForWindow(async (window, input: unknown): Promise<ChangeActionResult> => {
+      try {
+        const id =
+          typeof input === 'object' && input !== null ? (input as { id?: unknown }).id : undefined
+        return await applier.undo(id, window)
+      } catch (error) {
+        console.error('Undoing a change failed:', reason(error))
+        return { ok: false, error: 'The change could not be undone.' }
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.changesClearUndo,
+    guardedForWindow(async (window): Promise<ChangeActionResult> => {
+      try {
+        return await applier.clearHistory(window)
+      } catch (error) {
+        console.error('Deleting the undo history failed:', reason(error))
+        return { ok: false, error: 'The undo history could not be deleted.' }
+      }
+    })
+  )
   // The tools (D-041, 11.4). The page reads which are on and the caps, and asks for a change; a tool switched on and a higher cap ask in the system's
   // message box for the window that asked. The page has no way to run a tool or to answer a question.
   ipcMain.handle(
@@ -1042,6 +1098,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       projects.file.whenIdle(),
       auditLog.whenIdle(),
       toolSettings.file.whenIdle(),
-      workspaceStore.file.whenIdle()
+      workspaceStore.file.whenIdle(),
+      undoJournal.whenIdle()
     ]).then(() => undefined)
 }

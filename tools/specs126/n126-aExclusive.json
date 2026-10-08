@@ -1,0 +1,15 @@
+{
+  "label": "n126-aExclusive",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "        await fs.writeFile(verdict.real, newBytes, { flag: 'wx' })",
+      "to": "        await fs.writeFile(verdict.real, newBytes)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

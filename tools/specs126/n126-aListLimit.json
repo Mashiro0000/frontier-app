@@ -1,0 +1,15 @@
+{
+  "label": "n126-aListLimit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": ".reverse().slice(0, 50)",
+      "to": ".reverse()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

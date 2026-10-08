@@ -1,0 +1,15 @@
+{
+  "label": "n126-tTitle",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/tools.ts",
+      "from": "  apply_change: 'Write a change to the workspace',\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

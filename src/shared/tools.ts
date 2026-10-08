@@ -85,7 +85,10 @@ export const TOOL_TITLES: Readonly<Record<string, string>> = Object.freeze({
   list_files: 'List files in the workspace',
   read_file: 'Read a file in the workspace',
   propose_edit: 'Propose a change to a file in the workspace',
-  propose_new_file: 'Propose a new file in the workspace'
+  propose_new_file: 'Propose a new file in the workspace',
+  apply_change: 'Write a change to the workspace',
+  undo_change: 'Undo a change in the workspace',
+  undo_clear: 'Delete the undo history'
 })
 
 /** What to call a tool in a sentence: its title, or its id for a tool this version does not know (an entry of the log from another version). */

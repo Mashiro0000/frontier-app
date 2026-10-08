@@ -1,0 +1,15 @@
+{
+  "label": "n126-aRestoreEdit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "        if (original !== null) await replaceFile(verdict.real, original)",
+      "to": "        if (false as boolean) await replaceFile(verdict.real, original!)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

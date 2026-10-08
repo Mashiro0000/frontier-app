@@ -99,7 +99,7 @@ try {
   check('B: the page lists the two waiting changes, newest first, with the kind, the path, the counts and the size, and a Review button each', list.length === 2 && /^New file: docs\/long\.md$/.test(list[0].title) && /^Change: src\/main\.ts$/.test(list[1].title) && /300 lines added, 0 removed; the file would be 2,\d{3} bytes\./.test(list[0].about) && /1 line added, 1 removed/.test(list[1].about) && list.every((r) => r.button === 'Review...'), show(list))
   check('B: not a line of either change is anywhere on the page (no markup, no text of the new file)', !/alert\(1\)|onerror|row 17|<script>/.test(dialogText))
   const keys = await ev(`Object.keys(window.api.changes).sort()`)
-  check('B: the chat page\'s bridge for changes is exactly list and review', show(keys) === show(['list', 'review']))
+  check('B: the chat page\'s bridge for changes is list, review and (12.6) applied, undo and clearHistory: nothing that applies', show(keys) === show(['applied', 'clearHistory', 'list', 'review', 'undo']))
   const summaries = await ev(`window.api.changes.list()`)
   check('B: what the page is given for each change holds no text of it (eight fields)', summaries.length === 2 && summaries.every((s) => Object.keys(s).length === 8) && !JSON.stringify(summaries).includes('alert') && !JSON.stringify(summaries).includes('because'))
   check('B: the chat page has no `review` object (the Review window\'s bridge is not loaded here)', (await ev(`typeof window.review`)) === 'undefined')
@@ -141,7 +141,7 @@ try {
   await rv.click('#ask')
   await sleep(700)
   st = await rvState(rv)
-  check('C: "Ask to apply..." answers in words that applying is not available yet (12.6), changes nothing and asks no box', /not available yet/.test(st.status) && (await Q.count()) === 1 && treeNow() === treeStart, show([st.status, await Q.count()]))
+  check('C: "Ask to apply..." (12.6) asks the box, and with a no (the stand-in answers no) nothing is written and the window says so', /Nothing was written/.test(st.status) && (await Q.count()) === 2 && treeNow() === treeStart, show([st.status, await Q.count()]))
 
   // ============ D. the same window shows the long change; the end of the difference turns the button on ============
   await closeTools().catch(() => undefined)
@@ -159,7 +159,7 @@ try {
   check('D: "Ask to apply..." is OFF, and the page says why', st.askDisabled === true && /Scroll the whole difference to its end/.test(st.hint), show([st.askDisabled, st.hint]))
   await rv.click('#ask').catch(() => undefined)
   await sleep(300)
-  check('D: a click on it does nothing while it is off', (await Q.count()) === 1 && /Waiting for your answer/.test((await rvState(rv)).status) === false)
+  check('D: a click on it does nothing while it is off', (await Q.count()) === 2 && /Waiting for your answer/.test((await rvState(rv)).status) === false)
   await rv.evaluate(`(() => { const v = document.getElementById('view'); v.scrollTop = Math.floor(v.scrollHeight / 2); return true })()`)
   await sleep(500)
   check('D: half way down it is still off', (await rvState(rv)).askDisabled === true)
@@ -197,7 +197,7 @@ try {
 
   // ============ F. the chat page and the Review window cannot reach each other ============
   const mainKeys = await ev(`Object.keys(window.api).sort()`)
-  check('F: the chat page\'s bridge has no group or function for applying, dropping or reading a change', !mainKeys.some((k) => /review|apply|proposal/i.test(k)) && show(await ev(`Object.keys(window.api.changes).sort()`)) === show(['list', 'review']))
+  check('F: the chat page\'s bridge has no group or function for applying, dropping or reading a change', !mainKeys.some((k) => /review|apply|proposal/i.test(k)) && show(await ev(`Object.keys(window.api.changes).sort()`)) === show(['applied', 'clearHistory', 'list', 'review', 'undo']))
   check('F: the page logged no errors and no warnings in the whole run', page.problems.length === 0, show(page.problems))
 } catch (error) {
   check(`the suite stopped before its end: ${String(error?.stack ?? error).slice(0, 400)}`, false)

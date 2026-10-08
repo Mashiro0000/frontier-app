@@ -1,0 +1,15 @@
+{
+  "label": "n126-aCopyBytes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "        before: original === null ? null : original.toString('base64'),",
+      "to": "        before: original === null ? null : Buffer.from('').toString('base64'),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

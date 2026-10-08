@@ -1,0 +1,18 @@
+{
+  "label": "w126-wIpcPath",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "join(app.getPath('userData'), 'workspace', 'changes.jsonl')",
+      "to": "join(app.getPath('userData'), 'changes.jsonl')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run126.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

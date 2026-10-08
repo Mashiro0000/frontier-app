@@ -2762,3 +2762,20 @@ if you have not, please do before you rely on this. **The design was mine** (you
 
 1. **I have not looked at the window on a screen.** Its layout was checked through the page's own boxes and text (and at the sizes of the window), not by eye; your rule (no screenshots of real dialogs) kept me from taking one. Tell me if anything looks wrong when you open it.
 2. **Proposals still wait in memory only** and are gone when the app closes.
+
+## Stage 12 - Slice 12.6: apply and undo (9 October 2026; D-042)
+
+**Step by step.**
+
+1. **What you will see.** In the Review window, **"Ask to apply..."** (still on only after you have scrolled the whole difference to its end) now really asks. A box of Windows' own opens, for the window you are in: the file, how many lines, the size, **the same fingerprint the window showed**, the red or amber warning if the file is hidden/secret-looking or runs commands, the model's reason (any character the eye cannot see is written out), where the original is kept, and the buttons **"Write this change"** and **"Don't write"** (the second is the one Enter picks). A **no** writes nothing and keeps nothing.
+2. **A yes writes it, in a careful order.** The app makes sure the undo history has room; writes the question and your answer to the log; looks at the file AGAIN (if it changed, was removed or was swapped while you were deciding, it stops and your own edit stays); **keeps a copy of the original in its own data folder and reads it back from the disk before anything is written** (if that fails, the file is not touched); writes the new file next to the old one and puts it in place (a new file is made so that nothing can be overwritten); reads the result back and compares it byte for byte (if it differs, the original is put back); and writes the result to the log. The change leaves the waiting list. Line endings and a byte-order mark stay as they were.
+3. **Undo.** On the Tools page, **"Changes you applied"** lists the last 50 with the path, the size, and whether it can be undone **now**: only while the file is still exactly what the change wrote. If you edited it afterwards it says so and offers no button (an undo would lose what you wrote). **"Undo..."** asks in the Windows box again and puts the original back (or deletes the file the change made; the folders made for it stay). **"Delete the undo history..."** asks, then deletes the copies (your files are not touched; nothing can be undone afterwards).
+4. **The undo copies** are in the app's data folder, not in your project and not in a backup, and are sealed like the chats when you turn encryption on (and unsealed when you turn it off). The history holds 1000 changes or 200 MB; when it is full, applying is refused until you delete it.
+5. **The page can't do it.** The chat page has no function that applies; it can only ask for an undo or for the history to be deleted by id, and each of those asks in the Windows box. The model has no tool that applies or undoes (a model that asks for one is told it doesn't exist; I tried).
+6. **Checked:** 146 checks under Node on a real scratch workspace, 33 in the real window (dev and built), 93 negative controls (88 caught, 5 equivalent by design, written down in D-042). The two older suites that said "not available yet" were updated.
+
+## Stage 12.6 - Things to know (not problems, but worth your attention)
+
+1. **I have not seen the real Windows box with this text.** The window suite stands in for it (it checks the words, the buttons and the default). Tell me if the box looks wrong, especially a very long path.
+2. **Undo puts back the file's contents, not its time stamps or permissions.**
+3. **A power cut in the middle of a write** is not tested (the order and the read-back are); the copy of the original is already on the disk by then.

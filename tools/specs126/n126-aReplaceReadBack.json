@@ -1,0 +1,15 @@
+{
+  "label": "n126-aReplaceReadBack",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "      if (!(await fs.readFile(tmp)).equals(bytes))\n        throw new Error('the temporary file did not read back')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

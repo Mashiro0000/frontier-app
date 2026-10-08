@@ -71,7 +71,7 @@ export function exportText(
       }
     }
     if (call.why !== null) lines.push(`  Reason the model gave: ${quoted(call.why)}`)
-    lines.push(`  ${outcomeText(call.outcome)}`)
+    lines.push(`  ${outcomeText(call.outcome, call.tool)}`)
     if (call.outcome.kind === 'done') {
       for (const source of call.outcome.sources) {
         lines.push(`  Source: ${quoted(source.title)} ${source.url}`)

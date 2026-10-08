@@ -93,7 +93,10 @@ const api: FrontierApi = {
   },
   changes: {
     list: () => ipcRenderer.invoke(CHANNELS.changesList),
-    review: (id) => ipcRenderer.invoke(CHANNELS.changesReview, { id })
+    review: (id) => ipcRenderer.invoke(CHANNELS.changesReview, { id }),
+    applied: () => ipcRenderer.invoke(CHANNELS.changesApplied),
+    undo: (id) => ipcRenderer.invoke(CHANNELS.changesUndo, { id }),
+    clearHistory: () => ipcRenderer.invoke(CHANNELS.changesClearUndo)
   },
   projects: {
     status: () => ipcRenderer.invoke(CHANNELS.projectsStatus),

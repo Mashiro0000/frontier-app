@@ -18,7 +18,22 @@ export interface ChangeSummary {
   runsCommands: boolean
 }
 
-export type ChangeActionResult = { ok: true } | { ok: false; error: string }
+/** `message`: what to tell the person when it worked (the Review window shows it). */
+export type ChangeActionResult = { ok: true; message?: string } | { ok: false; error: string }
+
+/**
+ * A change that was applied, as the Tools page lists it (12.6). `state`: `undoable` (the file is still exactly what the change wrote), `changed` (it was changed
+ * since: an undo would lose what was written), `gone`, `unavailable` (the guard no longer lets the path through) or `undone`.
+ */
+export interface AppliedChange {
+  id: string
+  at: number
+  kind: 'edit' | 'create'
+  path: string
+  bytes: number
+  fingerprint: string
+  state: 'undoable' | 'changed' | 'gone' | 'unavailable' | 'undone'
+}
 
 /**
  * What the Review window is told about the file now, compared with what the proposal saw. `ok`: it is as it was. `changed`: the file is not the bytes the proposal

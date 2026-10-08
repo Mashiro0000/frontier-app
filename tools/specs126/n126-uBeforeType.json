@@ -1,0 +1,15 @@
+{
+  "label": "n126-uBeforeType",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/undoRecords.ts",
+      "from": "      typeof before !== 'string' ||\n      !BASE64",
+      "to": "      !BASE64"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n126-aWrapper",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "    apply: (proposal, owner) => oneAtATime(() => apply(proposal, owner)),",
+      "to": "    apply,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

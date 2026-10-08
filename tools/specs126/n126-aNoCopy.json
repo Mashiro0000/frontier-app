@@ -1,0 +1,15 @@
+{
+  "label": "n126-aNoCopy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "      await finish(call, false, 0)\n      return { ok: false, error: NO_UNDO_COPY }",
+      "to": "      await finish(call, false, 0)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

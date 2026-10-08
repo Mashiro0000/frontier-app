@@ -1,0 +1,15 @@
+{
+  "label": "n126-uBeforeHash",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/undoRecords.ts",
+      "from": "    if (bytes.length > WORKSPACE_LIMITS.maxFileBytes || sha256(bytes) !== beforeHash) return null",
+      "to": "    if (bytes.length > WORKSPACE_LIMITS.maxFileBytes) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

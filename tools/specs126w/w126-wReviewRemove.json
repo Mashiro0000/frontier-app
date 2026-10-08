@@ -1,0 +1,18 @@
+{
+  "label": "w126-wReviewRemove",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewService.ts",
+      "from": "          store.remove(proposal.id)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run126.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

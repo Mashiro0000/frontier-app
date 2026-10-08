@@ -48,7 +48,7 @@ const DATA_FILES = [
   'Local State', 'Preferences', 'Network\\Cookies',
   'memory.json.tmp', 'instructions.json.damaged-1700000000000', 'conversations\\c-1.json.tmp'
 ]
-const DATA_DIRS = ['conversations', 'attachments', 'usage', 'audit', 'Network']
+const DATA_DIRS = ['conversations', 'attachments', 'usage', 'audit', 'workspace', 'Network']
 const NOT_THERE = ['newfile.json', 'audit\\new-dir\\x.log', 'memory.json.bak', 'conversations\\c-3.json', 'brand\\new\\place\\a.txt']
 
 // ----- the scratch world -----

@@ -79,7 +79,7 @@ const node = {
   // ----- the wiring -----
   iStrip: [IPC, '        return withWorkspace((await toolSettings.read()).settings, folder !== null)', '        void folder\n        return (await toolSettings.read()).settings'],
   iRefresh: [IPC, '        const folder = await workspaceService.refresh()', '        const folder: string | null = null'],
-  iKept: [IPC, '      toolSettings.file,\n      workspaceStore.file\n    ])', '      toolSettings.file\n    ])'],
+  iKept: [IPC, '      toolSettings.file,\n      workspaceStore.file,\n      undoJournal.document\n    ])', '      toolSettings.file\n    ])'],
   iIdle: [IPC, '      toolSettings.file.whenIdle(),\n      workspaceStore.file.whenIdle()', '      toolSettings.file.whenIdle()'],
   iChooseGuard: [IPC, '    CHANNELS.workspaceChoose,\n    guardedForWindow(', '    CHANNELS.workspaceChoose,\n    guarded('],
   iSetOnGuard: [IPC, '    CHANNELS.workspaceSetOn,\n    guardedForWindow(', '    CHANNELS.workspaceSetOn,\n    guarded('],

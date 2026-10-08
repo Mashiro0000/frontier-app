@@ -1,0 +1,15 @@
+{
+  "label": "n126-uFoldUnknown",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/undoRecords.ts",
+      "from": "      if (found !== undefined) found.undone = true",
+      "to": "      found!.undone = true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}
