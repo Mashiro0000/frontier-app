@@ -46,3 +46,20 @@ export const WORKSPACE_REFUSALS = [
   'exists' //               a new file where one already is
 ] as const
 export type WorkspaceRefusal = (typeof WORKSPACE_REFUSALS)[number]
+
+/**
+ * What main says about the code workspace (12.3). `folder` is the chosen folder as it really is, or null. `on` is whether the model may ask to use it (the one
+ * "Code workspace" switch, which turns the tools that read on and off together). `problem`: the setting could not be read (there is then no workspace).
+ * `unusable`: the chosen folder cannot be used just now, and why (it was moved, replaced by a link, or now holds the data folder).
+ */
+export interface WorkspaceStatus {
+  folder: string | null
+  name: string | null
+  on: boolean
+  problem: string | null
+  unusable: string | null
+}
+
+/** The answer to a change: `cancelled` means the person closed the folder dialog, or said no in the system's message box, and nothing was changed. */
+export type WorkspaceChangeResult =
+  { ok: true; status: WorkspaceStatus } | { ok: false; error: string; cancelled?: true }

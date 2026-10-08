@@ -1,0 +1,15 @@
+{
+  "label": "n123-qOneReason",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "          `The model's reason: ${shown(call.why)}`,\n          '',\n          reads",
+      "to": "          `The model's reason: ${call.why}`,\n          '',\n          reads"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

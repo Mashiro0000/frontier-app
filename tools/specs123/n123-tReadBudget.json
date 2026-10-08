@@ -1,0 +1,15 @@
+{
+  "label": "n123-tReadBudget",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "    const budget = Math.max(0, ctx.maxChars - header.join('\\n').length - 400)",
+      "to": "    const budget = Infinity"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n123-tListLinks",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "      if (entry.isSymbolicLink() || (!entry.isDirectory() && !entry.isFile())) {",
+      "to": "      if (!entry.isDirectory() && !entry.isFile() && !entry.isSymbolicLink()) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n123-iChooseGuard",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    CHANNELS.workspaceChoose,\n    guardedForWindow(",
+      "to": "    CHANNELS.workspaceChoose,\n    guarded("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

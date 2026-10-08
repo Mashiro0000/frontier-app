@@ -27,6 +27,7 @@ import {
 } from '../shared/ipc'
 import type { AuditDeleteResult, AuditExportResult, AuditView } from '../shared/audit'
 import type { ToolChangeResult, ToolsStatus } from '../shared/tools'
+import type { WorkspaceChangeResult, WorkspaceStatus } from '../shared/workspace'
 import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from '../shared/memory'
 import type { ProjectChangeResult, ProjectsStatus } from '../shared/projects'
 import type { UsageSummary } from '../shared/usage'
@@ -58,6 +59,7 @@ import {
   askPerson,
   pickAttachmentPaths,
   pickAuditExportPath,
+  pickWorkspaceFolder,
   pickNotesExportPath,
   systemAskers,
   systemPickers
@@ -86,6 +88,10 @@ import { heldKey, type SavedKey } from './secrets'
 import { isTrustedSender } from './security'
 import { createQuestionGate } from './systemQuestion'
 import { BUILT_IN_TOOLS, createToolRegistry } from './toolRegistry'
+import { createWorkspaceStore, type AvoidPlaces } from './workspace'
+import { createWorkspaceGuard } from './workspaceGuard'
+import { createWorkspaceService, withWorkspace } from './workspaceService'
+import { WORKSPACE_READ_TOOLS } from './workspaceTools'
 import { createToolSettings } from './toolSettings'
 import { createToolSettingsService } from './toolSettingsService'
 import { createUsageLedger } from './usageLedger'
@@ -426,7 +432,62 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     writeMode: protection.writeMode
   })
   // The one registry of the build: the Tools page lists its tools, and the loop of a reply offers and runs them.
-  const toolRegistry = createToolRegistry(BUILT_IN_TOOLS)
+  const toolRegistry = createToolRegistry([...BUILT_IN_TOOLS, ...WORKSPACE_READ_TOOLS])
+  // The code workspace (D-042): the one folder the model may list and read files in, kept in workspace.json like the tool settings. The guard holds the
+  // containment rule beside the data-folder block; the service is what the page can ask for (choose, clear, switch on and off).
+  const dataGuard = createDataFolderGuard({ roots: () => [app.getPath('userData')] })
+  const workspaceStore = createWorkspaceStore({
+    pathOf: () => join(app.getPath('userData'), 'workspace.json'),
+    box: secureStorage,
+    writeMode: protection.writeMode
+  })
+  let workspaceRoot: string | null = null
+  // The places that may not be the workspace and the folders above them (the user's folder, the app-data folder, the personal folders), and the system's own.
+  const avoidPlaces = (): AvoidPlaces => {
+    const named = (name: Parameters<typeof app.getPath>[0]): string[] => {
+      try {
+        return [app.getPath(name)]
+      } catch {
+        return []
+      }
+    }
+    const env = (name: string): string[] => {
+      const value = process.env[name]
+      return value === undefined || value === '' ? [] : [value]
+    }
+    return {
+      holds: [
+        ...named('home'),
+        ...named('appData'),
+        ...named('desktop'),
+        ...named('documents'),
+        ...named('downloads'),
+        ...named('music'),
+        ...named('pictures'),
+        ...named('videos'),
+        ...env('SystemDrive').map((drive) => `${drive}\\`)
+      ],
+      inside: [
+        ...env('SystemRoot'),
+        ...env('ProgramFiles'),
+        ...env('ProgramFiles(x86)'),
+        ...env('ProgramData')
+      ]
+    }
+  }
+  const workspaceGuard = createWorkspaceGuard({ root: () => workspaceRoot, dataGuard })
+  const workspaceService = createWorkspaceService({
+    store: workspaceStore,
+    toolSettings,
+    gate: questions,
+    pickFolder: pickWorkspaceFolder,
+    dataGuard,
+    guard: workspaceGuard,
+    avoid: () => avoidPlaces(),
+    onFolder: (folder) => {
+      workspaceRoot = folder
+    }
+  })
   // What the page can do with the settings (D-041, 11.4): read them, and ask for a change. A tool switched ON and a higher cap ask in the system's message box.
   const toolsService = createToolSettingsService({
     store: toolSettings,
@@ -444,7 +505,8 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       memory.file,
       projects.file,
       auditLog.document,
-      toolSettings.file
+      toolSettings.file,
+      workspaceStore.file
     ]) // rewritten with the chats (D-039, D-041)
   })
 
@@ -735,6 +797,52 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
+  // The code workspace (D-042, 12.3). The page reads the status and asks for a change; choosing a folder and switching the tools on ask in the system's box
+  // for the window that asked, and the folder dialog is opened here, never by the page.
+  ipcMain.handle(
+    CHANNELS.workspaceStatus,
+    guarded(async (): Promise<WorkspaceStatus> => {
+      try {
+        return await workspaceService.status()
+      } catch (error) {
+        console.error('Reading the workspace setting failed:', reason(error))
+        throw new Error('Your workspace setting could not be read.')
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.workspaceChoose,
+    guardedForWindow(async (window): Promise<WorkspaceChangeResult> => {
+      try {
+        return await workspaceService.choose(window)
+      } catch (error) {
+        console.error('Choosing the workspace failed:', reason(error))
+        return { ok: false, error: 'The workspace could not be changed.' }
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.workspaceClear,
+    guarded(async (): Promise<WorkspaceChangeResult> => {
+      try {
+        return await workspaceService.clear()
+      } catch (error) {
+        console.error('Clearing the workspace failed:', reason(error))
+        return { ok: false, error: 'The workspace could not be changed.' }
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.workspaceSetOn,
+    guardedForWindow(async (window, input: unknown): Promise<WorkspaceChangeResult> => {
+      try {
+        return await workspaceService.setOn(window, input)
+      } catch (error) {
+        console.error('Changing the workspace tools failed:', reason(error))
+        return { ok: false, error: 'The workspace could not be changed.' }
+      }
+    })
+  )
   // The tools (D-041, 11.4). The page reads which are on and the caps, and asks for a change; a tool switched on and a higher cap ask in the system's
   // message box for the window that asked. The page has no way to run a tool or to answer a question.
   ipcMain.handle(
@@ -859,7 +967,8 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   const toolRuntime = createToolRuntime({
     tools: toolRegistry,
     gate: questions,
-    guard: createDataFolderGuard({ roots: () => [app.getPath('userData')] }),
+    guard: dataGuard,
+    workspace: { guard: workspaceGuard },
     record: (event) => auditLog.append(event),
     holdsSavedKey: async (text) => heldKey(text, await savedKeys()) !== null
   })
@@ -872,7 +981,14 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     savedKeys,
     notes: (projectId) => memory.forRequest(projectId),
     project: (id) => projects.forRequest(id),
-    tools: { settings: async () => (await toolSettings.read()).settings, runtime: toolRuntime }
+    tools: {
+      // Read before every request of a reply: the workspace tools are offered only while a folder is chosen, and the guard works from the folder as it is now.
+      settings: async () => {
+        const folder = await workspaceService.refresh()
+        return withWorkspace((await toolSettings.read()).settings, folder !== null)
+      },
+      runtime: toolRuntime
+    }
   })
   // The lock the encryption flows run in is the backup service's, so waiting for it waits for them too.
   return () =>
@@ -885,6 +1001,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       memory.file.whenIdle(),
       projects.file.whenIdle(),
       auditLog.whenIdle(),
-      toolSettings.file.whenIdle()
+      toolSettings.file.whenIdle(),
+      workspaceStore.file.whenIdle()
     ]).then(() => undefined)
 }

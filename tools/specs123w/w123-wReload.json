@@ -1,0 +1,18 @@
+{
+  "label": "w123-wReload",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/WorkspaceSection.tsx",
+      "from": "    settings.reload()\n  }",
+      "to": "  }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run123.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

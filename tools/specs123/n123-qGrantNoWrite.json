@@ -1,0 +1,15 @@
+{
+  "label": "n123-qGrantNoWrite",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": " Nothing is ever written without your separate approval of each change.",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

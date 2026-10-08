@@ -1,0 +1,15 @@
+{
+  "label": "n123-sSeen",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceService.ts",
+      "from": "    options.onFolder(folder)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

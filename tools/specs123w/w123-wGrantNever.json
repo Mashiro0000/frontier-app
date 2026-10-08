@@ -1,0 +1,18 @@
+{
+  "label": "w123-wGrantNever",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "      yes: 'Allow for this reply',\n      no: \"Don't allow\"\n    }),\n    oneByOne",
+      "to": "      yes: 'Allow for this reply',\n      no: 'Allow'\n    }),\n    oneByOne"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run123.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

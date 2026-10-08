@@ -1,0 +1,15 @@
+{
+  "label": "n123-sListed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettingsService.ts",
+      "from": "      return def === undefined || def.counts === 'file'\n        ? []",
+      "to": "      return def === undefined\n        ? []"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

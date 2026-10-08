@@ -52,7 +52,7 @@ const plural = (n: number, one: string, many: string): string =>
  * waiting for the person (in the system's own message box), and one that was allowed and has no end yet is running. When the reply is over, the same states
  * mean the app was closed meanwhile. The words for a refusal or a no are the audit log's.
  */
-export function noteOutcomeText(outcome: AuditOutcome, live: boolean): string {
+export function noteOutcomeText(outcome: AuditOutcome, live: boolean, tool = 'web_search'): string {
   switch (outcome.kind) {
     case 'refused':
       return REFUSED_TEXT[outcome.code]
@@ -61,6 +61,10 @@ export function noteOutcomeText(outcome: AuditOutcome, live: boolean): string {
     case 'done':
       if (outcome.covered === true) {
         return `Allowed for this reply. ${plural(outcome.size, 'character came', 'characters came')} back.`
+      }
+      // A tool that brings no pages (a file tool) says how much text came back; a search says how many pages.
+      if (tool !== 'web_search') {
+        return `You allowed it. ${plural(outcome.size, 'character came', 'characters came')} back.`
       }
       return outcome.sources.length === 0
         ? 'You allowed it. No sources came back.'

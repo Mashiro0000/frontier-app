@@ -1,0 +1,15 @@
+{
+  "label": "n123-tReadNext",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "        : `(The file goes on: ask again from line ${last + 1}.)`",
+      "to": "        : `(The file goes on: ask again from line ${last}.)`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

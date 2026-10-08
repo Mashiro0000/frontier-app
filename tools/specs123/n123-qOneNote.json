@@ -1,0 +1,15 @@
+{
+  "label": "n123-qOneNote",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "          `Why you are asked about it on its own: ${first?.verdict.note ?? 'it is hidden'}.`,\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

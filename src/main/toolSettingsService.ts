@@ -120,7 +120,8 @@ export function createToolSettingsService(
   const infoOf = (settings: ToolSettings): ToolInfo[] =>
     registry.ids().flatMap((id): ToolInfo[] => {
       const def = registry.get(id)
-      return def === undefined
+      // The tools of the code workspace have their own switch (workspaceService.ts): they are not listed here.
+      return def === undefined || def.counts === 'file'
         ? []
         : [{ id, title: def.title, about: def.effect, on: toolIsOn(settings, id) }]
     })
@@ -166,7 +167,9 @@ export function createToolSettingsService(
       }
       const { tool, on } = input as { tool: string; on: boolean }
       const def = registry.get(tool)
-      if (def === undefined) return Promise.resolve({ ok: false, error: NO_TOOL })
+      if (def === undefined || def.counts === 'file') {
+        return Promise.resolve({ ok: false, error: NO_TOOL })
+      }
       return oneAtATime(async () => {
         const current = await store.read()
         if (!on) {

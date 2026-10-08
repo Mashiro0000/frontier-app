@@ -1,0 +1,18 @@
+{
+  "label": "w123-wPathText",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/WorkspaceSection.tsx",
+      "from": "                {workspace.folder ?? 'No folder is chosen.'}",
+      "to": "                {workspace.name ?? 'No folder is chosen.'}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run123.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

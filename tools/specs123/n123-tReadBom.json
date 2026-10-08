@@ -1,0 +1,15 @@
+{
+  "label": "n123-tReadBom",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "${decoded.bom ? ' with a byte-order mark' : ''}",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w123-wClearButton",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/WorkspaceSection.tsx",
+      "from": "              {workspace.folder !== null && (\n                <button",
+      "to": "              {false && (\n                <button"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run123.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

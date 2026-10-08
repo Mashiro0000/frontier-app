@@ -1,0 +1,15 @@
+{
+  "label": "n123-tReadEol",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "        ? 'Windows line endings'",
+      "to": "        ? 'Unix line endings'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

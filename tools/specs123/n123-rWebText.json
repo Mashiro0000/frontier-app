@@ -1,0 +1,15 @@
+{
+  "label": "n123-rWebText",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "                      outcome.tool === 'web_search'\n                        ? toolResultText(approvedQuery(call), outcome.result)\n                        : outcome.result.text,",
+      "to": "                      toolResultText(approvedQuery(call), outcome.result),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

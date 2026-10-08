@@ -1,0 +1,18 @@
+{
+  "label": "w123-dDialog",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupDialogs.ts",
+      "from": "    properties: ['openDirectory' as const]",
+      "to": "    properties: ['openFile' as const]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run123.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

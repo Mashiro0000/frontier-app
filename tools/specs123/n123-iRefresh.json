@@ -1,0 +1,15 @@
+{
+  "label": "n123-iRefresh",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "        const folder = await workspaceService.refresh()",
+      "to": "        const folder: string | null = null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

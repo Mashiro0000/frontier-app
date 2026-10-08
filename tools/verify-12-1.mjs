@@ -566,9 +566,9 @@ await guard('I', async () => {
   check('I: no Electron, network, process or shell in the three files', ['workspaceGuard.ts', 'workspace.ts', 'workspaceText.ts'].every((f) => !/electron|child_process|\bfetch\(|https?:|\bspawn|\bexec\(|require\(|\.writeFile|\.rm\(|\.unlink|\.rename|\.mkdir|\.appendFile|\.copyFile/.test(code(fs.readFileSync(`${dir}/${f}`, 'utf8')).replace(/file\.write|file\.remove/g, ''))))
   check('I: the guard never writes: no write, delete, rename or make-folder call in it', !/fs\.(write|rm|unlink|rename|mkdir|append|copy|truncate|symlink|link)/.test(code(guardSource)))
   const used = fs.readdirSync(dir).filter((f) => f.endsWith('.ts') && !['workspaceGuard.ts', 'workspace.ts', 'workspaceText.ts'].includes(f)).filter((f) => /workspaceGuard|\.\/workspace'|workspaceText/.test(fs.readFileSync(`${dir}/${f}`, 'utf8')))
-  check('I: nothing else in the app imports them yet (12.2 wires them in, and the built program is the program it was)', used.length === 0, show(used))
+  check("I: only the wiring, the core (as a type), the registry (the shared limits), the reply's tools, the workspace service and the read tools import them (12.2 and 12.3 wired them in)", used.sort().join() === 'ipc.ts,replyTools.ts,toolCore.ts,toolRegistry.ts,workspaceService.ts,workspaceTools.ts', show(used))
   const preload = fs.readFileSync(`${REPO}/src/preload/index.ts`, 'utf8') + fs.readFileSync(`${REPO}/src/shared/ipc.ts`, 'utf8')
-  check('I: the page\'s bridge and the channel list say nothing of a workspace yet', !/workspace/i.test(preload))
+  check("I: the page's bridge has no function that reads a file, lists a folder or takes a path (12.3 added only the four of the workspace group)", !/readFile|listFiles|readWorkspace|listWorkspace|workspacePath/i.test(preload))
 })
 
 // ============ J. the control: the same battery with the boundary taken out ============

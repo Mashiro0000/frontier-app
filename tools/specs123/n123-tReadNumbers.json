@@ -1,0 +1,15 @@
+{
+  "label": "n123-tReadNumbers",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "      const line = `${String(next).padStart(width)}| ${all[next - 1]}`",
+      "to": "      const line = `${all[next - 1]}`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

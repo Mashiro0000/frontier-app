@@ -18,6 +18,8 @@ import { createKeptFile, type KeptFile } from './keptFile'
 export const WORKSPACE_FILE_VERSION = 1
 const MAX_FILE_BYTES = 4 * 1024
 const MAX_FOLDER_CHARS = 1024
+/** The longest folder path that may be chosen as the workspace (the question that names it must fit the box). */
+export const WORKSPACE_MAX_FOLDER_CHARS = 300
 
 export interface WorkspaceRecord {
   /** The folder as it really is (the disk's own names, no link on the way). */
@@ -201,6 +203,12 @@ export async function checkWorkspaceFolder(
     }
     const tidy = lexicalPath(real, null, platform)
     if (!tidy.ok) return refuse('That folder could not be checked.')
+    // The question that names the folder must fit the system's box in full (toolQuestion.ts), so the folder's path is kept short.
+    if (tidy.abs.length > WORKSPACE_MAX_FOLDER_CHARS) {
+      return refuse(
+        `That folder's path is longer than ${WORKSPACE_MAX_FOLDER_CHARS} characters: choose a folder with a shorter path.`
+      )
+    }
     return { ok: true, folder: tidy.abs, name: realParts[realParts.length - 1] }
   } catch {
     return refuse('That folder could not be checked.')

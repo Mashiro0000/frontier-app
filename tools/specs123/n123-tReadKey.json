@@ -1,0 +1,15 @@
+{
+  "label": "n123-tReadKey",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "    if (held) {",
+      "to": "    if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/replyTools.ts",
-      "from": "                    text: toolResultText(approvedQuery(call), outcome.result),",
-      "to": "                    text: toolResultText(null, outcome.result),"
+      "from": "                      outcome.tool === 'web_search'\n                        ? toolResultText(approvedQuery(call), outcome.result)\n                        : outcome.result.text,",
+      "to": "                      outcome.tool === 'web_search'\n                        ? toolResultText(null, outcome.result)\n                        : outcome.result.text,"
     }
   ],
   "argv": [

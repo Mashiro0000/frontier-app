@@ -1,0 +1,15 @@
+{
+  "label": "n123-rCaps",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "              questions: workspaceQuestions({ fileCaps: budget.fileCaps })",
+      "to": "              questions: workspaceQuestions({ fileCaps: { calls: 99, chars: 1 } })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

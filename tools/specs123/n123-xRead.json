@@ -1,0 +1,15 @@
+{
+  "label": "n123-xRead",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "    const bytes = await fs.readFile(verdict.real)",
+      "to": "    await fs.writeFile(verdict.real + '.x', '')\n    const bytes = await fs.readFile(verdict.real)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

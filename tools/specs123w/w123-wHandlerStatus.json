@@ -1,0 +1,18 @@
+{
+  "label": "w123-wHandlerStatus",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    CHANNELS.workspaceClear,\n    guarded(async (): Promise<WorkspaceChangeResult> => {\n      try {\n        return await workspaceService.clear()",
+      "to": "    CHANNELS.workspaceClear,\n    guarded(async (): Promise<WorkspaceChangeResult> => {\n      try {\n        return await workspaceService.status().then((status) => ({ ok: true as const, status }))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run123.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

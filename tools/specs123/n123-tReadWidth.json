@@ -1,0 +1,15 @@
+{
+  "label": "n123-tReadWidth",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "    const width = String(total).length",
+      "to": "    const width = 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

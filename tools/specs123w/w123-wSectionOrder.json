@@ -1,0 +1,18 @@
+{
+  "label": "w123-wSectionOrder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/ToolsDialog.tsx",
+      "from": "      <SwitchesSection settings={settings} busy={busy} working={working} />\n      <WorkspaceSection settings={settings} busy={busy} working={working} />",
+      "to": "      <WorkspaceSection settings={settings} busy={busy} working={working} />\n      <SwitchesSection settings={settings} busy={busy} working={working} />"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run123.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

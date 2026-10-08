@@ -269,7 +269,7 @@ await guard('E', async () => {
 // ============ F. source checks: what the page can and cannot do ============
 await guard('F', async () => {
   const preload = source('src/preload/index.ts')
-  const group = preload.slice(preload.indexOf('  tools: {'), preload.indexOf('  projects: {'))
+  const group = preload.slice(preload.indexOf('  tools: {'), preload.indexOf('  workspace: {'))
   const fns = [...group.matchAll(/^\s{4}(\w+):/gm)].map((m) => m[1])
   check('F: the bridge\'s tools group is exactly status, setEnabled, setCaps and reset', show(fns) === '["status","setEnabled","setCaps","reset"]', show(fns))
   check('F: ...and each sends only data: no path, no answer, no token', /setEnabled: \(tool, on\) => ipcRenderer\.invoke\(CHANNELS\.toolsSetEnabled, \{ tool, on \}\)/.test(group) && /setCaps: \(caps\) => ipcRenderer\.invoke\(CHANNELS\.toolsSetCaps, caps\)/.test(group))
@@ -282,7 +282,7 @@ await guard('F', async () => {
   const files = ['src/renderer/src/chat/ToolNote.tsx', 'src/renderer/src/chat/Sources.tsx', 'src/renderer/src/tools/SwitchesSection.tsx', 'src/renderer/src/chat/MessageBubble.tsx']
   check('F: what a model or a page wrote is only ever shown as text: no markup is set, no address is an href or src, no frame, no direct window.open in the notes, the sources or the switches', files.every((f) => !/dangerouslySetInnerHTML|href=|src=|<a[ >]|<iframe|window\.open|innerHTML|eval\(/.test(source(f))))
   check('F: a source is a button that asks to open the address through the same box as any link, and carries the address only as a tooltip', /OpenLinkContext/.test(source('src/renderer/src/chat/Sources.tsx')) && /<button/.test(source('src/renderer/src/chat/Sources.tsx')) && /openLink\(source\.url\)/.test(source('src/renderer/src/chat/Sources.tsx')))
-  check('F: the Stop button says "Stop everything" when a tool is on, and "Stop" otherwise', /stopEverything \? 'Stop everything' : 'Stop'/.test(source('src/renderer/src/chat/Composer.tsx')) && /stopEverything=\{toolsOn\}/.test(source('src/renderer/src/chat/ChatView.tsx')) && /toolsOn=\{anyToolOn\(toolSettings\.status\)\}/.test(source('src/renderer/src/App.tsx')))
+  check('F: the Stop button says "Stop everything" when a tool is on, and "Stop" otherwise', /stopEverything \? 'Stop everything' : 'Stop'/.test(source('src/renderer/src/chat/Composer.tsx')) && /stopEverything=\{toolsOn\}/.test(source('src/renderer/src/chat/ChatView.tsx')) && /toolsOn=\{anyToolOn\(toolSettings\.status, toolSettings\.workspace\)\}/.test(source('src/renderer/src/App.tsx')))
   check('F: the tool notes never go back to the model: the wire messages hold the text only', !/tools/.test(source('src/renderer/src/chat/history.ts')))
   check('F: the settings dialog\'s Escape is held while main is working', /busyRef/.test(source('src/renderer/src/tools/ToolsDialog.tsx')))
 })

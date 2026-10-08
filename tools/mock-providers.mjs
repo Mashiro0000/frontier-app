@@ -415,6 +415,23 @@ export function startMock(port = 8787) {
         // asks again after every result ("tool-many", to reach the reply's caps).
         const offered = (body.tools ?? []).some((t) => t?.name === 'web_search' && (t.type === undefined || t.type === 'custom'))
         const rounds = body.messages.filter((m) => m.role === 'user' && Array.isArray(m.content) && m.content.some((b) => b?.type === 'tool_result')).length
+        // 12.3: a model that asks for the tools of the workspace (POST /__tools { calls: [{ name, input }, ...] }): one call for each round, in order, and then
+        // an answer that says what it was told. A call to a tool that was not offered is made all the same (a model can ask for anything).
+        if (Array.isArray(toolsControl.calls)) {
+          if (rounds >= toolsControl.calls.length) {
+            await echoPieces(res, index, answerFromResults(body), () => alive)
+            return alive ? finish(res, index, 'end_turn') : undefined
+          }
+          const planned = toolsControl.calls[rounds]
+          if (rounds === 0) text(res, index, 'Let me look at your files. ')
+          sse(res, 'content_block_stop', { type: 'content_block_stop', index })
+          const at = index + 1
+          const id = `toolu_mock_${requests.length}`
+          issued.set(id, { thinking: MODELS[body.model].thinks && directive !== 'no-thinking' ? 'EuYBmock' : null })
+          sse(res, 'content_block_start', { type: 'content_block_start', index: at, content_block: { type: 'tool_use', id, name: planned.name, input: {} } })
+          sse(res, 'content_block_delta', { type: 'content_block_delta', index: at, delta: { type: 'input_json_delta', partial_json: JSON.stringify({ why: 'To answer the question.', ...planned.input }) } })
+          return finish(res, at, 'tool_use')
+        }
         if (endsWithResults(body) && !(directive === 'tool-many' && offered)) {
           await echoPieces(res, index, answerFromResults(body), () => alive)
           return alive ? finish(res, index, 'end_turn') : undefined

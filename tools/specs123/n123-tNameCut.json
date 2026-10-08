@@ -1,0 +1,15 @@
+{
+  "label": "n123-tNameCut",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "    if (count >= MAX_NAME_CHARS) return `${out}...`\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

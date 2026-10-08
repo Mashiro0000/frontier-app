@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/App.tsx",
-      "from": "toolsOn={anyToolOn(toolSettings.status)}",
+      "from": "toolsOn={anyToolOn(toolSettings.status, toolSettings.workspace)}",
       "to": "toolsOn={false}"
     }
   ],

@@ -1,0 +1,15 @@
+{
+  "label": "n123-iRegistry",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "  const toolRegistry = createToolRegistry([...BUILT_IN_TOOLS, ...WORKSPACE_READ_TOOLS])",
+      "to": "  const toolRegistry = createToolRegistry(BUILT_IN_TOOLS)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

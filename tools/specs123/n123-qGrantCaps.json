@@ -1,0 +1,15 @@
+{
+  "label": "n123-qGrantCaps",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "        `At most ${options.fileCaps.calls} file calls and ${fmt(options.fileCaps.chars)} characters of file text in this reply.`,\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

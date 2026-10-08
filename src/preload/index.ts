@@ -85,6 +85,12 @@ const api: FrontierApi = {
     setCaps: (caps) => ipcRenderer.invoke(CHANNELS.toolsSetCaps, caps),
     reset: () => ipcRenderer.invoke(CHANNELS.toolsReset)
   },
+  workspace: {
+    status: () => ipcRenderer.invoke(CHANNELS.workspaceStatus),
+    choose: () => ipcRenderer.invoke(CHANNELS.workspaceChoose),
+    clear: () => ipcRenderer.invoke(CHANNELS.workspaceClear),
+    setOn: (on) => ipcRenderer.invoke(CHANNELS.workspaceSetOn, { on })
+  },
   projects: {
     status: () => ipcRenderer.invoke(CHANNELS.projectsStatus),
     create: (name) => ipcRenderer.invoke(CHANNELS.projectsCreate, { name }),

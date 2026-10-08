@@ -81,7 +81,9 @@ export type AnswerCode = (typeof ANSWER_CODES)[number]
 
 /** What the person calls each tool that exists (the registry's titles; a suite checks they agree), so that the audit log can be read without the registry. */
 export const TOOL_TITLES: Readonly<Record<string, string>> = Object.freeze({
-  web_search: 'Search the web'
+  web_search: 'Search the web',
+  list_files: 'List files in the workspace',
+  read_file: 'Read a file in the workspace'
 })
 
 /** What to call a tool in a sentence: its title, or its id for a tool this version does not know (an entry of the log from another version). */

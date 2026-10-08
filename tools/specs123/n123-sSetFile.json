@@ -1,0 +1,15 @@
+{
+  "label": "n123-sSetFile",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettingsService.ts",
+      "from": "      if (def === undefined || def.counts === 'file') {",
+      "to": "      if (def === undefined) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

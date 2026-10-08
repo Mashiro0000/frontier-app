@@ -12,6 +12,7 @@ import type { ProjectChangeResult, ProjectsStatus } from './projects'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
 import type { ToolCaps, ToolChangeResult, ToolEvent, ToolsStatus } from './tools'
+import type { WorkspaceChangeResult, WorkspaceStatus } from './workspace'
 import type { ReplyUsage, UsageSummary } from './usage'
 
 /**
@@ -607,6 +608,18 @@ export interface FrontierApi {
     /** When the settings file could not be read: start again with every tool off and the caps at their defaults (the file is kept as a copy beside it). */
     reset(): Promise<ToolChangeResult>
   }
+  /**
+   * The code workspace (Stage 12.3, D-042): the one folder the model may list and read files in, kept by main in workspace.json. The page can read the
+   * status and ask for a change; it never supplies a path (main opens the system's folder dialog itself and judges the answer). Choosing a folder and
+   * switching the tools on ask in the system's own message box, which the page cannot answer; clearing the folder and switching off do not. The page has no
+   * way to read a file, list a folder, approve a call or answer a question.
+   */
+  workspace: {
+    status(): Promise<WorkspaceStatus>
+    choose(): Promise<WorkspaceChangeResult>
+    clear(): Promise<WorkspaceChangeResult>
+    setOn(on: boolean): Promise<WorkspaceChangeResult>
+  }
   projects: {
     status(): Promise<ProjectsStatus>
     create(name: string): Promise<ProjectChangeResult>
@@ -673,7 +686,11 @@ export const CHANNELS = {
   toolsStatus: 'tools:status',
   toolsSetEnabled: 'tools:set-enabled',
   toolsSetCaps: 'tools:set-caps',
-  toolsReset: 'tools:reset'
+  toolsReset: 'tools:reset',
+  workspaceStatus: 'workspace:status',
+  workspaceChoose: 'workspace:choose',
+  workspaceClear: 'workspace:clear',
+  workspaceSetOn: 'workspace:set-on'
 } as const
 
 /**
