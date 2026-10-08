@@ -641,6 +641,12 @@ body {
   color: var(--color-text-muted);
 }
 
+.sources-note {
+  margin-bottom: 2px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
 .sources-list {
   display: flex;
   flex-direction: column;

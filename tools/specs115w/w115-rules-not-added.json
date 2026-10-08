@@ -1,0 +1,18 @@
+{
+  "label": "w115-rules-not-added",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "  if (parts.tools === true) pieces.push(TOOL_RULES)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run115.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

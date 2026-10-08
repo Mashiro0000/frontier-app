@@ -17,6 +17,9 @@ function Sources({ sources }: SourcesProps): React.JSX.Element {
   return (
     <section className="sources" aria-label="Sources">
       <h4 className="sources-title">Sources</h4>
+      <p className="sources-note">
+        Pages from the web: other people wrote them, and the app has not checked them.
+      </p>
       <ol className="sources-list">
         {sources.map((source) => (
           <li key={source.url} className="sources-item">

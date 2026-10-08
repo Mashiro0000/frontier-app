@@ -23,7 +23,7 @@ const SRC = `${REPO_URL}/src`
 const providers = `${SRC}/main/providers/`
 const { anthropicAdapter } = await import(providers + 'anthropic.ts')
 const { openaiAdapter } = await import(providers + 'openai.ts')
-const { buildStreamRequest, mergeAdjacent } = await import(providers + 'request.ts')
+const { buildStreamRequest, mergeAdjacent, TOOL_RULES } = await import(providers + 'request.ts')
 const searchMod = await import(providers + 'search.ts')
 const { parseRegistry } = await import(`${SRC}/shared/registry.ts`)
 const sharedTools = await import(`${SRC}/shared/tools.ts`)
@@ -90,7 +90,7 @@ await guard('A', async () => {
   check('A: ...an empty list of tools is the same as none', !('tools' in buildStreamRequest({ credentials: credsFor('anthropic'), model: OPUS, messages: user, tools: [], signal: new AbortController().signal })))
   const withTools = buildStreamRequest({ credentials: credsFor('anthropic'), model: OPUS, messages: user, tools: [SPEC], signal: new AbortController().signal })
   check('A: with tools, they are in the request', show(withTools.tools?.map((t) => t.name)) === '["web_search"]')
-  check('A: the system prompt is the same with and without tools (the tool says what it is for)', withTools.system === plain.system)
+  check('A: with tools the system prompt is the app\'s rules and then the rules for tools (11.5), and nothing else differs', withTools.system === plain.system + '\n\n' + TOOL_RULES && !plain.system.includes(TOOL_RULES))
   const turn = { role: 'assistant', content: 'a', toolTurn: { calls: [{ id: 'c1', name: 'web_search', input: {} }], record: [] } }
   const results = { role: 'user', content: 'r', toolResults: [{ callId: 'c1', text: 'r', isError: false }] }
   check('A: a turn of tool calls and the turn that answers them are never joined to another turn', mergeAdjacent([{ role: 'user', content: 'q' }, turn, results, { role: 'user', content: 'next' }]).length === 4 && mergeAdjacent([{ role: 'user', content: 'q' }, { role: 'user', content: 'q2' }, turn, results]).length === 3)

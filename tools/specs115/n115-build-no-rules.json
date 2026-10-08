@@ -1,0 +1,14 @@
+{
+  "label": "n115-build-no-rules",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/request.ts",
+      "from": "      tools: input.tools !== undefined && input.tools.length > 0,\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-5.mjs"
+  ],
+  "env": {}
+}
