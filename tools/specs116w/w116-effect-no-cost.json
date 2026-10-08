@@ -1,0 +1,18 @@
+{
+  "label": "w116-effect-no-cost",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "Each search is billed by the provider: about one cent, on top of the usual cost of the reply.",
+      "to": "Each search is billed by the provider."
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run116.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

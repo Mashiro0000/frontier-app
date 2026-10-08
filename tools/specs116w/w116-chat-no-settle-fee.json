@@ -1,0 +1,18 @@
+{
+  "label": "w116-chat-no-settle-fee",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "{ count: found.searches, usdEach: SEARCH_FEE_USD[entry.provider] }",
+      "to": "undefined"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run116.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n116-core-no-afford",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      if (!affordable) return refused('limit', LIMIT_TEXT, step)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-6.mjs"
+  ],
+  "env": {}
+}

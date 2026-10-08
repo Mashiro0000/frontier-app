@@ -53,6 +53,7 @@ export const REFUSAL_CODES = [
   'stopped', //        the person pressed Stop everything
   'not-recorded', //   the audit record could not be kept, and nothing runs that is not recorded first
   'no-runner', //      this build has no way to run the tool
+  'limit', //          a spending limit the person set would be passed by the call, so nobody was asked (11.6)
   'internal' //        the app itself failed while deciding; nothing was run
 ] as const
 export type RefusalCode = (typeof REFUSAL_CODES)[number]

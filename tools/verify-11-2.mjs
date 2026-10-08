@@ -87,7 +87,7 @@ await guard('A', async () => {
   }
   check('A: a line begins with the format version and the type, in a fixed order', lineOf(callEvents()[0]).startsWith('{"v":1,"type":"asked","at":1700000000000,"call":"c1","tool":"web_search","step":1,"args":'))
   check('A: an event of a tool this version does not know still reads (the log may come from another version), and so does "(unknown)"', logMod.parseAuditEvent(JSON.parse(lineOf({ ...refusedEvent(), tool: 'other_tool' }))) !== null && logMod.parseAuditEvent(JSON.parse(lineOf({ ...refusedEvent('unknown-tool'), tool: '(unknown)' }))) !== null)
-  check('A: every refusal code and every answer the core can give is accepted', sharedTools.REFUSAL_CODES.every((code) => logMod.parseAuditEvent(JSON.parse(lineOf(refusedEvent(code)))) !== null) && sharedTools.ANSWER_CODES.every((answer) => logMod.parseAuditEvent(JSON.parse(lineOf({ ...callEvents()[1], answer }))) !== null) && sharedTools.REFUSAL_CODES.length === 12 && sharedTools.ANSWER_CODES.length === 6)
+  check('A: every refusal code and every answer the core can give is accepted', sharedTools.REFUSAL_CODES.every((code) => logMod.parseAuditEvent(JSON.parse(lineOf(refusedEvent(code)))) !== null) && sharedTools.ANSWER_CODES.every((answer) => logMod.parseAuditEvent(JSON.parse(lineOf({ ...callEvents()[1], answer }))) !== null) && sharedTools.REFUSAL_CODES.length === 13 && sharedTools.ANSWER_CODES.length === 6)
   check('A: a search with letters of other languages, quotes and a backslash is kept as typed', (() => {
     const e = callEvents('c9')[0]
     e.args = { query: 'caf\u00e9 "quoted" \\ \u65e5\u672c\u8a9e \ud83d\ude00' }

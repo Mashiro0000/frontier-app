@@ -11,6 +11,7 @@ import {
   summarize,
   type LedgerRecord,
   type LedgerState,
+  type SearchFee,
   type TokenCounts,
   type UsageSummary
 } from '../shared/usage'
@@ -45,12 +46,16 @@ export interface BeginInput {
   prices: ModelPricing
   /** A guess at the request's input tokens (`estimateInputTokens`). */
   inputTokens: number
+  /** Money this request may cost beyond its tokens (11.6: the fee of a search), counted in the check against the limits. */
+  reserveUsd?: number
 }
 
 export interface FinishInput {
   state: Exclude<LedgerState, 'sent'>
   tokens: TokenCounts
   estimate: boolean
+  /** The searches the provider billed for (11.6); left out when there were none. */
+  search?: SearchFee
 }
 
 /** Thrown by `begin` when the check it was given refuses the request. Its message is the sentence for the person; nothing was written. */
@@ -199,7 +204,9 @@ export function createUsageLedger(path: string, options: LedgerOptions = {}): Us
           const refusal = check({
             today: sums.today.costUsd,
             month: sums.month.costUsd,
-            request: costOf({ ...NO_TOKENS, input: input.inputTokens }, input.prices)
+            request:
+              costOf({ ...NO_TOKENS, input: input.inputTokens }, input.prices) +
+              (input.reserveUsd ?? 0)
           })
           if (refusal !== null) throw new RequestRefused(refusal)
         }
@@ -235,7 +242,8 @@ export function createUsageLedger(path: string, options: LedgerOptions = {}): Us
           ...began,
           state: outcome.state,
           estimate: outcome.estimate,
-          tokens: { ...outcome.tokens }
+          tokens: { ...outcome.tokens },
+          ...(outcome.search === undefined ? {} : { search: { ...outcome.search } })
         }
         // In memory first: the sums must be right even if the disk refuses.
         records.set(id, record)

@@ -1,0 +1,14 @@
+{
+  "label": "n116-chat-no-reserve",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "reserveUsd: SEARCH_FEE_USD[entry.provider]",
+      "to": "reserveUsd: 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-6.mjs"
+  ],
+  "env": {}
+}

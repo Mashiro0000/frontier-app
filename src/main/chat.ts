@@ -13,10 +13,12 @@ import {
   estimateInputTokens,
   estimateOutputTokens,
   NO_TOKENS,
+  SEARCH_FEE_USD,
   tokensAreEmpty,
   type LedgerRecord,
   type LedgerState,
   type ReplyUsage,
+  type SearchFee,
   type TokenCounts
 } from '../shared/usage'
 import { checkChatRequest } from '../shared/validate'
@@ -227,7 +229,8 @@ async function runReply(
     record: LedgerRecord,
     state: Exclude<LedgerState, 'sent'>,
     real: Usage | null,
-    arrived: number
+    arrived: number,
+    search?: SearchFee
   ): Promise<LedgerRecord | null> => {
     const report = real !== null && !tokensAreEmpty(tokensOf(real)) ? tokensOf(real) : null
     // With no report (a reply stopped, a connection dropped, a provider that said nothing): the input that was sent and the text that
@@ -243,7 +246,8 @@ async function runReply(
     const finished = await ledger.finish(record.id, {
       state,
       tokens,
-      estimate: state !== 'rejected' && report === null
+      estimate: state !== 'rejected' && report === null,
+      ...(search === undefined || search.count === 0 ? {} : { search })
     })
     if (finished) settledRecords.push(finished.record)
     return finished ? finished.record : null
@@ -380,7 +384,8 @@ async function runReply(
           model: entry.id,
           effort: searchEffort,
           prices: entry.pricing,
-          inputTokens: input
+          inputTokens: input,
+          reserveUsd: SEARCH_FEE_USD[entry.provider] // the provider's fee for the search is counted against the limits too (11.6)
         },
         (spend) => checkAgainstLimits(limits, spend)
       )
@@ -397,7 +402,9 @@ async function runReply(
           record,
           signal.aborted ? 'stopped' : 'done',
           found.usage,
-          Buffer.byteLength(found.text)
+          Buffer.byteLength(found.text),
+          // The provider bills each search it ran, and none that failed (11.6).
+          { count: found.searches, usdEach: SEARCH_FEE_USD[entry.provider] }
         )
         return found
       } catch (error) {
@@ -415,6 +422,23 @@ async function runReply(
         throw error
       }
     }
+    // Whether a search could be paid for under the spending limits as they are NOW (11.6), asked before the person is: a search the limits would refuse is not
+    // asked about, because a yes could not make it run. A fault in looking counts as yes: the search itself is checked again, and refused there, when it is made.
+    const affordableSearch = async (): Promise<boolean> => {
+      const limits = await limitsStore.read()
+      const sums = await ledger.summary(null)
+      const guess =
+        estimateInputTokens(SEARCH_SYSTEM, [{ content: searchPrompt('') }]) +
+        SEARCH_RESULTS_GUESS_TOKENS
+      return (
+        checkAgainstLimits(limits, {
+          today: sums.today.costUsd,
+          month: sums.month.costUsd,
+          request:
+            costOf({ ...NO_TOKENS, input: guess }, entry.pricing) + SEARCH_FEE_USD[entry.provider]
+        }) === null
+      )
+    }
     const toolsContext = context.tools
     const replyTools =
       toolsContext === undefined
@@ -424,6 +448,7 @@ async function runReply(
             signal: controller.signal,
             settings: await toolsContext.settings(),
             provider: PROVIDER_NAMES[entry.provider],
+            affordable: affordableSearch,
             search: countedSearch,
             onEvent: (event) => send({ streamId, type: 'tool', event })
           })

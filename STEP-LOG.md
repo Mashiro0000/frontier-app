@@ -2630,3 +2630,19 @@ if you have not, please do before you rely on this. **The design was mine** (you
 
 1. **No fake "malicious file" tests yet**, because no tool reads files until Stage 12; the code check keeps it true meanwhile.
 2. **The model may still be fooled into asking** for something odd. That is why it only asks: the answer is yours.
+
+## Stage 11 - Slice 11.6: costs and limits (8 October 2026 session; D-041)
+
+**Step by step.**
+
+1. **A search is billed, and the app counts it.** The provider charges about one cent for each search, on top of the tokens. The app now writes that cent into its usage record, adds it to the reply's cost and to today's and this month's totals, and keeps the price it was counted at.
+2. **Your spending limits see it.** Before a search is made, the cent and the pages it will read are checked against your daily and monthly limits. **If the limits would stop it, you are not even asked**: the chat says "a spending limit you set would be passed, so you were not asked", and the model is told the search was not made.
+3. **A search that failed is not billed.** Only searches the provider says it ran are counted.
+4. **The box and the Tools page say it:** "about one cent, on top of the usual cost of the reply".
+5. **"Ask first" is unchanged:** it asks about what a request sends; every search already has its own box. (The plan said the estimate before a large request would include searches; I left that out on purpose, see D-041.)
+6. **Checked:** 30 checks under Node, 9 in the real window (dev and built), 19 negative controls all caught.
+
+## Stage 11.6 - Things to know (not problems, but worth your attention)
+
+1. **The one cent is the providers' list price**, read from their pages. The first real search will show it on a real bill.
+2. **The window tests stall now and then** on this computer (the test window goes hidden); re-running them works. It is the test window, not the app.

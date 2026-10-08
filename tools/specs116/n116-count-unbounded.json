@@ -1,0 +1,14 @@
+{
+  "label": "n116-count-unbounded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "(search.count as number) > 20 ||",
+      "to": "false ||"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-6.mjs"
+  ],
+  "env": {}
+}

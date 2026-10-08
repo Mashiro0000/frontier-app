@@ -1,0 +1,14 @@
+{
+  "label": "n116-ledger-no-reserve",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/usageLedger.ts",
+      "from": " +\n              (input.reserveUsd ?? 0)",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-6.mjs"
+  ],
+  "env": {}
+}

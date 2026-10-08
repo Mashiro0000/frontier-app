@@ -80,6 +80,7 @@ export const REFUSED_TEXT: Record<RefusalCode, string> = {
   stopped: 'Refused: you had stopped the reply.',
   'not-recorded': 'Refused: the app could not keep its record of the call, so nothing was done.',
   'no-runner': 'Refused: this version of the app cannot run that tool.',
+  limit: 'Refused: a spending limit you set would be passed, so you were not asked.',
   internal: 'Refused: the app failed while checking the call, so nothing was done.'
 }
 

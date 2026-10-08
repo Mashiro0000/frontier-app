@@ -82,6 +82,11 @@ export interface RunContext {
   budget: ReplyBudget
   /** The provider that answers this chat, by the name the person knows it by (11.4): the question names it. */
   provider?: string
+  /**
+   * Whether the call could be paid for under the spending limits (11.6), asked before the question: a call the limits would refuse is not asked about (a yes
+   * could not make it run). A fault in it counts as yes (the request itself is checked again, and refused there, when it is made).
+   */
+  affordable?: () => Promise<boolean>
 }
 
 interface NotRun {
@@ -134,6 +139,7 @@ export const BAD_PATH_TEXT = 'The call was not accepted: that is not a path a to
 export const TOO_LONG_TEXT = 'The call was not accepted: it is too long to show in full.'
 export const NOT_RECORDED = 'The call was not made: the app could not keep its record of it.'
 export const NO_RUNNER = 'This tool cannot be run by this version of the app.'
+export const LIMIT_TEXT = 'This call was not made: a spending limit the person set would be passed.'
 export const INTERNAL = 'The call was not made: the app failed while checking it.'
 export const STOPPED = 'The person stopped this reply.'
 export const TIME_CAP = 'This reply has used all of its working time for tools.'
@@ -466,6 +472,16 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
         )
       }
       args[argName] = verdict.real
+    }
+
+    if (context.affordable !== undefined) {
+      let affordable = true
+      try {
+        affordable = await context.affordable()
+      } catch {
+        affordable = true
+      }
+      if (!affordable) return refused('limit', LIMIT_TEXT, step)
     }
 
     const question = approvalQuestion(def, args, checked.why, {

@@ -261,7 +261,7 @@ try {
   r = await converse(ASK, { expectRequests: 2 })
   tools = await toolEvents()
   const limited = r.reqs.at(-1)?.body.messages.at(-1).content[0]
-  check('H: with a limit the chat requests fit under but the search\'s would pass (daily $0.05, Fable 5.1): the search is not made; the model is told the tool failed', searchesOf(r.reqs).length === 0 && limited?.content === 'The tool failed.' && tools.at(-1)?.ok === false, show([limitsNow?.daily, searchesOf(r.reqs).length, limited?.content]))
+  check('H: with a limit the chat requests fit under but the search\'s would pass (daily $0.05, Fable 5.1): the search is not asked about and not made, and the model is told so in a fixed sentence (11.6)', searchesOf(r.reqs).length === 0 && (await Q.count()) === 0 && limited?.content === 'This call was not made: a spending limit the person set would be passed.' && types(tools) === 'refused:limit', show([limitsNow?.daily, searchesOf(r.reqs).length, await Q.count(), limited?.content, types(tools)]))
   await Q.reset()
   await Q.queue('yes') // taking the limit away lets the app spend more: the system's box asks, and the stand-in says yes
   await ev(`window.api.settings.setLimits({ daily: { kind: 'none' }, monthly: { kind: 'none' } })`)

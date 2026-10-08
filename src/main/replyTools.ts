@@ -34,6 +34,8 @@ export interface ReplyToolsInput {
   settings: ToolSettings
   /** The provider that answers this chat, by the name the person knows it by ("Anthropic"): the question before a call names it (11.4). */
   provider?: string
+  /** Whether a search could be paid for under the spending limits (11.6); asked before the question. Absent: always. */
+  affordable?: () => Promise<boolean>
   /**
    * Runs ONE web search for the approved words and answers with what the provider found. It counts the request (the ledger, the limits) and throws
    * when it cannot be made or fails; the core turns a throw into "the tool failed".
@@ -185,7 +187,8 @@ export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
                 owner: input.owner,
                 signal: input.signal,
                 budget,
-                ...(input.provider === undefined ? {} : { provider: input.provider })
+                ...(input.provider === undefined ? {} : { provider: input.provider }),
+                ...(input.affordable === undefined ? {} : { affordable: input.affordable })
               }
             )
             results.push(

@@ -1,0 +1,14 @@
+{
+  "label": "n116-fee-unbounded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "(search.usdEach as number) > 10",
+      "to": "false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-6.mjs"
+  ],
+  "env": {}
+}
