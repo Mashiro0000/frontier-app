@@ -2779,3 +2779,19 @@ if you have not, please do before you rely on this. **The design was mine** (you
 1. **I have not seen the real Windows box with this text.** The window suite stands in for it (it checks the words, the buttons and the default). Tell me if the box looks wrong, especially a very long path.
 2. **Undo puts back the file's contents, not its time stamps or permissions.**
 3. **A power cut in the middle of a write** is not tested (the order and the read-back are); the copy of the original is already on the disk by then.
+
+## Stage 12 - Slice 12.7: cost, encryption and backups (9 October 2026; D-042)
+
+**Step by step.**
+
+1. **What a file costs.** When the model reads a file, that text goes to your provider again with every request after it in the same reply. I checked that the app already counted it (in the estimate, the ledger's first line and the spending limits: a reply that reads 155 KB in three parts shows "about 41.4K tokens" in the question, and a daily limit just above what you had spent refuses the next request). I found **two gaps and fixed both**: (1) the estimate left out the text of a file the model **asked to create** (a proposal is sent back with the turn); it now counts it. (2) The question before a very large request was asked **only before the first request** of a reply, so a reply that began small could read files step by step and grow far past your amount without asking.
+2. **You are now asked again, in the middle of the reply**, when what the next request would send has grown by more than your amount since the request you last agreed to (so a reply that is already large is not asked at every step, only each time it grows by another amount; "Never ask" asks nothing). The dialog says "The reply is not finished. It has read files, and what it read goes with the next request. Nothing of that request has been sent yet." with the same figures as the usual one. **Don't send** ends the reply there with "The reply stopped here: you chose not to send what it has read so far with the next request." and nothing more is sent.
+3. **Encryption.** The workspace setting, the undo history, the tool settings and the log are turned on and off together with the chats, both ways (checked: nothing readable is left when sealed: no folder name, path, original text or tool name). With the key lost, a sealed workspace setting means no workspace.
+4. **Backups** carry a chat with the notes of file calls and proposals, and **never the workspace setting, the undo history or the log**; a hostile backup file with lines pretending to be those changes nothing.
+5. **The file limits stay as fixed numbers** (256 KB a file, 30 file calls and 200,000 characters a reply...). I did not make them settings: nothing asks to raise them today, and it is one more thing a page could be tricked into offering. Tell me if you want them as settings.
+6. **Checked:** 42 checks under Node, 21 in the real window (dev and built), 31 negative controls.
+
+## Stage 12.7 - Things to know (not problems, but worth your attention)
+
+1. **The question can now appear in the middle of a reply** (only for a reply that has read or proposed a lot). If you find it comes too often, raise the amount in Settings; the rule is "grown by more than the amount since your last yes".
+2. **The cost figures are the app's own guesses** (one token to three bytes, at list prices), on the high side for English text; your provider's invoice decides.

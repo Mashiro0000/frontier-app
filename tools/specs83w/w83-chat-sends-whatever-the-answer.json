@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "if (answer !== 'send' || controller.signal.aborted) return",
-      "to": "void answer"
+      "from": "return answer === 'send' && !controller.signal.aborted",
+      "to": "return true"
     }
   ],
   "argv": [

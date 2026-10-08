@@ -58,8 +58,12 @@ function LargeRequestDialog({
       {request !== null && figures !== null && (
         <>
           <p id="large-request-intro" className="settings-hint large-request-intro">
-            Nothing has been sent yet. {modelName(request.model)} would read the whole conversation
-            again, and write a reply. At list prices, this is the most the request could cost:
+            {request.later === true
+              ? 'The reply is not finished. It has read files, and what it read goes with the next request. Nothing of that request has been sent yet. '
+              : 'Nothing has been sent yet. '}
+            {modelName(request.model)} would read the whole conversation again
+            {request.later === true ? ', with what the reply has read,' : ''} and write a reply. At
+            list prices, this is the most the request could cost:
           </p>
           {/* Two columns, the tokens under the label: three columns did not fit a window 280 px wide. */}
           <table className="settings-usage large-request-table">

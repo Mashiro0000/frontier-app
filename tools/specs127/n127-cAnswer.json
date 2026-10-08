@@ -1,0 +1,15 @@
+{
+  "label": "n127-cAnswer",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      return answer === 'send' && !controller.signal.aborted",
+      "to": "      return answer === 'send'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -194,6 +194,8 @@ export type ChatStreamEvent =
       model: string
       estimate: RequestEstimate
       askAboveUsd: number
+      /** (12.7) True when this is asked in the middle of a reply, after files were read: the reply is not finished and what it read goes with the next request. */
+      later?: true
     }
   | { streamId: string; type: 'text'; text: string }
   /**

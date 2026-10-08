@@ -146,13 +146,21 @@ export const utf8Length = (text: string): number => encoder.encode(text).length
 
 const tokensForBytes = (bytes: number): number => Math.ceil(bytes / BYTES_PER_TOKEN)
 
-/** A guess at the input tokens of a request: the system prompt and every message that is sent. */
+/**
+ * A guess at the input tokens of a request: the system prompt and every message that is sent. A model's turn that asked for tools is sent back as the
+ * provider's own record of it (12.7), which holds what the model asked FOR, such as the whole text of a proposed file: that record is counted, not only the
+ * words the model said before it.
+ */
 export function estimateInputTokens(
   system: string,
-  messages: readonly { content: string }[]
+  messages: readonly { content: string; toolTurn?: { record: unknown } }[]
 ): number {
   let bytes = utf8Length(system)
-  for (const message of messages) bytes += utf8Length(message.content)
+  for (const message of messages) {
+    bytes += utf8Length(message.content)
+    if (message.toolTurn !== undefined)
+      bytes += utf8Length(JSON.stringify(message.toolTurn.record) ?? '')
+  }
   return tokensForBytes(bytes) + TOKENS_PER_MESSAGE * messages.length
 }
 

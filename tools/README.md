@@ -106,6 +106,9 @@ node tools/make-specs125.mjs              writes the 12.5 negative controls (spe
 node tools/verify-12-6.mjs                apply and undo (12.6) under plain Node, Windows only, on a real scratch workspace with the real guard, undo journal and audit log: the order of an apply, every way it stops without a change, a write that fails and puts things back, undo only while the file is exactly as written, the history's limits, the journal sealed both ways and read strictly, that only applyService.ts writes into the workspace, and the words of the questions
 node tools/run126.mjs [dev|preview]       the same in the real window (verify-12-6w.mjs): the Windows box (a stand-in answers), a no and a yes, the list of applied changes, undo, deleting the history, what the pages cannot do
 node tools/make-specs126.mjs              writes the 12.6 negative controls (specs126 under Node, specs126w in the window)
+node tools/verify-12-7.mjs                cost, encryption and backups of the workspace (12.7) under plain Node, Windows only: the estimate counts a file's text and a proposal's text, the rule for asking again in the middle of a reply, the sources of chat.ts, the four documents sealed both ways, a backup of a chat with workspace notes and a hostile file
+node tools/run127.mjs [dev|preview]       the same in the real window (verify-12-7w.mjs): a reply that reads a 155 KB file in three parts and the question in the middle of it (a yes, a no, a small file, a proposal, an amount already passed, "Never ask", a limit)
+node tools/make-specs127.mjs              writes the 12.7 negative controls (specs127 under Node, specs127w in the window)
 ```
 
 ## Reading a result

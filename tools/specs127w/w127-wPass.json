@@ -1,0 +1,18 @@
+{
+  "label": "w127-wPass",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ipcReply.ts",
+      "from": "          ...(event.later === true ? { later: true } : {})\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run127.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w127-wMsg",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ipcReply.ts",
+      "from": "throw new Error(event.later === true ? NOT_SENT_LATER_MESSAGE : NOT_SENT_MESSAGE)",
+      "to": "throw new Error(NOT_SENT_MESSAGE)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run127.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

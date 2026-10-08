@@ -1,0 +1,15 @@
+{
+  "label": "n127-eTurnRecord",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "    if (message.toolTurn !== undefined)\n      bytes += utf8Length(JSON.stringify(message.toolTurn.record) ?? '')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

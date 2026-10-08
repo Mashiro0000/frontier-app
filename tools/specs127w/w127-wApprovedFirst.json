@@ -1,0 +1,18 @@
+{
+  "label": "w127-wApprovedFirst",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "    let approvedInputUsd = estimate.inputUsd",
+      "to": "    let approvedInputUsd = 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run127.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

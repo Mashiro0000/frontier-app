@@ -109,6 +109,21 @@ export function needsConfirmation(setting: AskFirstSetting, estimate: RequestEst
   return above !== null && micros(estimate.inputUsd) > micros(above)
 }
 
+/**
+ * (12.7) Whether the app asks AGAIN in the middle of a reply that reads files. The question of D-032 is asked before a request; a reply that reads files sends them
+ * again with every request after it, so a reply that began small can end up costing a great deal. The app asks again when what the next request SENDS has grown, since
+ * the request the person last agreed to (`approvedInputUsd`: the first request of the reply, or the one they were asked about), by more than the amount (which also
+ * puts it above the amount): so a reply that is already large is not asked about at every step, only each time it has grown by another amount. "Never ask" never asks.
+ */
+export function needsConfirmationAgain(
+  setting: AskFirstSetting,
+  estimate: RequestEstimate,
+  approvedInputUsd: number
+): boolean {
+  const above = askFirstAmount(setting)
+  return above !== null && micros(estimate.inputUsd) - micros(approvedInputUsd) > micros(above)
+}
+
 // --- What the person types ---------------------------------------------------------------------------------------------------
 
 export type AskFirstTextCheck = { ok: true; usd: number } | { ok: false; error: string }

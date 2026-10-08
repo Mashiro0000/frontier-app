@@ -1,0 +1,15 @@
+{
+  "label": "n127-gGrowthEq",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "micros(estimate.inputUsd) - micros(approvedInputUsd) > micros(above)",
+      "to": "micros(estimate.inputUsd) - micros(approvedInputUsd) >= micros(above)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

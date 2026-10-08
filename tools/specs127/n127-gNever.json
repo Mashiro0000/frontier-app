@@ -1,0 +1,15 @@
+{
+  "label": "n127-gNever",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "return above !== null && micros(estimate.inputUsd) - micros(approvedInputUsd)",
+      "to": "return micros(estimate.inputUsd) - micros(approvedInputUsd)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}
