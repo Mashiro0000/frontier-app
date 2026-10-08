@@ -2515,3 +2515,18 @@ if you have not, please do before you rely on this. **The design was mine** (you
 2. **Restoring** shows how many projects and notes would be added, and "Add" asks you once in a Windows box. "Add them" adds them as they were (nothing here is replaced; a project whose name is taken becomes "name (2)"); "Add only the chats" adds the chats alone, outside their projects.
 3. **Not added:** a project or note holding one of your saved API keys, anything past the caps, and anything when your projects or notes here cannot be read (the app says why and leaves the damaged file alone).
 4. **Checked:** 54 checks under Node, 17 in the window (dev and built), 44 negative controls all caught (one after its check was sharpened); the regression's Node, window and Stage 4 parts, 69 runs, all clean.
+
+## Stage 10 - Slice 10.8: the stage as a whole, and the full regression (8 October 2026; D-040)
+
+**Step by step.**
+
+1. **The stage's threat note** is D-040: what Stage 10 added to the app, the risks where its parts meet, and what was not checked. The main points for you: **nothing that goes with every message (a note, any instructions, a project's files) is saved without your yes in a Windows box** that the app's page cannot answer, and the same box now guards raising a limit, which closes the gap Stage 8 found; a saved API key can never be put in a note or instructions; notes and instructions are sent to the model as information below the app's own rules, and a note made from a reply holds words a model wrote; a backup now holds your projects and notes as plain text; and **once tools arrive (Stages 11 to 13), the app's data folder must stay out of their reach**, or a tool could add words to every message without asking.
+2. **The full regression** (every suite of every stage, on the dev app and the built app): 131 runs, 129 clean the first time, and every Stage 10 suite passed on both apps. The two others were registry checks whose app never started, both at 06:50 in the morning (probably as the computer was woken); each passed whole when run again alone. It took about five hours.
+3. **No package was added, no network address, and nothing in the window's security settings changed** in the whole stage.
+
+## Stage 10 - Things to know (not problems, but worth your attention)
+
+1. **Notes, instructions and a project's files go with every message** of the chats they are for, so they cost every time. "Memory N" and "Project: name" under the message box show what is on; the Instructions dialog shows every part in the order it is sent.
+2. **The Windows box is the one that matters**: when it asks, read it; the app's page cannot say yes for you.
+3. **A backup holds your notes and projects in plain text.** Keep it where you keep your chats' backups.
+4. **The app has still never talked to a real provider.** How a real model uses your notes and a project's instructions is the first thing to try when you add your keys.
