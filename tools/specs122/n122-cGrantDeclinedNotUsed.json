@@ -1,0 +1,15 @@
+{
+  "label": "n122-cGrantDeclinedNotUsed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      if (grants.get('workspace') === 'declined') {",
+      "to": "      if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

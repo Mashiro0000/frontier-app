@@ -93,6 +93,8 @@ node tools/with-load.mjs 8 tools/regress.mjs <tag> window      the same, with 8 
 node tools/real-call.mjs                  ONE tiny real call per provider (asks for the key; costs a fraction of a cent)
 node tools/verify-12-1.mjs                the code workspace's boundary (12.1) under plain Node, Windows only: the workspace guard (containment beside the data-folder block; no link on the way, whole names, the three classes of name read off the real names), the choice of the folder, `workspace.json` and the test for UTF-8 text; 2,616 calls in about forty spellings at everything outside, in the data folder and behind links (all refused, no canary), the ordinary files in every spelling that works, and the same battery with the boundary taken out (must get through). About 12 s; makes and removes a `subst` drive and a temporary folder
 node tools/make-specs121.mjs              writes the 12.1 negative controls (specs121: `node tools/nc-all.mjs specs121 <names...>`)
+node tools/verify-12-2.mjs                the core and the workspace (12.2) under plain Node, Windows only: the registry's workspace-path and long-text kinds, the file calls' budget, the reply's one yes for file access (covered calls, a kept no, hidden files asked about one at a time), every refusal and its fixed sentence, the caps, the record and its strict reader, the audit view and the chat's notes, and source checks; stand-in tools that never write
+node tools/make-specs122.mjs              writes the 12.2 negative controls (specs122: `node tools/nc-all.mjs specs122 <names...>`)
 ```
 
 ## Reading a result

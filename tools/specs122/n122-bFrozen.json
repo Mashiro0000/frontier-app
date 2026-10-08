@@ -1,0 +1,15 @@
+{
+  "label": "n122-bFrozen",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyBudget.ts",
+      "from": "const files = Object.freeze({ calls: fileCaps.calls, chars: fileCaps.chars })",
+      "to": "const files = { calls: fileCaps.calls, chars: fileCaps.chars }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

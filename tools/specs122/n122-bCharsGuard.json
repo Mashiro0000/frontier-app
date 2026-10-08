@@ -1,0 +1,15 @@
+{
+  "label": "n122-bCharsGuard",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyBudget.ts",
+      "from": "if (Number.isFinite(count) && count > 0) chars += Math.floor(count)",
+      "to": "chars += Math.floor(count)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

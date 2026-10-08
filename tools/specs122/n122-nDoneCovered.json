@@ -1,0 +1,15 @@
+{
+  "label": "n122-nDoneCovered",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "      const covered = Object.prototype.hasOwnProperty.call(raw, 'covered')\n      if (covered && raw.covered !== true) return null\n      if (\n",
+      "to": "      const covered = Object.prototype.hasOwnProperty.call(raw, 'covered')\n      if (\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

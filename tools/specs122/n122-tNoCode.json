@@ -1,0 +1,15 @@
+{
+  "label": "n122-tNoCode",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/tools.ts",
+      "from": "  'chars-cap', //      the reply has read all the file text it may (12.2)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -638,11 +638,12 @@ await guard('F', async () => {
   const importsOf = (rel) => [...source(rel).matchAll(/^\s*(?:import|export)\s[^'"]*?from\s+['"]([^'"]+)['"]/gm)].map((m) => m[1]).sort()
   const expected = {
     'src/shared/tools.ts': [],
-    'src/main/replyBudget.ts': ['../shared/tools'],
+    // 12.2 moved these on purpose: the budget knows the file caps (the shared workspace limits), the registry the workspace's operations, the core the workspace guard (a type)
+    'src/main/replyBudget.ts': ['../shared/tools', '../shared/workspace'],
     'src/main/dataFolderGuard.ts': ['fs', 'path'],
     'src/main/toolQuestion.ts': ['./systemQuestion', './toolRegistry'],
-    'src/main/toolRegistry.ts': ['./dataFolderGuard', './toolQuestion'],
-    'src/main/toolCore.ts': ['../shared/tools', './dataFolderGuard', './replyBudget', './security', './systemQuestion', './toolQuestion', './toolRegistry'].sort()
+    'src/main/toolRegistry.ts': ['../shared/workspace', './dataFolderGuard', './toolQuestion'],
+    'src/main/toolCore.ts': ['../shared/tools', '../shared/workspace', './dataFolderGuard', './replyBudget', './security', './systemQuestion', './toolQuestion', './toolRegistry', './workspaceGuard'].sort()
   }
   for (const [rel, want] of Object.entries(expected)) {
     const got = [...new Set(importsOf(rel))].sort()
@@ -661,7 +662,8 @@ await guard('F', async () => {
   // 11.3 moved it again, on purpose: the reply's tools (replyTools.ts) make the core, the settings file (toolSettings.ts) is read for every turn, the chat's loop
   // (chat.ts) runs them and the wiring (ipc.ts) builds them. Nothing else may.
   // 11.4 again, on purpose: the settings service (toolSettingsService.ts) lists the registry's tools for the Tools page, and the page-side files read the shared types only (shared/tools, a file of types and constants).
-  const wired = ['src/main/auditLog.ts', 'src/main/auditService.ts', 'src/main/replyTools.ts', 'src/main/toolSettings.ts', 'src/main/toolSettingsService.ts', 'src/main/chat.ts', 'src/main/ipc.ts']
+  // 12.1 and 12.2 again, on purpose: the workspace guard and the choice of the folder (workspace.ts, workspaceGuard.ts) ask the data-folder guard, as the core does.
+  const wired = ['src/main/auditLog.ts', 'src/main/auditService.ts', 'src/main/replyTools.ts', 'src/main/toolSettings.ts', 'src/main/toolSettingsService.ts', 'src/main/chat.ts', 'src/main/ipc.ts', 'src/main/workspace.ts', 'src/main/workspaceGuard.ts']
   const typesOnly = /^(src\/shared|src\/renderer|src\/preload)\//
   const namesCore = /(toolCore|createToolCore|toolRegistry|createToolRegistry|toolQuestion|approvalQuestion|replyBudget|createReplyBudget|dataFolderGuard|createDataFolderGuard|BUILT_IN_TOOLS)/
   const users = files.filter((f) => !modules.includes(f) && !wired.includes(f) && (typesOnly.test(f) ? namesCore : names).test(readFileSync(join(REPO, f), 'utf8')))

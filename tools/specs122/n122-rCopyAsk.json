@@ -1,0 +1,15 @@
+{
+  "label": "n122-rCopyAsk",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "    ask: def.ask === undefined ? 'each' : def.ask,",
+      "to": "    ask: 'each',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n122-cStopWins",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      if (answer === 'yes' && signal.aborted) answer = 'stopped' // Stop came first: the yes is not one\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

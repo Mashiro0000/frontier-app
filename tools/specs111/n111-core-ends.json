@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "new Set(['step-cap', 'time-cap', 'stopped'])",
+      "from": "new Set([\n  'step-cap',\n  'time-cap',\n  'stopped',\n  'file-cap',\n  'chars-cap'\n])",
       "to": "new Set([])"
     }
   ],

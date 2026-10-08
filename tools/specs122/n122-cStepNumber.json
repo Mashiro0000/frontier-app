@@ -1,0 +1,15 @@
+{
+  "label": "n122-cStepNumber",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "    const step = budget.used().calls",
+      "to": "    const step = budget.used().steps"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

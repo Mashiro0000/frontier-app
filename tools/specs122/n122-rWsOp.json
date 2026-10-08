@@ -1,0 +1,15 @@
+{
+  "label": "n122-rWsOp",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "        if (!(WORKSPACE_OPS as readonly string[]).includes(spec.op)) {",
+      "to": "        if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

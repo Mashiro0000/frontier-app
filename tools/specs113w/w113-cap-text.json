@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "    ? `Stopped: this reply used all ${caps.steps} of its tool steps.`",
-      "to": "    ? `Stopped.`"
+      "from": "    case 'step-cap':\n      return `Stopped: this reply used all ${caps.steps} of its tool steps.`",
+      "to": "    case 'step-cap':\n      return `Stopped.`"
     }
   ],
   "argv": [

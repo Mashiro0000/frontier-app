@@ -1,0 +1,15 @@
+{
+  "label": "n122-aRefusedText",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/audit.ts",
+      "from": "  'file-cap': 'Refused: the reply had used all its file calls.',",
+      "to": "  'file-cap': 'x',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

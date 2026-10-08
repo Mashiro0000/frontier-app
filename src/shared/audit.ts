@@ -17,12 +17,13 @@ export const AUDIT_VIEW_CALLS = 300
 /** How one call ended, as the log shows it. */
 export type AuditOutcome =
   | { kind: 'refused'; code: RefusalCode }
-  | { kind: 'declined'; answer: Exclude<AnswerCode, 'yes'> }
-  | { kind: 'done'; size: number; sources: ToolSource[] }
+  | { kind: 'declined'; answer: Exclude<AnswerCode, 'yes' | 'covered'> }
+  /** `covered`: nobody was asked about this call itself; the person's yes for the reply's file access (12.2) allowed it. */
+  | { kind: 'done'; size: number; sources: ToolSource[]; covered?: true }
   /** Allowed and started, but it failed or was stopped. */
-  | { kind: 'failed' }
+  | { kind: 'failed'; covered?: true }
   /** Allowed and started, and no end was recorded (the app was probably closed meanwhile). */
-  | { kind: 'running' }
+  | { kind: 'running'; covered?: true }
   /** Asked, and no answer was recorded (the app was probably closed meanwhile). */
   | { kind: 'unanswered' }
 
@@ -81,10 +82,21 @@ export const REFUSED_TEXT: Record<RefusalCode, string> = {
   'not-recorded': 'Refused: the app could not keep its record of the call, so nothing was done.',
   'no-runner': 'Refused: this version of the app cannot run that tool.',
   limit: 'Refused: a spending limit you set would be passed, so you were not asked.',
-  internal: 'Refused: the app failed while checking the call, so nothing was done.'
+  internal: 'Refused: the app failed while checking the call, so nothing was done.',
+  'no-workspace':
+    'Refused: no workspace folder is chosen, or the chosen folder cannot be used now.',
+  outside: 'Refused: the path leaves the workspace.',
+  link: 'Refused: a link or junction is on the way, and links are never followed.',
+  never:
+    'Refused: it named a place that is never reached (version-control internals and the like).',
+  'wrong-path': 'Refused: the path is not there, or is not the kind of thing the call needs.',
+  'file-cap': 'Refused: the reply had used all its file calls.',
+  'chars-cap': 'Refused: the reply had been given all the file text it may read.',
+  'grant-declined':
+    'Refused: you had said no to file access for this reply, so you were not asked again.'
 }
 
-export const DECLINED_TEXT: Record<Exclude<AnswerCode, 'yes'>, string> = {
+export const DECLINED_TEXT: Record<Exclude<AnswerCode, 'yes' | 'covered'>, string> = {
   no: 'You said no.',
   busy: 'Not asked: another question was waiting for your answer.',
   resting: 'Not asked: you had said no a moment before.',
@@ -103,12 +115,19 @@ export function outcomeText(outcome: AuditOutcome): string {
       return DECLINED_TEXT[outcome.answer]
     case 'done': {
       const n = outcome.sources.length
+      if (outcome.covered === true) {
+        return `Allowed by your yes for this reply. It ran: ${fmt(outcome.size)} characters came back${n === 0 ? '' : `, from ${n === 1 ? '1 source' : `${n} sources`}`}.`
+      }
       return `You said yes. It ran: ${fmt(outcome.size)} characters came back, from ${n === 1 ? '1 source' : `${n} sources`}.`
     }
     case 'failed':
-      return 'You said yes. It started, but it failed or was stopped.'
+      return outcome.covered === true
+        ? 'Allowed by your yes for this reply. It started, but it failed or was stopped.'
+        : 'You said yes. It started, but it failed or was stopped.'
     case 'running':
-      return 'You said yes. No end was recorded (the app may have been closed).'
+      return outcome.covered === true
+        ? 'Allowed by your yes for this reply. No end was recorded (the app may have been closed).'
+        : 'You said yes. No end was recorded (the app may have been closed).'
     case 'unanswered':
       return 'You were asked. No answer was recorded (the app may have been closed).'
   }
@@ -129,19 +148,23 @@ interface Building {
 
 function outcomeOf(call: Building): AuditOutcome {
   if (call.refused !== null) return { kind: 'refused', code: call.refused }
-  if (call.answer !== null && call.answer !== 'yes') {
+  if (call.answer !== null && call.answer !== 'yes' && call.answer !== 'covered') {
     return { kind: 'declined', answer: call.answer }
   }
+  const covered = call.answer === 'covered' ? ({ covered: true } as const) : {}
   if (call.result !== null) {
     return call.result.ok
       ? {
           kind: 'done',
           size: call.result.size,
-          sources: call.result.sources.map(({ title, url }) => ({ title, url }))
+          sources: call.result.sources.map(({ title, url }) => ({ title, url })),
+          ...covered
         }
-      : { kind: 'failed' }
+      : { kind: 'failed', ...covered }
   }
-  if (call.ran || call.answer === 'yes') return { kind: 'running' }
+  if (call.ran || call.answer === 'yes' || call.answer === 'covered') {
+    return { kind: 'running', ...covered }
+  }
   return { kind: 'unanswered' }
 }
 

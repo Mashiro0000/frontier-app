@@ -1,0 +1,15 @@
+{
+  "label": "n122-aCoveredRunning",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/audit.ts",
+      "from": "  if (call.ran || call.answer === 'yes' || call.answer === 'covered') {",
+      "to": "  if (call.ran || call.answer === 'yes') {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

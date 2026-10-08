@@ -1,0 +1,15 @@
+{
+  "label": "n122-cWsRealPath",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "        args[argName] = found.real",
+      "to": "        args[argName] = checked.args[argName]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

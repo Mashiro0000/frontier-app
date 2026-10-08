@@ -2695,3 +2695,20 @@ if you have not, please do before you rely on this. **The design was mine** (you
 1. **You cannot try it yet.** The first thing you will see is in 12.3 (the Tools page row "Code workspace", the folder dialog and the box that names your folder).
 2. **Windows's "hidden" mark is not read**, only names that begin with a dot or look like secrets. A file marked hidden in Windows but named normally is an ordinary file to the app.
 3. **Not tried here:** a link to a file (this account may not make one), a network disk, a disk that is not NTFS, macOS and Linux, and cloud placeholder files (OneDrive) that Windows does not report as links.
+
+## Stage 12 - Slice 12.2: the core learns the workspace (8 October 2026; D-042)
+
+**Step by step.**
+
+1. **What it is, and what you will not see yet.** The part of the app that decides what the model may do (the permission core of Stage 11) now knows about your workspace. Nothing in the app has a file tool yet (12.3 adds them), so **nothing you can see or do changed**: a web search is asked about, run, recorded and counted exactly as before (I ran all of Stage 11's tests again on the changed core: Node and window, all clean).
+2. **One yes for a reply's file access.** The first time a reply wants to use your files, you get one Windows box for the whole reply; the calls after it run on that yes and are written in the audit log as "shown, and covered by your yes for this reply", so the log never says you were asked about them. If you say no, the reply is not asked again (its next file calls are refused and say why). The yes ends with the reply: the next reply asks again. **A file that is hidden or looks like it holds secrets is still asked about on its own**, whatever you said for the reply, and nothing is remembered about it. A place that is never reached (like `.git`) is refused with no question at all.
+3. **File calls have their own count.** 30 file calls and 200,000 characters of file text a reply, beside the 5 steps of a web search, so exploring a project does not use up the searches (and the other way round); the working time is shared. A call that is refused still counts. When one is used up the reply ends and says which.
+4. **Long texts.** A new kind of argument for a tool that carries a whole file or a change. It can never be shown in the Windows box, so such a tool must be asked about by the reply; **the audit log keeps only how long it was**, never the text (my first version kept the whole text in the log; the test I wrote found it).
+5. **Looked at twice.** A tool that opens a file can ask the guard again just before it does: a folder swapped for a junction in between is then refused (tested).
+6. **Choices of mine:** proposals ride on the same reply yes (so you are asked in any reply that touches the workspace, even one that only proposes); a no is kept for the rest of the reply; the text-bringing calls stop at the characters limit and proposals do not.
+7. **Checked:** 170 checks under Node, 84 negative controls (83 caught, one equivalent by design: Stop already wins at the gate), and the earlier Stage 11 suites on the changed code. Twelve older negative controls had to be re-anchored because the core's code moved.
+
+## Stage 12.2 - Things to know (not problems, but worth your attention)
+
+1. **You cannot try it yet.** The first thing you will see is in 12.3 (the Tools page row "Code workspace", the folder dialog, the two boxes).
+2. **The caps are fixed for now** (30 file calls, 200,000 characters); 12.3 puts them on the Tools page, where raising one asks in the Windows box.

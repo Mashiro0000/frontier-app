@@ -8,6 +8,7 @@ import {
   type ToolSettings,
   type ToolSource
 } from '../shared/tools'
+import type { WorkspaceRefusal } from '../shared/workspace'
 import type { DataFolderGuard, PathOp, PathVerdict } from './dataFolderGuard'
 import type { ReplyBudget } from './replyBudget'
 import { isSafeExternalUrl } from './security'
@@ -21,12 +22,17 @@ import {
   type ToolDefinition,
   type ToolRegistry
 } from './toolRegistry'
+import type { WorkspaceGuard, WorkspaceVerdict } from './workspaceGuard'
 
 // The one place that decides what becomes of a tool call (Stage 11.1, D-041). The model asks; this decides; nothing else can run a tool, because the code
 // that runs one is handed to this and kept here. The order, each step able to stop the call and none able to be skipped:
 //   stopped? -> a step of the reply's budget -> a tool that exists -> switched on -> something to run it with -> the arguments exactly as the tool takes
 //   them -> no saved API key in them -> every path past the data-folder guard -> the question fits the box -> the question is RECORDED -> the question,
 //   in the system's own box -> the answer is RECORDED -> only a yes runs the tool -> the run is recorded, and so is its result.
+// Since 12.2 a tool may also take a path in the code WORKSPACE (workspaceGuard.ts, which asks the data-folder guard as well) and be asked about by the
+// REPLY: the first call of a reply opens one box for the whole reply, the calls after it run on that yes, and a file that is hidden or looks like it holds
+// secrets is still asked about one at a time. The grant lives in this core, and a core is made for one reply, so it ends with the reply; a no is kept for the
+// rest of the reply too, so that the person is not asked again and again. Everything else below is unchanged.
 // Deny by default: a tool is off until the person switches it on; an unknown tool, a call that does not fit, a question that cannot be recorded, a box
 // that cannot be shown, a person who says no, a second question while one is open, a reply that has used its steps or its time: none of them runs. Only
 // the box's `yes` answers yes: there is no other way in (no argument, no setting, no note, instruction or file is ever read here), and the page has no
@@ -59,6 +65,10 @@ export type Executor = (
   context: {
     signal: AbortSignal
     check: (path: string, op: PathOp, recursive?: boolean) => Promise<PathVerdict>
+    /** The most characters of text this call may return (a file call: what the reply may still be given, at most what one call may return). */
+    maxChars: number
+    /** A workspace argument looked at AGAIN, just before it is used (the folder may have changed since the first look); refuses what is not one. */
+    again: (argName: string) => Promise<WorkspaceVerdict>
   }
 ) => Promise<{
   text: string
@@ -71,6 +81,34 @@ export type Executor = (
 export interface ToolCall {
   tool: unknown
   args: unknown
+}
+
+/** One workspace path of a call as the workspace guard judged it. */
+export interface WorkspacePathFacts {
+  arg: string
+  verdict: Extract<WorkspaceVerdict, { ok: true }>
+}
+
+/** A call to a tool that is asked about by the reply, as the words of its questions need it (12.3 makes them; the core checks that they fit). */
+export interface WorkspaceCall {
+  tool: ToolDefinition
+  /** The arguments as the tool will be given them: a workspace path as the real path. */
+  args: CheckedArgs
+  why: string
+  /** The number this call has in the reply's record. */
+  step: number
+  /** The provider that answers this chat, if known. */
+  provider?: string
+  /** The workspace as it really is now. */
+  root: string
+  paths: readonly WorkspacePathFacts[]
+}
+
+export interface WorkspaceQuestions {
+  /** The first file call of a reply: the box that asks for the whole reply. */
+  grant(call: WorkspaceCall): SystemQuestion
+  /** A file that is hidden or looks like it holds secrets: asked about that one file, whatever the reply's grant says. */
+  oneByOne(call: WorkspaceCall): SystemQuestion
 }
 
 export interface RunContext {
@@ -101,7 +139,7 @@ interface NotRun {
 export type ToolOutcome =
   | { kind: 'ran'; tool: string; step: number; result: ToolResult }
   | (NotRun & { kind: 'refused'; code: RefusalCode })
-  | (NotRun & { kind: 'declined'; answer: Exclude<AnswerCode, 'yes'> })
+  | (NotRun & { kind: 'declined'; answer: Exclude<AnswerCode, 'yes' | 'covered'> })
   | (NotRun & { kind: 'failed'; code: 'run-failed' | 'time-cap' | 'stopped' })
 
 export interface ToolCore {
@@ -123,6 +161,8 @@ export interface ToolCoreOptions {
   holdsSavedKey: (text: string) => Promise<boolean>
   /** How each tool is run, by id. Copied when the core is made. */
   executors: Readonly<Record<string, Executor>>
+  /** The code workspace (12.2): the guard for its paths and the words of its two kinds of question. Absent: a call with a workspace path is refused. */
+  workspace?: { guard: WorkspaceGuard; questions: WorkspaceQuestions }
   now?: () => number
   /** Where a call's id comes from (the record names every event by it, so that calls that overlap can be told apart). Tests hand in their own. */
   newId?: () => string
@@ -145,7 +185,7 @@ export const STOPPED = 'The person stopped this reply.'
 export const TIME_CAP = 'This reply has used all of its working time for tools.'
 export const stepCapText = (steps: number): string =>
   `This reply has used all ${steps} of its tool steps.`
-export const DECLINED_TEXT: Readonly<Record<Exclude<AnswerCode, 'yes'>, string>> = {
+export const DECLINED_TEXT: Readonly<Record<Exclude<AnswerCode, 'yes' | 'covered'>, string>> = {
   no: 'The person did not allow this.',
   busy: 'The person could not be asked just now, because another question is waiting for their answer. Do not ask again straight away.',
   resting: 'The person said no a moment ago, so they were not asked again.',
@@ -153,9 +193,38 @@ export const DECLINED_TEXT: Readonly<Record<Exclude<AnswerCode, 'yes'>, string>>
   stopped: STOPPED
 }
 export const RUN_FAILED = 'The tool failed.'
+export const NO_WORKSPACE_TEXT =
+  'No workspace folder is chosen, or the chosen folder cannot be used just now.'
+export const WRONG_PATH_TEXT =
+  'The call was not accepted: that path is not there, or it is not the kind of thing this call needs (a file or a folder).'
+export const GRANT_DECLINED_TEXT = 'The person did not allow file access in this reply.'
+export const fileCapText = (calls: number): string =>
+  `This reply has used all ${calls} of its file calls.`
+export const CHARS_CAP_TEXT = 'This reply has been given all the file text it may read.'
+
+/** What the model is told, and what the record keeps, for each reason the workspace guard refuses a path. Fixed: nothing of the path rides in them. */
+const WORKSPACE_REFUSAL: Readonly<Record<WorkspaceRefusal, { code: RefusalCode; text: string }>> = {
+  'no-workspace': { code: 'no-workspace', text: NO_WORKSPACE_TEXT },
+  'workspace-changed': { code: 'no-workspace', text: NO_WORKSPACE_TEXT },
+  outside: { code: 'outside', text: DATA_FOLDER_TEXT },
+  link: { code: 'link', text: DATA_FOLDER_TEXT },
+  never: { code: 'never', text: DATA_FOLDER_TEXT },
+  'data-folder': { code: 'data-folder', text: DATA_FOLDER_TEXT },
+  'bad-path': { code: 'bad-path', text: BAD_PATH_TEXT },
+  'not-found': { code: 'wrong-path', text: WRONG_PATH_TEXT },
+  'not-a-file': { code: 'wrong-path', text: WRONG_PATH_TEXT },
+  'not-a-folder': { code: 'wrong-path', text: WRONG_PATH_TEXT },
+  exists: { code: 'wrong-path', text: WRONG_PATH_TEXT }
+}
 
 /** Codes after which the reply itself stops (and says why), instead of going on without the call. */
-const ENDS_REPLY: ReadonlySet<string> = new Set(['step-cap', 'time-cap', 'stopped'])
+const ENDS_REPLY: ReadonlySet<string> = new Set([
+  'step-cap',
+  'time-cap',
+  'stopped',
+  'file-cap',
+  'chars-cap'
+])
 
 /** The most text of a result that is passed on, and the most sources. A bigger result is cut (and says so): it goes into the next request and costs. */
 export const MAX_RESULT_CHARS = TOOL_RESULT_LIMITS.maxChars
@@ -251,6 +320,9 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
     })
   // Copied now: an executor added to the caller's object later is not one this core has.
   const executors = new Map<string, Executor>(Object.entries(options.executors))
+  const workspace = options.workspace
+  /** What the person said to file access for THIS reply (a core is made for one reply): yes covers the calls after it, a no is not asked again. */
+  const grants = new Map<'workspace', 'granted' | 'declined'>()
 
   const settings = (): ToolSettings => {
     try {
@@ -318,7 +390,8 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
     args: CheckedArgs,
     call: string,
     step: number,
-    context: RunContext
+    context: RunContext,
+    again: (argName: string) => Promise<WorkspaceVerdict>
   ): Promise<ToolOutcome> {
     const { signal, budget } = context
     const tool = def.id
@@ -369,8 +442,12 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
     )
     try {
       if (signal.aborted) onStop()
+      const maxChars =
+        def.counts === 'file' ? Math.min(MAX_RESULT_CHARS, budget.charsLeft()) : MAX_RESULT_CHARS
       const running = Promise.resolve()
-        .then(() => executor(args, { signal: controller.signal, check: checkAgain }))
+        .then(() =>
+          executor(args, { signal: controller.signal, check: checkAgain, maxChars, again })
+        )
         .then((raw) => ({ raw }))
       running.catch(() => undefined) // if the run is given up on, a later failure of it is not an unhandled one
       const done = await Promise.race([running, aborted])
@@ -381,6 +458,7 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       }
       const result = shapeResult(done.raw)
       if (result === null) return await failed('run-failed', RUN_FAILED)
+      if (def.counts === 'file') budget.useChars(result.text.length)
       await keep({
         type: 'result',
         at: now(),
@@ -416,13 +494,16 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       return { kind: 'refused', tool: name, step, code, text, endsReply: ENDS_REPLY.has(code) }
     }
 
-    if (signal.aborted) return refused('stopped', STOPPED, budget.used().steps)
-    const taken = budget.take()
-    const step = budget.used().steps
+    if (signal.aborted) return refused('stopped', STOPPED, budget.used().calls)
+    // A file call is counted on the reply's file calls, any other on its tool steps; a call to a tool that does not exist is a step, as before.
+    const def = tools.get(call.tool)
+    const isFile = def !== undefined && def.counts === 'file'
+    const taken = isFile ? budget.takeFile() : budget.take()
+    const step = budget.used().calls
     if (taken === 'step-cap') return refused('step-cap', stepCapText(budget.caps.steps), step)
+    if (taken === 'file-cap') return refused('file-cap', fileCapText(budget.fileCaps.calls), step)
     if (taken === 'time-cap') return refused('time-cap', TIME_CAP, step)
 
-    const def = tools.get(call.tool)
     if (def === undefined) return refused('unknown-tool', UNKNOWN_TOOL, step)
     if (!toolIsOn(settings(), def.id)) return refused('tool-off', TOOL_OFF, step)
     const executor = executors.get(def.id)
@@ -448,9 +529,22 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       if (held) return refused('secret', SECRET_TEXT, step)
     }
 
-    // Every path goes past the data-folder guard, and the tool is given only the real path that it hands back.
+    // Every path goes past its guard, and the tool is given only the real path that the guard hands back: a path in the data folder past the data-folder
+    // guard, a path in the code workspace past the workspace guard (which asks the data-folder guard as well).
     const args: Record<string, string | number> = { ...checked.args }
+    const paths: WorkspacePathFacts[] = []
     for (const [argName, spec] of Object.entries(def.args)) {
+      if (spec.kind === 'workspace_path') {
+        if (workspace === undefined) return refused('no-workspace', NO_WORKSPACE_TEXT, step)
+        const found = await workspace.guard.check({ path: checked.args[argName], op: spec.op })
+        if (!found.ok) {
+          const why = WORKSPACE_REFUSAL[found.code] ?? WORKSPACE_REFUSAL['bad-path']
+          return refused(why.code, why.text, step)
+        }
+        args[argName] = found.real
+        paths.push({ arg: argName, verdict: found })
+        continue
+      }
       if (spec.kind !== 'path') continue
       let base: string | null = null
       try {
@@ -473,8 +567,19 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       }
       args[argName] = verdict.real
     }
+    // A call that brings text back is refused once the reply has been given all the file text it may have (a proposal brings none).
+    if (
+      isFile &&
+      budget.charsLeft() <= 0 &&
+      paths.some((p) => {
+        const op = (def.args[p.arg] as { op?: string }).op
+        return op === 'list' || op === 'read'
+      })
+    ) {
+      return refused('chars-cap', CHARS_CAP_TEXT, step)
+    }
 
-    if (context.affordable !== undefined) {
+    if (def.counts !== 'file' && context.affordable !== undefined) {
       let affordable = true
       try {
         affordable = await context.affordable()
@@ -484,58 +589,147 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       if (!affordable) return refused('limit', LIMIT_TEXT, step)
     }
 
-    const question = approvalQuestion(def, args, checked.why, {
-      step,
-      steps: budget.caps.steps,
-      ...(context.provider === undefined ? {} : { provider: context.provider })
-    })
-    if (question.detail.length > SHOWN_LIMIT) return refused('bad-arguments', TOO_LONG_TEXT, step)
+    // What the record keeps of the arguments: what the person was shown, and for a long text only how long it is (the log holds paths and sizes, never the
+    // text of a file or of a change).
+    const shownArgs: Record<string, string | number> = {}
+    for (const [argName, value] of Object.entries(args)) {
+      shownArgs[argName] =
+        def.args[argName]?.kind === 'body' ? `(${String(value).length} characters)` : value
+    }
 
-    // Nothing is asked, and nothing runs, that has not been recorded first.
-    if (
-      !(await keep({
-        type: 'asked',
+    // One question, with its record before and after it: the question is recorded before it is asked and the answer after, and nothing is asked that was
+    // not recorded. The reply's clock stops while the person decides (D-041).
+    const put = async (
+      question: SystemQuestion
+    ): Promise<{ answer: GateAnswer; recorded: boolean } | ToolOutcome> => {
+      if (question.detail.length > SHOWN_LIMIT) return refused('bad-arguments', TOO_LONG_TEXT, step)
+      if (
+        !(await keep({
+          type: 'asked',
+          at: now(),
+          call: callId,
+          tool: def.id,
+          step,
+          args: shownArgs,
+          why: checked.why
+        }))
+      ) {
+        return refused('not-recorded', NOT_RECORDED, step)
+      }
+      budget.pause()
+      let answer: GateAnswer
+      try {
+        answer = await askOrStop(owner, question, signal)
+      } finally {
+        budget.resume()
+      }
+      if (answer === 'yes' && signal.aborted) answer = 'stopped' // Stop came first: the yes is not one
+      const recorded = await keep({
+        type: 'answered',
         at: now(),
         call: callId,
         tool: def.id,
         step,
-        args,
-        why: checked.why
-      }))
-    ) {
-      return refused('not-recorded', NOT_RECORDED, step)
+        answer
+      })
+      return { answer, recorded }
     }
-
-    // The person is deciding: the reply's clock stops (D-041).
-    budget.pause()
-    let answer: GateAnswer
-    try {
-      answer = await askOrStop(owner, question, signal)
-    } finally {
-      budget.resume()
-    }
-    if (answer === 'yes' && signal.aborted) answer = 'stopped' // Stop came first: the yes is not one
-    const recorded = await keep({
-      type: 'answered',
-      at: now(),
-      call: callId,
+    const declined = (answer: Exclude<GateAnswer, 'yes'>): ToolOutcome => ({
+      kind: 'declined',
       tool: def.id,
       step,
-      answer
+      answer,
+      text: DECLINED_TEXT[answer],
+      endsReply: ENDS_REPLY.has(answer)
     })
-    if (answer !== 'yes') {
-      return {
-        kind: 'declined',
-        tool: def.id,
+    const isOutcome = (
+      r: { answer: GateAnswer; recorded: boolean } | ToolOutcome
+    ): r is ToolOutcome => 'kind' in r
+
+    if (def.ask === 'reply') {
+      // Asked about by the reply: one yes for the reply's file access, and one question for each file that is hidden or looks like it holds secrets.
+      if (workspace === undefined) return refused('no-workspace', NO_WORKSPACE_TEXT, step)
+      const root = await workspace.guard.root()
+      if (!root.ok) return refused('no-workspace', NO_WORKSPACE_TEXT, step)
+      if (grants.get('workspace') === 'declined') {
+        return refused('grant-declined', GRANT_DECLINED_TEXT, step)
+      }
+      const asked: WorkspaceCall = {
+        tool: def,
+        args: Object.freeze({ ...args }),
+        why: checked.why,
         step,
-        answer,
-        text: DECLINED_TEXT[answer],
-        endsReply: ENDS_REPLY.has(answer)
+        ...(context.provider === undefined ? {} : { provider: context.provider }),
+        root: root.real,
+        paths
+      }
+      let yes = false
+      if (grants.get('workspace') === undefined) {
+        const r = await put(workspace.questions.grant(asked))
+        if (isOutcome(r)) return r
+        if (r.answer !== 'yes') {
+          if (r.answer === 'no') grants.set('workspace', 'declined')
+          return declined(r.answer)
+        }
+        if (!r.recorded) return refused('not-recorded', NOT_RECORDED, step)
+        grants.set('workspace', 'granted')
+        yes = true
+      }
+      if (paths.some((p) => p.verdict.fileClass === 'one-by-one')) {
+        const r = await put(workspace.questions.oneByOne(asked))
+        if (isOutcome(r)) return r
+        if (r.answer !== 'yes') return declined(r.answer)
+        if (!r.recorded) return refused('not-recorded', NOT_RECORDED, step)
+        yes = true
+      }
+      if (!yes) {
+        // The reply's yes covers this call: it is recorded as shown, and as covered, so that the log never says anybody was asked about it.
+        const shown = await keep({
+          type: 'asked',
+          at: now(),
+          call: callId,
+          tool: def.id,
+          step,
+          args: shownArgs,
+          why: checked.why
+        })
+        const covered =
+          shown &&
+          (await keep({
+            type: 'answered',
+            at: now(),
+            call: callId,
+            tool: def.id,
+            step,
+            answer: 'covered'
+          }))
+        if (!covered) return refused('not-recorded', NOT_RECORDED, step)
+      }
+    } else {
+      const question = approvalQuestion(def, args, checked.why, {
+        step: budget.used().steps,
+        steps: budget.caps.steps,
+        ...(context.provider === undefined ? {} : { provider: context.provider })
+      })
+      const r = await put(question)
+      if (isOutcome(r)) return r
+      if (r.answer !== 'yes') return declined(r.answer)
+      if (!r.recorded) return refused('not-recorded', NOT_RECORDED, step)
+    }
+
+    // A workspace argument, looked at again just before the tool uses it.
+    const again = async (argName: string): Promise<WorkspaceVerdict> => {
+      const spec = def.args[argName]
+      if (workspace === undefined || spec === undefined || spec.kind !== 'workspace_path') {
+        return { ok: false, code: 'bad-path', why: 'not a workspace path' }
+      }
+      try {
+        return await workspace.guard.check({ path: checked.args[argName], op: spec.op })
+      } catch {
+        return { ok: false, code: 'bad-path', why: 'the check failed' }
       }
     }
-    if (!recorded) return refused('not-recorded', NOT_RECORDED, step)
-
-    return execute(def, executor, Object.freeze(args), callId, step, context)
+    return execute(def, executor, Object.freeze(args), callId, step, context, again)
   }
 
   return {
@@ -562,7 +756,7 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
         const tool = nameForRecord(
           call !== null && typeof call === 'object' ? (call as ToolCall).tool : undefined
         )
-        const step = context.budget.used().steps
+        const step = context.budget.used().calls
         await keep({ type: 'refused', at: now(), call: callId, tool, step, code: 'internal' })
         return { kind: 'refused', tool, step, code: 'internal', text: INTERNAL, endsReply: false }
       }

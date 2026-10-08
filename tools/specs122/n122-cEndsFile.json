@@ -1,0 +1,15 @@
+{
+  "label": "n122-cEndsFile",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "  'file-cap',\n  'chars-cap'\n])",
+      "to": "  'chars-cap'\n])"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -9,7 +9,15 @@ export const WORKSPACE_LIMITS = Object.freeze({
   /** The most entries one listing shows; the rest are only counted. */
   maxListEntries: 200,
   /** The longest path (relative to the workspace) the model may name. */
-  maxPathChars: 300
+  maxPathChars: 300,
+  /** The most file calls (a list, a read, a proposal; whatever becomes of them) one reply may make. Web search keeps the tool steps of Stage 11. */
+  maxFileCalls: 30,
+  /** The most characters of file text one reply may be given in all. */
+  maxFileChars: 200_000,
+  /** The most characters one read call returns (the core's own cap on a result); the model asks for the next line range. */
+  maxReadChars: 60_000,
+  /** The longest text a proposal may carry in one argument (a new file; the text to find or to put in its place is at most a fifth of it). */
+  maxBodyChars: 100_000
 })
 
 /**

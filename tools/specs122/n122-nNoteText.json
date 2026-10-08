@@ -1,0 +1,15 @@
+{
+  "label": "n122-nNoteText",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "        return `Allowed for this reply. ${plural(outcome.size, 'character came', 'characters came')} back.`",
+      "to": "        return `You allowed it. ${plural(outcome.size, 'character came', 'characters came')} back.`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

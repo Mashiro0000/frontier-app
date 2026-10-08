@@ -150,11 +150,19 @@ function endEvent(streamId: string, end: ReplyEnd): ChatStreamEvent {
 /** What the reply says when a cap on its tools was reached (the model's words so far stay). The person can change both on the Tools page. */
 function capMessage(
   reason: Exclude<TurnEnd, 'stopped' | null>,
-  caps: { steps: number; seconds: number }
+  caps: { steps: number; seconds: number },
+  fileCaps: { calls: number; chars: number }
 ): string {
-  return reason === 'step-cap'
-    ? `Stopped: this reply used all ${caps.steps} of its tool steps.`
-    : `Stopped: this reply used all ${caps.seconds} seconds of its tool time.`
+  switch (reason) {
+    case 'step-cap':
+      return `Stopped: this reply used all ${caps.steps} of its tool steps.`
+    case 'file-cap':
+      return `Stopped: this reply used all ${fileCaps.calls} of its file calls.`
+    case 'chars-cap':
+      return `Stopped: this reply was given all ${fileCaps.chars.toLocaleString('en-US')} characters of file text it may read.`
+    default:
+      return `Stopped: this reply used all ${caps.seconds} seconds of its tool time.`
+  }
 }
 
 /** A guess at the input a search request sends beyond the words: the pages it reads arrive as input tokens (a search typically reads thousands). */
@@ -643,7 +651,11 @@ async function runReply(
         if (controller.signal.aborted || turn.ended === 'stopped') return // the person pressed Stop everything: nobody is listening
         if (turn.ended !== null) {
           sendUsage()
-          send({ streamId, type: 'error', message: capMessage(turn.ended, replyTools.budget.caps) })
+          send({
+            streamId,
+            type: 'error',
+            message: capMessage(turn.ended, replyTools.budget.caps, replyTools.budget.fileCaps)
+          })
           return
         }
         breakBeforeText = said.trim() !== ''

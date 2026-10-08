@@ -1,0 +1,15 @@
+{
+  "label": "n122-cCharsRefusal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      return refused('chars-cap', CHARS_CAP_TEXT, step)",
+      "to": "      void 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

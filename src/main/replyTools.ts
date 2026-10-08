@@ -46,7 +46,7 @@ export interface ReplyToolsInput {
 }
 
 /** Why a reply must end now, or null: a cap was reached, or the person pressed Stop everything. */
-export type TurnEnd = 'step-cap' | 'time-cap' | 'stopped' | null
+export type TurnEnd = 'step-cap' | 'time-cap' | 'stopped' | 'file-cap' | 'chars-cap' | null
 
 export interface TurnResult {
   /** One for each call, in the order the model made them. */
@@ -124,7 +124,11 @@ function approvedQuery(call: NeutralToolCall): string | null {
 function endOf(outcome: ToolOutcome): TurnEnd {
   if (outcome.kind === 'ran' || !outcome.endsReply) return null
   if (outcome.kind === 'refused') {
-    return outcome.code === 'step-cap' || outcome.code === 'time-cap' || outcome.code === 'stopped'
+    return outcome.code === 'step-cap' ||
+      outcome.code === 'time-cap' ||
+      outcome.code === 'stopped' ||
+      outcome.code === 'file-cap' ||
+      outcome.code === 'chars-cap'
       ? outcome.code
       : null
   }

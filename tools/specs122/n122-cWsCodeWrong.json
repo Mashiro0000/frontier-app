@@ -1,0 +1,15 @@
+{
+  "label": "n122-cWsCodeWrong",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "  'not-found': { code: 'wrong-path', text: WRONG_PATH_TEXT },",
+      "to": "  'not-found': { code: 'bad-path', text: WRONG_PATH_TEXT },"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}
