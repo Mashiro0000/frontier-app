@@ -37,7 +37,7 @@ const s = {
   qBackslash: [QST, "|| char === '\\\\')", '|| false)'],
   qInvisible: [QST, 'else if (INVISIBLE.test(char))', 'else if (false)'],
   qAskedHere: [QST, '  lines.push(ASKED_HERE)\n', "  lines.push('')\n"],
-  qReason: [QST, "  lines.push(`The model's reason: ${shown(why)}`, '', def.effect, '')", "  lines.push('', def.effect, '')"],
+  qReason: [QST, "  lines.push(`The model's reason: ${shown(why)}`, '', def.effect)", "  lines.push('', def.effect)"],
   qNoLabel: [QST, 'no: "Don\'t allow"', "no: 'Allow every time'"],
   qLimit: [QST, 'export const SHOWN_LIMIT = 2000', 'export const SHOWN_LIMIT = 20000'],
   // ----- the reply's budget -----
@@ -138,11 +138,11 @@ const node = {
   'n111-core-abort-first': [s.cAbortFirst], 'n111-core-take': [s.cTake], 'n111-core-unknown': [s.cUnknown], 'n111-core-off': [s.cOff], 'n111-core-no-runner': [s.cNoRunner], 'n111-core-executors-copy': [s.cExecutorsCopy],
   'n111-core-args': [s.cArgs], 'n111-core-secret': [s.cSecret], 'n111-core-secret-fail-open': [s.cSecretFailOpen], 'n111-core-secret-why': [s.cSecretWhy], 'n111-core-fit': [s.cFit],
   'n111-core-record-asked': [s.cRecordAsked, s.cRecordAskedEnd], 'n111-core-pause': [s.cPause], 'n111-core-resume': [s.cResume], 'n111-core-no-box': [s.cNoBox], 'n111-core-yes-only': [s.cYesOnly],
-  'n111-core-stop-after-yes': [s.cStopAfterYes], 'n111-core-ask-stop': [s.cAskStop], 'n111-core-record-yes': [s.cRecordYes], 'n111-core-record-ran': [s.cRecordRan], 'n111-core-timer': [s.cTimer],
+  'n111-core-ask-stop': [s.cAskStop], 'n111-core-record-yes': [s.cRecordYes], 'n111-core-record-ran': [s.cRecordRan], 'n111-core-timer': [s.cTimer],
   'n111-core-stop-run': [s.cStopRun], 'n111-core-race': [s.cRace], 'n111-core-shape-size': [s.cShapeSize], 'n111-core-shape-https': [s.cShapeHttps], 'n111-core-shape-max': [s.cShapeMax],
   'n111-core-shape-null': [s.cShapeNull], 'n111-core-internal': [s.cInternal], 'n111-core-name': [s.cName], 'n111-core-ends': [s.cEnds], 'n111-core-settings-throw': [s.cSettingsThrow],
   'n111-core-path-real': [s.cPathReal], 'n111-core-guard-skip': [s.cGuardSkip], 'n111-core-guard-ignore': [s.cGuardIgnore],
-  'n111-reach-import': [s.xImport], 'n111-reach-disk': [s.xDisk], 'n111-reach-network': [s.xNetwork], 'n111-reach-ipc': [s.xReach], 'n111-reach-bridge': [s.xBridge], 'n111-reach-channel': [s.xChannel], 'n111-reach-package': [s.xPackage]
+  'n111-reach-import': [s.xImport], 'n111-reach-disk': [s.xDisk], 'n111-reach-network': [s.xNetwork], 'n111-reach-bridge': [s.xBridge], 'n111-reach-channel': [s.xChannel], 'n111-reach-package': [s.xPackage]
 }
 
 // The owner's addition: each takes the block out, or weakens it one way, and verify-11-1-folder.mjs must say so by name.

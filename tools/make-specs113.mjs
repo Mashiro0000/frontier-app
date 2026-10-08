@@ -65,7 +65,7 @@ const s = {
   rNote: [RT, "            const note = found.end === 'done' ? '' : `\\n\\n${UNFINISHED[found.end]}`", "            const note = ''"],
   rClock: [RT, '      const budget = createReplyBudget(current.caps, options.clock)', '      const budget = createReplyBudget(current.caps)'],
   rSnapshot: [RT, '        settings: () => current,', '        settings: () => input.settings,'],
-  rOwner: [RT, '              { owner: input.owner, signal: input.signal, budget }', '              { owner: null, signal: input.signal, budget }'],
+  rOwner: [RT, '                owner: input.owner,', '                owner: null,'],
   rTold: [RT, '          await options.record(event)\n          try {\n            input.onEvent?.(event)', '          try {\n            input.onEvent?.(event)'],
   rQuery: [RT, '                    text: toolResultText(approvedQuery(call), outcome.result),', '                    text: toolResultText(null, outcome.result),'],
   // ----- the loop's own source checks (the window sees the rest) -----
@@ -84,7 +84,7 @@ const s = {
   wUsage: [CHAT, '  if (records.length === 1) return replyUsageOf(records[0])\n', '  if (records.length > 0) return replyUsageOf(records[records.length - 1])\n'],
   wEvent: [CHAT, '            onEvent: (event) => send({ streamId, type: \'tool\', event })', '            onEvent: () => undefined'],
   wSettings: [CHAT, '            settings: await toolsContext.settings(),', '            settings: { enabled: {}, caps: { steps: 5, seconds: 60 } },'],
-  wPage: [IR, "      else if (event.type === 'tool')\n        continue", "      else if (false as boolean)\n        continue"],
+  wPage: [IR, "      else if (event.type === 'tool')\n        onTool(event.event)", "      else if (false as boolean)\n        onTool(event.event)"],
   wRecord: [IPC, '    record: (event) => auditLog.append(event),', '    record: async () => undefined,'],
   wCapText: [CHAT, '    ? `Stopped: this reply used all ${caps.steps} of its tool steps.`', '    ? `Stopped.`'],
   wStopSteps: [CHAT, '        if (controller.signal.aborted || turn.ended === \'stopped\') return // the person pressed Stop everything: nobody is listening', '        if (controller.signal.aborted) return'],
@@ -110,7 +110,7 @@ const node = {
 
 const win = {
   'w113-no-tools': [s.wNoTools], 'w113-break': [s.wBreak], 'w113-same-request': [s.wSameRequest], 'w113-owner': [s.wOwner], 'w113-limit': [s.wLimit], 'w113-usage': [s.wUsage],
-  'w113-event': [s.wEvent], 'w113-settings': [s.wSettings], 'w113-page': [s.wPage], 'w113-record': [s.wRecord], 'w113-cap-text': [s.wCapText], 'w113-stop-turn': [s.wStopSteps],
+  'w113-event': [s.wEvent], 'w113-settings': [s.wSettings], 'w113-page': [s.wPage], 'w113-record': [s.wRecord], 'w113-cap-text': [s.wCapText], 
   'w113-box-signal': [s.bSignalDropped], 'w113-gate-stop': [s.gStoppedAfter], 'w113-label': [s.rLabel], 'w113-search-max': [s.aSearchMax], 'w113-settings-extra': [s.tExtra],
   'w113-ended': [s.rEnded], 'w113-chatter': [s.aSearchChatter], 'w113-core-signal': [s.cSignalDropped]
 }
@@ -123,3 +123,12 @@ const write = (dir, specs, argv, env, timeoutMs) => {
 }
 write('specs113', node, ['{{TOOLS}}/verify-11-3.mjs'], {})
 write('specs113w', win, ['{{TOOLS}}/run113.mjs', 'dev'], { NO_RETRY: '1' }, 900000)
+
+// w113-break (the paragraph break between the words before and after a call) is noticed by the 11.4 window suite, which reads the saved reply: it runs that one.
+{
+  const { readFileSync: rd, writeFileSync: wr } = await import('node:fs')
+  const file = join(TOOLS, 'specs113w', 'w113-break.json')
+  const spec = JSON.parse(rd(file, 'utf8'))
+  spec.argv = spec.argv.map((a) => a.replace('run113.mjs', 'run114.mjs'))
+  wr(file, JSON.stringify(spec, null, 2) + '\n')
+}

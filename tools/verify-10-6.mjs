@@ -32,6 +32,10 @@ const temp = mkdtempSync(join(tmpdir(), 'frontier-106-'))
 
 await guard('A', async () => {
   const { systemPromptFor } = request
+  const { parseRegistry } = await import(`${REPO_URL}/src/shared/registry.ts`)
+  const reg = parseRegistry(JSON.parse(readFileSync(join(REPO, 'tools/registry-good.json'), 'utf8')))
+  const built = request.buildStreamRequest({ credentials: { apiKey: 'k'.repeat(30) }, model: reg.registry.models[0], project: 'Cite sources.', messages: [{ role: 'user', content: 'hi' }], signal: new AbortController().signal })
+  check('A: a request BUILT with the project instructions carries them in its system prompt (the builder passes the project on)', built.system.includes('Cite sources.') && built.system.includes(PROJECT))
   const rules = systemPromptFor('anthropic')
   check('A: a project\'s instructions alone: the rules, the project\'s line, the text', systemPromptFor('anthropic', '', { project: 'Cite sources.' }) === `${rules}\n\n${PROJECT}\n\nCite sources.`)
   check('A: ...and with the chat\'s own after them, under the line that says these win', systemPromptFor('anthropic', 'Be brief.', { project: 'Cite sources.' }) === `${rules}\n\n${PROJECT}\n\nCite sources.\n\n${AFTER}\n\nBe brief.`)
