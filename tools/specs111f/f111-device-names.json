@@ -1,0 +1,15 @@
+{
+  "label": "f111-device-names",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "      if (DEVICE_NAME.test(name)) return no('a name Windows treats as a device')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

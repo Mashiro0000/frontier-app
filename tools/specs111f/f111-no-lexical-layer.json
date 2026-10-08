@@ -1,0 +1,15 @@
+{
+  "label": "f111-no-lexical-layer",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "      const lexicalRefusal = against(lexical.abs)",
+      "to": "      const lexicalRefusal = null as PathRefusal | null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

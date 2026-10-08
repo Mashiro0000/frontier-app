@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-race",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      const done = await Promise.race([running, aborted])",
+      "to": "      const done = await running"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

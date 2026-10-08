@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-internal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "        console.error('Deciding on a tool call failed:', reason(error))",
+      "to": "        throw error"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

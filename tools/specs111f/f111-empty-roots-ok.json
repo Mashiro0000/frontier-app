@@ -1,0 +1,15 @@
+{
+  "label": "f111-empty-roots-ok",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "      if (folders.length === 0)\n        return { ok: false, code: 'data-folder', why: 'no data folder is known' }",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

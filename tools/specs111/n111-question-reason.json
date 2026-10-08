@@ -1,0 +1,14 @@
+{
+  "label": "n111-question-reason",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolQuestion.ts",
+      "from": "  lines.push(`The model's reason: ${shown(why)}`, '', def.effect, '')",
+      "to": "  lines.push('', def.effect, '')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

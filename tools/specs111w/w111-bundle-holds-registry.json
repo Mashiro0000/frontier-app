@@ -1,0 +1,23 @@
+{
+  "label": "w111-bundle-holds-registry",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "import { createQuestionGate } from './systemQuestion'",
+      "to": "import { createQuestionGate } from './systemQuestion'\nimport { WEB_SEARCH } from './toolRegistry'"
+    },
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))",
+      "to": "  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))\n  console.log(WEB_SEARCH.title)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run111.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

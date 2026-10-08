@@ -1,0 +1,14 @@
+{
+  "label": "n111-reach-ipc",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "import { createQuestionGate } from './systemQuestion'",
+      "to": "import { createQuestionGate } from './systemQuestion'\nimport { createToolCore } from './toolCore'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

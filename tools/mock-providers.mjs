@@ -246,6 +246,16 @@ export function startMock(port = 8787) {
         }
         return alive ? finish(res, index, 'end_turn') : undefined
       }
+      case 'tool-use': {
+        // 11.1: a model that asks for a tool (here "web_search", with its words and its reason): some text, then a client tool_use block, and stop_reason
+        // "tool_use". In 11.1 nobody has offered it a tool, so the app must show the text and do nothing else; from 11.3 on the loop answers it.
+        text(res, index, 'Let me search for that. ')
+        sse(res, 'content_block_stop', { type: 'content_block_stop', index })
+        const at = index + 1
+        sse(res, 'content_block_start', { type: 'content_block_start', index: at, content_block: { type: 'tool_use', id: 'toolu_mock_1', name: 'web_search', input: {} } })
+        sse(res, 'content_block_delta', { type: 'content_block_delta', index: at, delta: { type: 'input_json_delta', partial_json: JSON.stringify({ query: 'rust release notes', why: 'The person asked for the newest release.' }) } })
+        return finish(res, at, 'tool_use')
+      }
       case 'files':
         // 9.3: the reply says what the last message of the person's carried: each image (type, size, bytes), PDF (title, bytes), text document and text block.
         await echoPieces(res, index, describeAnthropic(body), () => alive)

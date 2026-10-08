@@ -1,0 +1,14 @@
+{
+  "label": "n111-budget-caps-seconds",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyBudget.ts",
+      "from": "    seconds: inRange(caps.seconds, seconds.min, seconds.max)\n      ? caps.seconds\n      : TOOL_CAPS_DEFAULT.seconds",
+      "to": "    seconds: caps.seconds as number"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

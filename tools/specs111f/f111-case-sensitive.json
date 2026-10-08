@@ -1,0 +1,15 @@
+{
+  "label": "f111-case-sensitive",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "  platform === 'win32' || platform === 'darwin'",
+      "to": "  false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

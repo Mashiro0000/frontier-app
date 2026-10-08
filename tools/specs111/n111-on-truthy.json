@@ -1,0 +1,14 @@
+{
+  "label": "n111-on-truthy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/tools.ts",
+      "from": "Object.prototype.hasOwnProperty.call(settings.enabled, id) && settings.enabled[id] === true",
+      "to": "Boolean(settings.enabled[id])"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

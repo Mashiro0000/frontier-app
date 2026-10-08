@@ -1,0 +1,18 @@
+{
+  "label": "w111-handler",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))",
+      "to": "  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))\n  ipcMain.handle('tools:answer', guarded(async () => true))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run111.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

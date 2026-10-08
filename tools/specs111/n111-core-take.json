@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-take",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "    const taken = budget.take()",
+      "to": "    const taken = 'ok' as const"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,15 @@
+{
+  "label": "f111-core-raw-paths",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      args[argName] = verdict.real",
+      "to": "      args[argName] = checked.args[argName]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

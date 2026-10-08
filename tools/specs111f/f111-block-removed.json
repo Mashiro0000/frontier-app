@@ -1,0 +1,15 @@
+{
+  "label": "f111-block-removed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "      const lexicalRefusal = against(lexical.abs)",
+      "to": "      return { ok: true, real: lexical.abs }\n      const lexicalRefusal = against(lexical.abs)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

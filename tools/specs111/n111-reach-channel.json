@@ -1,0 +1,14 @@
+{
+  "label": "n111-reach-channel",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/ipc.ts",
+      "from": "  usageSummary: 'usage:summary',",
+      "to": "  usageSummary: 'usage:summary',\n  toolAnswer: 'tools:answer',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

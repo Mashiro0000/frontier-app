@@ -1,0 +1,14 @@
+{
+  "label": "n111-why-cut",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "return chars.length > WHY.max ? `${chars.slice(0, WHY.max - 1).join('')}…` : text",
+      "to": "return text"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

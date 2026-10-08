@@ -1,0 +1,14 @@
+{
+  "label": "n111-builtin-path",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "      kind: 'text',\n      label: 'Search for',",
+      "to": "      kind: 'path',\n      op: 'read',\n      label: 'Search for',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

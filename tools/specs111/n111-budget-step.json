@@ -1,0 +1,14 @@
+{
+  "label": "n111-budget-step",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyBudget.ts",
+      "from": "if (steps >= caps.steps) return 'step-cap'",
+      "to": "void 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n111-reach-bridge",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/preload/index.ts",
+      "from": "  usage: {\n    summary:",
+      "to": "  tools: { run: () => 1 },\n  usage: {\n    summary:"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-unknown",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "    if (def === undefined) return refused('unknown-tool', UNKNOWN_TOOL, step)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

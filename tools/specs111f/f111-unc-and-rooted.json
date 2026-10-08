@@ -1,0 +1,20 @@
+{
+  "label": "f111-unc-and-rooted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "    } else if (/^[\\\\/]{2}/.test(text)) {\n      return no('a network path')\n    }",
+      "to": "    }"
+    },
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "    if (drive === null && /^[\\\\/]/.test(rest)) return no('a path relative to the current drive')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "f111-no-ancestor-rule",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "          if (tree && isInside(root, here, platform)) return 'data-folder'\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "f111-delete-not-tree",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "request.recursive === true || request.op === 'delete'",
+      "to": "request.recursive === true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

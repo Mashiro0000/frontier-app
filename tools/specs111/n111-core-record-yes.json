@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-record-yes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "    if (!recorded) return refused('not-recorded', NOT_RECORDED, step)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

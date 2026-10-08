@@ -1,0 +1,18 @@
+{
+  "label": "w111-bridge-tools",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/preload/index.ts",
+      "from": "  usage: {\n    summary:",
+      "to": "  tools: { run: () => 1 },\n  usage: {\n    summary:"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run111.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

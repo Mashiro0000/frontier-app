@@ -1,0 +1,14 @@
+{
+  "label": "n111-question-asked-here",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolQuestion.ts",
+      "from": "  lines.push(ASKED_HERE)\n",
+      "to": "  lines.push('')\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

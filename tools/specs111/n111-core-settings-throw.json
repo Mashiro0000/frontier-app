@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-settings-throw",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      return DEFAULT_TOOL_SETTINGS\n    }\n  }",
+      "to": "      throw new Error('settings')\n    }\n  }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

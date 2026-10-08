@@ -1,0 +1,14 @@
+{
+  "label": "n111-args-unshowable",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "if (UNSHOWABLE.test(value)) return 'holds characters that cannot be shown'",
+      "to": "if (false) return 'holds characters that cannot be shown'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-record-asked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "    if (!(await keep({ type: 'asked', at: now(), tool: def.id, step, args, why: checked.why }))) {",
+      "to": "    if (!((await keep({ type: 'asked', at: now(), tool: def.id, step, args, why: checked.why })) || true)) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

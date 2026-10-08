@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-guard-ignore",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      if (!verdict.ok) {",
+      "to": "      if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

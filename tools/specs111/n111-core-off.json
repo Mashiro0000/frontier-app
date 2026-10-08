@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-off",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "    if (!toolIsOn(settings(), def.id)) return refused('tool-off', TOOL_OFF, step)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

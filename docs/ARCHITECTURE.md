@@ -96,6 +96,12 @@ marked (7), Stage 8 the ones marked (8), Stage 8b the ones marked (8b), Stage 9 
 | `src/shared/memory.ts`                       | (10.3) The rules of a note both sides use: 500 characters, 8,000 and 100 a place, where it applies, the types. Bundled into the preload too                                                                                                                                                                                                                                                      |
 | `src/main/projects.ts`                       | (10.5) The person's projects (D-039), in projects.json: a name never sent, instructions after the system's question, files through the open dialog and a question naming each, deleting (notes and unused files go), a damaged file left alone                                                                                                                                                   |
 | `src/shared/projects.ts`                     | (10.5) A project's rules both sides use: 100 projects, a name of 100 characters, 20 files, the types                                                                                                                                                                                                                                                                                             |
+| `src/shared/tools.ts`                        | (11.1) Tool calling, the part both sides use (D-041): the caps on one reply (5 steps, 60 seconds), the settings (every tool off by default), the events the audit log will keep. Types and constants; no imports                                                                                                                                                                                 |
+| `src/main/toolRegistry.ts`                   | (11.1) The tool definitions (D-041): data in a closed, checked, frozen shape; the arguments of a call checked field by field; the one tool, web_search, takes no path. No Electron imports                                                                                                                                                                                                       |
+| `src/main/toolCore.ts`                       | (11.1) The ONE place that decides what becomes of a tool call (D-041): deny by default, a fixed order of checks, recorded before the question and before the run, the question in the system's box, Stop everything, the caps. No Electron imports                                                                                                                                               |
+| `src/main/toolQuestion.ts`                   | (11.1) The words of the question before a tool call (D-041): the call in full, every value quoted and escaped so that it cannot pass for the box's own lines. No Electron imports                                                                                                                                                                                                                |
+| `src/main/replyBudget.ts`                    | (11.1) What one reply may use of tools (D-041): steps and working time; the clock stops while the person decides. No Electron imports                                                                                                                                                                                                                                                            |
+| `src/main/dataFolderGuard.ts`                | (11.1) The block that keeps every tool out of the data folder (D-041): a path judged by its text and by where it really is (links, 8.3 names, drives); fail-closed. No Electron imports                                                                                                                                                                                                          |
 | `src/renderer/src/chat/MessageFiles.tsx`     | (9.3) The files on a sent message, read only; `previews.ts` asks main (`attachments.describe`) for the pictures and first lines of a chat opened from History, once per file and chat, kept apart from the messages so the chat is not saved again                                                                                                                                               |
 
 ### Settings and the API keys
@@ -336,6 +342,16 @@ message box, or with "Remember..." under a message (the selected part, or all of
 in a project is a version 5 file with `"project"`; a chat in no project is written as before. The sweep and every deletion count the projects' files
 as used (`usedFiles` in `ipc.ts`). The page has `window.api.projects`; instructions and added files wait for a yes in the system's message box.
 
+**Tools (11.1, D-041).** Main has the foundation for tool calling and nothing calls it yet (11.3 wires the loop). `toolRegistry.ts` holds the tool
+definitions (data: a name, the words, the arguments of a closed set of kinds, a frozen copy); `toolCore.ts` is the one place that decides what becomes of
+a call the model made, in a fixed order: Stop everything, a step of the reply's budget (`replyBudget.ts`: 5 steps and 60 seconds of working time by
+default; the clock stops while the person decides), the tool exists, it is switched on (every tool starts off), the arguments fit exactly, no saved
+API key is in them, every path passes `dataFolderGuard.ts` and the tool is given only the real path it returns, the question fits the box, the
+question is recorded, the question (`toolQuestion.ts`, put through the same one-at-a-time gate as every other question, 10.1), the answer is recorded,
+only a yes runs the tool, its start and result are recorded. Nothing is asked or run that could not be recorded. What a tool brings back is untrusted
+text, cut at 60,000 characters, its sources only plain https addresses. The one tool, `web_search`, takes no path; the guard exists for the tools of
+Stages 12 and 13 and is tested now against stand-in file tools (`tools/verify-11-1-folder.mjs`).
+
 ## Chat UI (`src/renderer/src/chat/`)
 
 | File                 | Job                                                                                                                                  |
@@ -469,6 +485,10 @@ then restart `npm run dev` (or run `npm run dev -- --watch`, which rebuilds and 
   the place only afterwards. A backup is refused inside the app's data folder (links followed), so it cannot land on a key or a setting. The file is read back before
   it counts. A restore adds and never replaces, only after a look the person has seen, with a one-use token for the file that was looked at. **A backup from someone else
   is untrusted**: the checksum guards against damage and not against a person who rewrites it, and the model takes a chat's history as true when it is continued.
+- No tool can read, write or list the app's data folder (D-041). One guard (`dataFolderGuard.ts`) judges every path a tool is given, by its text and by where
+  it really is, and refuses it before anything is asked or run; a folder that holds the data folder is refused to a tool that goes through all of it. It judges
+  paths: a tool that runs free text as a command (Stage 13) is not held back by it. A tool that walks a folder must not follow links or must ask the guard about
+  each directory (the executor is given `check` for that).
 - The page gets only what `src/preload/index.ts` lists under `window.api`. Never expose Electron's
   whole `ipcRenderer`: any script in the page could then call any channel.
 - The window cannot navigate away from the app's own page, and only https links (without a user name or

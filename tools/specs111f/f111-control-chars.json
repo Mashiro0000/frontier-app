@@ -1,0 +1,15 @@
+{
+  "label": "f111-control-chars",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/dataFolderGuard.ts",
+      "from": "  if (UNREADABLE_CHARS.test(raw)) return no('control, invisible or unassigned characters')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1-folder.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

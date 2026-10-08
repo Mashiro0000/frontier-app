@@ -1,0 +1,14 @@
+{
+  "label": "n111-registry-fit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "if (worstCase(def) > SHOWN_LIMIT) {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

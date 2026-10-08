@@ -1,0 +1,18 @@
+{
+  "label": "w111-page-says-tools",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ChatBar.tsx",
+      "from": "Attach...",
+      "to": "Attach tools..."
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run111.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

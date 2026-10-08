@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-shape-https",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "url.length > 2000 || !isSafeExternalUrl(url)) continue",
+      "to": "url.length > 2000) continue"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

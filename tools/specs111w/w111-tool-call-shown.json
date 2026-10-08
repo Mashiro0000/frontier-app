@@ -1,0 +1,18 @@
+{
+  "label": "w111-tool-call-shown",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "    if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {",
+      "to": "    if (event.type === 'content_block_start' && event.content_block.type === 'tool_use') {\n      yield { type: 'text', text: `[tool_use ${event.content_block.name}]` }\n    }\n    if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run111.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

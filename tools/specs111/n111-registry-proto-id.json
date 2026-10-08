@@ -1,0 +1,14 @@
+{
+  "label": "n111-registry-proto-id",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "def.id in Object.prototype\n    ) {",
+      "to": "false\n    ) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

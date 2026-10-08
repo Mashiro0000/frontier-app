@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-abort-first",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "    if (signal.aborted) return refused('stopped', STOPPED, budget.used().steps)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-no-box",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      answer = await askOrStop(owner, question, signal)",
+      "to": "      answer = 'yes'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

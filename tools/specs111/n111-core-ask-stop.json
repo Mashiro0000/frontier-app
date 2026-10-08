@@ -1,0 +1,14 @@
+{
+  "label": "n111-core-ask-stop",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      signal.addEventListener('abort', onAbort, { once: true })\n      gate.ask",
+      "to": "      gate.ask"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}

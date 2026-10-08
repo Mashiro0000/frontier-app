@@ -1,0 +1,14 @@
+{
+  "label": "n111-question-quote",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolQuestion.ts",
+      "from": "if (char === '\"' ||",
+      "to": "if (false ||"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-11-1.mjs"
+  ],
+  "env": {}
+}
