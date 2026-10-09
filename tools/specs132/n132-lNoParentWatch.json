@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
-      "from": "if (parent != IntPtr.Zero) w = WaitForMultipleObjects(",
-      "to": "if (parent != IntPtr.Zero && timeoutMs < 0) w = WaitForMultipleObjects("
+      "from": "IntPtr[] waitFor = parent != IntPtr.Zero ?",
+      "to": "IntPtr[] waitFor = parent != IntPtr.Zero && timeoutMs < 0 ?"
     }
   ],
   "argv": [

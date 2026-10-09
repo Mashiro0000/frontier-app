@@ -1,0 +1,22 @@
+{
+  "label": "n134-pLongPath",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "    if (!base.endsWith('.exe') || candidate.length > MAX_PROGRAM_PATH) continue",
+      "to": "    if (!base.endsWith('.exe')) continue"
+    },
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "        real.length > MAX_PROGRAM_PATH",
+      "to": "        false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

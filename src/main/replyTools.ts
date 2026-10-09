@@ -8,6 +8,7 @@ import type { ToolRegistry } from './toolRegistry'
 import type { WorkspaceGuard } from './workspaceGuard'
 import { createProposalExecutors } from './proposalTools'
 import type { ProposalStore } from './proposals'
+import { createProgramSupport, type ProgramEnvironment } from './programTools'
 import { createWorkspaceExecutors, workspaceQuestions } from './workspaceTools'
 
 // The tools of ONE reply (Stage 11.3, D-041): the part between the reply's loop (chat.ts) and the core that decides (toolCore.ts). It makes the core for
@@ -25,6 +26,8 @@ export interface ToolRuntimeOptions {
   holdsSavedKey: (text: string) => Promise<boolean>
   /** The code workspace (12.3): its guard. Absent: no workspace tool can run (a call is refused as "no workspace"). */
   workspace?: { guard: WorkspaceGuard; proposals: ProposalStore }
+  /** Running a program in a box (13.4): what the run needs. Absent: the run tool cannot run (a call is refused as "no runner"). Needs the workspace as well. */
+  programs?: ProgramEnvironment
   now?: () => number
   newId?: () => string
   /** The clock of a reply's working time (milliseconds, monotonic); the checks hand in their own. */
@@ -163,6 +166,11 @@ export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
               ...createWorkspaceExecutors({ holdsSavedKey: options.holdsSavedKey }),
               ...createProposalExecutors({ store: options.workspace.proposals, now: options.now })
             }
+      // Running a program (13.4): only with a workspace (the folder to copy comes from it) and an environment for runs.
+      const program =
+        options.programs === undefined || options.workspace === undefined
+          ? undefined
+          : createProgramSupport(options.programs)
       const core = createToolCore({
         tools: options.tools,
         settings: () => current,
@@ -178,8 +186,10 @@ export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
         },
         holdsSavedKey: options.holdsSavedKey,
         ...(workspace === undefined ? {} : { workspace }),
+        ...(program === undefined ? {} : { programs: program.support }),
         executors: {
           ...fileExecutors,
+          ...(program === undefined ? {} : { run_program: program.executor }),
           web_search: async (args, context) => {
             const found = await input.search(String(args.query), context.signal)
             const note = found.end === 'done' ? '' : `\n\n${UNFINISHED[found.end]}`

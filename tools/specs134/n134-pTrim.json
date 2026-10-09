@@ -1,0 +1,22 @@
+{
+  "label": "n134-pTrim",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "  if (text !== text.trim() || text === '' || text.includes('\\0')) return null",
+      "to": "  if (text === '') return null"
+    },
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "    if (!base.endsWith('.exe') || candidate.length > MAX_PROGRAM_PATH) continue",
+      "to": "    if (candidate.length > MAX_PROGRAM_PATH) continue"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

@@ -15,7 +15,7 @@ try {
 }
 const base = {
   ok: true, exitCode: 0, timedOut: false, parentGone: false, elapsedMs: 12, peakJobMemory: 1048576, activeBeforeKill: 0, activeAfterKill: 0,
-  stdout: 'from the stand-in', stderr: '', stdoutBytes: 16, stderrBytes: 0
+  stdout: 'from the stand-in', stderr: '', stdoutBytes: 16, stderrBytes: 0, diskExceeded: false, scratchBytes: 0
 }
 if (process.env.STANDIN_SPECCOPY) fs.copyFileSync(specPath, process.env.STANDIN_SPECCOPY)
 const write = (text) => fs.writeFileSync(result, typeof text === 'string' ? text : JSON.stringify(text))

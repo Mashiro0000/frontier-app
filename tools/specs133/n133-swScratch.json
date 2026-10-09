@@ -1,0 +1,17 @@
+{
+  "label": "n133-swScratch",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "    if (await removeScratch(win32.join(home, name), runRoot)) sweep.scratchRemoved++",
+      "to": "    if (await Promise.resolve(true)) sweep.scratchRemoved++"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

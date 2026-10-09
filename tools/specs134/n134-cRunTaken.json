@@ -1,0 +1,17 @@
+{
+  "label": "n134-cRunTaken",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      const took = budget.takeRun()",
+      "to": "      const took = 'ok' as const"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

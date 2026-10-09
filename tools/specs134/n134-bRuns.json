@@ -1,0 +1,17 @@
+{
+  "label": "n134-bRuns",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyBudget.ts",
+      "from": "  runs: RUN_LIMITS.runsPerReply,",
+      "to": "  runs: 50,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}

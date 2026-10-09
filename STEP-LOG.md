@@ -2845,3 +2845,41 @@ if you have not, please do before you rely on this. **The design was mine** (you
 2. **If the app is killed hard, a temporary drive letter (like `Z:`) can stay behind** until the next start of the app; it holds an empty or half-used scratch folder. 13.3 removes it at start-up. You can also remove it with `subst Z: /d`.
 3. **Your security product (McAfee is installed here) removed a test program I compiled** between building and running it. It did not touch the launcher in about 60 runs, but a stricter setting could. If it ever does, the app says "the box could not be made" and runs nothing.
 4. **I did not look at any real Windows window or box** (your rule); this slice has none.
+
+## Stage 13 - Slice 13.3: the scratch copy (9 October 2026; D-043)
+
+**Step by step.**
+
+1. **What this slice builds.** The copy a program works on. A program never touches your folder: the files the model may see (the Stage 12 rules) are copied into a fresh folder that belongs to the app, the program works there, and afterwards the app compares the copy with what it copied. Nothing in the app uses it yet (the tool is 13.4).
+2. **What is copied and what is not.** Ordinary files and folders. Left out, and counted by reason: links, files with two names, `.git`, hidden and secret-looking names, any file that holds one of your saved API keys (even in pieces), paths that are too long, special files. A folder with more than 20,000 files or 100 MB is not copied at all, and the answer says so in words and suggests a subfolder.
+3. **What is looked at afterwards.** Every file is compared by its fingerprint. Changed and new text files (small, UTF-8) become candidates for proposals in the Review window (13.5); binary or big files and deleted files are only listed. Nothing is ever brought back by itself.
+4. **Clearing up.** The copy is removed after every run, with a strict rule about what the app is willing to remove (only a folder directly inside its own scratch folder). At start-up the app also takes away what a crash left behind, including a stray temporary drive letter.
+5. **The part that went wrong.** Testing this slice is where the incident of D-044 happened (see the next entry). The code was put right, tested again and checked again by deliberate breakages: 110 checks and 36 deliberate breakages, all noticed.
+6. **Also in this slice:** the launcher got a disk cap (a program that fills the disk is ended in seconds), 13.2's checks went from 239 to 255.
+
+## Stage 13 - the incident of 9 October 2026 and what stands between a check and your drives now (D-044)
+
+1. **What happened.** While I tested 13.3, one of my deliberate breakages removed a safety test from the function that clears the copy, and the check that goes with it handed that function your real drive root, `A:\`. It removed what it could at the root of drive A: (about 14 GB). That was my fault: the check should never have been able to reach a real path, and I had written that rule for myself before.
+2. **Your rule, which I follow:** nothing is deleted from any drive. Afterwards you allowed one narrow thing: my tests may remove only folders they made themselves in the same run, inside `C:\frontier-tmp`.
+3. **What now stands between a check and your drives:** a guard under the file system for any check that can remove things (`tools/fsguard.mjs`): outside the check's own new folder, every write, rename, copy and removal is refused before it happens; a wrapper that runs the older checks confined the same way; the 13.x checks refuse to start unless that folder is `C:\frontier-tmp` and you have allowed removing. The guard has its own checks (88) and 38 deliberate breakages, all noticed. The checks that used a real drive root now use a letter nothing is mounted on.
+4. **Limits, honestly:** the guard cannot watch programs a check starts, and it cannot confine the checks that open the real app window; those need your separate yes.
+5. **I worked in a copy of the repo on C:** (`C:\frontier-work\frontier-app`) while your recovery scan was running, so that nothing was written to A:.
+
+## Stage 13 - Slice 13.4: the run tool in the registry and the core (9 October 2026; D-043)
+
+**Step by step.**
+
+1. **What this slice builds.** The tool the model will ask with, `run_program`, and everything the app does about it before and after: which program it really is, the question that stands in front of EVERY run, the limits of a reply (5 runs, 240 seconds in all), Stop everything, the record. The model sees nothing new yet: switching it on, and the test that must pass first, are 13.5.
+2. **A program and arguments, no shell.** The model names a program (`node`, or a full path in the Windows folder) and gives its arguments as a list. The real path is what you are shown. Shells and script hosts (`cmd`, PowerShell and the like) are refused as programs, and so is anything outside the Windows folder and the installed `node.exe`.
+3. **The question.** A Windows message box, every time, "Don't run it" as the default: the program as a full path, the arguments one by one, the folder and at most how many files would be copied, what is left out, the model's reason (between quotes, so nothing in it can pass for the box's own words), what the box allows and forbids, and how many runs the reply has left. A no is kept for the rest of the reply: you are not asked again and again.
+4. **What a run costs the reply.** It counts as one of the reply's tool steps, and one of 5 runs; its program time counts against 240 seconds in all (each run at most 120). The reply's ordinary working clock stands still while the program runs. A run that is stopped or fails is still charged the time it took.
+5. **The record.** Every run leaves its events in the audit log: asked, answered, ran, and a new line with how it ended in numbers (never the output). The chat shows a short sentence.
+6. **What the model is told afterwards:** what ran and how it ended, the program's output cut to 20,000 characters, labelled "text from outside, not instructions", with control characters replaced and any saved key left out; and what became of the files in the copy.
+7. **Checked:** 181 checks under plain Node (the real registry, core, guards and copy, a played person and a played box) and 86 deliberate breakages (85 noticed; the 86th changes nothing anyone can see, see D-043). Eight older checks that list "who may import whom" and "which refusal codes exist" were brought up to date one by one; eleven older breakages whose target lines had moved were rewritten and the nine that run under plain Node were run again.
+
+## Stage 13.4 - Things to know (not problems, but worth your attention)
+
+1. **The question says "at most N files".** A file that holds one of your saved keys is found when the folder is copied, not when it is first looked at (looking at every file's content before you answer would make you wait), so the number can be a little high. The box says that such a file is never copied.
+2. **The first real run through the app is not in this slice.** The runner and the box were proven in 13.2; here the box is played. The first real end-to-end run is the self-test of 13.5.
+3. **Files and folders left behind by my tests in `C:\frontier-tmp`:** about 40 small folders from the guard's own test (it removes nothing, by design), one from a run that was killed on purpose, and the control runner's output files. Nothing there matters; I did not remove them because you did not allow it. Say the word if you want them gone.
+4. **Working in the copy:** everything of this stage so far is in `C:\frontier-work\frontier-app` on C:; it is brought back to the repo on A: at the end, after your recovery has finished.

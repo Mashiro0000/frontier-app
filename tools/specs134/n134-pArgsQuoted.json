@@ -1,0 +1,17 @@
+{
+  "label": "n134-pArgsQuoted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "    `Arguments: ${shownValue(f.args)}`,",
+      "to": "    `Arguments: ${f.args.join(' ')}`,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

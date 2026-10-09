@@ -1,0 +1,17 @@
+{
+  "label": "n134-pClean",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "      text === '' ? '(nothing)' : cleanOutput(text.slice(0, share)),",
+      "to": "      text === '' ? '(nothing)' : text.slice(0, share),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

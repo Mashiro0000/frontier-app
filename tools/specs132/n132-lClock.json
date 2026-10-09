@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
-      "from": "false, (uint)timeoutMs);",
-      "to": "false, (uint)(timeoutMs * 10));"
+      "from": "long left = (long)timeoutMs - sw.ElapsedMilliseconds;",
+      "to": "long left = (long)timeoutMs * 10 - sw.ElapsedMilliseconds;"
     }
   ],
   "argv": [

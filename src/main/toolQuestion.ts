@@ -27,6 +27,13 @@ export function shown(text: string): string {
   return `${out}"`
 }
 
+/** One argument's value as the box shows it: a number as it is, a text between quotes, a list as its items between quotes one after another (or "(none)"). */
+export function shownValue(value: string | number | readonly string[] | undefined): string {
+  if (typeof value === 'number') return String(value)
+  if (Array.isArray(value)) return value.length === 0 ? '(none)' : value.map(shown).join(' ')
+  return shown(String(value))
+}
+
 export interface StepOfCaps {
   step: number
   steps: number
@@ -47,7 +54,7 @@ export function approvalQuestion(
   const lines = ['The model asked to use a tool.', '', `Tool: ${def.title}`]
   for (const [name, spec] of Object.entries(def.args)) {
     const value = args[name]
-    lines.push(`${spec.label}: ${typeof value === 'number' ? String(value) : shown(String(value))}`)
+    lines.push(`${spec.label}: ${shownValue(value)}`)
   }
   lines.push(`The model's reason: ${shown(why)}`, '', def.effect)
   if (place?.provider !== undefined) lines.push(`The AI provider answering you: ${place.provider}.`)

@@ -1,0 +1,17 @@
+{
+  "label": "n133-rrOrder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "  return [win32.join(drive, folderName), win32.join(win32.resolve(systemTemp), folderName)]",
+      "to": "  return [win32.join(win32.resolve(systemTemp), folderName), win32.join(drive, folderName)]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

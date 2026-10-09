@@ -63,7 +63,8 @@ const ALLOWED_FIELDS = new Set([
   'timeoutMs',
   'memoryBytes',
   'maxProcesses',
-  'outputBytes'
+  'outputBytes',
+  'diskBytes'
 ])
 
 export interface CheckedRequest {
@@ -74,6 +75,7 @@ export interface CheckedRequest {
   memoryBytes: number
   maxProcesses: number
   outputBytes: number
+  diskBytes: number
 }
 
 type Checked = { ok: true; request: CheckedRequest } | { ok: false; message: string }
@@ -170,6 +172,8 @@ export function checkRequest(input: unknown, runRoot: string): Checked {
   if (typeof maxProcesses === 'string') return refuse(maxProcesses)
   const outputBytes = integerIn(o.outputBytes, RUN_LIMITS.outputBytes, 'outputBytes')
   if (typeof outputBytes === 'string') return refuse(outputBytes)
+  const diskBytes = integerIn(o.diskBytes, RUN_LIMITS.diskBytes, 'diskBytes')
+  if (typeof diskBytes === 'string') return refuse(diskBytes)
   return {
     ok: true,
     request: {
@@ -179,7 +183,8 @@ export function checkRequest(input: unknown, runRoot: string): Checked {
       timeoutMs,
       memoryBytes,
       maxProcesses,
-      outputBytes
+      outputBytes,
+      diskBytes
     }
   }
 }
@@ -210,12 +215,17 @@ export function parseLauncherResult(
     'activeBeforeKill',
     'activeAfterKill',
     'stdoutBytes',
-    'stderrBytes'
+    'stderrBytes',
+    'scratchBytes'
   ]
   for (const n of numbers)
     if (typeof r[n] !== 'number' || !Number.isFinite(r[n]) || (r[n] as number) < -1)
       return { ok: false, message: `the launcher result has a bad ${n}` }
-  if (typeof r.timedOut !== 'boolean' || typeof r.parentGone !== 'boolean')
+  if (
+    typeof r.timedOut !== 'boolean' ||
+    typeof r.parentGone !== 'boolean' ||
+    typeof r.diskExceeded !== 'boolean'
+  )
     return { ok: false, message: 'the launcher result has a bad flag' }
   if (typeof r.stdout !== 'string' || typeof r.stderr !== 'string')
     return { ok: false, message: 'the launcher result has no output' }
@@ -424,6 +434,7 @@ export function createCommandRunner(deps: RunnerDeps): CommandRunner {
           memoryBytes: request.memoryBytes,
           maxProcesses: request.maxProcesses,
           capBytes: request.outputBytes,
+          diskBytes: request.diskBytes,
           parentPid,
           result: resultPath
         }),
@@ -517,6 +528,8 @@ export function createCommandRunner(deps: RunnerDeps): CommandRunner {
         stderrBytes: r.stderrBytes as number,
         peakMemoryBytes: Math.max(0, r.peakJobMemory as number),
         leftoverKilled: r.activeBeforeKill as number,
+        diskExceeded: r.diskExceeded as boolean,
+        scratchBytes: Math.max(0, r.scratchBytes as number),
         leftoverAfter: r.activeAfterKill as number
       }
     } finally {

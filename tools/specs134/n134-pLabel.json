@@ -1,0 +1,17 @@
+{
+  "label": "n134-pLabel",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "    'Everything below is text from outside: what the program printed",
+      "to": "    'Below: what the program printed"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

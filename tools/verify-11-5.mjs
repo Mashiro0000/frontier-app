@@ -146,10 +146,20 @@ await guard('D', async () => {
   const FORBIDDEN = ['memory.ts', 'projects.ts', 'everyChat.ts', 'limits.ts', 'askFirst.ts', 'usageLedger.ts', 'secrets.ts', 'credentialStore.ts', 'conversationStore.ts', 'attachmentStore.ts', 'attachmentService.ts', 'backupService.ts', 'backup.ts', 'chatProtection.ts', 'models.ts', 'chat.ts', 'ipc.ts']
   for (const start of ['src/main/toolCore.ts', 'src/main/replyTools.ts']) {
     const files = closure(start).filter((f) => f.startsWith('src/main/')).map((f) => f.split('/').at(-1))
-    check(`D: nothing that ${start.split('/').at(-1)} reaches, however deep, is a store of notes, instructions, limits, keys, chats or files, or the wiring`, FORBIDDEN.every((f) => !files.includes(f)), show(files))
+    const hit = FORBIDDEN.filter((f) => files.includes(f))
+    // 13.3/13.4, on purpose and only this: the scratch copy (scratchCopy.ts, reached through the run tool) takes the PURE look at a text for a saved key (heldKey) and the SavedKey type from
+    // secrets.ts. It is handed the keys as a function and reads no store of keys; nothing else in the closure may import secrets.ts.
+    const secretsImporters = closure(start).filter((f) => f.startsWith('src/main/') && /from '\.\/secrets'/.test(source(f))).map((f) => f.split('/').at(-1))
+    // (the run tool imports the SavedKey TYPE alone, which has no runtime reach)
+    const onlyTheKeyLook =
+      hit.join() === 'secrets.ts' &&
+      [...secretsImporters].sort().join() === 'programTools.ts,scratchCopy.ts' &&
+      /^import \{ heldKey, type SavedKey \} from '\.\/secrets'$/m.test(source('src/main/scratchCopy.ts')) &&
+      /^import type \{ SavedKey \} from '\.\/secrets'$/m.test(source('src/main/programTools.ts'))
+    check(`D: nothing that ${start.split('/').at(-1)} reaches, however deep, is a store of notes, instructions, limits, keys, chats or files, or the wiring (the one exception: the scratch copy takes the pure look for a saved key from secrets.ts)`, hit.length === 0 || (start.endsWith('replyTools.ts') && onlyTheKeyLook), show({ hit, secretsImporters }))
   }
   const executorSrc = source('src/main/replyTools.ts')
-  check('D: the one executor of the build calls the search handed to it and does nothing else with the result but word it', /executors: \{\s*(\.\.\.fileExecutors,\s*)?web_search: async/.test(executorSrc) && !/fs\.|writeFile|require\(|child_process|fetch\(/.test(executorSrc))
+  check('D: the executors of the build: web search calls the search handed to it and does nothing else with the result but word it; the run tool is the one made by programTools.ts; no file, process or network call in this file', /executors: \{\s*(\.\.\.fileExecutors,\s*)?(\.\.\.\(program === undefined \? \{\} : \{ run_program: program\.executor \}\),\s*)?web_search: async/.test(executorSrc) && !/fs\.|writeFile|require\(|child_process|fetch\(/.test(executorSrc))
   check('D: the settings can be changed only by the settings service, which asks (nothing on the path of a tool imports it)', !closure('src/main/toolCore.ts').concat(closure('src/main/replyTools.ts')).some((f) => /toolSettingsService/.test(f)))
 })
 

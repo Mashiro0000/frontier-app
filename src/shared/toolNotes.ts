@@ -10,6 +10,7 @@
 import { DECLINED_TEXT, REFUSED_TEXT, groupCalls, type AuditCall, type AuditOutcome } from './audit'
 import {
   ANSWER_CODES,
+  PROGRAM_ENDS,
   REFUSAL_CODES,
   TOOL_RESULT_LIMITS,
   toolTitle,
@@ -79,6 +80,22 @@ export function noteOutcomeText(outcome: AuditOutcome, live: boolean, tool = 'we
       return outcome.covered === true
         ? 'Allowed for this reply. It started, but it failed or was stopped.'
         : 'You allowed it. It started, but it failed or was stopped.'
+    case 'ran-program': {
+      const { program } = outcome
+      const secs = `${(program.ms / 1000).toFixed(1)} seconds`
+      const back = `${plural(outcome.size, 'character', 'characters')} of its output came back`
+      switch (program.end) {
+        case 'exited':
+          return `You allowed it. The program ran for ${secs} and ended with exit code ${program.exitCode === null ? 'none' : program.exitCode.toLocaleString('en-US')}; ${back}.`
+        case 'timed-out':
+          return `You allowed it. The clock ended the program after ${secs}; ${back}.`
+        case 'disk-full':
+          return `You allowed it. The program was ended after ${secs} because its folder grew past the limit; ${back}.`
+        case 'not-run':
+          return 'You allowed it. The program did not run, and nothing was changed.'
+      }
+      return ''
+    }
     case 'running':
       return live
         ? 'Working on it...'
@@ -276,6 +293,37 @@ function checkOutcome(raw: unknown): AuditOutcome | null {
     }
     case 'unanswered':
       return hasKeys(raw, ['kind']) ? { kind: raw.kind } : null
+    case 'ran-program': {
+      if (!hasKeys(raw, ['kind', 'program', 'size']) || !isCount(raw.size, 0, NOTE_LIMITS.size)) {
+        return null
+      }
+      const p = raw.program
+      if (
+        !isRecord(p) ||
+        !hasKeys(p, ['end', 'exitCode', 'ms', 'copied', 'changed', 'created', 'deleted'])
+      ) {
+        return null
+      }
+      if (!(PROGRAM_ENDS as readonly unknown[]).includes(p.end)) return null
+      if (p.exitCode !== null && !isCount(p.exitCode, 0, 4_294_967_295)) return null
+      if (!isCount(p.ms, 0, 1_000_000_000)) return null
+      for (const field of [p.copied, p.changed, p.created, p.deleted]) {
+        if (!isCount(field, 0, 1_000_000)) return null
+      }
+      return {
+        kind: 'ran-program',
+        program: {
+          end: p.end as (typeof PROGRAM_ENDS)[number],
+          exitCode: p.exitCode as number | null,
+          ms: p.ms as number,
+          copied: p.copied as number,
+          changed: p.changed as number,
+          created: p.created as number,
+          deleted: p.deleted as number
+        },
+        size: raw.size
+      }
+    }
     default:
       return null
   }

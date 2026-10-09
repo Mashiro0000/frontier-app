@@ -1,0 +1,22 @@
+{
+  "label": "n133-mkFollowLinks",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "      if (entry.isSymbolicLink()) {\n        leave(here, 'link', folder)",
+      "to": "      if (false) {\n        leave(here, 'link', folder)"
+    },
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "      const folder = entry.isDirectory()\n",
+      "to": "      const folder = entry.isDirectory() || entry.isSymbolicLink()\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 600000
+}

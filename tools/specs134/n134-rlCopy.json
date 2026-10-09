@@ -1,0 +1,17 @@
+{
+  "label": "n134-rlCopy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "Object.freeze([...(value as string[])])",
+      "to": "(value as string[])"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 600000
+}

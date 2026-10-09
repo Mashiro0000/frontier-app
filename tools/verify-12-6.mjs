@@ -591,7 +591,10 @@ await guard('H', async () => {
   const main = fs.readdirSync(`${REPO}/src/main`).filter((n) => n.endsWith('.ts'))
   const writes = /\b(writeFile|appendFile|rename|rmSync|unlink|copyFile|createWriteStream|truncate|writeSync)\b|\.rm\(|\bmkdir\(/
   const both = main.filter((name) => { const text = source(`src/main/${name}`); return writes.test(text) && /\b(verdict|again|resolved|result)\.real\b|\bworkspaceGuard\b|\bwsGuard\b|createWorkspaceGuard/.test(text) })
-  check('H: the only file of the app that writes AND holds a path from the workspace guard is applyService.ts (ipc.ts only builds the guard and the pieces)', show(both.filter((n) => n !== 'ipc.ts')) === show(['applyService.ts']), show(both))
+  // 13.3, on purpose: scratchCopy.ts is listed by this look because it imports the guard's classification of NAMES (classifyNames) and writes: but it writes only inside the app's own run folder
+  // (verify-13-3.mjs, part G watches every call), takes no verdict of the guard and holds no path of the workspace but the folder it was handed to READ. This says so separately.
+  const scratchSource = source('src/main/scratchCopy.ts').replace(/^\s*\/\/.*$/gm, '')
+  check('H: the only file of the app that writes AND holds a path from the workspace guard is applyService.ts (ipc.ts only builds the guard and the pieces; scratchCopy.ts takes only classifyNames from the guard, holds no verdict, and writes only in the run folder)', show(both.filter((n) => n !== 'ipc.ts' && n !== 'scratchCopy.ts')) === show(['applyService.ts']) && /import \{ classifyNames \} from '\.\/workspaceGuard'/.test(scratchSource) && !/verdict|\.real\b|createWorkspaceGuard|wsGuard/.test(scratchSource), show(both))
   const guardUsers = main.filter((name) => /workspaceGuard/.test(source(`src/main/${name}`))).sort()
   check('H: the files that use the guard are the known ones (a new one has to be looked at)', show(guardUsers) === show(['applyService.ts', 'ipc.ts', 'reviewService.ts', 'workspace.ts', 'workspaceGuard.ts', 'workspaceService.ts', 'workspaceTools.ts', 'proposalTools.ts'].sort()) || guardUsers.length <= 10, show(guardUsers))
   for (const name of ['replyTools.ts', 'chat.ts', 'workspaceTools.ts', 'proposalTools.ts', 'toolCore.ts', 'toolRegistry.ts', 'proposals.ts', 'workspaceService.ts']) {

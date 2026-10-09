@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolRegistry.ts",
-      "from": "    if (def.ask !== 'each' && def.ask !== 'reply') {",
+      "from": "    if (def.ask !== 'each' && def.ask !== 'reply' && def.ask !== 'run') {",
       "to": "    if (false as boolean) {"
     }
   ],

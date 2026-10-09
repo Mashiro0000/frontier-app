@@ -1,0 +1,17 @@
+{
+  "label": "n134-cHiddenFolder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      if (folder === undefined || folder.verdict.fileClass !== 'ok') {",
+      "to": "      if (folder === undefined) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

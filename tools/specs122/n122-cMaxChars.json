@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "        def.counts === 'file' ? Math.min(MAX_RESULT_CHARS, budget.charsLeft()) : MAX_RESULT_CHARS",
+      "from": "        def.counts === 'file'\n          ? Math.min(MAX_RESULT_CHARS, budget.charsLeft())\n          : isRun\n            ? Math.min(MAX_RESULT_CHARS, RUN_LIMITS.modelChars)\n            : MAX_RESULT_CHARS",
       "to": "        MAX_RESULT_CHARS"
     }
   ],

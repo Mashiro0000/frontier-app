@@ -43,6 +43,8 @@ public class BoxResult {
   public uint ActiveBeforeKill;
   public uint ActiveAfterKill;
   public string Letter;
+  public bool DiskExceeded;
+  public long ScratchBytes;
 }
 
 public static class Box {
@@ -246,9 +248,28 @@ public static class Box {
     } finally { Marshal.FreeHGlobal(p); }
   }
 
+  // ---- how much is in the scratch folder (links are not followed; a sparse file counts at its full length) --------------------------------
+  static long TreeBytes(string root, long stopAfter) {
+    long total = 0;
+    Stack<string> dirs = new Stack<string>();
+    dirs.Push(root);
+    while (dirs.Count > 0) {
+      string d = dirs.Pop();
+      FileSystemInfo[] items;
+      try { items = new DirectoryInfo(d).GetFileSystemInfos(); } catch (Exception) { continue; }
+      foreach (FileSystemInfo fi in items) {
+        if ((fi.Attributes & FileAttributes.ReparsePoint) != 0) continue;
+        if ((fi.Attributes & FileAttributes.Directory) != 0) { dirs.Push(fi.FullName); continue; }
+        try { total += ((FileInfo)fi).Length; } catch (Exception) { }
+        if (total > stopAfter) return total;
+      }
+    }
+    return total;
+  }
+
   // ---- the run -----------------------------------------------------------------------------------------------------------------------
   public static BoxResult Run(string containerSid, string program, string[] args, string cwd, Dictionary<string, string> env,
-                              int timeoutMs, long memoryBytes, int maxProcesses, int capBytes, int parentPid) {
+                              int timeoutMs, long memoryBytes, int maxProcesses, int capBytes, int parentPid, string scratch, long diskBytes) {
     BoxResult r = new BoxResult();
     r.Stage = "start";
     IntPtr job = IntPtr.Zero, parent = IntPtr.Zero;
@@ -336,10 +357,22 @@ public static class Box {
       sw.Start(); // the program's clock starts here, not when the container was made (that takes about a second)
       if (ResumeThread(pi.hThread) == 0xFFFFFFFF) throw Err(Marshal.GetLastWin32Error(), "ResumeThread");
       r.Started = true;
-      uint w;
-      if (parent != IntPtr.Zero) w = WaitForMultipleObjects(2, new IntPtr[] { pi.hProcess, parent }, false, (uint)timeoutMs);
-      else w = WaitForSingleObject(pi.hProcess, (uint)timeoutMs);
-      r.TimedOut = (w == 0x102);
+      // the wait: the program ends, the app dies, the clock runs out, or the scratch folder grows past its cap (checked every quarter of a second,
+      // a little less often for a big folder); whichever comes first ends the job
+      IntPtr[] waitFor = parent != IntPtr.Zero ? new IntPtr[] { pi.hProcess, parent } : new IntPtr[] { pi.hProcess };
+      uint w = 0x102;
+      long pause = 250;
+      while (true) {
+        long left = (long)timeoutMs - sw.ElapsedMilliseconds;
+        if (left <= 0) { w = 0x102; break; }
+        uint step = (uint)(left < pause ? left : pause);
+        w = WaitForMultipleObjects((uint)waitFor.Length, waitFor, false, step);
+        if (w != 0x102) break;
+        long scanStart = sw.ElapsedMilliseconds;
+        if (TreeBytes(scratch, diskBytes) > diskBytes) { r.DiskExceeded = true; break; }
+        pause = 250 + 2 * (sw.ElapsedMilliseconds - scanStart);
+      }
+      r.TimedOut = (w == 0x102 && !r.DiskExceeded);
       r.ParentGone = (w == 1);
       r.ActiveBeforeKill = ActiveCount(job);
       r.PeakJobMemory = PeakMemory(job);
@@ -351,6 +384,7 @@ public static class Box {
       r.ExitCode = (long)code;
       to.Join(5000); te.Join(5000);
       r.ActiveAfterKill = ActiveCount(job);
+      r.ScratchBytes = TreeBytes(scratch, long.MaxValue);
       r.Stdout = new byte[co.Len]; Buffer.BlockCopy(co.Buf, 0, r.Stdout, 0, co.Len); r.StdoutTotal = co.Total;
       r.Stderr = new byte[ce.Len]; Buffer.BlockCopy(ce.Buf, 0, r.Stderr, 0, ce.Len); r.StderrTotal = ce.Total;
       r.Stage = "done";
@@ -384,7 +418,7 @@ function Write-Result($obj) {
 function Fail($stage, $message) { Write-Result ([ordered]@{ ok = $false; stage = $stage; error = $message }); exit 0 }
 
 # hard limits of the launcher itself: no caller can raise them
-$MAX_TIMEOUT_MS = 120000; $MAX_MEMORY = 1073741824; $MAX_PROCESSES = 64; $MAX_CAP = 65536; $MAX_ARGS = 100; $MAX_ARG_CHARS = 8192
+$MAX_TIMEOUT_MS = 120000; $MAX_MEMORY = 1073741824; $MAX_PROCESSES = 64; $MAX_CAP = 65536; $MAX_DISK = 536870912; $MAX_ARGS = 100; $MAX_ARG_CHARS = 8192
 
 $stage = 'read-spec'
 try {
@@ -400,16 +434,17 @@ try {
   $stage = 'check-spec'
   if ($spec.version -ne 1) { throw 'unknown spec version' }
   $names = @($spec.PSObject.Properties | ForEach-Object { $_.Name })
-  foreach ($n in @('version', 'container', 'runRoot', 'scratchDir', 'toolsDir', 'program', 'args', 'timeoutMs', 'memoryBytes', 'maxProcesses', 'capBytes', 'parentPid', 'result')) {
+  foreach ($n in @('version', 'container', 'runRoot', 'scratchDir', 'toolsDir', 'program', 'args', 'timeoutMs', 'memoryBytes', 'maxProcesses', 'capBytes', 'diskBytes', 'parentPid', 'result')) {
     if ($names -notcontains $n) { throw "the spec has no field $n" }
   }
-  if ($names.Count -ne 13) { throw 'the spec has a field too many' }
+  if ($names.Count -ne 14) { throw 'the spec has a field too many' }
   if ([string]$spec.container -notmatch '^FrontierApp\.[A-Za-z0-9]{1,40}$') { throw 'the container name is not ours' }
-  $timeoutMs = [int]$spec.timeoutMs; $memoryBytes = [long]$spec.memoryBytes; $maxProcesses = [int]$spec.maxProcesses; $capBytes = [int]$spec.capBytes; $parentPid = [int]$spec.parentPid
+  $timeoutMs = [int]$spec.timeoutMs; $memoryBytes = [long]$spec.memoryBytes; $maxProcesses = [int]$spec.maxProcesses; $capBytes = [int]$spec.capBytes; $diskBytes = [long]$spec.diskBytes; $parentPid = [int]$spec.parentPid
   if ($timeoutMs -lt 100 -or $timeoutMs -gt $MAX_TIMEOUT_MS) { throw 'timeoutMs is out of range' }
   if ($memoryBytes -lt 16777216 -or $memoryBytes -gt $MAX_MEMORY) { throw 'memoryBytes is out of range' }
   if ($maxProcesses -lt 1 -or $maxProcesses -gt $MAX_PROCESSES) { throw 'maxProcesses is out of range' }
   if ($capBytes -lt 1 -or $capBytes -gt $MAX_CAP) { throw 'capBytes is out of range' }
+  if ($diskBytes -lt 1048576 -or $diskBytes -gt $MAX_DISK) { throw 'diskBytes is out of range' }
   if ($parentPid -lt 0) { throw 'parentPid is out of range' }
   $argv = @($spec.args | ForEach-Object { [string]$_ })
   if ($argv.Count -gt $MAX_ARGS) { throw 'too many arguments' }
@@ -461,7 +496,7 @@ try {
   $envd['TMP'] = $envd['TEMP']
   foreach ($k in @('HOME', 'USERPROFILE')) { $envd[$k] = $root }
   $stage = 'run'
-  $r = [Box]::Run($sid, $program, $argv, $root, $envd, $timeoutMs, $memoryBytes, $maxProcesses, $capBytes, $parentPid)
+  $r = [Box]::Run($sid, $program, $argv, $root, $envd, $timeoutMs, $memoryBytes, $maxProcesses, $capBytes, $parentPid, $scratch, $diskBytes)
   if ($null -eq $r.Stdout) { $r.Stdout = [byte[]]@() }
   if ($null -eq $r.Stderr) { $r.Stderr = [byte[]]@() }
   $out = [ordered]@{
@@ -469,6 +504,7 @@ try {
     timedOut = $r.TimedOut; parentGone = $r.ParentGone; elapsedMs = $r.ElapsedMs; peakJobMemory = $r.PeakJobMemory
     activeBeforeKill = $r.ActiveBeforeKill; activeAfterKill = $r.ActiveAfterKill
     stdout = $utf8.GetString($r.Stdout); stderr = $utf8.GetString($r.Stderr); stdoutBytes = $r.StdoutTotal; stderrBytes = $r.StderrTotal
+    diskExceeded = $r.DiskExceeded; scratchBytes = $r.ScratchBytes
     letter = $mounted
   }
   # the letter is taken away BEFORE the result is written, so that a reader of the result can rely on it

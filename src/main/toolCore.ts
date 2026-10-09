@@ -1,16 +1,20 @@
+import { RUN_LIMITS } from '../shared/run'
 import {
   toolIsOn,
   DEFAULT_TOOL_SETTINGS,
+  PROGRAM_ENDS,
   TOOL_RESULT_LIMITS,
   type AnswerCode,
+  type ProgramEnd,
   type RefusalCode,
+  type ShownArguments,
   type ToolEvent,
   type ToolSettings,
   type ToolSource
 } from '../shared/tools'
 import type { WorkspaceRefusal } from '../shared/workspace'
 import type { DataFolderGuard, PathOp, PathVerdict } from './dataFolderGuard'
-import type { ReplyBudget } from './replyBudget'
+import type { ReplyBudget, RunCaps } from './replyBudget'
 import { isSafeExternalUrl } from './security'
 import type { GateAnswer, QuestionGate, SystemQuestion } from './systemQuestion'
 import { approvalQuestion, SHOWN_LIMIT } from './toolQuestion'
@@ -52,6 +56,19 @@ export interface ToolResult {
   searched: string | null
   /** How many searches the provider ran (and bills) for this call. */
   searches: number
+  /** For a program run (13.4): how it ended, in numbers. Null for every other tool. */
+  program: ProgramFacts | null
+}
+
+/** What the audit log keeps of a program run (the "program" event without its head), as the run's executor reports it. */
+export interface ProgramFacts {
+  end: ProgramEnd
+  exitCode: number | null
+  ms: number
+  copied: number
+  changed: number
+  created: number
+  deleted: number
 }
 
 /**
@@ -71,12 +88,15 @@ export type Executor = (
     again: (argName: string) => Promise<WorkspaceVerdict>
     /** The model's reason for the call, as the person was shown it (cleaned by the core). */
     why: string
+    /** For a program run (13.4): the milliseconds of program time this reply may still use (the run's own clock must not be longer). 0 for every other tool. */
+    runMsLeft: number
   }
 ) => Promise<{
   text: string
   sources?: ToolSource[]
   searched?: string | null
   searches?: number
+  program?: ProgramFacts | null
 }>
 
 /** A call as the model made it: nothing in it has been checked. */
@@ -111,6 +131,45 @@ export interface WorkspaceQuestions {
   grant(call: WorkspaceCall): SystemQuestion
   /** A file that is hidden or looks like it holds secrets: asked about that one file, whatever the reply's grant says. */
   oneByOne(call: WorkspaceCall): SystemQuestion
+}
+
+/** A call to a tool that runs a program (13.4, `ask: 'run'`), as the words of its question and the look at the program need it. */
+export interface ProgramCall {
+  tool: ToolDefinition
+  /** The arguments as checked: the folder as the real path that the workspace guard resolved, the program still as the model wrote it. */
+  args: CheckedArgs
+  why: string
+  /** The number this call has in the reply's record. */
+  step: number
+  /** The provider that answers this chat, if known. */
+  provider?: string
+  /** The workspace as it really is now, and the folder of it that the program would work on (a copy of it). */
+  root: string
+  folder: WorkspacePathFacts
+  /** What this reply may still run: how many runs, and how many milliseconds of program time, of what its caps allow. */
+  runsLeft: number
+  runMsLeft: number
+  runCaps: Readonly<RunCaps>
+  /** Stop everything: a look at the folder that takes long ends with it. */
+  signal: AbortSignal
+}
+
+/**
+ * What the preparation of a run answers. `replace`: arguments as the program will really be given them (the program as a full path), which are also what the person is shown.
+ * `shown`: what the audit log keeps of the call. `question`: the words of the box. A refusal carries one of the fixed sentences and its code.
+ */
+export type ProgramPreparation =
+  | {
+      ok: true
+      replace: Readonly<Record<string, string>>
+      shown: ShownArguments
+      question: SystemQuestion
+    }
+  | { ok: false; code: RefusalCode; text: string }
+
+/** What the core is given to ask about a run (13.4): the look at the call before anybody is asked. Nothing is copied or started here. */
+export interface ProgramSupport {
+  prepare(call: ProgramCall): Promise<ProgramPreparation>
 }
 
 export interface RunContext {
@@ -165,6 +224,8 @@ export interface ToolCoreOptions {
   executors: Readonly<Record<string, Executor>>
   /** The code workspace (12.2): the guard for its paths and the words of its two kinds of question. Absent: a call with a workspace path is refused. */
   workspace?: { guard: WorkspaceGuard; questions: WorkspaceQuestions }
+  /** Running a program (13.4): the look at a run before it is asked about. Absent: a call to a tool that is asked about as a run is refused as "no runner". */
+  programs?: ProgramSupport
   now?: () => number
   /** Where a call's id comes from (the record names every event by it, so that calls that overlap can be told apart). Tests hand in their own. */
   newId?: () => string
@@ -203,6 +264,19 @@ export const GRANT_DECLINED_TEXT = 'The person did not allow file access in this
 export const fileCapText = (calls: number): string =>
   `This reply has used all ${calls} of its file calls.`
 export const CHARS_CAP_TEXT = 'This reply has been given all the file text it may read.'
+// The sentences for a program run (13.4). Fixed, like the rest: nothing of a program's name, arguments or folder rides in them.
+export const NO_BOX_TEXT = 'This call was not made: a program cannot be run on this PC just now.'
+export const NO_PROGRAM_TEXT = 'The call was not accepted: that is not a program a run may use.'
+export const COPY_REFUSED_TEXT =
+  'The call was not accepted: that folder is bigger than a run may copy (20,000 files and folders, 100 MB), or it cannot be copied. Run in a subfolder instead.'
+export const RUN_DECLINED_TEXT = 'The person did not allow a program run in this reply.'
+export const RUN_TIME_TEXT = 'This reply has used all the run time it may.'
+export const runCapText = (runs: number): string =>
+  `This reply has used all ${runs} of its program runs.`
+/** The least program time left for which a run is still offered: the launcher takes about a second to make the box. */
+export const MIN_RUN_MS = 5000
+/** How long past the reply's remaining run time the core waits for a run to give its answer (copying the folder, making the box and looking afterwards are not the program's clock). */
+export const RUN_BACKSTOP_MS = 60_000
 
 /** What the model is told, and what the record keeps, for each reason the workspace guard refuses a path. Fixed: nothing of the path rides in them. */
 const WORKSPACE_REFUSAL: Readonly<Record<WorkspaceRefusal, { code: RefusalCode; text: string }>> = {
@@ -267,16 +341,44 @@ function tidyUrl(url: string): string | null {
   return href.length <= TOOL_RESULT_LIMITS.maxUrlChars && /^[\x21-\x7e]+$/.test(href) ? href : null
 }
 
+const isCount = (value: unknown, max: number): value is number =>
+  typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 && value <= max
+
+/** The numbers of a run as the executor reported them, or null when anything in them is not what the audit log can keep. */
+function shapeProgram(raw: unknown): ProgramFacts | null {
+  if (raw === null || typeof raw !== 'object') return null
+  const p = raw as Record<string, unknown>
+  if (typeof p.end !== 'string' || !(PROGRAM_ENDS as readonly string[]).includes(p.end)) return null
+  if (p.exitCode !== null && !isCount(p.exitCode, 4_294_967_295)) return null
+  if (!isCount(p.ms, 1_000_000_000)) return null
+  const { copied, changed, created, deleted } = p
+  if (!isCount(copied, 1_000_000) || !isCount(changed, 1_000_000)) return null
+  if (!isCount(created, 1_000_000) || !isCount(deleted, 1_000_000)) return null
+  return {
+    end: p.end as ProgramEnd,
+    exitCode: p.exitCode as number | null,
+    ms: p.ms,
+    copied,
+    changed,
+    created,
+    deleted
+  }
+}
+
 /** What a tool handed back, as the app passes it on, or null when it is not a result at all. */
 export function shapeResult(raw: unknown): ToolResult | null {
   if (raw === null || typeof raw !== 'object') return null
-  const { text, sources, searched, searches } = raw as {
+  const { text, sources, searched, searches, program } = raw as {
     text?: unknown
     sources?: unknown
     searched?: unknown
     searches?: unknown
+    program?: unknown
   }
   if (typeof text !== 'string') return null
+  // Numbers about a run, if the tool gave any: they are kept as they are, or the result is not believed (a fault of the tool's own, never the model's)
+  const facts = program === undefined || program === null ? null : shapeProgram(program)
+  if (program !== undefined && program !== null && facts === null) return null
   const kept: ToolSource[] = []
   if (Array.isArray(sources)) {
     for (const source of sources.slice(0, MAX_SOURCES) as unknown[]) {
@@ -305,7 +407,8 @@ export function shapeResult(raw: unknown): ToolResult | null {
       searches >= 0 &&
       searches <= TOOL_RESULT_LIMITS.maxSearches
         ? searches
-        : 0
+        : 0,
+    program: facts
   }
 }
 
@@ -324,7 +427,8 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
   const executors = new Map<string, Executor>(Object.entries(options.executors))
   const workspace = options.workspace
   /** What the person said to file access for THIS reply (a core is made for one reply): yes covers the calls after it, a no is not asked again. */
-  const grants = new Map<'workspace', 'granted' | 'declined'>()
+  const grants = new Map<'workspace' | 'run', 'granted' | 'declined'>()
+  const programs = options.programs
 
   const settings = (): ToolSettings => {
     try {
@@ -398,10 +502,15 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
   ): Promise<ToolOutcome> {
     const { signal, budget } = context
     const tool = def.id
+    // A program run (13.4) has its own clock, apart from the reply's working time: that one stands still while the program runs, and the run's time is counted on the run budget.
+    const isRun = def.ask === 'run'
+    const startedAt = now()
     const failed = async (
       code: 'run-failed' | 'time-cap' | 'stopped',
       text: string
     ): Promise<ToolOutcome> => {
+      // A run that was stopped, timed out or failed has used the time it took (its own clock is not known): nothing runs free of the run budget.
+      if (isRun) budget.useRunMs(Math.max(0, now() - startedAt))
       await keep({
         type: 'result',
         at: now(),
@@ -439,17 +548,32 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
     }
     const onStop = endBecause('stopped')
     signal.addEventListener('abort', onStop, { once: true })
-    const timer = setTimeout(endBecause('time'), Math.max(0, budget.remainingMs()))
+    if (isRun) budget.pause()
+    const timer = setTimeout(
+      endBecause('time'),
+      Math.max(0, isRun ? budget.runMsLeft() + RUN_BACKSTOP_MS : budget.remainingMs())
+    )
     const aborted = new Promise<'aborted'>((resolve) =>
       controller.signal.addEventListener('abort', () => resolve('aborted'), { once: true })
     )
     try {
       if (signal.aborted) onStop()
       const maxChars =
-        def.counts === 'file' ? Math.min(MAX_RESULT_CHARS, budget.charsLeft()) : MAX_RESULT_CHARS
+        def.counts === 'file'
+          ? Math.min(MAX_RESULT_CHARS, budget.charsLeft())
+          : isRun
+            ? Math.min(MAX_RESULT_CHARS, RUN_LIMITS.modelChars)
+            : MAX_RESULT_CHARS
       const running = Promise.resolve()
         .then(() =>
-          executor(args, { signal: controller.signal, check: checkAgain, maxChars, again, why })
+          executor(args, {
+            signal: controller.signal,
+            check: checkAgain,
+            maxChars,
+            again,
+            why,
+            runMsLeft: isRun ? budget.runMsLeft() : 0
+          })
         )
         .then((raw) => ({ raw }))
       running.catch(() => undefined) // if the run is given up on, a later failure of it is not an unhandled one
@@ -462,6 +586,13 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       const result = shapeResult(done.raw)
       if (result === null) return await failed('run-failed', RUN_FAILED)
       if (def.counts === 'file') budget.useChars(result.text.length)
+      if (isRun) {
+        // the run's clock as the launcher measured it; a run that reports none is charged what it took
+        budget.useRunMs(result.program?.ms ?? Math.max(0, now() - startedAt))
+        if (result.program !== null) {
+          await keep({ type: 'program', at: now(), call, tool, step, ...result.program })
+        }
+      }
       await keep({
         type: 'result',
         at: now(),
@@ -484,6 +615,7 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
     } finally {
       clearTimeout(timer)
       signal.removeEventListener('abort', onStop)
+      if (isRun) budget.resume()
     }
   }
 
@@ -520,7 +652,10 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
     // A key saved in the app never leaves inside a tool call (rule 5). If the look cannot be made, the call is refused.
     const texts = [
       checked.why,
-      ...Object.values(checked.args).filter((v): v is string => typeof v === 'string')
+      // (a list's items are text too: a saved key must not leave as the argument of a program either)
+      ...Object.values(checked.args).flatMap((v) =>
+        typeof v === 'string' ? [v] : typeof v === 'number' ? [] : [...v]
+      )
     ]
     for (const text of texts) {
       let held = true
@@ -534,7 +669,7 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
 
     // Every path goes past its guard, and the tool is given only the real path that the guard hands back: a path in the data folder past the data-folder
     // guard, a path in the code workspace past the workspace guard (which asks the data-folder guard as well).
-    const args: Record<string, string | number> = { ...checked.args }
+    const args: Record<string, string | number | readonly string[]> = { ...checked.args }
     const paths: WorkspacePathFacts[] = []
     for (const [argName, spec] of Object.entries(def.args)) {
       if (spec.kind === 'workspace_path') {
@@ -582,7 +717,8 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       return refused('chars-cap', CHARS_CAP_TEXT, step)
     }
 
-    if (def.counts !== 'file' && context.affordable !== undefined) {
+    // (a run costs no API money: the spending limits are for calls the provider bills)
+    if (def.counts !== 'file' && def.ask !== 'run' && context.affordable !== undefined) {
       let affordable = true
       try {
         affordable = await context.affordable()
@@ -594,10 +730,14 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
 
     // What the record keeps of the arguments: what the person was shown, and for a long text only how long it is (the log holds paths and sizes, never the
     // text of a file or of a change).
-    const shownArgs: Record<string, string | number> = {}
+    let shownArgs: Record<string, string | number> = {}
     for (const [argName, value] of Object.entries(args)) {
       shownArgs[argName] =
-        def.args[argName]?.kind === 'body' ? `(${String(value).length} characters)` : value
+        def.args[argName]?.kind === 'body'
+          ? `(${String(value).length} characters)`
+          : typeof value === 'string' || typeof value === 'number'
+            ? value
+            : JSON.stringify(value)
     }
 
     // One question, with its record before and after it: the question is recorded before it is asked and the answer after, and nothing is asked that was
@@ -707,6 +847,66 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
             answer: 'covered'
           }))
         if (!covered) return refused('not-recorded', NOT_RECORDED, step)
+      }
+    } else if (def.ask === 'run') {
+      // A program run (13.4): one question for EVERY run, in the words of the preparation, which has looked at the call first (the program as a full path, the copy that would be
+      // made). A no is kept for the rest of the reply. The run is counted at the yes: a refusal, a no or a stop used none of the reply's runs.
+      if (programs === undefined || workspace === undefined) {
+        return refused('no-runner', NO_RUNNER, step)
+      }
+      if (grants.get('run') === 'declined') return refused('run-declined', RUN_DECLINED_TEXT, step)
+      if (budget.runsLeft() <= 0) {
+        return refused('run-cap', runCapText(budget.runCaps.runs), step)
+      }
+      if (budget.runMsLeft() < MIN_RUN_MS) return refused('run-time-cap', RUN_TIME_TEXT, step)
+      const root = await workspace.guard.root()
+      if (!root.ok) return refused('no-workspace', NO_WORKSPACE_TEXT, step)
+      // (the registry sees to it that exactly one workspace folder is named; a hidden or secret-looking folder is not one to run in)
+      const folder = paths[0]
+      if (folder === undefined || folder.verdict.fileClass !== 'ok') {
+        return refused('bad-path', BAD_PATH_TEXT, step)
+      }
+      let prepared: ProgramPreparation
+      try {
+        prepared = await programs.prepare({
+          tool: def,
+          args: Object.freeze({ ...args }),
+          why: checked.why,
+          step,
+          ...(context.provider === undefined ? {} : { provider: context.provider }),
+          root: root.real,
+          folder,
+          runsLeft: budget.runsLeft(),
+          runMsLeft: budget.runMsLeft(),
+          runCaps: budget.runCaps,
+          signal
+        })
+      } catch (error) {
+        // Logged here only; the message could name a path.
+        console.error('Looking at a program run failed:', reason(error))
+        prepared = { ok: false, code: 'internal', text: INTERNAL }
+      }
+      if (!prepared.ok) return refused(prepared.code, prepared.text, step)
+      // The program as it will really run (a full path) is what is shown and what is given to the tool; the record keeps what the preparation says of the call.
+      for (const [argName, value] of Object.entries(prepared.replace)) {
+        if (def.args[argName]?.kind !== 'text') return refused('internal', INTERNAL, step)
+        args[argName] = value
+      }
+      shownArgs = { ...prepared.shown }
+      const r = await put(prepared.question)
+      if (isOutcome(r)) return r
+      if (r.answer !== 'yes') {
+        if (r.answer === 'no') grants.set('run', 'declined')
+        return declined(r.answer)
+      }
+      if (!r.recorded) return refused('not-recorded', NOT_RECORDED, step)
+      const took = budget.takeRun()
+      if (took !== 'ok') {
+        return refused(
+          took,
+          took === 'run-cap' ? runCapText(budget.runCaps.runs) : RUN_TIME_TEXT,
+          step
+        )
       }
     } else {
       const question = approvalQuestion(def, args, checked.why, {

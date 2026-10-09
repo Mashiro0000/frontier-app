@@ -1,0 +1,17 @@
+{
+  "label": "n134-rrOneFolder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "      if (specs.filter((spec) => spec.kind === 'workspace_path').length !== 1) {",
+      "to": "      if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 600000
+}

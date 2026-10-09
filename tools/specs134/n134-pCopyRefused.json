@@ -1,0 +1,17 @@
+{
+  "label": "n134-pCopyRefused",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "      if (!look.ok) return { ok: false, code: 'copy-refused', text: COPY_REFUSED_TEXT }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

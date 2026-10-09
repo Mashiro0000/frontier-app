@@ -1,0 +1,17 @@
+{
+  "label": "n133-rrRename",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "      await fs.rename(win32.join(probe, 'a.txt'), win32.join(probe, 'b.txt'))",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

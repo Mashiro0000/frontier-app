@@ -11,7 +11,10 @@
 //   H. what the source must keep true (the only place that starts the launcher; nothing wired to it yet).
 // The 50 checks of the probe (tools/probe-13-1.mjs) run against this launcher too: PROBE_LAUNCHER=product node tools/probe-13-1.mjs 2.
 //
-// Run: node tools/verify-13-2.mjs
+// Run: FRONTIER_MAY_REMOVE=1 node tools/verify-13-2.mjs
+//   It REMOVES things (result files, the folders of its own temp folder), so it will not start unless FRONTIER_MAY_REMOVE=1 is set, and that is set only when the owner has allowed
+//   removing in words (his rule of 2026-10-09 after the A: incident). Even then the guard under the real file system (tools/fsguard.mjs) lets this process write and remove ONLY inside
+//   its own temp folder; the working folder is that temp folder, so a launcher that writes to a relative path (the control lResultPath) lands there and not in the repo.
 import './ts-resolve.mjs'
 import { checker } from './cdp.mjs'
 import crypto from 'node:crypto'
@@ -19,8 +22,18 @@ import fs from 'node:fs'
 import os from 'node:os'
 import { win32 } from 'node:path'
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
+import { installFsGuard } from './fsguard.mjs'
 import { REPO, REPO_URL, TOOLS } from './paths.mjs'
 
+if (process.env.FRONTIER_MAY_REMOVE !== '1') {
+  console.log('NOT RUN: this suite removes folders it made itself and tests code that removes. Nothing is removed from any drive unless the owner has allowed it in words; set FRONTIER_MAY_REMOVE=1 only then.')
+  process.exit(3)
+}
+if (os.tmpdir().toLowerCase() !== 'c:\\frontier-tmp') {
+  // the owner's scope of 2026-10-09: what a check removes lies in C:\frontier-tmp (paths.mjs puts TEMP there when the repo is on C:), made by the same run
+  console.log(`NOT RUN: the temp folder is ${os.tmpdir()}; a check that removes may only work in C:\\frontier-tmp (run it from a copy of the repo on C:).`)
+  process.exit(3)
+}
 const check = checker()
 // ONLY=A,E runs only those sections (the negative controls run the part that can notice their sabotage, not all four minutes)
 const ONLY = process.env.ONLY ? new Set(process.env.ONLY.split(',')) : null
@@ -61,9 +74,13 @@ const alive = (pid) => {
 }
 
 const ROOT = fs.realpathSync.native(fs.mkdtempSync(J(os.tmpdir(), 'frontier-132-')))
+// from here on this process can write and remove only inside ROOT; programs it starts (the launcher) are not watched, but they work in ROOT (the working folder is ROOT)
+const fsGuard = installFsGuard({ write: [ROOT], remove: [ROOT] })
+process.chdir(ROOT)
 process.on('exit', () => {
   try {
     sweepMounts(ROOT)
+    process.chdir(os.tmpdir()) // Windows will not remove a folder that is some process's working folder
     fs.rmSync(ROOT, { recursive: true, force: true })
   } catch {
     /* left for the system */
@@ -97,7 +114,7 @@ await guard('A', async () => {
     check(`A: ${name} is refused`, r.ok === false && (!fragment || r.message.includes(fragment)), r.ok ? 'ACCEPTED' : r.message)
   }
   const accepted = ok(good)
-  check('A: a good request is accepted, and every number has its default', accepted.ok && accepted.request.timeoutMs === RUN_LIMITS.timeoutMs.default && accepted.request.memoryBytes === RUN_LIMITS.memoryBytes.default && accepted.request.maxProcesses === 64 && accepted.request.outputBytes === 65536, show(accepted))
+  check('A: a good request is accepted, and every number has its default', accepted.ok && accepted.request.timeoutMs === RUN_LIMITS.timeoutMs.default && accepted.request.memoryBytes === RUN_LIMITS.memoryBytes.default && accepted.request.maxProcesses === 64 && accepted.request.outputBytes === 65536 && accepted.request.diskBytes === 512 * 1024 * 1024, show(accepted))
   check('A: the defaults are the plan\'s numbers (120 s, 1 GB, 64 processes, 64 KB)', RUN_LIMITS.timeoutMs.max === 120000 && RUN_LIMITS.memoryBytes.max === 1024 ** 3 && RUN_LIMITS.maxProcesses.max === 64 && RUN_LIMITS.outputBytes.max === 65536 && RUN_LIMITS.runsPerReply === 5 && RUN_LIMITS.msPerReply === 240000 && RUN_LIMITS.copyFiles === 20000 && RUN_LIMITS.copyBytes === 100 * 1024 * 1024 && RUN_LIMITS.modelChars === 20000)
   for (const [name, v] of [['null', null], ['an array', []], ['a string', 'x'], ['a number', 5], ['undefined', undefined]]) bad(`a request that is ${name}`, v, 'not an object')
   bad('a field more', { ...good, shell: true }, 'a field it should not have')
@@ -132,16 +149,17 @@ await guard('A', async () => {
     ['timeoutMs', [99, 120001, 1.5, '5000', NaN, Infinity, -1, null]],
     ['memoryBytes', [1, 16 * 1024 * 1024 - 1, 1024 ** 3 + 1, '1', 2.5]],
     ['maxProcesses', [0, 65, 1.5, '5']],
-    ['outputBytes', [0, 65537, '10']]
+    ['outputBytes', [0, 65537, '10']],
+    ['diskBytes', [0, 1024 * 1024 - 1, 512 * 1024 * 1024 + 1, '5', 1.5]]
   ]) {
     for (const v of values) bad(`${field} = ${String(v)}`, { ...good, [field]: v })
   }
-  for (const [field, v] of [['timeoutMs', 100], ['timeoutMs', 120000], ['memoryBytes', 16 * 1024 * 1024], ['memoryBytes', 1024 ** 3], ['maxProcesses', 1], ['maxProcesses', 64], ['outputBytes', 1], ['outputBytes', 65536]]) {
+  for (const [field, v] of [['timeoutMs', 100], ['timeoutMs', 120000], ['memoryBytes', 16 * 1024 * 1024], ['memoryBytes', 1024 ** 3], ['maxProcesses', 1], ['maxProcesses', 64], ['outputBytes', 1], ['outputBytes', 65536], ['diskBytes', 1024 * 1024], ['diskBytes', 512 * 1024 * 1024]]) {
     check(`A: ${field} = ${v} (the edge) is accepted`, ok({ ...good, [field]: v }).ok === true)
   }
   check('A: isInside is strict (never equal), case-blind and cannot be fooled by a longer name', isInside('C:\\a', 'c:\\A\\b') && !isInside('C:\\a', 'C:\\a') && !isInside('C:\\a', 'C:\\ab\\c') && !isInside('C:\\a\\', 'C:\\a'))
   const lr = (o) => parseLauncherResult(JSON.stringify(o))
-  const base = { ok: true, exitCode: 0, timedOut: false, parentGone: false, elapsedMs: 1, peakJobMemory: 1, activeBeforeKill: 0, activeAfterKill: 0, stdout: '', stderr: '', stdoutBytes: 0, stderrBytes: 0 }
+  const base = { ok: true, exitCode: 0, timedOut: false, parentGone: false, elapsedMs: 1, peakJobMemory: 1, activeBeforeKill: 0, activeAfterKill: 0, stdout: '', stderr: '', stdoutBytes: 0, stderrBytes: 0, diskExceeded: false, scratchBytes: 0 }
   check('A: a good launcher result is read', lr(base).ok === true)
   for (const [name, o] of [
     ['an exit code that is text', { ...base, exitCode: 'x' }],
@@ -149,6 +167,8 @@ await guard('A', async () => {
     ['no stdout', { ...base, stdout: undefined }],
     ['stderr that is a number', { ...base, stderr: 5 }],
     ['a flag that is a number', { ...base, timedOut: 1 }],
+    ['no diskExceeded', { ...base, diskExceeded: undefined }],
+    ['a scratch size that is text', { ...base, scratchBytes: 'big' }],
     ['no ok', { exitCode: 0 }],
     ['ok false without a stage', { ok: false, error: 'x' }],
     ['an array', [1]],
@@ -171,6 +191,7 @@ await guard('B', async () => {
   check('B: the job kills on close, counts processes, limits memory, and shuts the desktop, clipboard and handles', /0x2000 \| 0x8 \| 0x400 \| 0x200/.test(LAUNCHER_TEXT) && /ActiveProcessLimit = maxProcesses/.test(LAUNCHER_TEXT) && /JobMemoryLimit/.test(LAUNCHER_TEXT) && /UIRestrictionsClass = 0xFF/.test(LAUNCHER_TEXT))
   check('B: the process is made SUSPENDED, put in the job, and only then resumed', /uint flags = [^;]*CREATE_SUSPENDED/.test(LAUNCHER_TEXT) && LAUNCHER_TEXT.indexOf('AssignProcessToJobObject(job') < LAUNCHER_TEXT.indexOf('ResumeThread(pi.hThread) =='))
   check('B: only the three pipe ends are inherited', /ATTR_HANDLE_LIST/.test(LAUNCHER_TEXT) && /new IntPtr\[\] \{ inR, outW, errW \}/.test(LAUNCHER_TEXT))
+  check('B: it watches the size of the scratch folder (every quarter of a second) and ends the job past the cap', /TreeBytes\(scratch, diskBytes\) > diskBytes/.test(LAUNCHER_TEXT) && /DiskExceeded = true/.test(LAUNCHER_TEXT) && /MAX_DISK = 536870912/.test(LAUNCHER_TEXT))
   check('B: it takes ONE parameter, the spec file, and nothing else', /param\(\[Parameter\(Mandatory = \$true\)\]\[string\]\$SpecPath\)/.test(LAUNCHER_TEXT) && (LAUNCHER_TEXT.match(/^param\(/gm) ?? []).length === 1)
   check('B: there is no unsandboxed way in it (no plain mode, no switch, no fallback)', !/\bplain\b|unsandbox|nocontainer|-Mode|\$spec\.mode|fallback/i.test(LAUNCHER_TEXT.replace(/^#.*$/gm, '')), 'the comments say there is none; the code has no word for one')
   check('B: it does not run what it is given (no Invoke-Expression, no Start-Process, no & call, no cmd /c)', !/Invoke-Expression|\biex\b|Start-Process|\bcmd(\.exe)?\s+\/c|\[scriptblock\]::Create|Invoke-Command/i.test(LAUNCHER_TEXT.replace(/^#.*$/gm, '')))
@@ -236,6 +257,15 @@ await guard('C', async () => {
   check('C: output is kept up to the cap and counted past it', fl.kind === 'ran' && fl.stdout.length === 1000 && fl.stdoutBytes === 200 * 65536, `${fl.stdout.length} of ${fl.stdoutBytes}`)
   const fl2 = await R(d, ['flood.cjs'], { timeoutMs: 20000 })
   check('C: an output of 13 MB with the largest cap gives 64 KB and ends', fl2.kind === 'ran' && fl2.stdout.length === 65536 && fl2.stdoutBytes === 200 * 65536, `${fl2.stdout.length}`)
+  put(d, 'fill.cjs', "const fs = require('fs'); const mb = Number(process.argv[2]); let i = 0; const timer = setInterval(() => { fs.writeFileSync('fill-' + (i++) + '.bin', Buffer.alloc(1024 * 1024, 1)); if (i >= mb) { clearInterval(timer); setTimeout(() => process.exit(0), 300) } }, 20)")
+  const fillBig = await R(d, ['fill.cjs', '200'], { diskBytes: 5 * 1024 * 1024, timeoutMs: 30000 })
+  check('C: a program that writes past the disk cap (5 MB; it tries 200) is ended for it, and says so', fillBig.kind === 'ran' && fillBig.diskExceeded === true && fillBig.timedOut === false && fillBig.scratchBytes >= 5 * 1024 * 1024 && fillBig.scratchBytes < 60 * 1024 * 1024 && fillBig.leftoverAfter === 0, show(fillBig))
+  const filesMade = fs.readdirSync(d).filter((f) => f.startsWith('fill-')).length
+  check('C: it was ended long before it had written what it wanted', filesMade > 0 && filesMade < 100, `${filesMade} files`)
+  for (const f of fs.readdirSync(d).filter((x) => x.startsWith('fill-'))) fs.rmSync(J(d, f))
+  const fillSmall = await R(d, ['fill.cjs', '2'], { diskBytes: 5 * 1024 * 1024 })
+  check('C: a program that stays within the cap is not touched, and the size of the folder is reported', fillSmall.kind === 'ran' && fillSmall.diskExceeded === false && fillSmall.exitCode === 0 && fillSmall.scratchBytes >= 2 * 1024 * 1024, show(fillSmall))
+  for (const f of fs.readdirSync(d).filter((x) => x.startsWith('fill-'))) fs.rmSync(J(d, f))
   put(d, 'kids.cjs', "const cp = require('child_process'); let ok = 0, bad = 0; for (let i = 0; i < 20; i++) { try { const c = cp.spawn('C:\\\\Windows\\\\System32\\\\cmd.exe', ['/c', 'for /l %i in (1,1,600000000) do @rem'], { stdio: 'ignore', windowsHide: true }); c.on('error', () => {}); if (c.pid) ok++; else bad++ } catch { bad++ } } setTimeout(() => { require('fs').writeFileSync('kids.json', JSON.stringify({ ok, bad })); process.exit(0) }, 1500)")
   const kids = await R(d, ['kids.cjs'], { maxProcesses: 6, timeoutMs: 20000 })
   const kj = readJsonOr(d, 'kids.json', { ok: 99, bad: 0 })
@@ -347,7 +377,7 @@ await guard('E', async () => {
   const resultPath = J(runner.folders.specs, 'hostile.result.json')
   const template = () => ({
     version: 1, container: 'FrontierApp.Test132', runRoot, scratchDir: d, toolsDir: tools, program: J(tools, 'node.exe'), args: ['-v'],
-    timeoutMs: 5000, memoryBytes: 256 * 1024 * 1024, maxProcesses: 8, capBytes: 1000, parentPid: 0, result: resultPath
+    timeoutMs: 5000, memoryBytes: 256 * 1024 * 1024, maxProcesses: 8, capBytes: 1000, diskBytes: 100 * 1024 * 1024, parentPid: 0, result: resultPath
   })
   const give = (spec, raw) => {
     fs.rmSync(resultPath, { force: true })
@@ -382,6 +412,7 @@ await guard('E', async () => {
   for (const v of [1, 1024 ** 3 + 1, 2 * 1024 ** 3]) refused(`memoryBytes ${v}`, mutate({ memoryBytes: v }), 'memoryBytes')
   for (const v of [0, 65, 1000]) refused(`maxProcesses ${v}`, mutate({ maxProcesses: v }), 'maxProcesses')
   for (const v of [0, 65537]) refused(`capBytes ${v}`, mutate({ capBytes: v }), 'capBytes')
+  for (const v of [0, 1024 * 1024 - 1, 512 * 1024 * 1024 + 1]) refused(`diskBytes ${v}`, mutate({ diskBytes: v }), 'diskBytes')
   refused('a negative parent', mutate({ parentPid: -1 }), 'parentPid')
   refused('101 arguments', mutate({ args: new Array(101).fill('a') }), 'too many arguments')
   refused('an argument of 8193 characters', mutate({ args: ['x'.repeat(8193)] }), 'too long')
@@ -392,8 +423,10 @@ await guard('E', async () => {
   fs.mkdirSync(runRoot + '-evil', { recursive: true })
   refused('the same sibling when it exists', mutate({ scratchDir: runRoot + '-evil' }), 'outside')
   refused('the user\'s profile as the scratch folder', mutate({ scratchDir: process.env.USERPROFILE }), 'outside')
-  refused('a drive root as the run root', mutate({ runRoot: 'A:\\' }), 'drive root')
-  refused('a run root that is the drive root of the repo', mutate({ runRoot: REPO.slice(0, 3).replace('/', '\\') }), 'drive root')
+  // drive roots that are only STRINGS: letters nothing is mounted on, so that even a launcher that lost its check could do nothing with them
+  const NO_DRIVE = [...'QPONMLKJ'].filter((l) => !fs.existsSync(l + ':\\'))
+  refused('a drive root as the run root', mutate({ runRoot: NO_DRIVE[0] + ':\\' }), 'drive root')
+  refused('a drive root in small letters as the run root', mutate({ runRoot: NO_DRIVE[1].toLowerCase() + ':\\' }), 'drive root')
   refused('a tools folder that is the scratch folder', mutate({ toolsDir: d }), 'overlap')
   fs.mkdirSync(J(d, 'tools-inside'), { recursive: true })
   refused('a tools folder inside the scratch folder', mutate({ toolsDir: J(d, 'tools-inside') }), 'overlap')
@@ -451,7 +484,7 @@ await guard('F', async () => {
   process.env.STANDIN_SPECCOPY = J(ROOT, 'spec-copy.json')
   const fine = await via('fine')
   const sp = JSON.parse(fs.readFileSync(process.env.STANDIN_SPECCOPY, 'utf8'))
-  const wantKeys = ['args', 'capBytes', 'container', 'maxProcesses', 'memoryBytes', 'parentPid', 'program', 'result', 'runRoot', 'scratchDir', 'timeoutMs', 'toolsDir', 'version']
+  const wantKeys = ['args', 'capBytes', 'container', 'diskBytes', 'maxProcesses', 'memoryBytes', 'parentPid', 'program', 'result', 'runRoot', 'scratchDir', 'timeoutMs', 'toolsDir', 'version']
   const parts = {
     keys: JSON.stringify(Object.keys(sp).sort()) === JSON.stringify(wantKeys),
     version: sp.version === 1,
@@ -459,17 +492,17 @@ await guard('F', async () => {
     roots: sp.runRoot === runRoot && sp.scratchDir === d && sp.toolsDir === runner.folders.tools,
     program: sp.program.toLowerCase() === J(runner.folders.tools, 'node.exe').toLowerCase(),
     parent: sp.parentPid === process.pid,
-    numbers: sp.timeoutMs === 1000 && sp.memoryBytes === 1024 ** 3 && sp.maxProcesses === 64 && sp.capBytes === 65536,
+    numbers: sp.timeoutMs === 1000 && sp.memoryBytes === 1024 ** 3 && sp.maxProcesses === 64 && sp.capBytes === 65536 && sp.diskBytes === 512 * 1024 * 1024,
     args: JSON.stringify(sp.args) === '["-v"]',
     result: sp.result.toLowerCase().startsWith(runner.folders.specs.toLowerCase() + '\\') && /\.result\.json$/.test(sp.result)
   }
   check('F: the spec the runner writes has exactly the fields the launcher reads, with the right values', Object.values(parts).every(Boolean), show(parts))
   const lim = await (async () => {
     const r = createCommandRunner({ runRoot, powershellPath: process.execPath, launcherArguments: (_l, spec) => [standin, spec], launcherGraceMs: 1500 })
-    await r.run({ program: NODE, args: ['x'], scratchDir: d, timeoutMs: 777, memoryBytes: 33 * 1024 * 1024, maxProcesses: 3, outputBytes: 99 })
+    await r.run({ program: NODE, args: ['x'], scratchDir: d, timeoutMs: 777, memoryBytes: 33 * 1024 * 1024, maxProcesses: 3, outputBytes: 99, diskBytes: 7 * 1024 * 1024 })
     return JSON.parse(fs.readFileSync(process.env.STANDIN_SPECCOPY, 'utf8'))
   })()
-  check('F: the numbers the caller chose are the numbers in the spec (each in its own field)', lim.timeoutMs === 777 && lim.memoryBytes === 33 * 1024 * 1024 && lim.maxProcesses === 3 && lim.capBytes === 99 && JSON.stringify(lim.args) === '["x"]', show(lim))
+  check('F: the numbers the caller chose are the numbers in the spec (each in its own field)', lim.timeoutMs === 777 && lim.memoryBytes === 33 * 1024 * 1024 && lim.maxProcesses === 3 && lim.capBytes === 99 && lim.diskBytes === 7 * 1024 * 1024 && JSON.stringify(lim.args) === '["x"]', show(lim))
   check('F: the stand-in that answers properly gives a result (so each failure below is the stand-in\'s own)', fine.out.kind === 'ran' && fine.out.stdout === 'from the stand-in' && fine.out.exitCode === 0, show(fine.out))
   const dies = await via('exit1')
   check('F: a launcher that dies at once is "launcher-failed", with its exit code in the words, and nothing ran', dies.out.kind === 'not-run' && dies.out.why === 'launcher-failed' && /no result/.test(dies.out.message) && /code 1/.test(dies.out.message), show(dies.out))
@@ -564,7 +597,7 @@ await guard('G', async () => {
   const specW = J(runner.folders.specs, 'watch.json')
   const resW = J(runner.folders.specs, 'watch.result.json')
   fs.rmSync(resW, { force: true })
-  fs.writeFileSync(specW, JSON.stringify({ version: 1, container: 'FrontierApp.Test132', runRoot, scratchDir: dW, toolsDir: runner.folders.tools, program: J(runner.folders.tools, 'node.exe'), args: ['sleepy.cjs'], timeoutMs: 120000, memoryBytes: 256 * 1024 * 1024, maxProcesses: 8, capBytes: 1000, parentPid: helper.pid, result: resW }))
+  fs.writeFileSync(specW, JSON.stringify({ version: 1, container: 'FrontierApp.Test132', runRoot, scratchDir: dW, toolsDir: runner.folders.tools, program: J(runner.folders.tools, 'node.exe'), args: ['sleepy.cjs'], timeoutMs: 120000, memoryBytes: 256 * 1024 * 1024, maxProcesses: 8, capBytes: 1000, diskBytes: 100 * 1024 * 1024, parentPid: helper.pid, result: resW }))
   const lp = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', launcherFile(), '-SpecPath', specW], { stdio: 'ignore', windowsHide: true })
   let lpDone = false
   lp.on('exit', () => (lpDone = true))
@@ -628,14 +661,21 @@ await guard('H', async () => {
   }
   walk(`${REPO}/src`)
   const users = srcFiles.filter((f) => /from ['"][^'"]*(commandRunner|commandLauncher)[^'"]*['"]/.test(fs.readFileSync(f, 'utf8')) && !/commandRunner\.ts$/.test(f))
-  check('H: nothing else in the app imports the runner yet (13.4 wires it)', users.length === 0, users.join(', '))
+  // scratchCopy.ts (13.3) takes two helpers from the runner (isInside, sweepMounts), and the run tool (programTools.ts, 13.4) runs through it and resolves the program with isInside;
+  // nothing else uses it until 13.5 wires the tool into the app
+  const others = users.filter((f) => !/(scratchCopy|programTools)\.ts$/.test(f))
+  check('H: nothing else in the app imports the runner yet but the scratch copy (13.3) and the run tool (13.4); 13.5 wires the tool', others.length === 0, others.join(', '))
   const powershellUsers = srcFiles.filter((f) => /powershell/i.test(fs.readFileSync(f, 'utf8')))
-  check('H: commandRunner.ts is the only file of the app that names PowerShell', powershellUsers.length === 1 && /commandRunner\.ts$/.test(powershellUsers[0]), powershellUsers.join(', '))
+  // (13.4, on purpose: the run tool names PowerShell only to REFUSE it, as a program a run may never use: in the model's description of the tool and in its list of programs that are not run)
+  const refusalOnly = (file) => fs.readFileSync(file, 'utf8').split('\n').filter((l) => /powershell/i.test(l)).every((l) => /cmd, PowerShell and script hosts are refused/.test(l) || /^\s*'powershell(_ise)?',?\s*$/.test(l))
+  const startsIt = powershellUsers.filter((f) => !/programTools\.ts$/.test(f) || !refusalOnly(f))
+  check('H: commandRunner.ts is the only file of the app that names PowerShell to start it (the run tool names it only to refuse it)', startsIt.length === 1 && /commandRunner\.ts$/.test(startsIt[0]), powershellUsers.join(', '))
   check('H: the launcher is bundled as text (?raw), not read from a path at run time', /commandLauncher\.ps1\?raw/.test(runnerSrc))
   check('H: the runner has no flag, option or environment variable that turns the box off', !/process\.env\.FRONTIER_[A-Z_]*/.test(code) && !/sandbox\s*[:=]\s*false|noBox|unsandboxed|insecure/i.test(code))
   const shared = source('src/shared/run.ts')
   check('H: src/shared/run.ts has no imports (plain data)', !/^import /m.test(shared))
 })
 
+check('the guard under the real file system refused nothing during the run (the module under test touched nothing outside the folder it was given)', fsGuard.refusals.length === 0, show(fsGuard.refusals.slice(0, 3)))
 const ok = check.summary()
 process.exit(ok ? 0 : 1)

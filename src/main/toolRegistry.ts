@@ -57,7 +57,21 @@ export interface BodyArg extends ArgBase {
   kind: 'body'
   max: number
 }
-export type ArgSpec = TextArg | IntegerArg | ChoiceArg | PathArg | WorkspacePathArg | BodyArg
+/**
+ * A list of short texts (13.4: the arguments of a program). Each item is text the box can show whole (the same rule as `text`), the list has at most `max` items
+ * and `totalMax` characters in all, so that a tool that takes one can still be shown in full. An empty list is a list.
+ */
+export interface ListArg extends ArgBase {
+  kind: 'list'
+  /** The most items. */
+  max: number
+  /** The longest item, in characters (an item is at least one). */
+  itemMax: number
+  /** The most characters of all the items together. */
+  totalMax: number
+}
+export type ArgSpec =
+  TextArg | IntegerArg | ChoiceArg | PathArg | WorkspacePathArg | BodyArg | ListArg
 
 export interface ToolDefinition {
   /** The name the model calls it by; also the key of its setting. */
@@ -79,9 +93,11 @@ export interface ToolDefinition {
   /**
    * How the person is asked (12.2). `each`, the default: every call, in full, in the system's box. `reply`: the first call of a reply opens one box for the
    * whole reply, the same for every tool of this kind, and the calls after it run on that yes (a file that is hidden or looks like it holds secrets is
-   * still asked about one by one). Only a tool with a workspace path may ask by the reply.
+   * still asked about one by one). Only a tool with a workspace path may ask by the reply. `run` (13.4): a program run on a copy of one workspace folder: every call has its
+   * own question, made from the words of the preparation (programTools.ts) after it has looked at the call; a no is kept for the rest of the reply; the run is counted
+   * on the reply's runs at the yes.
    */
-  ask?: 'each' | 'reply'
+  ask?: 'each' | 'reply' | 'run'
   /** Which count a call is made on (12.2): the reply's tool `step`s (web search), or its `file` calls (a list, a read, a proposal). */
   counts?: 'step' | 'file'
 }
@@ -96,6 +112,10 @@ export const MAX_BODY_ARG = WORKSPACE_LIMITS.maxBodyChars
 const ID = /^[a-z][a-z0-9_]{1,31}$/
 const ARG_NAME = /^[a-z][a-z0-9_]{0,23}$/
 const MAX_ARGS = 6
+/** What a list argument may be at most (13.4): items, characters in one, characters in all. The question has to show a call in full, so these are small. */
+export const MAX_LIST_ITEMS = 20
+export const MAX_LIST_ITEM_CHARS = 300
+export const MAX_LIST_TOTAL_CHARS = 1000
 /** Characters that cannot be shown honestly in the box: control and invisible ones, line and paragraph separators, private-use and unassigned ones, every space but the plain one. */
 const UNSHOWABLE = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}\p{Co}\p{Cn}\p{Cs}]|[^\P{Zs} ]/u
 
@@ -108,8 +128,8 @@ function hasControlCharacter(text: string): boolean {
   return false
 }
 
-/** What a call's arguments have been reduced to: main's own copy, field by field, with nothing the tool does not take. */
-export type CheckedArgs = Readonly<Record<string, string | number>>
+/** What a call's arguments have been reduced to: main's own copy, field by field, with nothing the tool does not take. A list is a frozen array of its items. */
+export type CheckedArgs = Readonly<Record<string, string | number | readonly string[]>>
 
 export type ArgumentsCheck =
   { ok: true; args: CheckedArgs; why: string } | { ok: false; reason: string }
@@ -147,6 +167,24 @@ function problemWith(spec: ArgSpec, value: unknown): string | null {
       // Line breaks and tabs are text; every other control character (a NUL above all) is not.
       if (hasControlCharacter(value)) return 'holds control characters'
       return null
+    case 'list': {
+      if (!Array.isArray(value)) return 'must be a list of texts'
+      if (value.length > spec.max) return `must have at most ${spec.max} items`
+      let total = 0
+      // (a hole in the list, or a property of the array's own, is not an item: every index is read)
+      for (let i = 0; i < value.length; i++) {
+        const item: unknown = value[i]
+        if (typeof item !== 'string') return 'must hold only texts'
+        if (item.length < 1 || item.length > spec.itemMax) {
+          return `must hold items of 1 to ${spec.itemMax} characters`
+        }
+        if (UNSHOWABLE.test(item) || !item.isWellFormed())
+          return 'holds characters that cannot be shown'
+        total += item.length
+      }
+      if (total > spec.totalMax) return `must hold at most ${spec.totalMax} characters in all`
+      return null
+    }
   }
 }
 
@@ -182,13 +220,15 @@ export function checkArguments(def: ToolDefinition, input: unknown): ArgumentsCh
     return refuse('an argument that the tool does not take was given')
   }
   const values = input as Record<string, unknown>
-  const args: Record<string, string | number> = {}
+  const args: Record<string, string | number | readonly string[]> = {}
   for (const [name, spec] of Object.entries(def.args)) {
     if (!Object.prototype.hasOwnProperty.call(values, name)) return refuse(`"${name}" is missing`)
     const value = values[name]
     const problem = problemWith(spec, value)
     if (problem !== null) return refuse(`"${name}" ${problem}`)
-    args[name] = value as string | number
+    // A list is copied item by item into a frozen array of main's own: nothing of the model's object is kept.
+    args[name] =
+      spec.kind === 'list' ? Object.freeze([...(value as string[])]) : (value as string | number)
   }
   const why = cleanWhy(
     Object.prototype.hasOwnProperty.call(values, 'why') ? values['why'] : undefined
@@ -242,6 +282,14 @@ export function offeredTool(def: ToolDefinition): OfferedTool {
           description: spec.describe,
           minLength: 1,
           maxLength: spec.max
+        }
+        break
+      case 'list':
+        properties[name] = {
+          type: 'array',
+          description: spec.describe,
+          maxItems: spec.max,
+          items: { type: 'string', minLength: 1, maxLength: spec.itemMax }
         }
         break
     }
@@ -324,6 +372,16 @@ function copyOf(given: unknown): ToolDefinition {
       case 'body':
         args[name] = { kind: 'body', label, describe, max: spec.max }
         break
+      case 'list':
+        args[name] = {
+          kind: 'list',
+          label,
+          describe,
+          max: spec.max,
+          itemMax: spec.itemMax,
+          totalMax: spec.totalMax
+        }
+        break
       default:
         throw new Error(`Tool "${String(def.id)}": "${name}" is of a kind that does not exist`)
     }
@@ -350,7 +408,7 @@ function copyOf(given: unknown): ToolDefinition {
  * when it is made (toolCore.ts), whatever this estimate said.
  */
 function worstCase(def: ToolDefinition): number {
-  const args: Record<string, string | number> = {}
+  const args: Record<string, string | number | readonly string[]> = {}
   for (const [name, spec] of Object.entries(def.args)) {
     args[name] =
       spec.kind === 'text'
@@ -361,7 +419,14 @@ function worstCase(def: ToolDefinition): number {
             ? spec.values.reduce((a, b) => (b.length > a.length ? b : a), '')
             : spec.kind === 'body'
               ? 'x'.repeat(spec.max)
-              : 'a\\'.repeat(MAX_PATH_ARG / 2)
+              : spec.kind === 'list'
+                ? // the most items, each the longest it may be as far as the total allows, all of quotes
+                  Array.from({ length: spec.max }, () =>
+                    '"'.repeat(
+                      Math.min(spec.itemMax, Math.floor(spec.totalMax / Math.max(1, spec.max)))
+                    )
+                  )
+                : 'a\\'.repeat(MAX_PATH_ARG / 2)
   }
   return approvalQuestion(def, args, '"'.repeat(WHY.max)).detail.length
 }
@@ -431,6 +496,20 @@ export function createToolRegistry(definitions: readonly ToolDefinition[]): Tool
         if (!Number.isSafeInteger(spec.max) || spec.max < 1 || spec.max > MAX_BODY_ARG) {
           throw new Error(`Tool "${def.id}": "${name}" has limits that do not fit`)
         }
+      } else if (spec.kind === 'list') {
+        if (
+          !Number.isSafeInteger(spec.max) ||
+          spec.max < 0 ||
+          spec.max > MAX_LIST_ITEMS ||
+          !Number.isSafeInteger(spec.itemMax) ||
+          spec.itemMax < 1 ||
+          spec.itemMax > MAX_LIST_ITEM_CHARS ||
+          !Number.isSafeInteger(spec.totalMax) ||
+          spec.totalMax < 1 ||
+          spec.totalMax > MAX_LIST_TOTAL_CHARS
+        ) {
+          throw new Error(`Tool "${def.id}": "${name}" has limits that do not fit`)
+        }
       } else if (spec.kind === 'workspace_path') {
         if (!(WORKSPACE_OPS as readonly string[]).includes(spec.op)) {
           throw new Error(`Tool "${def.id}": "${name}" must say what it does with the path`)
@@ -440,8 +519,8 @@ export function createToolRegistry(definitions: readonly ToolDefinition[]): Tool
         throw new Error(`Tool "${def.id}": "${name}" must say what it does with the path`)
       }
     }
-    if (def.ask !== 'each' && def.ask !== 'reply') {
-      throw new Error(`Tool "${def.id}": ask must be "each" or "reply"`)
+    if (def.ask !== 'each' && def.ask !== 'reply' && def.ask !== 'run') {
+      throw new Error(`Tool "${def.id}": ask must be "each", "reply" or "run"`)
     }
     if (def.counts !== 'step' && def.counts !== 'file') {
       throw new Error(`Tool "${def.id}": counts must be "step" or "file"`)
@@ -452,6 +531,15 @@ export function createToolRegistry(definitions: readonly ToolDefinition[]): Tool
       throw new Error(
         `Tool "${def.id}": only a tool with a workspace path may be asked about by the reply or counted as a file call`
       )
+    }
+    // A run (13.4) works on a copy of a folder of the workspace, one box for every call, and is counted as a tool step; its question is made from its own words (programTools.ts).
+    if (def.ask === 'run') {
+      if (specs.filter((spec) => spec.kind === 'workspace_path').length !== 1) {
+        throw new Error(`Tool "${def.id}": a run names exactly one workspace folder`)
+      }
+      if (def.counts !== 'step' || specs.some((spec) => spec.kind === 'body')) {
+        throw new Error(`Tool "${def.id}": a run is counted as a step and takes no long text`)
+      }
     }
     if (specs.some((spec) => spec.kind === 'body') && def.ask !== 'reply') {
       throw new Error(

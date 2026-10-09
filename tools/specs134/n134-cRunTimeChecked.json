@@ -1,0 +1,17 @@
+{
+  "label": "n134-cRunTimeChecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      if (budget.runMsLeft() < MIN_RUN_MS) return refused('run-time-cap', RUN_TIME_TEXT, step)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

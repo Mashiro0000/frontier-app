@@ -1,0 +1,17 @@
+{
+  "label": "n133-cmpBase",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "baseSha256: before?.sha256 ?? null",
+      "to": "baseSha256: null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

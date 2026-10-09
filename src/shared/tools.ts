@@ -62,9 +62,19 @@ export const REFUSAL_CODES = [
   'wrong-path', //     the path is not there, or is not the kind of thing the call needs (12.2)
   'file-cap', //       the reply has used all its file calls (12.2)
   'chars-cap', //      the reply has read all the file text it may (12.2)
-  'grant-declined' //  the person said no to file access for this reply, so nobody was asked again (12.2)
+  'grant-declined', // the person said no to file access for this reply, so nobody was asked again (12.2)
+  'no-program', //     the program is not one a run may use: not found, not a program, or a shell or script host (13.4)
+  'no-box', //         this PC cannot make the box just now, so nothing was asked or run (13.4)
+  'run-cap', //        the reply has used all its runs (13.4)
+  'run-time-cap', //   the reply has used all the run time it may (13.4)
+  'run-declined', //   the person said no to a run in this reply, so nobody was asked again (13.4)
+  'copy-refused' //    the folder to copy is bigger than a run may copy, or cannot be copied (13.4)
 ] as const
 export type RefusalCode = (typeof REFUSAL_CODES)[number]
+
+/** How a run ended, in one word (the audit log keeps it, 13.4): the program finished; the clock ended it; the scratch folder grew past its cap; it never ran. */
+export const PROGRAM_ENDS = ['exited', 'timed-out', 'disk-full', 'not-run'] as const
+export type ProgramEnd = (typeof PROGRAM_ENDS)[number]
 
 /** What came of the question in the system's box. `stopped`: Stop everything came while it was open. */
 export const ANSWER_CODES = [
@@ -88,7 +98,8 @@ export const TOOL_TITLES: Readonly<Record<string, string>> = Object.freeze({
   propose_new_file: 'Propose a new file in the workspace',
   apply_change: 'Write a change to the workspace',
   undo_change: 'Undo a change in the workspace',
-  undo_clear: 'Delete the undo history'
+  undo_clear: 'Delete the undo history',
+  run_program: 'Run a program on a copy of the workspace'
 })
 
 /** What to call a tool in a sentence: its title, or its id for a tool this version does not know (an entry of the log from another version). */
@@ -146,6 +157,24 @@ export type ToolEvent =
       answer: AnswerCode
     }
   | { type: 'ran'; at: number; call: string; tool: string; step: number }
+  | {
+      /** What became of a program run (13.4): in numbers and one word, never any of its output. Written after the run, before the `result`. */
+      type: 'program'
+      at: number
+      call: string
+      tool: string
+      step: number
+      end: ProgramEnd
+      /** The program's exit code as Windows gives it; null when it did not run, or the clock or the disk cap ended it before it had one. */
+      exitCode: number | null
+      /** How long the program ran, in milliseconds (0 when it did not run). */
+      ms: number
+      /** Files copied into the box, and what the comparison found afterwards: changed, new, and deleted (deleted ones are only listed, never brought back). */
+      copied: number
+      changed: number
+      created: number
+      deleted: number
+    }
   | {
       type: 'result'
       at: number

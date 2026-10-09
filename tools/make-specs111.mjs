@@ -72,8 +72,9 @@ const s = {
   cAskStop: [COR, "      signal.addEventListener('abort', onAbort, { once: true })\n      gate.ask", '      gate.ask'],
   cRecordYes: [COR, "      if (!r.recorded) return refused('not-recorded', NOT_RECORDED, step)\n    }\n\n    // A workspace argument", '    }\n\n    // A workspace argument'],
   cRecordRan: [COR, "    if (!(await keep({ type: 'ran', at: now(), call, tool, step }))) {", '    if (false) {'],
-  cTimer: [COR, "    const timer = setTimeout(endBecause('time'), Math.max(0, budget.remainingMs()))", '    const timer = setTimeout(() => undefined, 1)'],
-  cStopRun: [COR, "    signal.addEventListener('abort', onStop, { once: true })\n    const timer", '    const timer'],
+  // (13.4 moved these lines on purpose: a run has its own clock, and the timer is made over three lines)
+  cTimer: [COR, "    const timer = setTimeout(\n      endBecause('time'),\n      Math.max(0, isRun ? budget.runMsLeft() + RUN_BACKSTOP_MS : budget.remainingMs())\n    )", '    const timer = setTimeout(() => undefined, 1)'],
+  cStopRun: [COR, "    signal.addEventListener('abort', onStop, { once: true })\n    if (isRun) budget.pause()", '    if (isRun) budget.pause()'],
   cRace: [COR, '      const done = await Promise.race([running, aborted])', '      const done = await running'],
   cShapeSize: [COR, '    text: text.length > MAX_RESULT_CHARS ? text.slice(0, MAX_RESULT_CHARS) + RESULT_CUT : text,', '    text,'],
   cShapeHttps: [COR, 'url.length > TOOL_RESULT_LIMITS.maxUrlChars || !isSafeExternalUrl(url)) return null', 'url.length > TOOL_RESULT_LIMITS.maxUrlChars) return null'],
@@ -86,7 +87,7 @@ const s = {
   cPathReal: [COR, '      args[argName] = verdict.real', '      args[argName] = checked.args[argName]'],
   cGuardSkip: [COR, "      if (spec.kind !== 'path') continue", '      continue'],
   cGuardIgnore: [COR, '      if (!verdict.ok) {', '      if (false) {'],
-  cCheckAgain: [COR, 'executor(args, { signal: controller.signal, check: checkAgain, maxChars, again, why })', 'executor(args, { signal: controller.signal } as never)'],
+  cCheckAgain: [COR, 'executor(args, {\n            signal: controller.signal,\n            check: checkAgain,\n            maxChars,\n            again,\n            why,\n            runMsLeft: isRun ? budget.runMsLeft() : 0\n          })', 'executor(args, { signal: controller.signal } as never)'],
   cCheckOpen: [COR, '      return await guard.check({ path, base: null, op, recursive })', '      return { ok: true, real: path }'],
   // ----- what must not be reachable -----
   xImport: [COR, "import { isSafeExternalUrl } from './security'", "import { isSafeExternalUrl } from './security'\nimport { createMemory } from './memory'"],

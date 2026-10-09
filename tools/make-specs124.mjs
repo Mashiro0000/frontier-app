@@ -87,7 +87,7 @@ const node = {
   tDescribeNothing: [PT, "    'Nothing is changed: the person sees the whole difference in a window of the app and decides, and you cannot apply it. For several places, make several proposals. ' +", "    'The person sees the whole difference in a window of the app and decides. For several places, make several proposals. ' +"],
   tIds: [WTL, "  'propose_edit',\n  'propose_new_file'\n]", "  'propose_edit'\n]"],
   tNoExecutors: [RTL, '              ...createProposalExecutors({ store: options.workspace.proposals, now: options.now })', ''],
-  tWhyContext: [COR, 'executor(args, { signal: controller.signal, check: checkAgain, maxChars, again, why })', "executor(args, { signal: controller.signal, check: checkAgain, maxChars, again, why: '' })"],
+  tWhyContext: [COR, '            why,\n            runMsLeft', "            why: '',\n            runMsLeft"],
   xWrites: [PT, '    const bytes = await fs.readFile(verdict.real)\n    if (bytes.length > WORKSPACE_LIMITS.maxFileBytes) {\n      return {\n        text: refusedText(`the file is larger', "    await fs.writeFile(verdict.real + '.x', '')\n    const bytes = await fs.readFile(verdict.real)\n    if (bytes.length > WORKSPACE_LIMITS.maxFileBytes) {\n      return {\n        text: refusedText(`the file is larger"],
   xFsInProposals: [PR, "import { createHash } from 'crypto'", "import { createHash } from 'crypto'\nimport { promises as fs } from 'fs'\nvoid fs"]
 }
@@ -96,7 +96,7 @@ const win = {
   wRegistry: [IPC, '    ...WORKSPACE_PROPOSE_TOOLS\n  ])', '  ])'],
   wIds: [WTL, "  'propose_edit',\n  'propose_new_file'\n]", "  'propose_edit'\n]"],
   wNoExecutors: [RTL, '              ...createProposalExecutors({ store: options.workspace.proposals, now: options.now })', ''],
-  wLengths: [COR, "        def.args[argName]?.kind === 'body' ? `(${String(value).length} characters)` : value", '        value']
+  wLengths: [COR, "        def.args[argName]?.kind === 'body'\n          ? `(${String(value).length} characters)`\n          : typeof value === 'string' || typeof value === 'number'\n            ? value\n            : JSON.stringify(value)", '        value']
 }
 
 const write = (dir, specs, argv, env, timeoutMs, prefix) => {

@@ -639,11 +639,13 @@ await guard('F', async () => {
   const expected = {
     'src/shared/tools.ts': [],
     // 12.2 moved these on purpose: the budget knows the file caps (the shared workspace limits), the registry the workspace's operations, the core the workspace guard (a type)
-    'src/main/replyBudget.ts': ['../shared/tools', '../shared/workspace'],
+    // 13.4 again, on purpose: the budget knows the plan's run caps (five runs, 240 seconds), which live in the shared run limits
+    'src/main/replyBudget.ts': ['../shared/run', '../shared/tools', '../shared/workspace'],
     'src/main/dataFolderGuard.ts': ['fs', 'path'],
     'src/main/toolQuestion.ts': ['./systemQuestion', './toolRegistry'],
     'src/main/toolRegistry.ts': ['../shared/workspace', './dataFolderGuard', './toolQuestion'],
-    'src/main/toolCore.ts': ['../shared/tools', '../shared/workspace', './dataFolderGuard', './replyBudget', './security', './systemQuestion', './toolQuestion', './toolRegistry', './workspaceGuard'].sort()
+    // 13.4 again, on purpose: the core knows the run limits (the characters a run may return) from the shared run file
+    'src/main/toolCore.ts': ['../shared/run', '../shared/tools', '../shared/workspace', './dataFolderGuard', './replyBudget', './security', './systemQuestion', './toolQuestion', './toolRegistry', './workspaceGuard'].sort()
   }
   for (const [rel, want] of Object.entries(expected)) {
     const got = [...new Set(importsOf(rel))].sort()
@@ -664,7 +666,8 @@ await guard('F', async () => {
   // 11.4 again, on purpose: the settings service (toolSettingsService.ts) lists the registry's tools for the Tools page, and the page-side files read the shared types only (shared/tools, a file of types and constants).
   // 12.3 again, on purpose: the workspace service (the switch and the folder) and the read tools (the definitions and the words of the questions) are part of the workspace.
   // 12.1 and 12.2 again, on purpose: the workspace guard and the choice of the folder (workspace.ts, workspaceGuard.ts) ask the data-folder guard, as the core does.
-  const wired = ['src/main/auditLog.ts', 'src/main/auditService.ts', 'src/main/replyTools.ts', 'src/main/toolSettings.ts', 'src/main/toolSettingsService.ts', 'src/main/chat.ts', 'src/main/ipc.ts', 'src/main/workspace.ts', 'src/main/workspaceGuard.ts', 'src/main/workspaceService.ts', 'src/main/workspaceTools.ts', 'src/main/proposalTools.ts', 'src/main/applyService.ts']
+  // 13.4 again, on purpose: the run tool (programTools.ts) is part of the reply's tools, as the workspace tools are.
+  const wired = ['src/main/auditLog.ts', 'src/main/auditService.ts', 'src/main/replyTools.ts', 'src/main/toolSettings.ts', 'src/main/toolSettingsService.ts', 'src/main/chat.ts', 'src/main/ipc.ts', 'src/main/workspace.ts', 'src/main/workspaceGuard.ts', 'src/main/workspaceService.ts', 'src/main/workspaceTools.ts', 'src/main/proposalTools.ts', 'src/main/applyService.ts', 'src/main/programTools.ts']
   const typesOnly = /^(src\/shared|src\/renderer|src\/preload)\//
   const namesCore = /(toolCore|createToolCore|toolRegistry|createToolRegistry|toolQuestion|approvalQuestion|replyBudget|createReplyBudget|dataFolderGuard|createDataFolderGuard|BUILT_IN_TOOLS)/
   const users = files.filter((f) => !modules.includes(f) && !wired.includes(f) && (typesOnly.test(f) ? namesCore : names).test(readFileSync(join(REPO, f), 'utf8')))

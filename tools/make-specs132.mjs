@@ -34,6 +34,7 @@ const controls = {
   rTimeoutField: [RUNNER, '          timeoutMs: request.timeoutMs,', '          timeoutMs: 120000,', 'F'],
   rMemoryField: [RUNNER, '          memoryBytes: request.memoryBytes,', '          memoryBytes: RUN_LIMITS.memoryBytes.max,', 'F'],
   rCapField: [RUNNER, '          capBytes: request.outputBytes,', '          capBytes: 65536,', 'F'],
+  rDiskField: [RUNNER, '          diskBytes: request.diskBytes,', '          diskBytes: 536870912,', 'F'],
   // ----- the runner: ending a run -----
   rUnmount: [RUNNER, '      if (why !== null || !(await exists(resultPath))) unmountFolder(request.scratchDir)', '', 'G'],
   rStopAll: [RUNNER, "      if (stopped && why === null) why = 'abort' // stopAll ended it", '', 'G'],
@@ -44,9 +45,11 @@ const controls = {
   lProcLimit: [PS, 'ext.BasicLimitInformation.ActiveProcessLimit = maxProcesses;', 'ext.BasicLimitInformation.ActiveProcessLimit = 1000;', 'C'],
   lMemLimit: [PS, 'ext.JobMemoryLimit = new UIntPtr((ulong)memoryBytes);', 'ext.JobMemoryLimit = new UIntPtr(8UL * 1024 * 1024 * 1024);', 'C'],
   lOutputCap: [PS, 'Collector co = new Collector(capBytes), ce = new Collector(capBytes);', 'Collector co = new Collector(65536), ce = new Collector(65536);', 'C'],
-  lClock: [PS, 'false, (uint)timeoutMs);', 'false, (uint)(timeoutMs * 10));', 'C'],
+  lClock: [PS, 'long left = (long)timeoutMs - sw.ElapsedMilliseconds;', 'long left = (long)timeoutMs * 10 - sw.ElapsedMilliseconds;', 'C'],
   lNoUnmount: [PS, '[void][Box]::Unmount($mounted, $scratch); $mounted = $null', '$mounted = $null', 'C'],
-  lNoParentWatch: [PS, 'if (parent != IntPtr.Zero) w = WaitForMultipleObjects(', 'if (parent != IntPtr.Zero && timeoutMs < 0) w = WaitForMultipleObjects(', 'G'],
+  lNoParentWatch: [PS, 'IntPtr[] waitFor = parent != IntPtr.Zero ?', 'IntPtr[] waitFor = parent != IntPtr.Zero && timeoutMs < 0 ?', 'G'],
+  lDisk: [PS, 'if (TreeBytes(scratch, diskBytes) > diskBytes) { r.DiskExceeded = true; break; }', 'if (TreeBytes(scratch, diskBytes) < 0) { r.DiskExceeded = true; break; }', 'C'],
+  lDiskMax: [PS, '$MAX_DISK = 536870912;', '$MAX_DISK = 536870912000;', 'E'],
   lSuspended: [PS, 'uint flags = EXTENDED_STARTUPINFO_PRESENT | CREATE_SUSPENDED | CREATE_NO_WINDOW', 'uint flags = EXTENDED_STARTUPINFO_PRESENT | CREATE_NO_WINDOW', 'B'],
   lUi: [PS, 'ui.UIRestrictionsClass = 0xFF;', 'ui.UIRestrictionsClass = 0;', 'B'],
   // ----- the launcher: the environment -----
