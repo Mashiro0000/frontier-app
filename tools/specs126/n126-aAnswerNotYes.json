@@ -1,0 +1,15 @@
+{
+  "label": "n126-aAnswerNotYes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "    if (answer !== 'yes') return { ok: false, error: answerText(answer) }",
+      "to": "    if (answer === 'no') return { ok: false, error: answerText(answer) }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

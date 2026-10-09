@@ -1,0 +1,15 @@
+{
+  "label": "n122-nFailedCovered",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "      if (covered && raw.covered !== true) return null\n      return hasKeys(raw, covered ? ['kind', 'covered'] : ['kind'])",
+      "to": "      return hasKeys(raw, covered ? ['kind', 'covered'] : ['kind'])"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

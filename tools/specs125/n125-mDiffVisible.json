@@ -1,0 +1,15 @@
+{
+  "label": "n125-mDiffVisible",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewModel.ts",
+      "from": "    lines: proposal.diff.lines.map((line) => ({ ...line, text: visible(line.text) }))",
+      "to": "    lines: proposal.diff.lines"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

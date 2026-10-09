@@ -1,0 +1,15 @@
+{
+  "label": "n125-wThrow",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "        throw new Error('Blocked: this call did not come from the Review window.')",
+      "to": "        void 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

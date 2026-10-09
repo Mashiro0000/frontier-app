@@ -1,0 +1,15 @@
+{
+  "label": "n122-rAskCheck",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "    if (def.ask !== 'each' && def.ask !== 'reply') {",
+      "to": "    if (false as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -87,7 +87,7 @@ await guard('A', async () => {
   }
   check('A: a line begins with the format version and the type, in a fixed order', lineOf(callEvents()[0]).startsWith('{"v":1,"type":"asked","at":1700000000000,"call":"c1","tool":"web_search","step":1,"args":'))
   check('A: an event of a tool this version does not know still reads (the log may come from another version), and so does "(unknown)"', logMod.parseAuditEvent(JSON.parse(lineOf({ ...refusedEvent(), tool: 'other_tool' }))) !== null && logMod.parseAuditEvent(JSON.parse(lineOf({ ...refusedEvent('unknown-tool'), tool: '(unknown)' }))) !== null)
-  check('A: every refusal code and every answer the core can give is accepted', sharedTools.REFUSAL_CODES.every((code) => logMod.parseAuditEvent(JSON.parse(lineOf(refusedEvent(code)))) !== null) && sharedTools.ANSWER_CODES.every((answer) => logMod.parseAuditEvent(JSON.parse(lineOf({ ...callEvents()[1], answer }))) !== null) && sharedTools.REFUSAL_CODES.length === 13 && sharedTools.ANSWER_CODES.length === 6)
+  check('A: every refusal code and every answer the core can give is accepted', sharedTools.REFUSAL_CODES.every((code) => logMod.parseAuditEvent(JSON.parse(lineOf(refusedEvent(code)))) !== null) && sharedTools.ANSWER_CODES.every((answer) => logMod.parseAuditEvent(JSON.parse(lineOf({ ...callEvents()[1], answer }))) !== null) && sharedTools.REFUSAL_CODES.length === 21 && sharedTools.ANSWER_CODES.length === 7)
   check('A: a search with letters of other languages, quotes and a backslash is kept as typed', (() => {
     const e = callEvents('c9')[0]
     e.args = { query: 'caf\u00e9 "quoted" \\ \u65e5\u672c\u8a9e \ud83d\ude00' }
@@ -486,7 +486,7 @@ await guard('E', async () => {
   check('E: the words of every outcome are sentences for the person, and each kind has its own', (() => {
     const words = new Set(calls.map((c) => sharedAudit.outcomeText(c.outcome)))
     return words.size === calls.length - 0 || words.size >= 7
-  })() && sharedTools.REFUSAL_CODES.every((code) => /^Refused: .+\.$/.test(sharedAudit.outcomeText({ kind: 'refused', code }))) && sharedTools.ANSWER_CODES.filter((a) => a !== 'yes').every((answer) => sharedAudit.outcomeText({ kind: 'declined', answer }).length > 10))
+  })() && sharedTools.REFUSAL_CODES.every((code) => /^Refused: .+\.$/.test(sharedAudit.outcomeText({ kind: 'refused', code }))) && sharedTools.ANSWER_CODES.filter((a) => a !== 'yes' && a !== 'covered').every((answer) => sharedAudit.outcomeText({ kind: 'declined', answer }).length > 10))
   check('E: the sentence of a finished call has the size and the number of sources', sharedAudit.outcomeText(by.done.outcome) === 'You said yes. It ran: 5,123 characters came back, from 2 sources.')
   check('E: the titles shown agree with the registry\'s', sharedTools.toolTitle('web_search') === registryMod.WEB_SEARCH.title && sharedTools.toolTitle('constructor') === 'constructor' && sharedTools.toolTitle('__proto__') === '__proto__')
 

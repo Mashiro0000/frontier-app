@@ -1,0 +1,15 @@
+{
+  "label": "n123-sStrip",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceService.ts",
+      "from": "  if (hasFolder) return settings\n",
+      "to": "  return settings\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w126-wPageMessage",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "{ say(r.ok ? (r.message || 'Done.') : r.error, !r.ok); return load().then(() => { say(r.ok ? (r.message || 'Done.') : r.error, !r.ok) }) }",
+      "to": "{ say(r.ok ? 'Done.' : r.error, !r.ok); return load().then(() => { say(r.ok ? 'Done.' : r.error, !r.ok) }) }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run126.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

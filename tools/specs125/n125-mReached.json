@@ -1,0 +1,15 @@
+{
+  "label": "n125-mReached",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewModel.ts",
+      "from": "    afterCut: afterLines.length > REVIEW_AFTER_LINES,\n    reachedEnd",
+      "to": "    afterCut: afterLines.length > REVIEW_AFTER_LINES,\n    reachedEnd: false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

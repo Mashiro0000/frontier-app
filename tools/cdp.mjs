@@ -4,14 +4,14 @@ import { writeFileSync } from 'node:fs'
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-export async function connect(port, { timeoutMs = 45000 } = {}) {
+export async function connect(port, { timeoutMs = 45000, urlPattern = /^(http|file)/, title = null } = {}) {
   const started = Date.now()
   let target
   while (Date.now() - started < timeoutMs) {
     try {
       const list = await (await fetch(`http://127.0.0.1:${port}/json`)).json()
       target = list.find(
-        (t) => t.type === 'page' && !t.url.startsWith('devtools:') && /^(http|file)/.test(t.url)
+        (t) => t.type === 'page' && !t.url.startsWith('devtools:') && urlPattern.test(t.url) && (title === null || t.title === title)
       )
       if (target) break
     } catch {

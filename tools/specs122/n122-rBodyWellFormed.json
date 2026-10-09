@@ -1,0 +1,15 @@
+{
+  "label": "n122-rBodyWellFormed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "      if (!value.isWellFormed()) return 'holds text that is not valid'\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

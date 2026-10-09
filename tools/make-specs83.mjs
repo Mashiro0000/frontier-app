@@ -1,3 +1,4 @@
+// STALE since 12.7: the question moved into chat.ts `askLarge` and the controls in specs83 and specs83w were re-anchored BY HAND (their JSON is right, this generator is not): do not run it again.
 // Writes the negative-control specs for slice 8.3 (the question before a very large request, D-032): one sabotage each, which the suite must notice.
 // usage: node tools/make-specs83.mjs
 //   then: node tools/check-specs.mjs                 (dry check: every sabotage text is found exactly once)

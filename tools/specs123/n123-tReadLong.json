@@ -1,0 +1,15 @@
+{
+  "label": "n123-tReadLong",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "          out.push(\n            `${line.slice(0, Math.max(0, budget - 60))} ...(the line is longer than what may be given in one call)`\n          )\n          next++",
+      "to": "          next++"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

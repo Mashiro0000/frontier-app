@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "    if (answer !== 'yes') {",
-      "to": "    if (answer === 'busy') {"
+      "from": "      if (isOutcome(r)) return r\n      if (r.answer !== 'yes') return declined(r.answer)\n      if (!r.recorded)",
+      "to": "      if (isOutcome(r)) return r\n      if (r.answer === 'busy') return declined(r.answer)\n      if (!r.recorded)"
     }
   ],
   "argv": [

@@ -1,0 +1,15 @@
+{
+  "label": "n122-rWorstCaseAll",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "    if (def.ask === 'each' && worstCase(def) > SHOWN_LIMIT) {",
+      "to": "    if (worstCase(def) > SHOWN_LIMIT) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n124-pLimitWaiting",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/proposals.ts",
+      "from": "  waiting: 20,",
+      "to": "  waiting: 21,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

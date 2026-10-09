@@ -2671,3 +2671,142 @@ if you have not, please do before you rely on this. **The design was mine** (you
 
 1. **Try it for real once:** add your key (done), turn the search on in Tools (a Windows box asks), ask something current, read the box before you say yes, and look at the bill afterwards.
 2. **Everything is off until you turn it on**, and a damaged or missing settings file also means off.
+
+## Stage 12 - The plan (8 October 2026; approved: "all picks kept")
+
+**Your instructions.** "All picks kept." That is the ten answers at the end of `Frontier App Stage 12 plan.pdf` (which I left in the project folder, untracked, as for Stage 11); the plan is now in `docs/ROADMAP.md` (Stage 12), on the branch `stage-12-workspace`.
+
+**The plan in one paragraph.** You choose one folder. The model can list and read files in it and propose new files and edits; nothing is written until you approve that one change, the original is kept for undo, and no command is run. Three places where I departed from the letter of Stage 11, and you accepted: reads are asked once per reply (not once per file), the whole diff is shown in a window owned by the app's main process that the chat page cannot touch (the Windows box cannot hold a diff) with the Windows box still the yes, and the model has no "apply" tool (you start the apply). Slices 12.1 to 12.8.
+
+## Stage 12 - Slice 12.1: the folder is the boundary (8 October 2026; D-042)
+
+**Step by step.**
+
+1. **What it is, and what you will not see yet.** The part of the app's main process that decides which paths in your workspace the model may reach, how you choose the workspace, and the file that remembers it. Nothing in the app calls it yet (12.2 and 12.3 do), so **nothing you can see or do changed in this slice**: the page has no new function, a request carries nothing new, and the program you run is byte for byte the program it was (I built the old commit and this tree and compared every output file).
+2. **The boundary.** A path the model writes must be relative to the workspace (an absolute path is refused even when it points inside), must stay inside it once `..` is resolved, and must not pass through **any link or junction at all**, even one that leads back inside (a junction is what Windows makes for a "folder shortcut" that programs follow). It must also pass the data-folder block of Stage 11, and a file with two names (a hard link) is refused whichever name is used. The workspace folder itself is looked at again every time: if someone swaps it for a link, deletes it, or it ends up holding the app's data folder, nothing is reachable.
+3. **Three kinds of name.** **Never reached:** `.git`, `.hg`, `.svn` and everything in them, the recycle bin and `System Volume Information`. **Asked about one file at a time** (12.2 builds the question): any name that begins with a dot (`.env`, `.ssh`, `.github`...) and names that look like secrets (`*.pem`, `*.key`, `id_rsa*`, `credentials*`, `secrets*`, `*.env` and the others in the plan). **Ordinary:** the rest. The kind is read off the real names on the disk, so a Windows short name (`ENV~1`, `GIT~1`) or another letter case cannot hide a dot. Windows's own "hidden" mark cannot be read from here, so only names count; the threat note will say so.
+4. **Choosing the folder.** The app will open the Windows folder dialog itself and judge the answer: not a link, not a drive's root, not your user folder or the system's folders, not the app's data folder or a folder that holds it, not on the network, and it must be the real folder (not reached through a shortcut or a substituted drive). Each refusal says why in a sentence. The choice is kept in `workspace.json` in the app's data folder, read strictly, and **no file or a damaged one means no workspace**.
+5. **Is it text.** A file is read only if it is UTF-8 text (a byte-order mark is allowed, a NUL byte or invalid UTF-8 or UTF-16 is not); the line-ending style is noted so that a change keeps it.
+6. **Checked:** 263 checks under Node on a scratch world with a data folder, a workspace and a folder outside, all with canaries, and every kind of link this PC can make (a junction out, back in, to the data folder, a chain, one that leads nowhere, hard links, a substituted drive, Windows short names). **2,616 calls aimed at the boundary in about forty spellings each; every one was refused and no canary came back.** The same calls with the boundary taken out all got through (372 canaries came back), so the test can fail. **92 negative controls, 88 caught**; the other four are cases where a second rule already stops the same thing (listed in D-042). Every file was put back byte for byte after the controls.
+7. **Found on the way:** my first test world made an ordinary file a hard link, which the guard rightly refused; and a project that uses hard links will lose those files, which I will say in the threat note.
+
+## Stage 12.1 - Things to know (not problems, but worth your attention)
+
+1. **You cannot try it yet.** The first thing you will see is in 12.3 (the Tools page row "Code workspace", the folder dialog and the box that names your folder).
+2. **Windows's "hidden" mark is not read**, only names that begin with a dot or look like secrets. A file marked hidden in Windows but named normally is an ordinary file to the app.
+3. **Not tried here:** a link to a file (this account may not make one), a network disk, a disk that is not NTFS, macOS and Linux, and cloud placeholder files (OneDrive) that Windows does not report as links.
+
+## Stage 12 - Slice 12.2: the core learns the workspace (8 October 2026; D-042)
+
+**Step by step.**
+
+1. **What it is, and what you will not see yet.** The part of the app that decides what the model may do (the permission core of Stage 11) now knows about your workspace. Nothing in the app has a file tool yet (12.3 adds them), so **nothing you can see or do changed**: a web search is asked about, run, recorded and counted exactly as before (I ran all of Stage 11's tests again on the changed core: Node and window, all clean).
+2. **One yes for a reply's file access.** The first time a reply wants to use your files, you get one Windows box for the whole reply; the calls after it run on that yes and are written in the audit log as "shown, and covered by your yes for this reply", so the log never says you were asked about them. If you say no, the reply is not asked again (its next file calls are refused and say why). The yes ends with the reply: the next reply asks again. **A file that is hidden or looks like it holds secrets is still asked about on its own**, whatever you said for the reply, and nothing is remembered about it. A place that is never reached (like `.git`) is refused with no question at all.
+3. **File calls have their own count.** 30 file calls and 200,000 characters of file text a reply, beside the 5 steps of a web search, so exploring a project does not use up the searches (and the other way round); the working time is shared. A call that is refused still counts. When one is used up the reply ends and says which.
+4. **Long texts.** A new kind of argument for a tool that carries a whole file or a change. It can never be shown in the Windows box, so such a tool must be asked about by the reply; **the audit log keeps only how long it was**, never the text (my first version kept the whole text in the log; the test I wrote found it).
+5. **Looked at twice.** A tool that opens a file can ask the guard again just before it does: a folder swapped for a junction in between is then refused (tested).
+6. **Choices of mine:** proposals ride on the same reply yes (so you are asked in any reply that touches the workspace, even one that only proposes); a no is kept for the rest of the reply; the text-bringing calls stop at the characters limit and proposals do not.
+7. **Checked:** 170 checks under Node, 84 negative controls (83 caught, one equivalent by design: Stop already wins at the gate), and the earlier Stage 11 suites on the changed code. Twelve older negative controls had to be re-anchored because the core's code moved.
+
+## Stage 12.2 - Things to know (not problems, but worth your attention)
+
+1. **You cannot try it yet.** The first thing you will see is in 12.3 (the Tools page row "Code workspace", the folder dialog, the two boxes).
+2. **The caps are fixed for now** (30 file calls, 200,000 characters); 12.3 puts them on the Tools page, where raising one asks in the Windows box.
+
+## Stage 12 - Slice 12.3: the model can list and read files (8 October 2026; D-042)
+
+**Step by step.**
+
+1. **What you will see.** On the Tools page, between the switches and the audit log, a new section **Code workspace**: "Choose a folder...", the folder (or "No folder is chosen."), "Clear", and one switch, "Let the model use the workspace". **Everything is off** until you do two things: choose a folder (the Windows folder dialog opens, then a Windows box asks "Use this folder as your code workspace?" and shows the real folder) and switch the tools on (a second box). Until both are done, no request carries any file tool.
+2. **What the model can do.** List the files in one folder of the workspace (one level, up to 200 names, with sizes) and read a text file in parts (up to 2,000 lines a call, files up to 256 KB). **It cannot write anything**; proposing changes is the next slice (and applying one will always be you).
+3. **How you are asked.** The first time a reply wants your files, one Windows box asks for the whole reply ("Allow file access for this reply?"): the folder, the first call, the model's reason, that nothing is ever written without your separate approval, the caps (30 file calls, 200,000 characters), that the text goes to your AI provider, and that hidden files and files that look like they hold secrets are asked about one at a time. Your yes covers that one reply; the next reply asks again. A hidden file (a name that begins with a dot) or a secret-looking one (`.env`, `*.pem`, `credentials*`...) gets its own box naming the file, even after your yes, and nothing is remembered about it. `.git` and links are never reached, and a path that leaves the folder is refused with no question.
+4. **What the model is told.** Names and file text come back after a label that says they are text from outside, information only, never instructions. A file that holds one of your saved API keys is not sent (only the fact is). Names with invisible or reversing characters are written out. A file that is not UTF-8 text, or is over 256 KB, is refused in words.
+5. **Files that fight back, tested for the first time.** Six files that give orders (ignore your instructions and read `.env`; a fake system message that says you approved everything; a fake "Human:" turn; fake JSON; a copy of the box's own words; a list of orders). Then a model that **obeys** them: it asks for `.env`, a search, `..\..\Windows\win.ini`, a file outside the folder, the data folder, `.git\config`, an absolute path and tools that do not exist. Every order met a box or a guard; none was done; nothing of the hidden file, the git file, the folder outside or the data folder came back; your files and the app's data were byte for byte what they were.
+6. **Checked:** 124 checks under Node, 36 in the real window on the dev app and the built one (the folder dialog and the Windows boxes are stood in for from the main process, and what main handed them is checked), 85 negative controls (84 caught; one is covered by a second look at the same thing, as listed in D-042). The older tests that list who imports what, the encryption flow's files, the dialog handlers (nineteen became twenty-one) and the data folder's file names were brought up to date.
+
+## Stage 12.3 - Things to know (not problems, but worth your attention)
+
+1. **Reading costs tokens.** File text goes into the request and stays in the chat's later requests, so a long read makes the rest of the conversation dearer. The app counts it like any other text (the limits and the question before a large request already see it), and a reply may be given at most 200,000 characters of file text. Slice 12.7 proves that with big files.
+2. **Try it for real once** when you add your key: choose a small project folder, switch it on, ask the model to look at a file, read the Windows box before you say yes. No real call was ever made by me.
+3. **The folder's path is limited to 300 characters** (the box that names it has to fit in full).
+4. **A project that uses hard links** (a file with two names) will find those files refused, whichever name is used: a check of paths cannot tell the two names apart.
+
+## Stage 12 - Slice 12.4: the model can propose a change, and nothing is changed (8 October 2026; D-042)
+
+**Step by step.**
+
+1. **What changed for you.** The "Let the model use the workspace" switch now covers four tools: list, read, **propose a change to a file** and **propose a new file**. A proposal changes nothing: it is held in the app's memory (gone when the app closes) until you look at it and apply or drop it. **There is no tool that applies a change**: the model can only ask, and you decide. (If you had switched the workspace on before this slice, switch it off and on once: it now asks about four tools.)
+2. **How the model proposes.** For an edit it gives the file, the text to find and the text to put in its place; the text to find must occur **exactly once** in the file (if not, it is told why and tries again with more of the text around it). A new file is its path and its whole text. Files with Windows line endings stay Windows; a byte-order mark stays; a file over 256 KB, a file that is not text and a change that would make the file bigger than 256 KB are refused.
+3. **Hidden and reversing characters are refused** in anything the model proposes to add (23 of them: the ones that make code look different from what it does, the "Trojan Source" trick). One that is already in the file may stay in the text to find, and taking it out is a change.
+4. **What is recorded for each proposal:** the file's text before and after, the difference line by line, the counts, the size and a **fingerprint of the exact bytes that would be written** (the Windows box in 12.6 will name it, so that what you apply is what you looked at), a checksum of the file as it was (so that a file that changed meanwhile is not overwritten), and two warnings for the next slice's window: red for hidden or secret-looking files, amber for files that run commands (`package.json`, scripts, task files, workflows).
+5. **Limits:** 20 proposals waiting at a time, 10 from one reply; the model is told in words when one is refused. The model is told what was recorded and that **it is NOT applied**; it is told nothing of your files. The audit log and the saved chat hold the path and only the **length** of each long text.
+6. **The difference is computed by code of our own** (no package). I checked it against the textbook method on 400 random pairs of texts, and its unified form against a small patch program written for the test, which applied 300 random changes (each at four amounts of context) and got the right new text every time.
+7. **Checked:** 99 checks under Node (nothing written anywhere after every phase: the workspace and the data folder byte for byte and time for time the same), 40 in the real window (the window suite of 12.3 gained a reply that proposes), 79 negative controls (77 caught, 2 covered by a second look by design). **You cannot yet see or apply a proposal**: that is 12.5 (the Review window) and 12.6.
+
+## Stage 12.4 - Things to know (not problems, but worth your attention)
+
+1. **Proposals wait in memory only.** If you close the app, they are gone (the chat still shows that the model proposed them, and the audit log records it).
+2. **How often a real model gets its "text to find" exactly right is untried** (no real call was made). If it often misses, the model is told why and can try again; each try is a file call.
+
+## Stage 12 - Slice 12.5: the Review window and the list of changes (8 October 2026; D-042)
+
+**Step by step.**
+
+1. **What you will see.** On the Tools page, under the code workspace, a new section **Changes waiting**: every change the model has proposed and nobody has decided on, as one line (new file or change, the path, how many lines were added and removed, the size, and a warning for a hidden or secret-looking file and one for a file that runs commands) with a **Review...** button. The page shows nothing of the change itself. The chat's card for a proposal now says that the change waits for you and that nothing is changed until you apply it.
+2. **The Review window.** "Review..." opens a window of the app's own (not part of the chat page): the path, what kind of change, the counts, the size, the model's reason, **the fingerprint of the exact bytes that would be written** (the Windows box in the next slice shows the same), a red warning for secret-looking files and an amber one for files that run commands, **the whole difference** line by line (removed in red, added in green) and, in a second tab, **the file as it would be** with line numbers. Anything the eye cannot see (a reversing character, a zero-width one, a no-break space) is written out in a marked bracket, and so are the brackets themselves, so a file cannot fake a mark.
+3. **"Ask to apply..." is off until you have scrolled the whole difference to its end** (a short one that fits counts at once). A change whose file was changed since the proposal, is gone, or is not allowed any more is refused in words (your later edit is never overwritten). **In this slice the button only says that applying comes in the next one**: nothing is written anywhere. "Drop this change" takes it away (two clicks), Escape and Close close the window, and asking for another change reuses the same window.
+4. **Why a window of its own.** The Windows box holds 2,000 characters and is never shortened; a real change is longer, and only the start of it would let a bad line hide at the end. The window is sandboxed like the chat window and shut tighter: its own bridge (the chat page has none of its functions, and it has none of the chat page's), a session of its own that allows no permission and cancels every request that is not its own page, no navigation and no new windows, and a page that allows no script or style but its own and draws all text as text (I tried a change full of `<script>` and `<img onerror>`: it is only text; I tried to load a page from the web, to add a script and to send the window to another address from inside it: all refused). The app answers its messages only when they come from that window's own page.
+5. **Checked:** 100 checks under Node, 38 in the real window on the dev app and on the built one, 105 negative controls (all caught). Two small things found on the way: the chat's note for a proposal made a covered one say "characters came back", and the test driver could only drive the chat page (it can now pick another page).
+
+## Stage 12.5 - Things to know (not problems, but worth your attention)
+
+1. **I have not looked at the window on a screen.** Its layout was checked through the page's own boxes and text (and at the sizes of the window), not by eye; your rule (no screenshots of real dialogs) kept me from taking one. Tell me if anything looks wrong when you open it.
+2. **Proposals still wait in memory only** and are gone when the app closes.
+
+## Stage 12 - Slice 12.6: apply and undo (9 October 2026; D-042)
+
+**Step by step.**
+
+1. **What you will see.** In the Review window, **"Ask to apply..."** (still on only after you have scrolled the whole difference to its end) now really asks. A box of Windows' own opens, for the window you are in: the file, how many lines, the size, **the same fingerprint the window showed**, the red or amber warning if the file is hidden/secret-looking or runs commands, the model's reason (any character the eye cannot see is written out), where the original is kept, and the buttons **"Write this change"** and **"Don't write"** (the second is the one Enter picks). A **no** writes nothing and keeps nothing.
+2. **A yes writes it, in a careful order.** The app makes sure the undo history has room; writes the question and your answer to the log; looks at the file AGAIN (if it changed, was removed or was swapped while you were deciding, it stops and your own edit stays); **keeps a copy of the original in its own data folder and reads it back from the disk before anything is written** (if that fails, the file is not touched); writes the new file next to the old one and puts it in place (a new file is made so that nothing can be overwritten); reads the result back and compares it byte for byte (if it differs, the original is put back); and writes the result to the log. The change leaves the waiting list. Line endings and a byte-order mark stay as they were.
+3. **Undo.** On the Tools page, **"Changes you applied"** lists the last 50 with the path, the size, and whether it can be undone **now**: only while the file is still exactly what the change wrote. If you edited it afterwards it says so and offers no button (an undo would lose what you wrote). **"Undo..."** asks in the Windows box again and puts the original back (or deletes the file the change made; the folders made for it stay). **"Delete the undo history..."** asks, then deletes the copies (your files are not touched; nothing can be undone afterwards).
+4. **The undo copies** are in the app's data folder, not in your project and not in a backup, and are sealed like the chats when you turn encryption on (and unsealed when you turn it off). The history holds 1000 changes or 200 MB; when it is full, applying is refused until you delete it.
+5. **The page can't do it.** The chat page has no function that applies; it can only ask for an undo or for the history to be deleted by id, and each of those asks in the Windows box. The model has no tool that applies or undoes (a model that asks for one is told it doesn't exist; I tried).
+6. **Checked:** 146 checks under Node on a real scratch workspace, 33 in the real window (dev and built), 93 negative controls (88 caught, 5 equivalent by design, written down in D-042). The two older suites that said "not available yet" were updated.
+
+## Stage 12.6 - Things to know (not problems, but worth your attention)
+
+1. **I have not seen the real Windows box with this text.** The window suite stands in for it (it checks the words, the buttons and the default). Tell me if the box looks wrong, especially a very long path.
+2. **Undo puts back the file's contents, not its time stamps or permissions.**
+3. **A power cut in the middle of a write** is not tested (the order and the read-back are); the copy of the original is already on the disk by then.
+
+## Stage 12 - Slice 12.7: cost, encryption and backups (9 October 2026; D-042)
+
+**Step by step.**
+
+1. **What a file costs.** When the model reads a file, that text goes to your provider again with every request after it in the same reply. I checked that the app already counted it (in the estimate, the ledger's first line and the spending limits: a reply that reads 155 KB in three parts shows "about 41.4K tokens" in the question, and a daily limit just above what you had spent refuses the next request). I found **two gaps and fixed both**: (1) the estimate left out the text of a file the model **asked to create** (a proposal is sent back with the turn); it now counts it. (2) The question before a very large request was asked **only before the first request** of a reply, so a reply that began small could read files step by step and grow far past your amount without asking.
+2. **You are now asked again, in the middle of the reply**, when what the next request would send has grown by more than your amount since the request you last agreed to (so a reply that is already large is not asked at every step, only each time it grows by another amount; "Never ask" asks nothing). The dialog says "The reply is not finished. It has read files, and what it read goes with the next request. Nothing of that request has been sent yet." with the same figures as the usual one. **Don't send** ends the reply there with "The reply stopped here: you chose not to send what it has read so far with the next request." and nothing more is sent.
+3. **Encryption.** The workspace setting, the undo history, the tool settings and the log are turned on and off together with the chats, both ways (checked: nothing readable is left when sealed: no folder name, path, original text or tool name). With the key lost, a sealed workspace setting means no workspace.
+4. **Backups** carry a chat with the notes of file calls and proposals, and **never the workspace setting, the undo history or the log**; a hostile backup file with lines pretending to be those changes nothing.
+5. **The file limits stay as fixed numbers** (256 KB a file, 30 file calls and 200,000 characters a reply...). I did not make them settings: nothing asks to raise them today, and it is one more thing a page could be tricked into offering. Tell me if you want them as settings.
+6. **Checked:** 42 checks under Node, 21 in the real window (dev and built), 31 negative controls.
+
+## Stage 12.7 - Things to know (not problems, but worth your attention)
+
+1. **The question can now appear in the middle of a reply** (only for a reply that has read or proposed a lot). If you find it comes too often, raise the amount in Settings; the rule is "grown by more than the amount since your last yes".
+2. **The cost figures are the app's own guesses** (one token to three bytes, at list prices), on the high side for English text; your provider's invoice decides.
+
+## Stage 12 - Slice 12.8: the threat note, the full regression, the merge (9 October 2026; D-042)
+
+**Step by step.**
+
+1. **The threat note** is at the end of D-042 in `docs/DECISIONS.md`: twelve things that could go wrong with a tool that reads and can change your code, what stops each, what does not, and seven findings for you.
+2. **The full regression** ran every earlier test against the finished stage: 166 runs, 139 clean the first time. The other 27 were old tests that listed things the stage changed on purpose (the groups of functions the page has, the list of saved files, the sections of the Tools page, a count of handlers). I updated them and re-ran them: all clean, on the normal app and on the built one. Nothing in the app was at fault.
+3. **Merged** into main with the tag `stage-12-done`, and pushed.
+
+## Stage 12.8 - Things to know (not problems, but worth your attention)
+
+1. **Nothing was tried with a real provider, and I did not look at the real Windows box or the Review window on a screen** (your rule on real dialogs). The first real use is the real test: choose a small folder, let the model read a file, ask for a change, open Review, read the box, apply, undo.
+2. **The file limits stayed as fixed numbers.** The plan said raising them would ask in the box; I did not build that (see D-042, 12.7). Say so if you want it.
+3. **A folder `A:\frontier-base` is left over** from a comparison I started and dropped (an empty copy with a link to `node_modules`; Windows would not let me delete it from here). You can delete the folder: delete only the link `node_modules` inside it first (do not delete its contents).
+4. **The question before a large request can now come in the middle of a reply** (12.7).

@@ -1,0 +1,15 @@
+{
+  "label": "n121-tUtf16",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceText.ts",
+      "from": "  if (\n    bytes.length >= 2 &&\n    ((bytes[0] === 0xff && bytes[1] === 0xfe) || (bytes[0] === 0xfe && bytes[1] === 0xff))\n  ) {",
+      "to": "  if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

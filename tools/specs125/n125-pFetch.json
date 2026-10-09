@@ -1,0 +1,15 @@
+{
+  "label": "n125-pFetch",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "  load()\n})()",
+      "to": "  fetch('https://example.com/x')\n  load()\n})()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n122-rCopyCounts",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "    counts: def.counts === undefined ? 'step' : def.counts",
+      "to": "    counts: 'step'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

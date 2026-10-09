@@ -1,0 +1,15 @@
+{
+  "label": "n126-aAnsweredRecord",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "    if (!recorded) return { ok: false, error: NOT_RECORDED_TEXT }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

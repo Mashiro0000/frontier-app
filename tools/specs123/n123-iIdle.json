@@ -1,0 +1,15 @@
+{
+  "label": "n123-iIdle",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      toolSettings.file.whenIdle(),\n      workspaceStore.file.whenIdle()",
+      "to": "      toolSettings.file.whenIdle()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

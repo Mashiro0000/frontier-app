@@ -1,0 +1,15 @@
+{
+  "label": "n122-rControlCr",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "code !== 10 && code !== 13)",
+      "to": "code !== 10)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n121-gDataOp",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "  edit: 'write',",
+      "to": "  edit: 'read',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

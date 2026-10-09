@@ -1,0 +1,15 @@
+{
+  "label": "n123-sChooseCancel",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceService.ts",
+      "from": "        if (picked === null) return { ok: false, cancelled: true, error: WORKSPACE_NOT_CHOSEN }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

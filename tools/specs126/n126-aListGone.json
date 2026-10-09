@@ -1,0 +1,15 @@
+{
+  "label": "n126-aListGone",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "verdict.code === 'not-found' ? 'gone'",
+      "to": "verdict.code === 'zz' ? 'gone'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

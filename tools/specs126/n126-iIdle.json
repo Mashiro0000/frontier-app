@@ -1,0 +1,15 @@
+{
+  "label": "n126-iIdle",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "workspaceStore.file.whenIdle(),\n      undoJournal.whenIdle()",
+      "to": "workspaceStore.file.whenIdle()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

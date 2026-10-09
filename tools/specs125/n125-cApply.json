@@ -1,0 +1,15 @@
+{
+  "label": "n125-cApply",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/ChangesSection.tsx",
+      "from": "                Review...\n",
+      "to": "                Review...{void window.api.changes.review}\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "    if (signal.aborted) return refused('stopped', STOPPED, budget.used().steps)\n",
+      "from": "    if (signal.aborted) return refused('stopped', STOPPED, budget.used().calls)\n",
       "to": ""
     }
   ],

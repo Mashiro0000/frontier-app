@@ -1,0 +1,15 @@
+{
+  "label": "n124-uOldStart",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/lineDiff.ts",
+      "from": "    const oldStart = oldCount === 0 ? oldBefore : oldBefore + 1",
+      "to": "    const oldStart = oldBefore + 1"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

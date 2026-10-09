@@ -1,0 +1,15 @@
+{
+  "label": "n121-wDrive",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspace.ts",
+      "from": "    if (parts.length <= 1) return refuse(\"A drive's root cannot be the workspace: choose a folder.\")\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

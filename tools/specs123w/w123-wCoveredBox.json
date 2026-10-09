@@ -1,0 +1,18 @@
+{
+  "label": "w123-wCoveredBox",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      if (grants.get('workspace') === undefined) {",
+      "to": "      if (true as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run123.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

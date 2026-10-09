@@ -1,0 +1,18 @@
+{
+  "label": "w127-wLoop",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      if (pass > 0) {\n",
+      "to": "      if (pass > 99) {\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run127.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

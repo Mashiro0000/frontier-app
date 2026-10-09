@@ -1,0 +1,15 @@
+{
+  "label": "n122-rPathLength",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "    case 'path':\n    case 'workspace_path':\n      if (typeof value !== 'string') return 'must be text'\n      return value.length === 0 || value.length > MAX_PATH_ARG",
+      "to": "    case 'path':\n    case 'workspace_path':\n      if (typeof value !== 'string') return 'must be text'\n      return value.length === 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n126-aRoomThrow",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "    try {\n      room = await roomForOne()\n    } catch {\n      room = false\n    }",
+      "to": "    room = await roomForOne()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

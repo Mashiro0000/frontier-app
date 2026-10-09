@@ -1,0 +1,15 @@
+{
+  "label": "n123-qOneAskedHere",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "          ...provider(call),\n          '',\n          ASKED_HERE\n        ].join('\\n'),\n        yes: 'Allow this one'",
+      "to": "          ...provider(call)\n        ].join('\\n'),\n        yes: 'Allow this one'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

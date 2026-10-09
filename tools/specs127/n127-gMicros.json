@@ -1,0 +1,15 @@
+{
+  "label": "n127-gMicros",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/askFirst.ts",
+      "from": "micros(estimate.inputUsd) - micros(approvedInputUsd) > micros(above)",
+      "to": "estimate.inputUsd - approvedInputUsd > above"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

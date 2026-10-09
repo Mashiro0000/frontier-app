@@ -1,0 +1,15 @@
+{
+  "label": "n122-cGrantAlways",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      if (grants.get('workspace') === undefined) {",
+      "to": "      if (true as boolean) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n121-gNotAFolder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "      if (index < below.length - 1 && !stat.isDirectory()) {",
+      "to": "      if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n123-sOffRestart",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceService.ts",
+      "from": "          if (tools.problem !== null) return write(false, true)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

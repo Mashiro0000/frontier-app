@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/shared/askFirst.ts",
-      "from": "micros(estimate.inputUsd) > micros(above)",
-      "to": "micros(estimate.totalUsd) > micros(above)"
+      "from": "return above !== null && micros(estimate.inputUsd) > micros(above)",
+      "to": "return above !== null && micros(estimate.totalUsd) > micros(above)"
     }
   ],
   "argv": [

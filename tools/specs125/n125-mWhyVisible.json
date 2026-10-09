@@ -1,0 +1,15 @@
+{
+  "label": "n125-mWhyVisible",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewModel.ts",
+      "from": "const oneLine = (text: string): string => visible(text.replace(/\\s+/g, ' ').trim())",
+      "to": "const oneLine = (text: string): string => text.replace(/\\s+/g, ' ').trim()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

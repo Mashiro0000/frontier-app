@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "if (askAbove !== null && needsConfirmation(askFirst, estimate)) {",
-      "to": "if (false) {"
+      "from": "if (needsConfirmation(askFirst, estimate) && !(await askLarge(estimate, false))) return",
+      "to": "void 0"
     }
   ],
   "argv": [

@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "    if (!recorded) return refused('not-recorded', NOT_RECORDED, step)\n",
-      "to": ""
+      "from": "      if (!r.recorded) return refused('not-recorded', NOT_RECORDED, step)\n    }\n\n    // A workspace argument",
+      "to": "    }\n\n    // A workspace argument"
     }
   ],
   "argv": [

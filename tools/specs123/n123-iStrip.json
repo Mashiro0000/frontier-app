@@ -1,0 +1,15 @@
+{
+  "label": "n123-iStrip",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "        return withWorkspace((await toolSettings.read()).settings, folder !== null)",
+      "to": "        void folder\n        return (await toolSettings.read()).settings"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

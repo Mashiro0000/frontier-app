@@ -1,0 +1,15 @@
+{
+  "label": "n125-fPath",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewService.ts",
+      "from": "      path: proposal.path,",
+      "to": "      path: '.',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

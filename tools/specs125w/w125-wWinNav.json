@@ -1,0 +1,18 @@
+{
+  "label": "w125-wWinNav",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "    window.webContents.on('will-navigate', (event) => event.preventDefault())\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run125.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

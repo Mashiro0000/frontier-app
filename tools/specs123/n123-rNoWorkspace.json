@@ -1,0 +1,15 @@
+{
+  "label": "n123-rNoWorkspace",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "        ...(workspace === undefined ? {} : { workspace }),\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n123-tListCap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "    const kept = shownEntries.slice(0, WORKSPACE_LIMITS.maxListEntries)",
+      "to": "    const kept = shownEntries"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

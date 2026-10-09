@@ -1,0 +1,15 @@
+{
+  "label": "n124-pCrlfNeedle",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/proposals.ts",
+      "from": "  const needle = crlf ? find.replace(/\\r\\n/g, '\\n') : find",
+      "to": "  const needle = find"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

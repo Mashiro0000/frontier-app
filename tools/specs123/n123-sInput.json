@@ -1,0 +1,15 @@
+{
+  "label": "n123-sInput",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceService.ts",
+      "from": "      if (typeof on !== 'boolean') return Promise.resolve({ ok: false, error: NOT_UNDERSTOOD })\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

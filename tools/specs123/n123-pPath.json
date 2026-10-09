@@ -1,0 +1,15 @@
+{
+  "label": "n123-pPath",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/preload/index.ts",
+      "from": "    choose: () => ipcRenderer.invoke(CHANNELS.workspaceChoose),",
+      "to": "    choose: (path) => ipcRenderer.invoke(CHANNELS.workspaceChoose, { path }),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

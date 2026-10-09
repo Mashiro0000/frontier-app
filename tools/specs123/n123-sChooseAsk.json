@@ -1,0 +1,15 @@
+{
+  "label": "n123-sChooseAsk",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceService.ts",
+      "from": "        if (no !== null) return no\n        try {",
+      "to": "        try {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

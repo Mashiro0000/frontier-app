@@ -5,6 +5,10 @@ import { createReplyBudget, type ReplyBudget } from './replyBudget'
 import type { QuestionGate } from './systemQuestion'
 import { createToolCore, type ToolOutcome, type ToolResult } from './toolCore'
 import type { ToolRegistry } from './toolRegistry'
+import type { WorkspaceGuard } from './workspaceGuard'
+import { createProposalExecutors } from './proposalTools'
+import type { ProposalStore } from './proposals'
+import { createWorkspaceExecutors, workspaceQuestions } from './workspaceTools'
 
 // The tools of ONE reply (Stage 11.3, D-041): the part between the reply's loop (chat.ts) and the core that decides (toolCore.ts). It makes the core for
 // the reply, with the reply's budget (steps and working time) and the one executor of the build, the hosted web search, runs the calls of one turn one
@@ -19,6 +23,8 @@ export interface ToolRuntimeOptions {
   /** Keeps the audit record (auditLog.ts `append`); rejecting means the call is not made. */
   record: (event: ToolEvent) => Promise<void>
   holdsSavedKey: (text: string) => Promise<boolean>
+  /** The code workspace (12.3): its guard. Absent: no workspace tool can run (a call is refused as "no workspace"). */
+  workspace?: { guard: WorkspaceGuard; proposals: ProposalStore }
   now?: () => number
   newId?: () => string
   /** The clock of a reply's working time (milliseconds, monotonic); the checks hand in their own. */
@@ -46,7 +52,7 @@ export interface ReplyToolsInput {
 }
 
 /** Why a reply must end now, or null: a cap was reached, or the person pressed Stop everything. */
-export type TurnEnd = 'step-cap' | 'time-cap' | 'stopped' | null
+export type TurnEnd = 'step-cap' | 'time-cap' | 'stopped' | 'file-cap' | 'chars-cap' | null
 
 export interface TurnResult {
   /** One for each call, in the order the model made them. */
@@ -124,7 +130,11 @@ function approvedQuery(call: NeutralToolCall): string | null {
 function endOf(outcome: ToolOutcome): TurnEnd {
   if (outcome.kind === 'ran' || !outcome.endsReply) return null
   if (outcome.kind === 'refused') {
-    return outcome.code === 'step-cap' || outcome.code === 'time-cap' || outcome.code === 'stopped'
+    return outcome.code === 'step-cap' ||
+      outcome.code === 'time-cap' ||
+      outcome.code === 'stopped' ||
+      outcome.code === 'file-cap' ||
+      outcome.code === 'chars-cap'
       ? outcome.code
       : null
   }
@@ -138,6 +148,21 @@ export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
       let current = input.settings
       // Caps from the settings as they are when the reply starts; a saved value outside what Settings allows falls back to the default (replyBudget.ts).
       const budget = createReplyBudget(current.caps, options.clock)
+      // The code workspace: the guard, the words of its two questions (with this reply's caps) and the tools that read.
+      const workspace =
+        options.workspace === undefined
+          ? undefined
+          : {
+              guard: options.workspace.guard,
+              questions: workspaceQuestions({ fileCaps: budget.fileCaps })
+            }
+      const fileExecutors =
+        options.workspace === undefined
+          ? {}
+          : {
+              ...createWorkspaceExecutors({ holdsSavedKey: options.holdsSavedKey }),
+              ...createProposalExecutors({ store: options.workspace.proposals, now: options.now })
+            }
       const core = createToolCore({
         tools: options.tools,
         settings: () => current,
@@ -152,7 +177,9 @@ export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
           }
         },
         holdsSavedKey: options.holdsSavedKey,
+        ...(workspace === undefined ? {} : { workspace }),
         executors: {
+          ...fileExecutors,
           web_search: async (args, context) => {
             const found = await input.search(String(args.query), context.signal)
             const note = found.end === 'done' ? '' : `\n\n${UNFINISHED[found.end]}`
@@ -195,7 +222,10 @@ export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
               outcome.kind === 'ran'
                 ? {
                     callId: call.id,
-                    text: toolResultText(approvedQuery(call), outcome.result),
+                    text:
+                      outcome.tool === 'web_search'
+                        ? toolResultText(approvedQuery(call), outcome.result)
+                        : outcome.result.text,
                     isError: false
                   }
                 : { callId: call.id, text: outcome.text, isError: true }

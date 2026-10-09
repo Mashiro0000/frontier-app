@@ -60,6 +60,8 @@ export interface LargeRequest {
   model: string
   estimate: RequestEstimate
   askAboveUsd: number
+  /** (12.7) Asked in the middle of a reply, after files were read (not before the first request). */
+  later?: boolean
 }
 
 /**

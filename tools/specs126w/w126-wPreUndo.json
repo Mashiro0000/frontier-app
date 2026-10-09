@@ -1,0 +1,18 @@
+{
+  "label": "w126-wPreUndo",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/preload/index.ts",
+      "from": "    undo: (id) => ipcRenderer.invoke(CHANNELS.changesUndo, { id }),\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run126.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

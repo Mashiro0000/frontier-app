@@ -1,0 +1,15 @@
+{
+  "label": "n123-xSectionLink",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/WorkspaceSection.tsx",
+      "from": "    <section className=\"tools-section\" aria-labelledby=\"tools-workspace-title\">",
+      "to": "    <section className=\"tools-section\" aria-labelledby=\"tools-workspace-title\">\n      <a href=\"https://example.com\">x</a>"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

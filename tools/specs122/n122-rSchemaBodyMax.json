@@ -1,0 +1,15 @@
+{
+  "label": "n122-rSchemaBodyMax",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "          minLength: 1,\n          maxLength: spec.max",
+      "to": "          minLength: 1"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

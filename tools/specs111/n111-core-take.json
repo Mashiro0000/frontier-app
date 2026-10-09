@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "    const taken = budget.take()",
+      "from": "    const taken = isFile ? budget.takeFile() : budget.take()",
       "to": "    const taken = 'ok' as const"
     }
   ],

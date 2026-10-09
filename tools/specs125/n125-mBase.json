@@ -1,0 +1,15 @@
+{
+  "label": "n125-mBase",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewModel.ts",
+      "from": "    reachedEnd\n  }\n}",
+      "to": "    reachedEnd,\n    baseHash: proposal.baseHash\n  } as unknown as ReviewModel\n}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

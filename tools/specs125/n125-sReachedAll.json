@@ -1,0 +1,15 @@
+{
+  "label": "n125-sReachedAll",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewService.ts",
+      "from": "      reached.add(key(proposal))\n      return true",
+      "to": "      reached.add('*')\n      for (const other of store.list()) reached.add(key(other))\n      return true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

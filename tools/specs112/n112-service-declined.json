@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/shared/audit.ts",
-      "from": "  if (call.answer !== null && call.answer !== 'yes') {",
+      "from": "  if (call.answer !== null && call.answer !== 'yes' && call.answer !== 'covered') {",
       "to": "  if (call.answer !== null && false) {"
     }
   ],

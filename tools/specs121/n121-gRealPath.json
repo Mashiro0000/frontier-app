@@ -1,0 +1,15 @@
+{
+  "label": "n121-gRealPath",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "      real: P.join(real, ...tail),",
+      "to": "      real: lexical.abs,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -26,7 +26,7 @@ function ToolNote({ note, live }: ToolNoteProps): React.JSX.Element {
       </p>
       <p className="tool-note-outcome" role={open ? 'status' : undefined}>
         {open && <span className="tool-note-spinner" aria-hidden="true" />}
-        {noteOutcomeText(note.outcome, live)}
+        {noteOutcomeText(note.outcome, live, note.tool)}
       </p>
     </div>
   )

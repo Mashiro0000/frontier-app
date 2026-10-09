@@ -86,7 +86,7 @@ const s = {
   wSettings: [CHAT, '            settings: await toolsContext.settings(),', '            settings: { enabled: {}, caps: { steps: 5, seconds: 60 } },'],
   wPage: [IR, "      else if (event.type === 'tool')\n        onTool(event.event)", "      else if (false as boolean)\n        onTool(event.event)"],
   wRecord: [IPC, '    record: (event) => auditLog.append(event),', '    record: async () => undefined,'],
-  wCapText: [CHAT, '    ? `Stopped: this reply used all ${caps.steps} of its tool steps.`', '    ? `Stopped.`'],
+  wCapText: [CHAT, "    case 'step-cap':\n      return `Stopped: this reply used all ${caps.steps} of its tool steps.`", "    case 'step-cap':\n      return `Stopped.`"],
   wStopSteps: [CHAT, '        if (controller.signal.aborted || turn.ended === \'stopped\') return // the person pressed Stop everything: nobody is listening', '        if (controller.signal.aborted) return'],
   wSettleSearch: [CHAT, "        await settleRecord(record, signal.aborted ? 'stopped' : 'done', found.usage, Buffer.byteLength(found.text))", '        void settleRecord'],
   wToolsFileBool: [SET, "if (!TOOL_ID.test(name) || typeof enabled[name] !== 'boolean') return null", "if (!TOOL_ID.test(name)) return null"]

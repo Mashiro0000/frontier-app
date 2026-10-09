@@ -1,0 +1,15 @@
+{
+  "label": "n127-bNames",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "export const BACKUP_FORMAT",
+      "to": "const WORKSPACE_FILE_FOR_BACKUP = 'workspace.json'\nexport const BACKUP_FORMAT"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n122-xWired",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "import { createQuestionGate } from './systemQuestion'",
+      "to": "import { createQuestionGate } from './systemQuestion'\nimport { createWorkspaceGuard } from './workspaceGuard'\nvoid createWorkspaceGuard"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

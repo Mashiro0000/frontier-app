@@ -1,0 +1,15 @@
+{
+  "label": "n123-tReadPop",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "    if (all.length > 0 && all[all.length - 1] === '' && /(\\r\\n|\\n|\\r)$/.test(text)) all.pop()\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n125-wNode",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "        nodeIntegration: false,",
+      "to": "        nodeIntegration: true,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

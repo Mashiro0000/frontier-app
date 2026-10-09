@@ -1,0 +1,15 @@
+{
+  "label": "n121-gListFolder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "    if (op === 'list' && kind !== 'folder')\n      return no(kind === 'missing' ? 'not-found' : 'not-a-folder', 'a folder was needed')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

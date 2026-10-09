@@ -149,7 +149,7 @@ await guard('D', async () => {
     check(`D: nothing that ${start.split('/').at(-1)} reaches, however deep, is a store of notes, instructions, limits, keys, chats or files, or the wiring`, FORBIDDEN.every((f) => !files.includes(f)), show(files))
   }
   const executorSrc = source('src/main/replyTools.ts')
-  check('D: the one executor of the build calls the search handed to it and does nothing else with the result but word it', /executors: \{\s*web_search: async/.test(executorSrc) && !/fs\.|writeFile|require\(|child_process|fetch\(/.test(executorSrc))
+  check('D: the one executor of the build calls the search handed to it and does nothing else with the result but word it', /executors: \{\s*(\.\.\.fileExecutors,\s*)?web_search: async/.test(executorSrc) && !/fs\.|writeFile|require\(|child_process|fetch\(/.test(executorSrc))
   check('D: the settings can be changed only by the settings service, which asks (nothing on the path of a tool imports it)', !closure('src/main/toolCore.ts').concat(closure('src/main/replyTools.ts')).some((f) => /toolSettingsService/.test(f)))
 })
 

@@ -1,0 +1,18 @@
+{
+  "label": "w124-wLengths",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "        def.args[argName]?.kind === 'body' ? `(${String(value).length} characters)` : value",
+      "to": "        value"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run123.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

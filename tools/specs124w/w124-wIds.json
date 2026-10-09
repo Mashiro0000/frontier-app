@@ -1,0 +1,18 @@
+{
+  "label": "w124-wIds",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "  'propose_edit',\n  'propose_new_file'\n]",
+      "to": "  'propose_edit'\n]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run123.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

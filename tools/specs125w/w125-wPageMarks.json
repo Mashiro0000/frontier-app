@@ -1,0 +1,18 @@
+{
+  "label": "w125-wPageMarks",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "      mark.className = 'mark'",
+      "to": "      mark.className = 'plain'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run125.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

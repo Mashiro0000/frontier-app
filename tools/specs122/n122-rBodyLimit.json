@@ -1,0 +1,15 @@
+{
+  "label": "n122-rBodyLimit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "        if (!Number.isSafeInteger(spec.max) || spec.max < 1 || spec.max > MAX_BODY_ARG) {",
+      "to": "        if (!Number.isSafeInteger(spec.max) || spec.max < 1) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

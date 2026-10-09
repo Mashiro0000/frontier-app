@@ -1,0 +1,15 @@
+{
+  "label": "n123-sOnProblem",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceService.ts",
+      "from": "        if (tools.problem !== null) {\n          return {\n            ok: false,",
+      "to": "        if (false as boolean) {\n          return {\n            ok: false,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

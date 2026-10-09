@@ -12,6 +12,8 @@ import type { ProjectChangeResult, ProjectsStatus } from './projects'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
 import type { ToolCaps, ToolChangeResult, ToolEvent, ToolsStatus } from './tools'
+import type { AppliedChange, ChangeActionResult, ChangeSummary } from './changes'
+import type { WorkspaceChangeResult, WorkspaceStatus } from './workspace'
 import type { ReplyUsage, UsageSummary } from './usage'
 
 /**
@@ -192,6 +194,8 @@ export type ChatStreamEvent =
       model: string
       estimate: RequestEstimate
       askAboveUsd: number
+      /** (12.7) True when this is asked in the middle of a reply, after files were read: the reply is not finished and what it read goes with the next request. */
+      later?: true
     }
   | { streamId: string; type: 'text'; text: string }
   /**
@@ -607,6 +611,33 @@ export interface FrontierApi {
     /** When the settings file could not be read: start again with every tool off and the caps at their defaults (the file is kept as a copy beside it). */
     reset(): Promise<ToolChangeResult>
   }
+  /**
+   * The code workspace (Stage 12.3, D-042): the one folder the model may list and read files in, kept by main in workspace.json. The page can read the
+   * status and ask for a change; it never supplies a path (main opens the system's folder dialog itself and judges the answer). Choosing a folder and
+   * switching the tools on ask in the system's own message box, which the page cannot answer; clearing the folder and switching off do not. The page has no
+   * way to read a file, list a folder, approve a call or answer a question.
+   */
+  workspace: {
+    status(): Promise<WorkspaceStatus>
+    choose(): Promise<WorkspaceChangeResult>
+    clear(): Promise<WorkspaceChangeResult>
+    setOn(on: boolean): Promise<WorkspaceChangeResult>
+  }
+  /**
+   * The changes the model has proposed and the person has not decided on (Stage 12.5, D-042): a summary of each (the path, the counts, the warnings: never a line
+   * of the change) and a way to ask main to open the Review window for one. The Review window is a window of its own that main opens and this page cannot
+   * script; applying and dropping a change are done there, never here. The page has no way to see a change's text, to apply it or to answer a question.
+   */
+  changes: {
+    list(): Promise<ChangeSummary[]>
+    review(id: string): Promise<ChangeActionResult>
+    /** The changes that were applied (the newest 50), each with whether it can be undone now. */
+    applied(): Promise<AppliedChange[]>
+    /** Asks main to undo one: main asks in the system's own box and puts the original back only if the file is still exactly what the change wrote. */
+    undo(id: string): Promise<ChangeActionResult>
+    /** Asks main to delete the undo history (main asks in the system's box; the files are not touched). */
+    clearHistory(): Promise<ChangeActionResult>
+  }
   projects: {
     status(): Promise<ProjectsStatus>
     create(name: string): Promise<ProjectChangeResult>
@@ -673,7 +704,16 @@ export const CHANNELS = {
   toolsStatus: 'tools:status',
   toolsSetEnabled: 'tools:set-enabled',
   toolsSetCaps: 'tools:set-caps',
-  toolsReset: 'tools:reset'
+  toolsReset: 'tools:reset',
+  workspaceStatus: 'workspace:status',
+  workspaceChoose: 'workspace:choose',
+  workspaceClear: 'workspace:clear',
+  workspaceSetOn: 'workspace:set-on',
+  changesList: 'changes:list',
+  changesReview: 'changes:review',
+  changesApplied: 'changes:applied',
+  changesUndo: 'changes:undo',
+  changesClearUndo: 'changes:clear-undo'
 } as const
 
 /**

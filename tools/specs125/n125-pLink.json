@@ -1,0 +1,15 @@
+{
+  "label": "n125-pLink",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "<header id=\"head\"></header>",
+      "to": "<header id=\"head\"><a href=\"https://example.com\">x</a></header>"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

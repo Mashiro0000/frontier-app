@@ -1,0 +1,15 @@
+{
+  "label": "n126-uPathLen",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/undoRecords.ts",
+      "from": "    path.length > WORKSPACE_LIMITS.maxPathChars ||",
+      "to": "    path.length > 100000 ||"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

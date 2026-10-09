@@ -1,0 +1,15 @@
+{
+  "label": "n121-gLinkMiddleOnly",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "      if (stat.isSymbolicLink()) return no('link', 'a link is on the way')",
+      "to": "      if (stat.isSymbolicLink() && index < below.length - 1) return no('link', 'a link is on the way')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

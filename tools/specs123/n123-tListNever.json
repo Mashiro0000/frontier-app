@@ -1,0 +1,15 @@
+{
+  "label": "n123-tListNever",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "      if (fileClass === 'never' || (fileClass === 'one-by-one' && !inHiddenFolder)) {",
+      "to": "      if (fileClass === 'one-by-one' && !inHiddenFolder) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

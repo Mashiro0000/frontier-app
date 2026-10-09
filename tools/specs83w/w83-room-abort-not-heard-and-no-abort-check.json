@@ -8,8 +8,8 @@
     },
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "if (answer !== 'send' || controller.signal.aborted) return",
-      "to": "if (answer !== 'send') return"
+      "from": "return answer === 'send' && !controller.signal.aborted",
+      "to": "return answer === 'send'"
     }
   ],
   "argv": [

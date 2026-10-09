@@ -1,0 +1,15 @@
+{
+  "label": "n125-mInvisible",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewModel.ts",
+      "from": "    else if (char === OPEN || char === CLOSE || INVISIBLE.test(char)) {",
+      "to": "    else if (char === OPEN || char === CLOSE) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n123-rHolds",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "              ...createWorkspaceExecutors({ holdsSavedKey: options.holdsSavedKey }),",
+      "to": "              ...createWorkspaceExecutors({ holdsSavedKey: async () => false }),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

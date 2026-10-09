@@ -1,0 +1,15 @@
+{
+  "label": "n126-uExact",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/undoRecords.ts",
+      "from": "    have.length === keys.length && keys.every",
+      "to": "    keys.every"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

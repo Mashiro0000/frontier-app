@@ -1,0 +1,15 @@
+{
+  "label": "n125-sModelNull",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewService.ts",
+      "from": "      if (proposal === undefined) return null\n      return reviewModelOf",
+      "to": "      if (proposal === undefined) throw new Error(\"none\")\n      return reviewModelOf"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n125-sCatchApply",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewService.ts",
+      "from": "      try {\n        const done = await options.requestApply(proposal, owner)\n        if (done.ok) {\n          // Applied: it no longer waits.\n          reached.delete(key(proposal))\n          store.remove(proposal.id)\n        }\n        return done\n      } catch {\n        return { ok: false, error: 'The change could not be applied.' }\n      }",
+      "to": "      return await options.requestApply(proposal, owner)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

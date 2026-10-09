@@ -1,0 +1,15 @@
+{
+  "label": "n125-pTextNode",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "      if (open === -1 || close === -1) { parent.appendChild(document.createTextNode(text.slice(at))); return }",
+      "to": "      if (open === -1 || close === -1) { parent.innerHTML += text.slice(at); return }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,5 +1,11 @@
 import { BrowserWindow, ipcMain, type WebContents } from 'electron'
-import { askFirstAmount, estimateRequest, needsConfirmation } from '../shared/askFirst'
+import {
+  askFirstAmount,
+  estimateRequest,
+  needsConfirmation,
+  needsConfirmationAgain,
+  type RequestEstimate
+} from '../shared/askFirst'
 import { CHANNELS, type ChatRequest, type ChatStreamEvent } from '../shared/ipc'
 import { checkAgainstLimits, withFilesNote, type Limits } from '../shared/limits'
 import type { Note } from '../shared/memory'
@@ -150,11 +156,19 @@ function endEvent(streamId: string, end: ReplyEnd): ChatStreamEvent {
 /** What the reply says when a cap on its tools was reached (the model's words so far stay). The person can change both on the Tools page. */
 function capMessage(
   reason: Exclude<TurnEnd, 'stopped' | null>,
-  caps: { steps: number; seconds: number }
+  caps: { steps: number; seconds: number },
+  fileCaps: { calls: number; chars: number }
 ): string {
-  return reason === 'step-cap'
-    ? `Stopped: this reply used all ${caps.steps} of its tool steps.`
-    : `Stopped: this reply used all ${caps.seconds} seconds of its tool time.`
+  switch (reason) {
+    case 'step-cap':
+      return `Stopped: this reply used all ${caps.steps} of its tool steps.`
+    case 'file-cap':
+      return `Stopped: this reply used all ${fileCaps.calls} of its file calls.`
+    case 'chars-cap':
+      return `Stopped: this reply was given all ${fileCaps.chars.toLocaleString('en-US')} characters of file text it may read.`
+    default:
+      return `Stopped: this reply used all ${caps.seconds} seconds of its tool time.`
+  }
 }
 
 /** A guess at the input a search request sends beyond the words: the pages it reads arrive as input tokens (a search typically reads thousands). */
@@ -517,9 +531,15 @@ async function runReply(
     )
     const askFirst = await askFirstStore.read() // never throws: damage to the file is "nothing chosen", and the default asks
     const askAbove = askFirstAmount(askFirst)
-    if (askAbove !== null && needsConfirmation(askFirst, estimate)) {
+    /**
+     * The question itself, for the request that is about to go out: its figures, shown as they are, and the wait for the person's yes. False when the request must not
+     * be sent: the limits refuse it anyway (the person was told why), the person said no, or the reply was stopped. `later` (12.7) marks a request in the middle of a
+     * reply, after files were read: the page words the question for that.
+     */
+    const askLarge = async (asked: RequestEstimate, later: boolean): Promise<boolean> => {
+      if (askAbove === null) return true
       const before = await readLimits()
-      if (before === null) return
+      if (before === null) return false
       // A request the limits will refuse anyway is not asked about: the person is told why it cannot go. This look is only so that the question is not
       // wasted; the check that counts is the one inside `begin`, below, which runs again after the yes.
       let refusal: string | null = null
@@ -529,7 +549,7 @@ async function runReply(
           checkAgainstLimits(before, {
             today: sums.today.costUsd,
             month: sums.month.costUsd,
-            request: costOf({ ...NO_TOKENS, input: inputTokens }, entry.pricing)
+            request: costOf({ ...NO_TOKENS, input: asked.inputTokens }, entry.pricing)
           }),
           files
         )
@@ -538,14 +558,24 @@ async function runReply(
       }
       if (refusal !== null) {
         send({ streamId, type: 'error', message: refusal })
-        return
+        return false
       }
       const answer = await confirmations.ask(key, controller.signal, () =>
-        send({ streamId, type: 'confirm', model: entry.id, estimate, askAboveUsd: askAbove })
+        send({
+          streamId,
+          type: 'confirm',
+          model: entry.id,
+          estimate: asked,
+          askAboveUsd: askAbove,
+          ...(later ? { later: true } : {})
+        })
       )
       // No yes: the person said no, or the window went away. Nothing was sent and nothing was written. (A yes and a Stop at the same moment: Stop wins.)
-      if (answer !== 'send' || controller.signal.aborted) return
+      return answer === 'send' && !controller.signal.aborted
     }
+    // What the person has agreed to so far in this reply: the request they were asked about, or the first one when it was small enough not to ask (12.7).
+    let approvedInputUsd = estimate.inputUsd
+    if (needsConfirmation(askFirst, estimate) && !(await askLarge(estimate, false))) return
 
     /**
      * Counts the request that is about to go out: read the limits as they are NOW (after any wait), and write the ledger's first line BEFORE it is sent
@@ -592,6 +622,20 @@ async function runReply(
     // the passes stands behind the reply's own caps (steps and time), which every pass of the loop spends.
     let breakBeforeText = false
     for (let pass = 0; pass < 25; pass++) {
+      // (12.7) A reply that reads files sends what it read with every request after it: when that has made the next request cost more than the amount more than the
+      // one the person agreed to, they are asked again (the question was only for the first request before).
+      if (pass > 0) {
+        const next = estimateRequest(
+          inputTokens,
+          streamRequest.maxOutputTokens,
+          entry.pricing,
+          files
+        )
+        if (needsConfirmationAgain(askFirst, next, approvedInputUsd)) {
+          if (!(await askLarge(next, true))) return
+          approvedInputUsd = next.inputUsd
+        }
+      }
       if (!(await beginRequest())) return
       let end: ReplyEnd | null = null
       let usage: Usage | null = null
@@ -643,7 +687,11 @@ async function runReply(
         if (controller.signal.aborted || turn.ended === 'stopped') return // the person pressed Stop everything: nobody is listening
         if (turn.ended !== null) {
           sendUsage()
-          send({ streamId, type: 'error', message: capMessage(turn.ended, replyTools.budget.caps) })
+          send({
+            streamId,
+            type: 'error',
+            message: capMessage(turn.ended, replyTools.budget.caps, replyTools.budget.fileCaps)
+          })
           return
         }
         breakBeforeText = said.trim() !== ''

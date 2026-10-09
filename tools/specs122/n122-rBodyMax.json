@@ -1,0 +1,15 @@
+{
+  "label": "n122-rBodyMax",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolRegistry.ts",
+      "from": "      if (value.length === 0 || value.length > spec.max) {",
+      "to": "      if (value.length === 0) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

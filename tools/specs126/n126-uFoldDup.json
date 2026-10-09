@@ -1,0 +1,15 @@
+{
+  "label": "n126-uFoldDup",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/undoRecords.ts",
+      "from": "      if (!byId.has(entry.id)) byId.set(entry.id, { entry, undone: false })",
+      "to": "      byId.set(entry.id, { entry, undone: false })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

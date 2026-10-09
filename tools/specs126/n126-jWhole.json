@@ -1,0 +1,15 @@
+{
+  "label": "n126-jWhole",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/journal.ts",
+      "from": "    return last === commitLine(version, count) && count > 0 ? body : null",
+      "to": "    return body"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

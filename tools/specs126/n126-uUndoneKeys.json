@@ -1,0 +1,15 @@
+{
+  "label": "n126-uUndoneKeys",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/undoRecords.ts",
+      "from": "    if (!exactKeys(o, ['v', 'type', 'id', 'at'])) return null",
+      "to": "    if (false as boolean) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

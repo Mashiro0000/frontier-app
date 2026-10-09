@@ -1,0 +1,15 @@
+{
+  "label": "n126-aClearRemove",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "        await journal.removeAll()",
+      "to": "        void 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

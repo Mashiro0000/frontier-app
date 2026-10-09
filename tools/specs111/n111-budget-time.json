@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/replyBudget.ts",
-      "from": "if (workingMs() >= limitMs) return 'time-cap'",
-      "to": "void 0"
+      "from": "if (steps >= caps.steps) return 'step-cap'\n      if (workingMs() >= limitMs) return 'time-cap'",
+      "to": "if (steps >= caps.steps) return 'step-cap'\n      void 0"
     }
   ],
   "argv": [

@@ -1,0 +1,18 @@
+{
+  "label": "w126-wIpcOwner",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "        return await applier.undo(id, window)",
+      "to": "        return await applier.undo(id, null)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run126.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

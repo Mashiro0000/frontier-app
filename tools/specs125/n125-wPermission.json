@@ -1,0 +1,15 @@
+{
+  "label": "n125-wPermission",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "    ses.setPermissionRequestHandler((_contents, _permission, callback) => callback(false))",
+      "to": "    ses.setPermissionRequestHandler((_contents, _permission, callback) => callback(true))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

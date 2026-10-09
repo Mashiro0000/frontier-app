@@ -1,0 +1,15 @@
+{
+  "label": "n122-lMessage",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "    case 'file-cap':\n      return `Stopped: this reply used all ${fileCaps.calls} of its file calls.`",
+      "to": "    case 'file-cap':\n      return `Stopped.`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

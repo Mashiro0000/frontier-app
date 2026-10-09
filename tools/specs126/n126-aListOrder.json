@@ -1,0 +1,15 @@
+{
+  "label": "n126-aListOrder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": ".reverse().slice(0, 50)",
+      "to": ".slice(0, 50)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

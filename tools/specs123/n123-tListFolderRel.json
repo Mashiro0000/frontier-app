@@ -1,0 +1,15 @@
+{
+  "label": "n123-tListFolderRel",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "`The contents of the folder \"${nameForModel(relText(verdict.rel))}\" in",
+      "to": "`The contents of the folder \"${verdict.real}\" in"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

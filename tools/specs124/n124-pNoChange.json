@@ -1,0 +1,15 @@
+{
+  "label": "n124-pNoChange",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/proposals.ts",
+      "from": "  if (after === decoded.text) return no('That change would leave the file as it is.')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

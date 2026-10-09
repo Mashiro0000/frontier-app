@@ -1,0 +1,15 @@
+{
+  "label": "n122-cOneByOneNoYes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "        if (!r.recorded) return refused('not-recorded', NOT_RECORDED, step)\n        yes = true\n      }\n      if (!yes) {",
+      "to": "        if (!r.recorded) return refused('not-recorded', NOT_RECORDED, step)\n      }\n      if (!yes) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

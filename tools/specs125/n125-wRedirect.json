@@ -1,0 +1,15 @@
+{
+  "label": "n125-wRedirect",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "    window.webContents.on('will-redirect', (event) => event.preventDefault())\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

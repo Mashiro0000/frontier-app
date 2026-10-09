@@ -1,0 +1,15 @@
+{
+  "label": "n121-gCreateExists",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "    if (op === 'create' && kind !== 'missing') return no('exists', 'it is there already')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

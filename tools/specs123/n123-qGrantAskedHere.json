@@ -1,0 +1,15 @@
+{
+  "label": "n123-qGrantAskedHere",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "        ...provider(call),\n        '',\n        ASKED_HERE\n      ].join('\\n'),\n      yes: 'Allow for this reply'",
+      "to": "        ...provider(call)\n      ].join('\\n'),\n      yes: 'Allow for this reply'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w125-wPageEscape",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') window.review.close() })",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run125.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

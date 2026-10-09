@@ -1,0 +1,15 @@
+{
+  "label": "n123-tReadEnd",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "last >= total ? '(End of the file.)' :",
+      "to": "last >= total ? '' :"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

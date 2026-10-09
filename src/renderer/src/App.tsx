@@ -131,7 +131,7 @@ function App(): React.JSX.Element {
         attachments={attachments}
         onRemember={onRemember}
         projectFiles={chatProject?.files ?? NO_FILES}
-        toolsOn={anyToolOn(toolSettings.status)}
+        toolsOn={anyToolOn(toolSettings.status, toolSettings.workspace)}
       />
       {/* New chat, History and Instructions live under the message box, not in the header, so the header stays one row (D-029). */}
       <ChatBar

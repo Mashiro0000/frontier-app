@@ -1,0 +1,15 @@
+{
+  "label": "n125-rBridge",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/preload/review.ts",
+      "from": "  reachedEnd: (): Promise<boolean> => ipcRenderer.invoke(REVIEW_CHANNELS.reachedEnd),\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

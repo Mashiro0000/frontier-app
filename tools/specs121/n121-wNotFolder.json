@@ -1,0 +1,15 @@
+{
+  "label": "n121-wNotFolder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspace.ts",
+      "from": "    if (!found.isDirectory()) return refuse('That is not a folder.')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

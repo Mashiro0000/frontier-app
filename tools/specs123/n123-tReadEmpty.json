@@ -1,0 +1,15 @@
+{
+  "label": "n123-tReadEmpty",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "    if (total === 0) return { text: [...header, '(The file is empty.)'].join('\\n') }",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

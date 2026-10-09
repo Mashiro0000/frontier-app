@@ -2361,3 +2361,29 @@ body {
   margin-bottom: 8px;
   font-size: 13px;
 }
+
+.workspace-folder {
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.workspace-path {
+  font-family: var(--font-mono, ui-monospace, Consolas, monospace);
+  overflow-wrap: anywhere;
+}
+
+.workspace-buttons {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.change-row {
+  flex-wrap: wrap;
+}
+
+.change-warning {
+  color: var(--color-warning-text, #9a6700);
+  font-weight: 600;
+}

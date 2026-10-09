@@ -6,6 +6,8 @@ import type { Answerer, ChatMessage, LargeRequest } from './types'
 
 /** What a reply says when the person answered "Don't send" to a large request (D-032). It is shown like any other reason a reply did not come, with "Try again". */
 export const NOT_SENT_MESSAGE = 'Not sent: you chose not to send this request.'
+export const NOT_SENT_LATER_MESSAGE =
+  'The reply stopped here: you chose not to send what it has read so far with the next request.'
 
 /**
  * The reply function (see `ReplyFn`) that asks the main process for a real answer. The page cannot
@@ -75,12 +77,13 @@ export async function* ipcReply(
         const yes = await onLargeRequest({
           model: event.model,
           estimate: event.estimate,
-          askAboveUsd: event.askAboveUsd
+          askAboveUsd: event.askAboveUsd,
+          ...(event.later === true ? { later: true } : {})
         })
         if (signal.aborted) return // stopped while the question was open: `onAbort` has told main
         if (!yes) {
           window.api.chat.cancel(streamId) // main drops the question; nothing was sent
-          throw new Error(NOT_SENT_MESSAGE)
+          throw new Error(event.later === true ? NOT_SENT_LATER_MESSAGE : NOT_SENT_MESSAGE)
         }
         window.api.chat.confirm(streamId)
       } else if (event.type === 'done') return

@@ -1,0 +1,15 @@
+{
+  "label": "n121-xElectron",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspace.ts",
+      "from": "import { promises as fs } from 'fs'",
+      "to": "import { promises as fs } from 'fs'\nvoid 'electron'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

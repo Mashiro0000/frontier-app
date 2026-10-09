@@ -1,0 +1,18 @@
+{
+  "label": "w126-wSecGate",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/ChangesSection.tsx",
+      "from": "{change.state === 'undoable' && (",
+      "to": "{true && ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run126.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

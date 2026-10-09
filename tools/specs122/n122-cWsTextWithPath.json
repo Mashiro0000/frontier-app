@@ -1,0 +1,15 @@
+{
+  "label": "n122-cWsTextWithPath",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "  'not-found': { code: 'wrong-path', text: WRONG_PATH_TEXT },",
+      "to": "  'not-found': { code: 'wrong-path', text: 'not found: ' + WRONG_PATH_TEXT + ' nothing-here' },"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

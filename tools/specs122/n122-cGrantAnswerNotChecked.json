@@ -1,0 +1,15 @@
+{
+  "label": "n122-cGrantAnswerNotChecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "        if (r.answer !== 'yes') {\n          if (r.answer === 'no')",
+      "to": "        if (false as boolean) {\n          if (r.answer === 'no')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

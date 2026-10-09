@@ -41,14 +41,14 @@ console.error = (...args) => { logged.push(args.map(String).join(' ')) }
 
 // every file the app keeps in its data folder (names as the main process builds them), plus the audit log that 11.2 adds, plus Chromium's own
 const DATA_FILES = [
-  'memory.json', 'instructions.json', 'projects.json', 'limits.json', 'ask-first.json', 'chat-encryption.json', 'preferences.json', 'tools.json' /* the tool switches and caps (11.3) */,
+  'memory.json', 'instructions.json', 'projects.json', 'limits.json', 'ask-first.json', 'chat-encryption.json', 'preferences.json', 'tools.json' /* the tool switches and caps (11.3) */, 'workspace.json' /* the workspace folder (12.3) */,
   'credentials.anthropic.json', 'credentials.openai.json', 'credentials.json',
   'conversations\\c-1.json', 'conversations\\c-2.json', 'attachments\\0f3a9c', 'usage\\ledger.jsonl',
   'audit\\log.jsonl', // the audit log (11.2 writes it; the owner named it, so it is here from the start)
   'Local State', 'Preferences', 'Network\\Cookies',
   'memory.json.tmp', 'instructions.json.damaged-1700000000000', 'conversations\\c-1.json.tmp'
 ]
-const DATA_DIRS = ['conversations', 'attachments', 'usage', 'audit', 'Network']
+const DATA_DIRS = ['conversations', 'attachments', 'usage', 'audit', 'workspace', 'Network']
 const NOT_THERE = ['newfile.json', 'audit\\new-dir\\x.log', 'memory.json.bak', 'conversations\\c-3.json', 'brand\\new\\place\\a.txt']
 
 // ----- the scratch world -----

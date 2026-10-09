@@ -86,6 +86,20 @@ export const pickAuditExportPath = async (
   return result.canceled || !result.filePath ? null : result.filePath
 }
 
+/** The system's folder dialog for choosing the code workspace (D-042): the folder the person picked, or null if they close it. The page never supplies a path. */
+export const pickWorkspaceFolder = async (owner: unknown): Promise<string | null> => {
+  const options = {
+    title: 'Choose the folder of your code workspace',
+    defaultPath: app.getPath('documents'),
+    properties: ['openDirectory' as const]
+  }
+  const window = windowOf(owner)
+  const result = window
+    ? await dialog.showOpenDialog(window, options)
+    : await dialog.showOpenDialog(options)
+  return result.canceled || result.filePaths.length === 0 ? null : result.filePaths[0]
+}
+
 export const systemAskers: Askers = {
   confirmPlain: async (owner, facts) => {
     const { title, message, detail } = plainQuestion(facts)

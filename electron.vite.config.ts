@@ -12,7 +12,15 @@ const CHROME_TARGET = 'chrome152'
 
 export default defineConfig({
   main: { build: { target: NODE_TARGET } },
-  preload: { build: { target: NODE_TARGET } },
+  preload: {
+    build: {
+      target: NODE_TARGET,
+      // Two preloads: the chat page's, and the Review window's (D-042), so that neither page has the other's functions.
+      rollupOptions: {
+        input: { index: resolve('src/preload/index.ts'), review: resolve('src/preload/review.ts') }
+      }
+    }
+  },
   renderer: {
     build: { target: CHROME_TARGET },
     resolve: {

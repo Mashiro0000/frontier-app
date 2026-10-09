@@ -528,7 +528,7 @@ await guard('G', async () => {
   const importsOf = (rel) => [...source(rel).matchAll(/^\s*(?:import|export)[^'"]*?from\s+('[^']+')/gm)].map((m) => m[1])
   const expected = {
     'src/main/toolSettings.ts': ["'../shared/tools'", "'./chatFile'", "'./credentialStore'", "'./keptFile'"],
-    'src/main/replyTools.ts': ["'../shared/tools'", "'./dataFolderGuard'", "'./providers/types'", "'./replyBudget'", "'./systemQuestion'", "'./toolCore'", "'./toolRegistry'"],
+    'src/main/replyTools.ts': ["'../shared/tools'", "'./dataFolderGuard'", "'./providers/types'", "'./replyBudget'", "'./systemQuestion'", "'./toolCore'", "'./toolRegistry'", "'./workspaceGuard'", "'./proposalTools'", "'./proposals'", "'./workspaceTools'"],
     'src/main/providers/search.ts': ["'./types'"]
   }
   for (const [rel, list] of Object.entries(expected)) check(`G: ${rel} imports exactly ${list.join(', ')}`, show(importsOf(rel).sort()) === show([...list].sort()), show(importsOf(rel)))
@@ -538,11 +538,11 @@ await guard('G', async () => {
   const walk = (d) => readdirSync(join(REPO, d), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(`${d}/${e.name}`) : [`${d}/${e.name}`])
   const files = ['src/main', 'src/shared', 'src/preload', 'src/renderer'].flatMap(walk).filter((f) => /\.(ts|tsx)$/.test(f))
   const importers = (pattern) => files.filter((f) => pattern.test(readFileSync(join(REPO, f), 'utf8').split('\n').filter((l) => /^\s*import\b|^\s*}\s*from\b/.test(l)).join('\n')))
-  check('G: the core is imported by the reply tools alone', show(importers(/\.\/toolCore'/)) === '["src/main/replyTools.ts"]', show(importers(/\.\/toolCore'/)))
+  check('G: the core is imported by the reply tools alone', show(importers(/\.\/toolCore'/)) === '["src/main/proposalTools.ts","src/main/replyTools.ts","src/main/workspaceTools.ts"]', show(importers(/\.\/toolCore'/)))
   check('G: the reply tools are imported by the chat (a type) and the wiring', show(importers(/\.\/replyTools'/).sort()) === '["src/main/chat.ts","src/main/ipc.ts"]', show(importers(/\.\/replyTools'/)))
-  check('G: the tool settings are imported by the wiring alone', show(importers(/\.\/toolSettings'/)) === '["src/main/ipc.ts","src/main/toolSettingsService.ts"]', show(importers(/\.\/toolSettings'/)))
-  check('G: the registry is imported by the wiring, the reply tools, the core and the words of the question', show(importers(/\.\/toolRegistry'/).sort()) === '["src/main/ipc.ts","src/main/replyTools.ts","src/main/toolCore.ts","src/main/toolQuestion.ts","src/main/toolSettingsService.ts"]', show(importers(/\.\/toolRegistry'/)))
-  check('G: the data-folder guard is imported by the wiring (to make it), the reply tools, the core and the registry (as types)', show(importers(/\.\/dataFolderGuard'/).sort()) === '["src/main/ipc.ts","src/main/replyTools.ts","src/main/toolCore.ts","src/main/toolRegistry.ts"]', show(importers(/\.\/dataFolderGuard'/)))
+  check('G: the tool settings are imported by the wiring alone', show(importers(/\.\/toolSettings'/)) === '["src/main/ipc.ts","src/main/toolSettingsService.ts","src/main/workspaceService.ts"]', show(importers(/\.\/toolSettings'/)))
+  check('G: the registry is imported by the wiring, the reply tools, the core and the words of the question', show(importers(/\.\/toolRegistry'/).sort()) === '["src/main/ipc.ts","src/main/proposalTools.ts","src/main/replyTools.ts","src/main/toolCore.ts","src/main/toolQuestion.ts","src/main/toolSettingsService.ts","src/main/workspaceTools.ts"]', show(importers(/\.\/toolRegistry'/)))
+  check('G: the data-folder guard is imported by the wiring (to make it), the reply tools, the core and the registry (as types)', show(importers(/\.\/dataFolderGuard'/).sort()) === '["src/main/ipc.ts","src/main/replyTools.ts","src/main/toolCore.ts","src/main/toolRegistry.ts","src/main/workspace.ts","src/main/workspaceGuard.ts","src/main/workspaceService.ts"]', show(importers(/\.\/dataFolderGuard'/)))
   check('G: no provider adapter, no request builder and no search helper imports the core, the registry, the settings or the audit log', ['src/main/providers/anthropic.ts', 'src/main/providers/openai.ts', 'src/main/providers/request.ts', 'src/main/providers/search.ts', 'src/main/providers/types.ts'].every((f) => !/toolCore|toolRegistry|toolSettings|replyTools|audit|dataFolderGuard/i.test(source(f))))
   const noComments = (text) => text.split(String.fromCharCode(10)).filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join(String.fromCharCode(10))
   const anthropic = noComments(source('src/main/providers/anthropic.ts'))

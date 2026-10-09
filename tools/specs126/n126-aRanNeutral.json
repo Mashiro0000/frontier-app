@@ -1,0 +1,15 @@
+{
+  "label": "n126-aRanNeutral",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "      await neutralise(id)\n      return { ok: false, error: NOT_RECORDED_TEXT }",
+      "to": "      return { ok: false, error: NOT_RECORDED_TEXT }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

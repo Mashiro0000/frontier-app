@@ -1,0 +1,15 @@
+{
+  "label": "n121-gReadFile",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "    if ((op === 'read' || op === 'edit') && kind !== 'file') {\n      return no(kind === 'missing' ? 'not-found' : 'not-a-file', 'a file was needed')\n    }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

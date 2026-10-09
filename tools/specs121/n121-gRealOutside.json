@@ -1,0 +1,15 @@
+{
+  "label": "n121-gRealOutside",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "    if (!isInside(realParts, root.realParts, platform)) {\n      return no('outside', 'it really lies outside the workspace')\n    }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

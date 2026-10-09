@@ -1,0 +1,15 @@
+{
+  "label": "n121-gCatch",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceGuard.ts",
+      "from": "      try {\n        return await judge(request.path, request.op)\n      } catch {\n        return no('bad-path', 'the check failed')\n      }",
+      "to": "      return await judge(request.path, request.op)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

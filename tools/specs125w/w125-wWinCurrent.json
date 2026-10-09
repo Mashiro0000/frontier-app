@@ -1,0 +1,18 @@
+{
+  "label": "w125-wWinCurrent",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "      current = id\n      if (win !== null",
+      "to": "      if (win !== null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run125.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

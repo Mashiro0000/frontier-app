@@ -1,0 +1,18 @@
+{
+  "label": "w125-wWinParent",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "      ...(owner !== null && !owner.isDestroyed() ? { parent: owner } : {}),",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run125.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

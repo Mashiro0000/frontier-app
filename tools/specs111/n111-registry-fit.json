@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolRegistry.ts",
-      "from": "if (worstCase(def) > SHOWN_LIMIT) {",
+      "from": "if (def.ask === 'each' && worstCase(def) > SHOWN_LIMIT) {",
       "to": "if (false) {"
     }
   ],

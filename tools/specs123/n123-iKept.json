@@ -1,0 +1,15 @@
+{
+  "label": "n123-iKept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      toolSettings.file,\n      workspaceStore.file,\n      undoJournal.document\n    ])",
+      "to": "      toolSettings.file\n    ])"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

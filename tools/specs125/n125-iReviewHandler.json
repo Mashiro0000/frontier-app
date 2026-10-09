@@ -1,0 +1,15 @@
+{
+  "label": "n125-iReviewHandler",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "  const reviewWindows = createReviewWindows({ service: changes })",
+      "to": "  const reviewWindows = createReviewWindows({ service: changes })\n  ipcMain.handle('review:get', async () => changes.model('p1'))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n125-pInner",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "    t.className = 'text'\n    put(t, text)",
+      "to": "    t.className = 'text'\n    t.innerHTML = text"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

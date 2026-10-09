@@ -1,0 +1,15 @@
+{
+  "label": "n123-qOneProvider",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "            ? 'If you say yes, what it holds is sent to your AI provider as part of the conversation.'",
+      "to": "            ? 'If you say yes, it is read.'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

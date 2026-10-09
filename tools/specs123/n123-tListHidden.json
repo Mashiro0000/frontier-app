@@ -1,0 +1,15 @@
+{
+  "label": "n123-tListHidden",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceTools.ts",
+      "from": "      if (fileClass === 'never' || (fileClass === 'one-by-one' && !inHiddenFolder)) {",
+      "to": "      if (fileClass === 'never') {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

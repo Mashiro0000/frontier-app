@@ -54,17 +54,41 @@ export const REFUSAL_CODES = [
   'not-recorded', //   the audit record could not be kept, and nothing runs that is not recorded first
   'no-runner', //      this build has no way to run the tool
   'limit', //          a spending limit the person set would be passed by the call, so nobody was asked (11.6)
-  'internal' //        the app itself failed while deciding; nothing was run
+  'internal', //       the app itself failed while deciding; nothing was run
+  'no-workspace', //   no workspace folder is chosen, or it cannot be used now (12.2)
+  'outside', //        a path leaves the workspace (12.2)
+  'link', //           a link or junction is on the way (12.2)
+  'never', //          a place that is never reached: version-control internals and the like (12.2)
+  'wrong-path', //     the path is not there, or is not the kind of thing the call needs (12.2)
+  'file-cap', //       the reply has used all its file calls (12.2)
+  'chars-cap', //      the reply has read all the file text it may (12.2)
+  'grant-declined' //  the person said no to file access for this reply, so nobody was asked again (12.2)
 ] as const
 export type RefusalCode = (typeof REFUSAL_CODES)[number]
 
 /** What came of the question in the system's box. `stopped`: Stop everything came while it was open. */
-export const ANSWER_CODES = ['yes', 'no', 'busy', 'resting', 'failed', 'stopped'] as const
+export const ANSWER_CODES = [
+  'yes',
+  'no',
+  'busy',
+  'resting',
+  'failed',
+  'stopped',
+  /** The person's yes for this reply's file access (12.2) covered the call: nobody was asked about this call itself. It runs like a yes. */
+  'covered'
+] as const
 export type AnswerCode = (typeof ANSWER_CODES)[number]
 
 /** What the person calls each tool that exists (the registry's titles; a suite checks they agree), so that the audit log can be read without the registry. */
 export const TOOL_TITLES: Readonly<Record<string, string>> = Object.freeze({
-  web_search: 'Search the web'
+  web_search: 'Search the web',
+  list_files: 'List files in the workspace',
+  read_file: 'Read a file in the workspace',
+  propose_edit: 'Propose a change to a file in the workspace',
+  propose_new_file: 'Propose a new file in the workspace',
+  apply_change: 'Write a change to the workspace',
+  undo_change: 'Undo a change in the workspace',
+  undo_clear: 'Delete the undo history'
 })
 
 /** What to call a tool in a sentence: its title, or its id for a tool this version does not know (an entry of the log from another version). */

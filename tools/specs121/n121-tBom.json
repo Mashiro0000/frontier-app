@@ -1,0 +1,15 @@
+{
+  "label": "n121-tBom",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceText.ts",
+      "from": "  const bom = bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf",
+      "to": "  const bom = false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

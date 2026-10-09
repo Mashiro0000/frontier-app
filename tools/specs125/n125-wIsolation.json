@@ -1,0 +1,15 @@
+{
+  "label": "n125-wIsolation",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "        contextIsolation: true,",
+      "to": "        contextIsolation: false,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

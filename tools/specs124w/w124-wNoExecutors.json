@@ -1,0 +1,18 @@
+{
+  "label": "w124-wNoExecutors",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "              ...createProposalExecutors({ store: options.workspace.proposals, now: options.now })",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run123.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

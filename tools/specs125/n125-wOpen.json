@@ -1,0 +1,15 @@
+{
+  "label": "n125-wOpen",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "    window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))",
+      "to": "    window.webContents.setWindowOpenHandler(() => ({ action: 'allow' }))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

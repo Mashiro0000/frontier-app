@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "      if (refusal !== null) {\n        send({ streamId, type: 'error', message: refusal })\n        return\n      }\n",
+      "from": "      if (refusal !== null) {\n        send({ streamId, type: 'error', message: refusal })\n        return false\n      }\n",
       "to": ""
     }
   ],

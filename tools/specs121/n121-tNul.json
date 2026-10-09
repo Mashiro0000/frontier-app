@@ -1,0 +1,15 @@
+{
+  "label": "n121-tNul",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceText.ts",
+      "from": "  if (bytes.includes(0)) return { ok: false, why: 'it is a binary file (it holds a NUL byte)' }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

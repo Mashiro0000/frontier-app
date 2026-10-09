@@ -1,0 +1,15 @@
+{
+  "label": "n125-wOnlyApply",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewWindow.ts",
+      "from": "    REVIEW_CHANNELS.apply,\n    only(",
+      "to": "    REVIEW_CHANNELS.apply,\n    ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

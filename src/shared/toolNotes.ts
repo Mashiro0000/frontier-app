@@ -52,22 +52,39 @@ const plural = (n: number, one: string, many: string): string =>
  * waiting for the person (in the system's own message box), and one that was allowed and has no end yet is running. When the reply is over, the same states
  * mean the app was closed meanwhile. The words for a refusal or a no are the audit log's.
  */
-export function noteOutcomeText(outcome: AuditOutcome, live: boolean): string {
+export function noteOutcomeText(outcome: AuditOutcome, live: boolean, tool = 'web_search'): string {
   switch (outcome.kind) {
     case 'refused':
       return REFUSED_TEXT[outcome.code]
     case 'declined':
       return DECLINED_TEXT[outcome.answer]
     case 'done':
+      // A proposal waits for the person (nothing is changed until they apply it in the Review window).
+      if (tool === 'propose_edit' || tool === 'propose_new_file') {
+        return outcome.covered === true
+          ? 'Allowed for this reply. The change waits for you: open Tools to review it. Nothing is changed until you apply it.'
+          : 'You allowed it. The change waits for you: open Tools to review it. Nothing is changed until you apply it.'
+      }
+      if (outcome.covered === true) {
+        return `Allowed for this reply. ${plural(outcome.size, 'character came', 'characters came')} back.`
+      }
+      // A tool that brings no pages (a file tool) says how much text came back; a search says how many pages.
+      if (tool !== 'web_search') {
+        return `You allowed it. ${plural(outcome.size, 'character came', 'characters came')} back.`
+      }
       return outcome.sources.length === 0
         ? 'You allowed it. No sources came back.'
         : `You allowed it. ${plural(outcome.sources.length, 'source came', 'sources came')} back.`
     case 'failed':
-      return 'You allowed it. It started, but it failed or was stopped.'
+      return outcome.covered === true
+        ? 'Allowed for this reply. It started, but it failed or was stopped.'
+        : 'You allowed it. It started, but it failed or was stopped.'
     case 'running':
       return live
         ? 'Working on it...'
-        : 'You allowed it. No end was recorded (the app may have been closed).'
+        : outcome.covered === true
+          ? 'Allowed for this reply. No end was recorded (the app may have been closed).'
+          : 'You allowed it. No end was recorded (the app may have been closed).'
     case 'unanswered':
       return live
         ? 'Waiting for your answer in the Windows message box...'
@@ -89,7 +106,13 @@ export function settleNotes(
     note.outcome.kind === 'unanswered'
       ? { ...note, outcome: { kind: 'declined', answer: 'stopped' } }
       : note.outcome.kind === 'running'
-        ? { ...note, outcome: { kind: 'failed' } }
+        ? {
+            ...note,
+            outcome: {
+              kind: 'failed',
+              ...(note.outcome.covered === true ? { covered: true as const } : {})
+            }
+          }
         : note
   )
 }
@@ -219,18 +242,38 @@ function checkOutcome(raw: unknown): AuditOutcome | null {
     case 'declined':
       return hasKeys(raw, ['kind', 'answer']) &&
         (ANSWER_CODES as readonly unknown[]).includes(raw.answer) &&
-        raw.answer !== 'yes'
-        ? { kind: 'declined', answer: raw.answer as Exclude<(typeof ANSWER_CODES)[number], 'yes'> }
+        raw.answer !== 'yes' &&
+        raw.answer !== 'covered'
+        ? {
+            kind: 'declined',
+            answer: raw.answer as Exclude<(typeof ANSWER_CODES)[number], 'yes' | 'covered'>
+          }
         : null
     case 'done': {
-      if (!hasKeys(raw, ['kind', 'size', 'sources']) || !isCount(raw.size, 0, NOTE_LIMITS.size)) {
+      const covered = Object.prototype.hasOwnProperty.call(raw, 'covered')
+      if (covered && raw.covered !== true) return null
+      if (
+        !hasKeys(
+          raw,
+          covered ? ['kind', 'size', 'sources', 'covered'] : ['kind', 'size', 'sources']
+        ) ||
+        !isCount(raw.size, 0, NOTE_LIMITS.size)
+      ) {
         return null
       }
       const sources = checkSources(raw.sources)
-      return sources === null ? null : { kind: 'done', size: raw.size, sources }
+      return sources === null
+        ? null
+        : { kind: 'done', size: raw.size, sources, ...(covered ? { covered: true as const } : {}) }
     }
     case 'failed':
-    case 'running':
+    case 'running': {
+      const covered = Object.prototype.hasOwnProperty.call(raw, 'covered')
+      if (covered && raw.covered !== true) return null
+      return hasKeys(raw, covered ? ['kind', 'covered'] : ['kind'])
+        ? { kind: raw.kind, ...(covered ? { covered: true as const } : {}) }
+        : null
+    }
     case 'unanswered':
       return hasKeys(raw, ['kind']) ? { kind: raw.kind } : null
     default:

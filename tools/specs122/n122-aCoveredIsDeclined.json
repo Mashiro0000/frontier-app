@@ -1,0 +1,15 @@
+{
+  "label": "n122-aCoveredIsDeclined",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/audit.ts",
+      "from": "  if (call.answer !== null && call.answer !== 'yes' && call.answer !== 'covered') {",
+      "to": "  if (call.answer !== null && call.answer !== 'yes') {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-2.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w127-wTurnRecord",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "    if (message.toolTurn !== undefined)\n      bytes += utf8Length(JSON.stringify(message.toolTurn.record) ?? '')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run127.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

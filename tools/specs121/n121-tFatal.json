@@ -1,0 +1,15 @@
+{
+  "label": "n121-tFatal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceText.ts",
+      "from": "new TextDecoder('utf-8', { fatal: true, ignoreBOM: true })",
+      "to": "new TextDecoder('utf-8', { fatal: false, ignoreBOM: true })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-1.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

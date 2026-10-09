@@ -1,0 +1,15 @@
+{
+  "label": "n126-uId",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/undoRecords.ts",
+      "from": "const ID = /^u[0-9a-z]{1,12}-[0-9a-z]{1,12}$/",
+      "to": "const ID = /^.*$/"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

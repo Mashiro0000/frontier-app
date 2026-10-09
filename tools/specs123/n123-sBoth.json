@@ -1,0 +1,15 @@
+{
+  "label": "n123-sBoth",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/workspaceService.ts",
+      "from": "WORKSPACE_TOOL_IDS.every((id) => settings.enabled[id] === true)",
+      "to": "WORKSPACE_TOOL_IDS.some((id) => settings.enabled[id] === true)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

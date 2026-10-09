@@ -1,0 +1,15 @@
+{
+  "label": "n125-pNoncePattern",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "export const NONCE_PATTERN = /^[A-Za-z0-9_-]{16,64}$/",
+      "to": "export const NONCE_PATTERN = /^[A-Za-z0-9_\" -]{1,64}$/"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

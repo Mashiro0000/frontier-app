@@ -1,0 +1,18 @@
+{
+  "label": "w126-wApplyWrite",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/applyService.ts",
+      "from": "        await replaceFile(verdict.real, newBytes)",
+      "to": "        await replaceFile(verdict.real, Buffer.from(newBytes.toString(\"utf8\").toUpperCase()))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run126.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

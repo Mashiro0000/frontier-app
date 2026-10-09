@@ -1,0 +1,15 @@
+{
+  "label": "n124-pBom",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/proposals.ts",
+      "from": "    bom: decoded.bom,",
+      "to": "    bom: false,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "n125-pScriptNonce",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/reviewPage.ts",
+      "from": "<script nonce=\"${nonce}\">${SCRIPT}</script>",
+      "to": "<script>${SCRIPT}</script>"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-12-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 280000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w127-wEstimate",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "          inputTokens,\n          streamRequest.maxOutputTokens,\n          entry.pricing,\n          files\n        )\n        if (needsConfirmationAgain",
+      "to": "          0,\n          streamRequest.maxOutputTokens,\n          entry.pricing,\n          files\n        )\n        if (needsConfirmationAgain"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run127.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}
