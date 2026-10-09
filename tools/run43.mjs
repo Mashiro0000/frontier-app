@@ -1,4 +1,5 @@
 // usage: node run43.mjs <close>   -- the close-mid-reply scenario: launch 1 (window closed by the script), launch 2 (reopen)
+import './temp-on-a.mjs'
 import { runApp, scratch } from './drive.mjs'
 import { rmSync } from 'node:fs'
 import { join } from 'node:path'

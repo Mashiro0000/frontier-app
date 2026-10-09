@@ -4,6 +4,7 @@
 // has no Undo button; the new file is made and removed again; deleting the undo history asks and leaves the files alone; the audit log shows all of it in words; and the
 // pages cannot do any of it themselves (the chat page has no apply, a page cannot answer the box, the model has no tool that applies).
 // Needs: USER_DATA_DIR (scratch), INSPECT_PORT, MOCK_PORT, a saved key (setup-key.mjs).
+import './temp-on-a.mjs'
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'

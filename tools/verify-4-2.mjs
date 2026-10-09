@@ -2,6 +2,7 @@
 // page must not be able to do. FIRST launch on a fresh scratch profile (setup-key.mjs runs before this and saves an
 // invented key). Needs: MOCK_PORT, USER_DATA_DIR (a scratch profile inside the real %APPDATA%, to exercise EFS), APP_LOG.
 // It leaves two saved conversations behind for verify-4-2b.mjs (second launch).
+import './temp-on-a.mjs'
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'

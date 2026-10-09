@@ -319,12 +319,35 @@ the backup has been tried on real chats is not known, and it is still the thing 
 
 **Questions for the owner** (**answered 8 October 2026: "all picks kept"**): (1) one reading box per reply, or a box per file? (2) the diff in a main-owned Review window with the system's box as the yes, or small edits only inside the box? (3) apply is the person's action, no apply tool for the model? (4) create and edit only, no delete or rename? (5) `.git` internals never readable, or one by one? (6) dot-files and secret-looking names one by one, nothing remembered? (7) the caps above? (8) undo copies in a sealed journal in the data folder, outside the workspace and outside backups? (9) one workspace for the whole app? (10) our own small diff code, no new package?
 
-## Stage 13 - Running commands and code (not started, _investigate_ first)
+## Stage 13 - Running commands and code (in progress)
 
 - Run a command or a snippet **only with approval of the exact command**, in the chosen folder, with a time limit, output size cap, and the
   environment stripped of keys. Windows offers weak isolation (a user-level process is not a sandbox), so the stage starts with research on
   Windows Sandbox, containers or restricted tokens; if real isolation is not possible, commands stay "approve every single one", with no
   "always allow", and the limits are said plainly. Network from a command is off unless the owner allows it for that run.
+
+**The plan** (mine, written 9 October 2026 as `Frontier App Stage 13 plan.pdf`; **approved by the owner the same day: "Stage 13 all picks kept"**). The research was done first, on this PC (Windows 11 Home, no administrator rights): Windows Sandbox, WSL and Docker are not available; **an AppContainer (the boundary the browsers use for their page processes) plus a job object is, and 13.1 proved that it holds.**
+
+- **A. It runs on a copy.** The files the model may see (the Stage 12 rules) are copied into a fresh scratch folder; the program can read and write only that folder; changed and new text files come back as Stage 12 proposals (the Review window, the person's yes, the undo copy). Deleted files are only listed; binary or large new files are listed and not brought back.
+- **B. A program and its arguments, not a shell line.** The box shows the exact program (resolved to a full path) and arguments; no pipes, no `&&`, no `%VARIABLES%`.
+- **C. A box for every run.** No "always allow", no per-reply grant; "No" is the default button and is remembered for the reply; the page cannot answer.
+- **D. No network at all.** The process has no network capability, not even to this computer.
+- **E. Limits.** 120 seconds a run, 1 GB, 64 processes, no window; 5 runs and 240 seconds in all per reply; 64 KB kept per output stream and 20,000 characters back to the model; the copy at most 20,000 files and 100 MB.
+- **F. Nothing of the app goes in.** The environment is built from nothing; output holding one of the saved keys is cut.
+- **G. Switching on runs a self-test** (reading a canary in the user folder, writing outside, the network, time, memory) and shows what was stopped; if any is not stopped it does not switch on; **there is no unsandboxed fallback.** Stop rule: if the 13.1 probe had failed, the stage would have ended and commands stayed manual.
+- **Not in this stage:** network for a run; a shell line with pipes; programs from the user's folder; running outside a copy; a terminal that stays open; installing packages; more than one workspace; a new package or native add-on; MCP (Stage 14).
+
+**Slices** (each with its own Node and window suites, negative controls, a decision entry (D-043), STEP-LOG and ROADMAP):
+
+- [x] (13.1, D-043) The probe, the gate: `tools/probe-13-1.mjs` with a prototype launcher (`probe13-launcher.ps1`, a test tool that is never shipped) and the program that runs inside the box (`probe13-inner.cjs`). 50 checks per run, read from the disk and from local servers rather than from what the box says; the same battery as a plain process gets through everywhere; three sabotaged boxes (no container, no limits, no kill) are each noticed. **The gate holds**; the probe also settled where the scratch folder lives and found five facts that change the design (a private copy of `node.exe`, the scratch folder as the root of a drive letter, no encrypted parent, piped output of children hangs, git and the Store python cannot run).
+- [ ] (13.2, D-043) The launcher inside the app and `commandRunner.ts` around it, with the self-test; not wired to anything.
+- [ ] (13.3, D-043) The scratch copy: what is copied and left out, the caps, the grant and its removal, the sweep after a crash, the comparison afterwards.
+- [ ] (13.4, D-043) The tool in the registry and the core: argument kinds, resolving the program, the box and its words, one question per call, caps per reply, audit events and refusal codes, "Stop everything".
+- [ ] (13.5, D-043) The results and the chat: output capped, labelled and cleaned of keys; changed files into proposals; cards; the Tools row "Run programs" with the self-test in the switching-on box.
+- [ ] (13.6, D-043) Cost, encryption, backups.
+- [ ] (13.7, D-043) The threat note, the full regression, the merge.
+
+**Questions for the owner** (**answered 9 October 2026: "Stage 13 all picks kept"**): (A) run on a copy and bring changes back as proposals, or run in the real folder? (B) program and arguments only, no shell line? (C) a box for every run, no "always allow"? (D) no network at all in this stage? (E) the limits above? (G) switching on needs a passing self-test and there is no fallback without isolation? And the stop rule.
 
 ## Stage 14 - Connectors through MCP (not started)
 

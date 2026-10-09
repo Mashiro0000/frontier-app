@@ -1,6 +1,7 @@
 // Seeded launch: puts conversation files in every state a crash or a hand edit could leave into a fresh scratch
 // profile's `conversations` folder, BEFORE the app starts, then runs verify-4-3a.mjs against the real window.
 // (run-with-app.mjs only knows how to seed preferences.json, so the seeding is done here, after a wipe of our own.)
+import './temp-on-a.mjs'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { randomBytes, randomUUID, createHash } from 'node:crypto'
 import { join } from 'node:path'

@@ -4,6 +4,7 @@
 // comes back from History, what a script in the page cannot do (replace the app's rules, send too much), and four files seeded before the
 // launch (versions 1, 2, 3 and a damaged 3: reading never writes them). Run through run74.mjs, which seeds them.
 // Needs: MOCK_PORT, USER_DATA_DIR (scratch), TEMP (the seed's manifest).
+import './temp-on-a.mjs'
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'

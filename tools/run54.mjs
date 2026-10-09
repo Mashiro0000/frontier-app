@@ -1,6 +1,7 @@
 // usage: node run54.mjs [mode=dev]
 // Stage 5.4 launch: puts a conversation file written by Stages 2-4 (VERSION 1, no record of which model answered) into a fresh scratch profile's
 // `conversations` folder BEFORE the app starts, then runs setup-key.mjs and verify-5-4.mjs against the real window.
+import './temp-on-a.mjs'
 import { mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { createHash, randomUUID } from 'node:crypto'
 import { join } from 'node:path'

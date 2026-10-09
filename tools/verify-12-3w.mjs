@@ -4,6 +4,7 @@
 // question, the saved chat holds the calls and none of the files' text, switching off and clearing stop the tools being offered, the section fits at 420 and
 // 280 px, and the console stays clean.
 // Needs: USER_DATA_DIR (scratch), INSPECT_PORT, MOCK_PORT, a saved key (setup-key.mjs).
+import './temp-on-a.mjs'
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'

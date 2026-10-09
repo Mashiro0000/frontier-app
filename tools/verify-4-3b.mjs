@@ -1,6 +1,7 @@
 // Slice 4.3, launch 1 of 2 (needs INSPECT_PORT, MOCK_PORT, USER_DATA_DIR, APP_LOG and a saved key from setup-key.mjs):
 // the person CLOSES THE WINDOW while a reply is still arriving. What is on disk afterwards? The app quits by itself
 // here, so this script ends by looking at the files of a process that is gone. verify-4-3d.mjs reopens them.
+import './temp-on-a.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
 import { h4, mainInspector, waitForExit } from './lib4.mjs'

@@ -2810,3 +2810,21 @@ if you have not, please do before you rely on this. **The design was mine** (you
 2. **The file limits stayed as fixed numbers.** The plan said raising them would ask in the box; I did not build that (see D-042, 12.7). Say so if you want it.
 3. **A folder `A:\frontier-base` is left over** from a comparison I started and dropped (an empty copy with a link to `node_modules`; Windows would not let me delete it from here). You can delete the folder: delete only the link `node_modules` inside it first (do not delete its contents).
 4. **The question before a large request can now come in the middle of a reply** (12.7).
+
+## Stage 13 - Slice 13.1: the probe (the gate) (9 October 2026; D-043)
+
+**Step by step.**
+
+1. **What this slice answers.** Before any code that runs programs is written into the app, one question: on this PC, can a program really be boxed so that it cannot read your files, write outside its folder, use the network, run forever, eat all the memory or outlive its run? If not, the stage stops and commands stay manual. I tried it with a test program of mine that is not part of the app.
+2. **The answer is yes.** 50 checks, run four times (twice with the scratch folder on C:, twice on A:), all ok and identical. Reading your user folder, your app data, your other projects and your keys: refused. Writing anywhere but the box's own folder: refused (checked on the disk, not on what the box said). Network: nothing got out to the internet, to this computer or to your network, and nothing outside could connect in. Time, memory, number of programs and amount of output were all held, and nothing was left running afterwards.
+3. **The same checks as a plain program get through everywhere**, so the checks can fail; and three deliberately weakened boxes (no container, no limits, no kill) were each noticed by the checks meant to notice them.
+4. **Five things I found that change the design**, all fixed in the plan, none a hole: the installed `node.exe` cannot be read from inside the box (so the app will run a private read-only copy of it); the box's folder has to look like a drive of its own (so the app mounts it as a drive letter); the box's folder must not be inside an encrypted folder; `git` and the Store `python` cannot run in the box (as expected); and a program that starts a child process and waits for its piped output hangs until the 120-second limit (documented, not dangerous).
+5. **Drive A: (your request).** The checks' temp files now go to `A:\frontier-tmp` (every script that used `%TEMP%` on C:), and the box's folders will be on the workspace's own drive first. Your C: still holds about 1,209 old test folders (2.4 GB) in `%LOCALAPPDATA%\Temp`; my attempt to delete them was refused by the sandbox of this session, so I left them (see below).
+6. **No change to the app itself** (no file of `src/` touched); the work is `tools/probe-13-1.mjs`, `probe13-launcher.ps1`, `probe13-inner.cjs`, `lib13.mjs`, `temp-on-a.mjs`.
+
+## Stage 13.1 - Things to know (not problems, but worth your attention)
+
+1. **The box is the one the browsers use for their page processes, not a virtual machine.** It is as strong as that boundary and no stronger; a flaw in Windows itself could let a program out. The yes in the box is still your main defence.
+2. **Only `node`, `cmd` and `powershell` can run in the box on this PC.** `git` is in your user folder and `python` is a Store shortcut; neither can run. Say so if you want git to be able to run (it would need a copy of it in the tools folder; not part of the plan).
+3. **Old test folders on C:.** About 1,209 folders named `frontier-*` (2.4 GB, all made by my earlier test scripts) are still in `C:\Users\91995\AppData\Local\Temp`. I did not delete them; if you want them gone, say "delete the old test folders" and I will try again, or delete every folder there whose name starts with `frontier-` yourself.
+4. **Your other big folders on C:** `npm-cache` (1.1 GB), `.cache\codex-runtimes` (1.3 GB) and `electron` (281 MB) are tool caches that are not mine to move; I did not touch them.

@@ -2,6 +2,7 @@
 // throw: two PASS lines, then an uncaught error (the old driver showed 0/0)
 // close: connects to the page, then closes the whole app from outside, as a user closing the window would; the next wait must
 //        fail with "the page connection closed", not hang until Node gives up with "unsettled top-level await"
+import './temp-on-a.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { existsSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'

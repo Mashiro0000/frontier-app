@@ -2,6 +2,7 @@
 // The text of the file counts in the ledger and in the limits, and, when it has made the next request cost more than the person's amount more than the one they
 // agreed to, the app asks AGAIN in the middle of the reply (the dialog says the reply is not finished). A yes goes on; a no stops the reply and nothing more is sent;
 // "Never ask" asks nothing; a limit refuses the next request, with nothing more sent. Needs: USER_DATA_DIR (scratch), INSPECT_PORT, MOCK_PORT, a saved key.
+import './temp-on-a.mjs'
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'

@@ -2,6 +2,7 @@
 // opens that conversation: partial text, "Stopped", and the person can carry on. Also re-checks D-004's window settings
 // from the main process, because this stage changed the preload and index.ts.
 // Needs INSPECT_PORT, MOCK_PORT, USER_DATA_DIR, APP_LOG.
+import './temp-on-a.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
 import { h4, mainInspector, shown } from './lib4.mjs'

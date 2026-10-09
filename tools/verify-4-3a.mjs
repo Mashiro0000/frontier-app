@@ -2,6 +2,7 @@
 // run43a.mjs before launch). No key is saved on this profile: nothing here calls the network, except the one message sent
 // at the end to prove a damaged-then-recovered conversation can be carried on (no key -> an error reply, which is saved too).
 // Needs: USER_DATA_DIR, APP_LOG, and the seed manifest in %TEMP%.
+import './temp-on-a.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
 import { h4, shaFile } from './lib4.mjs'
