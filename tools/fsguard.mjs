@@ -105,24 +105,42 @@ function writing(flags) {
 let installed = null
 
 /**
- * options.write   folders where the check may make, write, rename and copy to (at least one)
- * options.remove  folders where it may remove (each inside a write folder); none by default
- * options.watch   false: only the decision (check()) is made, nothing is patched (for the guard's own pure checks)
+ * options.write         folders where the check may make, write, rename and copy to (at least one, unless `writeAnywhere`)
+ * options.remove        folders where it may remove (each inside a write folder, unless `writeAnywhere`); none by default
+ * options.writeAnywhere true: writing is not restricted (a WINDOW run: the app and its tools write logs, profiles and build output everywhere they like); only REMOVING is, and it is
+ *                       restricted to `remove` and `removePatterns`. Names that the file system reads differently from how they are written are still refused.
+ * options.removePatterns [{ base, name }]: a folder directly inside `base` whose name matches the regular expression `name` (case-blind) may be removed with everything in it, and nothing else
+ *                       directly in `base` (not `base` itself). For the throwaway profiles of window runs: base = the Roaming folder, name = /^frontier-app-test-scratch-.../i.
+ * options.watch         false: only the decision (check()) is made, nothing is patched (for the guard's own pure checks)
  */
 export function installFsGuard(options) {
   if (installed !== null) throw new Error('fsguard: it is installed already')
+  const anywhere = options?.writeAnywhere === true
   const writeList = options?.write ?? []
-  if (!Array.isArray(writeList) || writeList.length === 0) throw new Error('fsguard: name the folder where the check may write')
-  const rules = { write: writeList.map((r) => rootOf(r, 'write')), remove: [] }
+  if (!anywhere && (!Array.isArray(writeList) || writeList.length === 0)) throw new Error('fsguard: name the folder where the check may write')
+  const rules = { write: (Array.isArray(writeList) ? writeList : []).map((r) => rootOf(r, 'write')), remove: [], patterns: [] }
   const refusals = []
   const originals = []
 
   const addRemove = (raw) => {
     const root = rootOf(raw, 'remove')
-    if (!rules.write.some((w) => inside(w.lex, root.lex) && inside(w.phys, root.phys))) throw new Error(`fsguard: the remove folder ${root.path} is not inside a write folder`)
+    if (!anywhere && !rules.write.some((w) => inside(w.lex, root.lex) && inside(w.phys, root.phys))) throw new Error(`fsguard: the remove folder ${root.path} is not inside a write folder`)
     rules.remove.push(root)
   }
   for (const r of options?.remove ?? []) addRemove(r)
+  for (const pattern of options?.removePatterns ?? []) {
+    if (!(pattern?.name instanceof RegExp)) throw new Error('fsguard: a remove pattern needs a name (a regular expression)')
+    rules.patterns.push({ base: rootOf(pattern.base, 'remove pattern'), name: pattern.name })
+  }
+
+  /** True when the path lies in a folder directly inside a pattern's base whose name the pattern accepts (the base itself never). */
+  const patternAllows = (written, path, real) =>
+    rules.patterns.some((p) => {
+      if (!inside(p.base.lex, path) || path === p.base.lex) return false
+      const first = written.slice(p.base.path.length + 1).split('\\')[0]
+      if (!p.name.test(first)) return false
+      return inside(`${p.base.phys}\\${fold(first)}`, real)
+    })
 
   /** null when allowed, else the reason. */
   const check = (op, value, base) => {
@@ -130,10 +148,12 @@ export function installFsGuard(options) {
     if (raw === null) return null
     const lex = lexical(raw, base)
     if (lex.bad) return `${op} of ${JSON.stringify(raw).slice(0, 120)}: ${lex.bad}`
+    if (op !== 'remove' && anywhere) return null
     const roots = op === 'remove' ? rules.remove : rules.write
     const path = fold(lex.path)
     const real = fold(physical(lex.path))
     if (roots.some((r) => inside(r.lex, path) && inside(r.phys, real))) return null
+    if (op === 'remove' && patternAllows(lex.path, path, real)) return null
     return `${op} of ${lex.path}: not inside a folder this check may ${op === 'remove' ? 'remove from' : 'write in'}`
   }
 

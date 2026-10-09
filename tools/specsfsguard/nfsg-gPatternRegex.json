@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gPatternRegex",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "if (!(pattern?.name instanceof RegExp)) throw new Error('fsguard: a remove pattern needs a name (a regular expression)')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

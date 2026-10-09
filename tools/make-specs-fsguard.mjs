@@ -51,7 +51,19 @@ const controls = {
   gEsmSync: ["swap(fs, 'createWriteStream', 'write', 'sync')\n    syncBuiltinESMExports()", "swap(fs, 'createWriteStream', 'write', 'sync')"],
   // ----- naming the folders, and putting things back -----
   gDepth: ['if (parts.length < 3) throw new Error(', 'if (parts.length < 1) throw new Error('],
-  gRemoveInside: ['if (!rules.write.some((w) => inside(w.lex, root.lex) && inside(w.phys, root.phys))) throw', 'if (false) throw'],
+  gRemoveInside: ['if (!anywhere && !rules.write.some((w) => inside(w.lex, root.lex) && inside(w.phys, root.phys))) throw', 'if (false) throw'],
+  gRemoveAnywhere: ['if (!anywhere && !rules.write.some((w) => inside(w.lex, root.lex) && inside(w.phys, root.phys))) throw', 'if (!rules.write.some((w) => inside(w.lex, root.lex) && inside(w.phys, root.phys))) throw'],
+  // ----- the window-run options (writeAnywhere, removePatterns) -----
+  gAnywhereRemove: ["if (op !== 'remove' && anywhere) return null", "if (anywhere) return null"],
+  gAnywhereAlways: ["if (op !== 'remove' && anywhere) return null", 'if (op !== "remove") return null'],
+  gAnywhereFlag: ["const anywhere = options?.writeAnywhere === true", 'const anywhere = true'],
+  gAnywhereNeedsRoot: ["if (!anywhere && (!Array.isArray(writeList) || writeList.length === 0))", 'if (false)'],
+  // (not here: `path === p.base.lex` in patternAllows is a second wall behind the last containment test, so taking it out changes nothing: an equivalent mutant)
+  gPatternName: ['if (!p.name.test(first)) return false', ''],
+  gPatternReal: ['return inside(`${p.base.phys}\\\\${fold(first)}`, real)', 'return true'],
+  gPatternFirst: ["const first = written.slice(p.base.path.length + 1).split('\\\\')[0]", 'const first = written.slice(p.base.path.length + 1)'],
+  gPatternChecked: ["if (op === 'remove' && patternAllows(lex.path, path, real)) return null", "if (patternAllows(lex.path, path, real)) return null"],
+  gPatternRegex: ["if (!(pattern?.name instanceof RegExp)) throw new Error('fsguard: a remove pattern needs a name (a regular expression)')", ''],
   gUninstall: ['for (const { target, name, original } of originals.reverse()) target[name] = original', 'for (const x of []) void x'],
   gTwice: ["if (installed !== null) throw new Error('fsguard: it is installed already')", ''],
   gCode: ['{ code: REFUSED, syscall: name }', "{ code: 'EPERM', syscall: name }"]

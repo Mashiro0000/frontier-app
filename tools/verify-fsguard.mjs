@@ -354,4 +354,61 @@ console.log(`(known holes, not guarded: ${[...KNOWN_HOLES].join(', ')}; child pr
   check('F: the wrapper hard-codes the scope: C:\\frontier-tmp, one fresh folder, the guard on the wrapper and on the check', /BASE = 'C:\\\\frontier-tmp'/.test(text) && /installFsGuard\(\{ write: \[run\], remove: \[run\] \}\)/.test(text) && /--import/.test(text) && /guard-preload\.mjs/.test(text))
 }
 
+// ============================ H. the remove-only guard of window runs ======================
+{
+  const ROAM = J(BASE, 'roam')
+  const PROFILE = J(ROAM, 'frontier-app-test-scratch-s1')
+  const RUN = J(BASE, 'run-h')
+  const OUTD = J(BASE, 'out-h')
+  for (const d of [J(PROFILE, 'deep'), J(ROAM, 'frontier-app'), J(ROAM, 'other-app'), RUN, OUTD]) fs.mkdirSync(d, { recursive: true })
+  fs.writeFileSync(J(ROAM, 'frontier-app', 'keep.txt'), 'REAL-PROFILE')
+  fs.writeFileSync(J(ROAM, 'other-app', 'keep.txt'), 'OTHER')
+  fs.writeFileSync(J(ROAM, 'FIXTURE-ONLY.txt'), 'FSGUARD-FIXTURE') // the mark that lets guarded-window-selftest.mjs try its removals: it does nothing against a folder without it
+  fs.symlinkSync(OUTSIDE, J(PROFILE, 'link'), 'junction')
+  let win
+  try {
+    win = installFsGuard({ writeAnywhere: true, remove: [RUN, OUTD], removePatterns: [{ base: ROAM, name: /^frontier-app-test-scratch-[A-Za-z0-9._-]+$/i }], watch: false })
+  } catch (error) {
+    check('H: a window-run guard can be made (writeAnywhere, remove folders that lie in no write folder, a pattern)', false, String(error.message))
+    process.exit(check.summary() ? 0 : 1)
+  }
+  check('H: a window-run guard can be made (writeAnywhere, remove folders that lie in no write folder, a pattern)', true)
+  const may = (p) => win.check('remove', p) === null
+  const mayNot = (p) => typeof win.check('remove', p) === 'string'
+  check('H: in a window run writing is not restricted, anywhere (A:\\, the repo, a share)', ['A:\\x\\y.txt', 'C:\\Windows\\x.txt', REPO_WIN + '\\x', '\\\\server\\share\\x'].every((p) => win.check('write', p) === null), show(['A:\\x'].map((p) => win.check('write', p))))
+  check('H: but a name the file system reads differently from how it is written is refused all the same (NUL, a wildcard, a stream, a trailing dot)', ['', J(BASE, 'x\0y'), J(BASE, 'a*'), J(BASE, 'a:b'), J(BASE, 'x.')].every((p) => typeof win.check('write', p) === 'string'))
+  check('H: the run\'s own folder and the build folder may be removed, with everything in them', may(RUN) && may(J(RUN, 'a', 'b.txt')) && may(OUTD) && may(J(OUTD, 'x', 'y')) && may(RUN.toUpperCase() + '\\X'))
+  check('H: but nothing beside them (a sibling that starts like the run\'s folder, their parent, drive roots, the Windows folder, the user\'s folder, the repo)', [BASE, RUN + '-evil', J(BASE, 'run-h-evil', 'x'), 'A:\\', 'C:\\', 'C:\\Windows', os.homedir(), REPO_WIN, J(REPO_WIN, 'src')].every(mayNot))
+  check('H: a throwaway profile folder in the Roaming folder may be removed, with everything in it (also in capitals and with forward slashes)', may(PROFILE) && may(J(PROFILE, 'deep', 'f.txt')) && may(PROFILE.toUpperCase()) && may(PROFILE.replaceAll('\\', '/') + '/deep'))
+  check('H: the real profile folder, the Roaming folder itself, another app\'s folder, a profile name with nothing after the dash, and a name that only starts like it are refused', [ROAM, J(ROAM, 'frontier-app'), J(ROAM, 'frontier-app', 'keep.txt'), J(ROAM, 'other-app'), J(ROAM, 'frontier-app-test-scratch-'), J(ROAM, 'frontier-app-test-scratchX')].every(mayNot))
+  check('H: the pattern is the FIRST name below the Roaming folder: a folder with that name deeper down is refused, and so is a way out through ..', mayNot(J(ROAM, 'other-app', 'frontier-app-test-scratch-s1')) && mayNot(J(ROAM, '..', 'frontier-app-test-scratch-s1')) && mayNot(J(ROAM, 'frontier-app-test-scratch-s1', '..', 'frontier-app', 'keep.txt')))
+  check('H: a junction inside a throwaway profile that leads OUT is no way out: what is behind it is refused, the junction itself may go', mayNot(J(PROFILE, 'link', 'keep.txt')) && mayNot(J(PROFILE, 'link', 'deep', 'x')) && may(J(PROFILE, 'link')))
+  const badPattern = (pattern) => { try { installFsGuard({ writeAnywhere: true, removePatterns: [pattern], watch: false }); currentGuard()?.uninstall(); return false } catch (error) { return /fsguard/.test(String(error.message)) } }
+  win.uninstall()
+  check('H: a pattern needs a regular expression, and its base cannot be a drive root or one level below a drive', badPattern({ base: ROAM, name: 'frontier-app-test-scratch-' }) && badPattern({ base: 'C:\\', name: /x/ }) && badPattern({ base: 'C:\\Users', name: /x/ }) && badPattern({ base: ROAM }))
+  check('H: without writeAnywhere a write folder is still needed', (() => { try { installFsGuard({ removePatterns: [{ base: ROAM, name: /x/ }], watch: false }); currentGuard()?.uninstall(); return false } catch { return true } })())
+  check('H: with writeAnywhere nothing needs naming, and a remove folder need not lie in a write folder', (() => { try { const g = installFsGuard({ writeAnywhere: true, remove: [RUN], watch: false }); const ok = g.check('remove', J(RUN, 'a')) === null; g.uninstall(); return ok } catch { return false } })())
+  check('H: a pattern is for REMOVING only: a guard that restricts writing too still refuses a write in a throwaway profile (and still allows the removal there)', (() => { try { const g = installFsGuard({ write: [RUN], removePatterns: [{ base: ROAM, name: /^frontier-app-test-scratch-[A-Za-z0-9._-]+$/i }], watch: false }); const ok = typeof g.check('write', J(PROFILE, 'deep', 'f.txt')) === 'string' && g.check('remove', J(PROFILE, 'deep', 'f.txt')) === null; g.uninstall(); return ok } catch { return false } })())
+  check('H: without writeAnywhere a remove folder must still lie in a write folder', (() => { try { installFsGuard({ write: [RUN], remove: [OUTD], watch: false }); currentGuard()?.uninstall(); return false } catch (error) { return /not inside a write folder/.test(String(error.message)) } })())
+
+  // the real thing: guarded-window.mjs runs a script with the preload loaded, against a FAKE Roaming folder
+  const decoy = J(BASE, 'win-decoy.txt')
+  fs.writeFileSync(decoy, 'DECOY')
+  const listRuns = () => fs.readdirSync('C:\\frontier-tmp').filter((n) => /^guarded-w-/.test(n))
+  const beforeRuns = new Set(listRuns())
+  const run = spawnSync(process.execPath, [J(TOOLS, 'guarded-window.mjs'), J(TOOLS, 'guarded-window-selftest.mjs')], { encoding: 'utf8', env: { ...process.env, APPDATA: ROAM, GUARDED_DECOY: decoy } })
+  const line = /RESULT (\{.*\})/.exec(run.stdout ?? '')
+  const res = line === null ? null : JSON.parse(line[1])
+  check('H: a window run through guarded-window.mjs runs, with its temp folder a fresh one of the run', run.status === 0 && res !== null && /^C:\\frontier-tmp\\guarded-w-[A-Za-z0-9]+$/.test(res.tmp ?? ''), show({ status: run.status, out: (run.stdout ?? '').slice(0, 200), err: (run.stderr ?? '').slice(0, 400) }))
+  check('H: it may write beside the decoy (but not remove what it wrote there: that is outside its folders), and remove what it made in its own folder, in a throwaway profile and in the repo\'s out folder', res?.writeBeside === 'DONE' && res.removeBeside === REFUSED && fs.existsSync(`${decoy}.beside`) && res.ownRun === 'DONE' && res.profile === 'DONE' && res.profileGone === true && (res.outFile === 'DONE' || res.outFile === 'NO-OUT'), show(res))
+  check('H: and may NOT remove the decoy, a file in the folder called like the real profile, another app\'s folder, or the Roaming folder; they are untouched', res?.removeDecoy === REFUSED && res.removeRealProfile === REFUSED && res.removeOtherInRoaming === REFUSED && res.removeRoaming === REFUSED && fs.readFileSync(decoy, 'utf8') === 'DECOY' && fs.readFileSync(J(ROAM, 'frontier-app', 'keep.txt'), 'utf8') === 'REAL-PROFILE' && fs.readFileSync(J(ROAM, 'other-app', 'keep.txt'), 'utf8') === 'OTHER', show(res))
+  check('H: every refusal is named on stderr when the process ends (so a run that was refused something shows it)', /\[harness-guard\] refused \d+ call/.test(run.stderr ?? '') && /remove of /.test(run.stderr ?? ''), (run.stderr ?? '').slice(0, 300))
+  check('H: the run\'s own folder is removed when the run is over, and no other guarded-w folder', listRuns().every((n) => beforeRuns.has(n)))
+  const missing = spawnSync(process.execPath, [J(TOOLS, 'guarded-window.mjs'), J(TOOLS, 'no-such-script.mjs')], { encoding: 'utf8' })
+  check('H: a script that is not there is not run (exit code 2) and no folder is made for it', missing.status === 2 && listRuns().every((n) => beforeRuns.has(n)))
+  const wtext = fs.readFileSync(J(TOOLS, 'guarded-window.mjs'), 'utf8')
+  const ptext = fs.readFileSync(J(TOOLS, 'harness-guard-preload.mjs'), 'utf8')
+  check('H: the scope is fixed in the two files: C:\\frontier-tmp, the run\'s folder, the throwaway profiles and `out`; nothing is read from the environment but where the run\'s folder is', /BASE = 'C:\\\\frontier-tmp'/.test(wtext) && /frontier-app-test-scratch-\[A-Za-z0-9\._-\]\+/.test(ptext) && /join\(repo, 'out'\)/.test(ptext) && /FRONTIER_GUARD_ROOT/.test(ptext) && /writeAnywhere: true/.test(ptext))
+}
+
 process.exit(check.summary() ? 0 : 1)
