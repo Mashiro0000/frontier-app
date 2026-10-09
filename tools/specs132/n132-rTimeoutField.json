@@ -1,0 +1,17 @@
+{
+  "label": "n132-rTimeoutField",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/commandRunner.ts",
+      "from": "          timeoutMs: request.timeoutMs,",
+      "to": "          timeoutMs: 120000,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

@@ -13,7 +13,7 @@ import { createSocket } from 'node:dgram'
 import { networkInterfaces, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
-import { TOOLS, OUT } from './paths.mjs'
+import { TOOLS, OUT, REPO_URL } from './paths.mjs'
 import { runBox, runBoxAsync, MINIMAL_ENV, NODE_EXE } from './lib13.mjs'
 
 const RUNS = Number(process.argv[2] || 1)
@@ -115,6 +115,9 @@ async function oneRun(runNo) {
   //   plain    = no container at all   nolimits = no memory / process / time / output limits   nokill = the job does not kill what is left
   const SAB = process.env.PROBE_SABOTAGE || ''
   const boxMode = (mode) => (mode === 'container' && SAB === 'plain' ? 'plain' : mode)
+  // PROBE_LAUNCHER=product runs the CONTAINER side through the app's own runner (src/main/commandRunner.ts and its launcher) instead of the
+  // prototype; the plain-process control stays on the prototype. The same 50 checks then judge the launcher that ships (13.2).
+  const PRODUCT = process.env.PROBE_LAUNCHER === 'product'
   const checks = []
   const add = (name, pass, detail, control) => checks.push({ name, pass: !!pass, detail: detail ?? '', control: control ?? null })
   const info = (name, detail) => checks.push({ name, pass: true, info: true, detail: detail ?? '', control: null })
@@ -162,7 +165,7 @@ async function oneRun(runNo) {
     cpSync(join(TOOLS, 'probe13-inner.cjs'), join(P.scratch, 'inner.cjs'))
     // a private copy of node.exe: the box cannot read the one in Program Files (that folder has no "all application packages" entry
     // on this PC), so it could not start node itself, and no copy of it may be written by the box (read-only grant)
-    P.tools = join(P.base, 'tools')
+    P.tools = join(P.base, 'ptools')
     mkdirSync(P.tools, { recursive: true })
     const NODE_COPY = join(P.tools, 'node.exe')
     cpSync(NODE_EXE, NODE_COPY)
@@ -195,7 +198,7 @@ async function oneRun(runNo) {
       mkdirs: { userFolder: join(PROFILE, `${tag}-dir`), outside: join(P.outside, 'newdir') },
       victim: join(P.outside, 'victim.txt'),
       programs: {
-        node: { program: NODE_COPY, args: ['-v'] },
+        node: { program: process.env.PROBE_LAUNCHER === 'product' ? join(P.base, 'tools', 'node.exe') : NODE_COPY, args: ['-v'] },
         nodeInstalled: { program: NODE_EXE, args: ['-v'] },
         cmd: { program: 'C:\\Windows\\System32\\cmd.exe', args: ['/c', 'ver'] },
         powershell: { program: 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', args: ['-NoProfile', '-Command', '1+1'] },
@@ -224,7 +227,7 @@ async function oneRun(runNo) {
     // the box's scratch folder is the root of a drive letter (see mount)
     const M = mount(P.scratch)
     unmounts.push(M.unmount)
-    baseParams.scratchDir = M.root.slice(0, 2)
+    baseParams.scratchDir = '.' // relative: the product launcher mounts its own letter, the prototype's cwd is the probe's
     const env = (home) => ({ ...MINIMAL_ENV(home), LOCALAPPDATA: home })
 
     // a light program that stays alive for a few seconds in the box (waitfor, ping, choice, timeout and find all end at once there):
@@ -246,26 +249,51 @@ async function oneRun(runNo) {
       if (SAB === 'nokill' && which === 'children') return { ...extra, env: { ...env(M.root), __nokill__: '1' } }
       return extra
     }
-    const run = (mode, which, extra = {}, params = {}) => {
+    // the app's own runner, with its run root = this world's base folder (scratch/ is inside it; so is "outside/", which is NOT granted)
+    let productRunner = null
+    if (PRODUCT) {
+      await import('./ts-resolve.mjs')
+      const { createCommandRunner } = await import(`${REPO_URL}/src/main/commandRunner.ts`)
+      productRunner = createCommandRunner({ runRoot: P.base })
+    }
+    const toBox = (o) =>
+      o.kind === 'ran'
+        ? { started: true, error: null, exitCode: o.exitCode, timedOut: o.timedOut, elapsedMs: o.elapsedMs, peakJobMemory: o.peakMemoryBytes, activeBeforeKill: o.leftoverKilled, activeAfterKill: o.leftoverAfter, stdout: o.stdout, stderr: o.stderr, stdoutTotal: o.stdoutBytes, stderrTotal: o.stderrBytes }
+        : { started: false, error: `${o.why}: ${o.message}`, exitCode: 0, timedOut: false, elapsedMs: 0, peakJobMemory: 0, activeBeforeKill: 0, activeAfterKill: 0, stdout: '', stderr: '', stdoutTotal: 0, stderrTotal: 0 }
+    const productRequest = (which, extra, args) => ({
+      program: NODE_EXE,
+      args,
+      scratchDir: P.scratch,
+      timeoutMs: extra.timeoutMs ?? 20000,
+      memoryBytes: Math.min(extra.memoryBytes ?? 1024 ** 3, 1024 ** 3),
+      maxProcesses: extra.maxProcesses ?? 64,
+      outputBytes: extra.capBytes ?? 65536
+    })
+    const run = async (mode, which, extra = {}, params = {}) => {
       writeFileSync(join(P.scratch, `params-${which}.json`), JSON.stringify({ ...baseParams, ...params }))
-      const box = runBox({
-        mode: boxMode(mode),
-        program: NODE_COPY,
-        readDirs: [P.tools],
-        args: [M.root + 'inner.cjs', which, M.root + `params-${which}.json`],
-        cwd: M.root,
-        env: env(M.root),
-        grantDirs: [P.scratch],
-        timeoutMs: 20000,
-        ...sabotage(mode, which, extra)
-      })
+      let box
+      if (PRODUCT && mode === 'container') {
+        box = toBox(await productRunner.run(productRequest(which, extra, ['inner.cjs', which, `params-${which}.json`])))
+      } else {
+        box = runBox({
+          mode: boxMode(mode),
+          program: NODE_COPY,
+          readDirs: [P.tools],
+          args: [M.root + 'inner.cjs', which, M.root + `params-${which}.json`],
+          cwd: M.root,
+          env: env(M.root),
+          grantDirs: [P.scratch],
+          timeoutMs: 20000,
+          ...sabotage(mode, which, extra)
+        })
+      }
       return { box, res: parseResult(box.stdout) }
     }
 
     for (const mode of ['container', 'plain']) {
       const O = observed[mode]
       // ---- reads
-      O.read = run(mode, 'read')
+      O.read = await run(mode, 'read')
       // ---- writes
       for (const f of Object.values(baseParams.writeFiles)) {
         try {
@@ -275,7 +303,7 @@ async function oneRun(runNo) {
         }
       }
       writeFileSync(join(P.outside, 'victim.txt'), 'victim\n')
-      O.write = run(mode, 'write')
+      O.write = await run(mode, 'write')
       O.writeAfter = {
         files: Object.fromEntries(Object.entries(baseParams.writeFiles).map(([k, f]) => [k, existsSync(f) ? readFileSync(f, 'utf8') === marker : false])),
         victimIntact: existsSync(join(P.outside, 'victim.txt')) && sha(join(P.outside, 'victim.txt')) === victimSha,
@@ -284,16 +312,16 @@ async function oneRun(runNo) {
       }
       O.canaryIntact = sha(join(P.outside, 'canary.txt')) === canarySha
       // ---- in its own folder
-      O.scratch = run(mode, 'scratch')
+      O.scratch = await run(mode, 'scratch')
       // ---- network
       tcpSeen.clear()
       udpSeen.clear()
-      O.net = run(mode, 'net', { timeoutMs: 40000 })
+      O.net = await run(mode, 'net', { timeoutMs: 40000 })
       await sleep(300)
       O.netSeenTcp = [...tcpSeen]
       O.netSeenUdp = [...udpSeen]
       // ---- children that outlive their parent
-      O.children = run(mode, 'children')
+      O.children = await run(mode, 'children')
       await sleep(800)
       O.childAliveAfter = O.children.res?.pid ? alive(O.children.res.pid) : null
       if (O.childAliveAfter) {
@@ -301,26 +329,29 @@ async function oneRun(runNo) {
         spawnSync('taskkill.exe', ['/PID', String(O.children.res.pid), '/T', '/F'])
       }
       // ---- how many processes
-      O.fork = run(mode, 'fork', { maxProcesses: mode === 'container' ? forkLimit : 1000, memoryBytes: 4 * 1024 ** 3, timeoutMs: 40000 }, { forkN: mode === 'container' ? forkN : 70, sleeper })
+      O.fork = await run(mode, 'fork', { maxProcesses: mode === 'container' ? forkLimit : 1000, memoryBytes: 4 * 1024 ** 3, timeoutMs: 40000 }, { forkN: mode === 'container' ? forkN : 70, sleeper })
       // ---- time
-      O.time = run(mode, 'time', { timeoutMs: 4000 })
+      O.time = await run(mode, 'time', { timeoutMs: 4000 })
       // ---- memory (256 MB in the box; the control has 8 GB and goes to 512 MB)
-      O.memory = run(mode, 'memory', { memoryBytes: (mode === 'container' ? 256 : 8192) * 1024 * 1024, timeoutMs: 30000 }, { memoryTryMb: 512 })
+      O.memory = await run(mode, 'memory', { memoryBytes: (mode === 'container' ? 256 : 8192) * 1024 * 1024, timeoutMs: 30000 }, { memoryTryMb: 512 })
       // ---- endless output
-      O.output = run(mode, 'output', { timeoutMs: 3000, capBytes: 65536 })
+      O.output = await run(mode, 'output', { timeoutMs: 3000, capBytes: 65536 })
       // ---- which programs the box can start
-      O.programs = run(mode, 'programs', { timeoutMs: 60000 })
+      O.programs = await run(mode, 'programs', { timeoutMs: 60000 })
       // ---- what it sees
-      O.env = run(mode, 'env')
-      O.misc = run(mode, 'misc')
-      if (mode === 'container') O.scan = run(mode, 'scan')
+      O.env = await run(mode, 'env')
+      O.misc = await run(mode, 'misc')
+      if (mode === 'container') O.scan = await run(mode, 'scan')
       // ---- can anything outside connect INTO a port the box opened?
       {
         const portFile = join(P.scratch, 'listen.port')
         const seenFile = join(P.scratch, 'listen.seen')
         for (const f of [portFile, seenFile]) rmSync(f, { force: true })
-        writeFileSync(join(P.scratch, 'params-listen.json'), JSON.stringify({ ...baseParams, listenPortFile: M.root + 'listen.port', listenSeenFile: M.root + 'listen.seen', listenWaitMs: 7000 }))
-        const pending = runBoxAsync({ mode: boxMode(mode), program: NODE_COPY, readDirs: [P.tools], args: [M.root + 'inner.cjs', 'listen', M.root + 'params-listen.json'], cwd: M.root, env: env(M.root), grantDirs: [P.scratch], timeoutMs: 20000 })
+        writeFileSync(join(P.scratch, 'params-listen.json'), JSON.stringify({ ...baseParams, listenPortFile: 'listen.port', listenSeenFile: 'listen.seen', listenWaitMs: 7000 }))
+        const pending =
+          PRODUCT && mode === 'container'
+            ? productRunner.run(productRequest('listen', { timeoutMs: 20000 }, ['inner.cjs', 'listen', 'params-listen.json'])).then(toBox)
+            : runBoxAsync({ mode: boxMode(mode), program: NODE_COPY, readDirs: [P.tools], args: [M.root + 'inner.cjs', 'listen', M.root + 'params-listen.json'], cwd: M.root, env: env(M.root), grantDirs: [P.scratch], timeoutMs: 20000 })
         let portText = null
         for (let i = 0; i < 100 && !portText; i++) {
           await sleep(150)

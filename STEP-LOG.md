@@ -2828,3 +2828,20 @@ if you have not, please do before you rely on this. **The design was mine** (you
 2. **Only `node`, `cmd` and `powershell` can run in the box on this PC.** `git` is in your user folder and `python` is a Store shortcut; neither can run. Say so if you want git to be able to run (it would need a copy of it in the tools folder; not part of the plan).
 3. **Old test folders on C:.** About 1,209 folders named `frontier-*` (2.4 GB, all made by my earlier test scripts) are still in `C:\Users\91995\AppData\Local\Temp`. I did not delete them; if you want them gone, say "delete the old test folders" and I will try again, or delete every folder there whose name starts with `frontier-` yourself.
 4. **Your other big folders on C:** `npm-cache` (1.1 GB), `.cache\codex-runtimes` (1.3 GB) and `electron` (281 MB) are tool caches that are not mine to move; I did not touch them.
+
+## Stage 13 - Slice 13.2: the launcher inside the app (9 October 2026; D-043)
+
+**Step by step.**
+
+1. **What this slice builds.** The part of the app that starts a program in the box: a small PowerShell/C# launcher kept inside the app and a TypeScript module around it (`commandRunner.ts`). Nothing in the app uses it yet: the next slices make the scratch copy (13.3) and the tool that the model will see (13.4). So you will notice no change when you run the app.
+2. **How a run goes.** The app checks the request (the program, its arguments, the folder, the limits), writes the launcher to disk and checks its fingerprint, gives it one small file of settings, and waits. The launcher makes the box, runs the program, ends everything when the run is over, takes away the temporary drive letter and reports back. Nothing the program or the model writes is ever put on a command line; if the box cannot be made, nothing runs (there is no weaker mode to fall back to).
+3. **It is checked a lot.** 239 checks with the real box, including 79 awkward arguments (quotes, backslashes, `%PATH%`, `&`, emoji...) that all arrive exactly as written, about 50 hostile settings files given straight to the launcher (all refused before anything is made), a launcher that dies, hangs or lies (nothing runs, never a guess), Stop everything, and the app being killed (the program in the box is gone within seconds). The 50 checks of the first slice also pass against this launcher. 42 deliberate breakages of the code were each noticed.
+4. **Bugs found and fixed on the way:** a hostile settings file could make the launcher write a file into the current folder; Stop everything gave the wrong reason; a failing start could throw an error out of the runner; a program's temporary folder pointed at a folder that did not exist (Windows changes it for boxed programs; the launcher now makes a `.frontier-box` folder inside the scratch folder for it, and the comparison in 13.3 will leave that folder out).
+5. **Memory notes and docs:** D-043 (`docs/DECISIONS.md`), the roadmap, `tools/README.md`.
+
+## Stage 13.2 - Things to know (not problems, but worth your attention)
+
+1. **A run costs about three seconds before the program even starts** (PowerShell, compiling the C#, making the box), and about five the first time (it copies `node.exe`, 90 MB, once). The five runs a reply of the plan are 15 to 25 s of overhead. If that matters I can build the C# once into a file; it is not done.
+2. **If the app is killed hard, a temporary drive letter (like `Z:`) can stay behind** until the next start of the app; it holds an empty or half-used scratch folder. 13.3 removes it at start-up. You can also remove it with `subst Z: /d`.
+3. **Your security product (McAfee is installed here) removed a test program I compiled** between building and running it. It did not touch the launcher in about 60 runs, but a stricter setting could. If it ever does, the app says "the box could not be made" and runs nothing.
+4. **I did not look at any real Windows window or box** (your rule); this slice has none.

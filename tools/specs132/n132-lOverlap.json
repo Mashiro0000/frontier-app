@@ -1,0 +1,17 @@
+{
+  "label": "n132-lOverlap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "if ($scratch.StartsWith($tools + '\\', [System.StringComparison]::OrdinalIgnoreCase) -or $tools.StartsWith($scratch + '\\', [System.StringComparison]::OrdinalIgnoreCase) -or $scratch -eq $tools) { throw 'the scratch and tools folders overlap' }",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

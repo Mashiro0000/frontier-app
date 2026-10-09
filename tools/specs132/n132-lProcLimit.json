@@ -1,0 +1,17 @@
+{
+  "label": "n132-lProcLimit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "ext.BasicLimitInformation.ActiveProcessLimit = maxProcesses;",
+      "to": "ext.BasicLimitInformation.ActiveProcessLimit = 1000;"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

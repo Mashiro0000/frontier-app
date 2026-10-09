@@ -1,0 +1,17 @@
+{
+  "label": "n132-rCapField",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/commandRunner.ts",
+      "from": "          capBytes: request.outputBytes,",
+      "to": "          capBytes: 65536,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

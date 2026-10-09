@@ -1,0 +1,17 @@
+{
+  "label": "n132-lOutputCap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "Collector co = new Collector(capBytes), ce = new Collector(capBytes);",
+      "to": "Collector co = new Collector(65536), ce = new Collector(65536);"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,17 @@
+{
+  "label": "n132-rLauncherHash",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/commandRunner.ts",
+      "from": "createHash('sha256').update(current, 'utf8').digest('hex') !== LAUNCHER_SHA256",
+      "to": "false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

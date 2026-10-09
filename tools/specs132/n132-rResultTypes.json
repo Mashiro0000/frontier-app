@@ -1,0 +1,17 @@
+{
+  "label": "n132-rResultTypes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/commandRunner.ts",
+      "from": "    if (typeof r[n] !== 'number' || !Number.isFinite(r[n]) || (r[n] as number) < -1)",
+      "to": "    if (false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

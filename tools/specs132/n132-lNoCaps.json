@@ -1,0 +1,18 @@
+{
+  "label": "n132-lNoCaps",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "if (!UpdateProcThreadAttribute(attr, 0, ATTR_SECURITY_CAPABILITIES, scMem, (IntPtr)scLen, IntPtr.Zero, IntPtr.Zero))",
+      "to": "if (false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/probe-13-1.mjs",
+    "1"
+  ],
+  "env": {
+    "PROBE_LAUNCHER": "product"
+  },
+  "timeoutMs": 900000
+}

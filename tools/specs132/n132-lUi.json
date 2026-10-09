@@ -1,0 +1,17 @@
+{
+  "label": "n132-lUi",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "ui.UIRestrictionsClass = 0xFF;",
+      "to": "ui.UIRestrictionsClass = 0;"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}

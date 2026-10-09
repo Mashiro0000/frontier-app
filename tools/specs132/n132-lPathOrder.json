@@ -1,0 +1,17 @@
+{
+  "label": "n132-lPathOrder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "$envd['PATH'] = $tools + ';' + (Join-Path $env:SystemRoot 'System32') + ';' + $env:SystemRoot",
+      "to": "$envd['PATH'] = (Join-Path $env:SystemRoot 'System32') + ';' + $env:SystemRoot + ';' + $tools"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}
