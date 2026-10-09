@@ -40,6 +40,10 @@ const controls = {
   gNoLink: ["  link: 'link',\n", ''],
   gNoOpen: ["  symlink: 'symlink',\n  open: 'open'\n", "  symlink: 'symlink'\n"],
   gNoMkdtemp: ["  mkdtemp: 'write',\n", ''],
+  // making sure a folder is there changes nothing, so it is not a write: but only for a folder that is there, only with `recursive`
+  gMkdirAny: ["a[1].recursive === true && asText(a[0]) !== null && isFolder(asText(a[0]))", "a[1].recursive === true && asText(a[0]) !== null && true"],
+  gMkdirFlag: ["&& a[1].recursive === true &&", "&& true &&"],
+  gMkdirNoExemption: ["a[1] !== null && typeof a[1] === 'object' && a[1].recursive === true && asText(a[0]) !== null && isFolder(asText(a[0]))", 'false'],
   gPromises: ["swap(fs.promises, base, kind, 'promise')", ''],
   gCallback: ["swap(fs, base, kind, 'callback')", ''],
   gSync: ["swap(fs, base + 'Sync', kind, 'sync')", ''],

@@ -12,6 +12,9 @@
 // NOTHING IS REMOVED HERE, by design (the owner's rule of 2026-10-09: nothing is deleted from any drive): every call that would remove is aimed at a name that does not
 // exist, so even a broken guard cannot remove anything while it is being tested. The folder this makes in the temp folder is left in place.
 //
+//   F. the wrapper tools/guarded.mjs, which runs an older check confined to one fresh folder of the run in C:\frontier-tmp and removes that folder afterwards: what such a check can do
+//      (make, rename, remove its own things), what it cannot (anything beside a decoy file), that the exit code is the check's, and that the scope is fixed in the wrapper.
+//
 // Run: node tools/verify-fsguard.mjs
 import './paths.mjs'
 import { checker } from './cdp.mjs'
@@ -19,9 +22,10 @@ import fs, { rmSync as namedRmSync, writeFileSync as namedWriteFileSync } from '
 import { rm as namedPromisesRm } from 'node:fs/promises'
 import os from 'node:os'
 import { win32 } from 'node:path'
+import { spawnSync } from 'node:child_process'
 import { pathToFileURL } from 'node:url'
 import { GUARDED, REFUSED, currentGuard, installFsGuard } from './fsguard.mjs'
-import { REPO_WIN } from './paths.mjs'
+import { REPO_WIN, TOOLS } from './paths.mjs'
 
 const check = checker()
 const J = win32.join
@@ -282,6 +286,18 @@ check('C: a second write folder can be named later, only by name and only below 
   check('C: a remove folder, once named, allows removing inside it and nowhere else (decided only; nothing is removed)', allowed('remove', J(ALLOWED, 'ok-sync', 'f.txt')) && allowed('remove', J(ALLOWED, 'ok-sync')) && refused('remove', ALLOWED) && refused('remove', J(ALLOWED, 'ok-promise', 'f.txt')) && refused('remove', J(OUTSIDE, 'keep.txt')))
 }
 
+// making sure a folder is there: the one call outside the folder that changes nothing, and so is not refused
+{
+  const forms = ['sync', 'callback', 'promise']
+  const there = []
+  for (const style of forms) there.push(await attempt(style, 'mkdir', [OUTSIDE, { recursive: true }]))
+  check('C: making sure a folder is there (mkdir with recursive) is not refused when it is already there, even outside the folder; nothing changes', there.every((x) => x === 'OK') && JSON.stringify(fs.readdirSync(OUTSIDE)) === '["keep.txt"]', show(there))
+  const not = []
+  for (const style of forms) not.push(await attempt(style, 'mkdir', [J(OUTSIDE, 'not-yet'), { recursive: true }]))
+  check('C: but a folder that is not there yet is a write, and is refused outside the folder', not.every((x) => x === REFUSED) && !fs.existsSync(J(OUTSIDE, 'not-yet')), show(not))
+  check('C: and so is making the folder that is there without `recursive` (it would fail anyway), or one that is a FILE', (await attempt('sync', 'mkdir', [OUTSIDE])) === REFUSED && (await attempt('sync', 'mkdir', [J(OUTSIDE, 'keep.txt'), { recursive: true }])) === REFUSED && (await attempt('sync', 'mkdir', [OUTSIDE, { recursive: false }])) === REFUSED)
+}
+
 // ============================ D. uninstalling ==============================================
 guard.uninstall()
 check('D: uninstalling puts every function back exactly as it was (all forms)', before.every(([target, name, original]) => target[name] === original), before.filter(([target, name, original]) => target[name] !== original).map((x) => x[1]).join(','))
@@ -313,5 +329,29 @@ const unknown = [...new Set([...fnNames(fs), ...fnNames(fs.promises)])].filter((
 check('E: every function of fs and fs.promises is guarded, reviewed as harmless, or listed as a known hole', unknown.length === 0, `NEW AND UNREVIEWED: ${unknown.join(', ')}`)
 check('E: every name on the guarded and the harmless lists still exists (the lists are not stale)', [...Object.keys(GUARDED)].every((b) => typeof fs[b] === 'function' || typeof fs[b + 'Sync'] === 'function' || typeof fs.promises[b] === 'function') && [...HARMLESS].every((k) => k in fs || k in fs.promises), [...HARMLESS].filter((k) => !(k in fs || k in fs.promises)).join(','))
 console.log(`(known holes, not guarded: ${[...KNOWN_HOLES].join(', ')}; child processes and worker threads are not watched either)`)
+
+// ============================ F. the wrapper that confines an older check ==================
+{
+  const decoy = J(BASE, 'wrapper-decoy.txt')
+  fs.writeFileSync(decoy, 'DECOY')
+  const guardedMjs = J(TOOLS, 'guarded.mjs')
+  const listRuns = () => fs.readdirSync('C:\\frontier-tmp').filter((n) => /^guarded-/.test(n))
+  const beforeRuns = new Set(listRuns())
+  const run = spawnSync(process.execPath, [guardedMjs, J(TOOLS, 'guarded-selftest.mjs')], { encoding: 'utf8', env: { ...process.env, GUARDED_DECOY: decoy } })
+  const line = /RESULT (\{.*\})/.exec(run.stdout ?? '')
+  const res = line === null ? null : JSON.parse(line[1])
+  check('F: a check run through guarded.mjs runs, and its exit code is the wrapper\'s', run.status === 0 && res !== null, show({ status: run.status, out: (run.stdout ?? '').slice(0, 200), err: (run.stderr ?? '').slice(0, 300) }))
+  check('F: it can make, rename and remove its own things (its temp folder is a fresh one of the run)', res?.ownWrite === 'DONE' && res.ownRename === 'DONE' && res.ownRemove === 'DONE' && res.ownGone === true && /^C:\\frontier-tmp\\guarded-[A-Za-z0-9]+$/.test(res.tmp ?? '') && res.keepTemp === '1', show(res))
+  check('F: and nothing beside it: removing the decoy and writing or making things next to it are refused, and the decoy is untouched', res?.removeDecoy === REFUSED && res.writeBeside === REFUSED && res.mkdirBeside === REFUSED && fs.readFileSync(decoy, 'utf8') === 'DECOY' && !fs.existsSync(`${decoy}.new`) && !fs.existsSync(`${decoy}.dir`), show(res))
+  check('F: making sure that a folder that is there is there is not refused (the checks\' paths.mjs does it at import)', res?.mkdirThere === 'DONE', show(res))
+  check('F: the run\'s own folder is removed when the check is over, and no other folder of C:\\frontier-tmp is', listRuns().every((n) => beforeRuns.has(n)) && fs.existsSync(decoy))
+  const exit7 = spawnSync(process.execPath, [guardedMjs, J(TOOLS, 'guarded-selftest.mjs')], { encoding: 'utf8', env: { ...process.env, GUARDED_DECOY: decoy, GUARDED_EXIT: '7' } })
+  check('F: the exit code of the check is the wrapper\'s', exit7.status === 7)
+  const nothing = spawnSync(process.execPath, [guardedMjs, J(TOOLS, 'no-such-check.mjs')], { encoding: 'utf8' })
+  const notMjs = spawnSync(process.execPath, [guardedMjs, J(TOOLS, 'README.md')], { encoding: 'utf8' })
+  check('F: a check that is not there, or is not a .mjs, is not run (exit code 2) and no folder is made for it', nothing.status === 2 && notMjs.status === 2 && listRuns().every((n) => beforeRuns.has(n)))
+  const text = fs.readFileSync(guardedMjs, 'utf8')
+  check('F: the wrapper hard-codes the scope: C:\\frontier-tmp, one fresh folder, the guard on the wrapper and on the check', /BASE = 'C:\\\\frontier-tmp'/.test(text) && /installFsGuard\(\{ write: \[run\], remove: \[run\] \}\)/.test(text) && /--import/.test(text) && /guard-preload\.mjs/.test(text))
+}
 
 process.exit(check.summary() ? 0 : 1)

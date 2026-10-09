@@ -24,7 +24,7 @@ export const REFUSED = 'EFSGUARD'
 export const GUARDED = {
   writeFile: 'write',
   appendFile: 'write',
-  mkdir: 'write',
+  mkdir: 'mkdir',
   mkdtemp: 'write',
   mkdtempDisposable: 'disposable', // makes a folder that REMOVES itself when disposed: needs both rights
   truncate: 'write',
@@ -137,8 +137,23 @@ export function installFsGuard(options) {
     return `${op} of ${lex.path}: not inside a folder this check may ${op === 'remove' ? 'remove from' : 'write in'}`
   }
 
+  /** True when the path is an ordinary folder that is there (not a link): making it again, with `recursive`, changes nothing. */
+  const isFolder = (text) => {
+    try {
+      const info = fs.lstatSync(win32.resolve(text))
+      return info.isDirectory() && !info.isSymbolicLink()
+    } catch {
+      return false
+    }
+  }
+
   // the path arguments of one call, as [op, value, base] (what the call does to each)
   const parts = {
+    // "make sure this folder is there" (mkdir with `recursive`) on a folder that is there changes nothing, so it is not a write (the checks' paths.mjs does it at import)
+    mkdir: (a) =>
+      a[1] !== null && typeof a[1] === 'object' && a[1].recursive === true && asText(a[0]) !== null && isFolder(asText(a[0]))
+        ? []
+        : [['write', a[0]]],
     write: (a) => [['write', a[0]]],
     remove: (a) => [['remove', a[0]]],
     disposable: (a) => [['write', a[0]], ['remove', a[0]]],

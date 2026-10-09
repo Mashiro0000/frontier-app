@@ -33,7 +33,9 @@ try {
     writeFileSync(f, text)
   }
   console.log(`[${label}] sabotaged: ${spec.edits.length} edit(s) in ${files.length} file(s): ${spec.edits.map((e) => e.to.slice(0, 60).replace(/\s+/g, ' ')).join('  ||  ')}`)
-  const run = spawnSync(process.execPath, spec.argv, { encoding: 'utf8', env: { ...process.env, ...(spec.env ?? {}), NODE_NO_WARNINGS: '1' }, timeout: spec.timeoutMs ?? 280000, maxBuffer: 64 * 1024 * 1024 })
+  // NC_GUARDED=1: the suite is started through tools/guarded.mjs, which confines it to one fresh folder in C:\frontier-tmp (D-043: nothing is removed from any drive but what a run made itself there)
+  const argv = process.env.NC_GUARDED === '1' ? [join(TOOLS, 'guarded.mjs'), ...spec.argv] : spec.argv
+  const run = spawnSync(process.execPath, argv, { encoding: 'utf8', env: { ...process.env, ...(spec.env ?? {}), NODE_NO_WARNINGS: '1' }, timeout: spec.timeoutMs ?? 280000, maxBuffer: 64 * 1024 * 1024 })
   const out = (run.stdout ?? '') + (run.stderr ?? '')
   writeFileSync(join(dir, `${label}.out.txt`), out)
   const fails = out.split('\n').filter((l) => l.startsWith('FAIL'))
