@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gLink",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "link: (a) => [['write', a[0]], ['write', a[1]]],",
+      "to": "link: (a) => [['write', a[1]]],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

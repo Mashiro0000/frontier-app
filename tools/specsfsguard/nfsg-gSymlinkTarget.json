@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gSymlinkTarget",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": ", ['write', a[0], asText(a[1]) === null ? undefined : win32.dirname(win32.resolve(asText(a[1])))]",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

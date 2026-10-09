@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gBoundary",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "p.startsWith(root + '\\\\')",
+      "to": "p.startsWith(root)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

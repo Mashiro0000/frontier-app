@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gOpenStr",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "return !/^(rs?|sr)$/.test(String(flags))",
+      "to": "return false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

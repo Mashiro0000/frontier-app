@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gWild",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "if (/[<>\"|?*]/.test(text))",
+      "to": "if (false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

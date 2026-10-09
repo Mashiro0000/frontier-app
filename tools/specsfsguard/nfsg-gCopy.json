@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gCopy",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "copy: (a) => [['write', a[1]]],",
+      "to": "copy: (a) => [['write', a[0]]],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

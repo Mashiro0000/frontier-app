@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gRealpath",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "return win32.join(fs.realpathSync.native(head), ...rest.reverse(), name)",
+      "to": "return absolute"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

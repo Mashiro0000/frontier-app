@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gNonPath",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "if (raw === null) return null\n    const lex",
+      "to": "if (raw === null) return 'x'\n    const lex"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

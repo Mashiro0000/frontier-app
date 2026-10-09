@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gPhysical",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "if (roots.some((r) => inside(r.lex, path) && inside(r.phys, real))) return null",
+      "to": "if (roots.some((r) => inside(r.lex, path))) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}
