@@ -2795,3 +2795,18 @@ if you have not, please do before you rely on this. **The design was mine** (you
 
 1. **The question can now appear in the middle of a reply** (only for a reply that has read or proposed a lot). If you find it comes too often, raise the amount in Settings; the rule is "grown by more than the amount since your last yes".
 2. **The cost figures are the app's own guesses** (one token to three bytes, at list prices), on the high side for English text; your provider's invoice decides.
+
+## Stage 12 - Slice 12.8: the threat note, the full regression, the merge (9 October 2026; D-042)
+
+**Step by step.**
+
+1. **The threat note** is at the end of D-042 in `docs/DECISIONS.md`: twelve things that could go wrong with a tool that reads and can change your code, what stops each, what does not, and seven findings for you.
+2. **The full regression** ran every earlier test against the finished stage: 166 runs, 139 clean the first time. The other 27 were old tests that listed things the stage changed on purpose (the groups of functions the page has, the list of saved files, the sections of the Tools page, a count of handlers). I updated them and re-ran them: all clean, on the normal app and on the built one. Nothing in the app was at fault.
+3. **Merged** into main with the tag `stage-12-done`, and pushed.
+
+## Stage 12.8 - Things to know (not problems, but worth your attention)
+
+1. **Nothing was tried with a real provider, and I did not look at the real Windows box or the Review window on a screen** (your rule on real dialogs). The first real use is the real test: choose a small folder, let the model read a file, ask for a change, open Review, read the box, apply, undo.
+2. **The file limits stayed as fixed numbers.** The plan said raising them would ask in the box; I did not build that (see D-042, 12.7). Say so if you want it.
+3. **A folder `A:\frontier-base` is left over** from a comparison I started and dropped (an empty copy with a link to `node_modules`; Windows would not let me delete it from here). You can delete the folder: delete only the link `node_modules` inside it first (do not delete its contents).
+4. **The question before a large request can now come in the middle of a reply** (12.7).

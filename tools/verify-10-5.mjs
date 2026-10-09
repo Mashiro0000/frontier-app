@@ -277,7 +277,7 @@ await guard('H', async () => {
   const ipc = source('src/main/ipc.ts')
   check('H: ipc.ts: the projects store uses the app\'s one gate, the chats\' write rule and the attachment store; memory knows project names', /createProjects\(\{/.test(ipc) && /gate: questions/.test(ipc) && /projectName: \(id\) => projects\.nameOf\(id\)/.test(ipc))
   check('H: ...the sweep and every deletion count the projects\' files as used, and delete nothing while projects.json cannot be read', /const inProjects = await projects\.fileRefs\(\)\s*return chats\.complete && inProjects !== null \? new Set\(\[\.\.\.chats\.ids, \.\.\.inProjects\]\) : null/.test(ipc) && /void usedFiles\(\)\s*\.then\(\(used\) => \(used !== null \? attachments\.sweep\(used, 3_600_000\)/.test(ipc) && /referenced: \(\) => usedFiles\(\)/.test(ipc))
-  check('H: ...the encryption flow converts projects.json, quitting waits for it', /keptDocuments\(\[\s*everyChat\.file,\s*memory\.file,\s*projects\.file,\s*auditLog\.document,\s*toolSettings\.file,\s*workspaceStore\.file\s*\]\)/.test(ipc) && /projects\.file\.whenIdle\(\)/.test(ipc))
+  check('H: ...the encryption flow converts projects.json, quitting waits for it', /keptDocuments\(\[\s*everyChat\.file,\s*memory\.file,\s*projects\.file,\s*auditLog\.document,\s*toolSettings\.file,\s*workspaceStore\.file,\s*undoJournal\.document\s*\]\)/.test(ipc) && /projects\.file\.whenIdle\(\)/.test(ipc))
 })
 
 for (const dir of temps) rmSync(dir, { recursive: true, force: true })

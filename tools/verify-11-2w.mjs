@@ -91,7 +91,7 @@ const dlg = () => ev(`(() => {
     heading: d.querySelector('h2')?.textContent ?? null,
     section: d.querySelector('#tools-audit-title')?.textContent ?? null,
     hint: d.querySelector('#tools-audit-title')?.parentElement.querySelector('.tools-hint')?.textContent ?? null,
-    none: d.querySelector('.tools-none')?.textContent ?? null,
+    none: [...d.querySelectorAll('.tools-none')].map((x) => x.textContent).find((t) => /recorded/.test(t)) ?? null,
     problem: d.querySelector('.tools-problem')?.textContent ?? null,
     notice: notice ? { text: notice.textContent, error: notice.classList.contains('tools-notice-error'), role: notice.getAttribute('role') } : null,
     calls,
