@@ -1,0 +1,17 @@
+{
+  "label": "n135-brCount",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/runProposals.ts",
+      "from": "      options.counter.made++\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}

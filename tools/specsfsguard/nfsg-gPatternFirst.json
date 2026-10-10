@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gPatternFirst",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "const first = written.slice(p.base.path.length + 1).split('\\\\')[0]",
+      "to": "const first = written.slice(p.base.path.length + 1)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

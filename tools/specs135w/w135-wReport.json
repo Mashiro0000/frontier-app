@@ -1,0 +1,19 @@
+{
+  "label": "w135-wReport",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/RunProgramsSection.tsx",
+      "from": "          {report !== null && <Report report={report} />}",
+      "to": "          {false && <Report report={report} />}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run135.mjs",
+    "dev"
+  ],
+  "env": {
+    "STOP_AFTER": "C2",
+    "SKIP": "C1"
+  },
+  "timeoutMs": 1500000
+}

@@ -1,0 +1,17 @@
+{
+  "label": "n133-swSpecs",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "      await fs.rm(win32.join(specs, name), { recursive: true, force: true })",
+      "to": "      void name"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

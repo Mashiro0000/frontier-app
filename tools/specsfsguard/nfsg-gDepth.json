@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gDepth",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "if (parts.length < 3) throw new Error(",
+      "to": "if (parts.length < 1) throw new Error("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

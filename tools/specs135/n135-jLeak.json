@@ -1,0 +1,17 @@
+{
+  "label": "n135-jLeak",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "  const leaked = e.secrets.some((s) => s !== '' && text.includes(s))\n",
+      "to": "  const leaked = false\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

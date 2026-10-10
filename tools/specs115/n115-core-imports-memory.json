@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "import type { ReplyBudget } from './replyBudget'\n",
-      "to": "import type { ReplyBudget } from './replyBudget'\nimport './memory'\n"
+      "from": "import type { ReplyBudget, RunCaps } from './replyBudget'\n",
+      "to": "import type { ReplyBudget, RunCaps } from './replyBudget'\nimport './memory'\n"
     }
   ],
   "argv": [

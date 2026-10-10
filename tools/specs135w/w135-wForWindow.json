@@ -1,0 +1,19 @@
+{
+  "label": "w135-wForWindow",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    guardedForWindow(async (window, input: unknown): Promise<ProgramsChangeResult> => {\n      try {\n        return await programService.setOn(window, input)",
+      "to": "    guarded(async (input: unknown): Promise<ProgramsChangeResult> => {\n      try {\n        return await programService.setOn(null, input)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run135.mjs",
+    "dev"
+  ],
+  "env": {
+    "STOP_AFTER": "C2",
+    "SKIP": "C1"
+  },
+  "timeoutMs": 1500000
+}

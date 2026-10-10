@@ -4,6 +4,7 @@
 //   REPO_WIN  A:\frontier-app            (backslashes: for cmd.exe and for the registry scenarios)
 //   TOOLS     this folder (scripts and fixtures that are committed)
 //   OUT       tools/.out: everything a run produces (app logs, outputs, screenshots, generated seed files). Not committed.
+import './temp-on-a.mjs'
 import { mkdirSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'

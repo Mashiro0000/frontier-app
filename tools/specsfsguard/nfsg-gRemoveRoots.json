@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gRemoveRoots",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "const roots = op === 'remove' ? rules.remove : rules.write",
+      "to": "const roots = rules.write"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

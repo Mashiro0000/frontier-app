@@ -6,6 +6,7 @@
 // caps, the form encryption asks for). The service: what a backup and a restore say about files, and that a restore puts back only the files of chats it
 // has (added, copied or already here), each once.
 // Run: node tools/verify-9-5.mjs
+import './temp-on-a.mjs'
 import { checker } from './cdp.mjs'
 import { promises as fsp, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createHash, randomUUID } from 'node:crypto'

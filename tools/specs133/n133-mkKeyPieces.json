@@ -1,0 +1,17 @@
+{
+  "label": "n133-mkKeyPieces",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "  if (data.length <= SCRATCH.keyScanBytes) return heldKey(data.toString('latin1'), keys) !== null",
+      "to": "  if (data.length <= SCRATCH.keyScanBytes) return keys.some(({ key }) => data.includes(key))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 600000
+}

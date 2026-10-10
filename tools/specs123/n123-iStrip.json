@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "        return withWorkspace((await toolSettings.read()).settings, folder !== null)",
-      "to": "        void folder\n        return (await toolSettings.read()).settings"
+      "from": "        const withFiles = withWorkspace((await toolSettings.read()).settings, folder !== null)",
+      "to": "        void folder\n        const withFiles = (await toolSettings.read()).settings"
     }
   ],
   "argv": [

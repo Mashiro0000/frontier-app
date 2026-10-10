@@ -1,0 +1,17 @@
+{
+  "label": "n132-lSuspended",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "uint flags = EXTENDED_STARTUPINFO_PRESENT | CREATE_SUSPENDED | CREATE_NO_WINDOW",
+      "to": "uint flags = EXTENDED_STARTUPINFO_PRESENT | CREATE_NO_WINDOW"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}

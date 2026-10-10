@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "executor(args, { signal: controller.signal, check: checkAgain, maxChars, again, why })",
-      "to": "executor(args, { signal: controller.signal, check: checkAgain, maxChars, again: async () => ({ ok: true, real: '', rel: [], kind: 'file', size: 0, fileClass: 'ok', note: '' }), why })"
+      "from": "            again,\n            why,\n",
+      "to": "            again: async () => ({ ok: true, real: '', rel: [], kind: 'file', size: 0, fileClass: 'ok', note: '' }),\n            why,\n"
     }
   ],
   "argv": [

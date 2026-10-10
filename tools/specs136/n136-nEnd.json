@@ -1,0 +1,15 @@
+{
+  "label": "n136-nEnd",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "      if (!(PROGRAM_ENDS as readonly unknown[]).includes(p.end)) return null\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

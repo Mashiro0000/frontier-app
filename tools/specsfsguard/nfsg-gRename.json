@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gRename",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "rename: (a) => [['write', a[0]], ['write', a[1]]],",
+      "to": "rename: (a) => [['write', a[1]]],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

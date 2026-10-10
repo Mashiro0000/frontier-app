@@ -1,0 +1,17 @@
+{
+  "label": "n132-rDiskField",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/commandRunner.ts",
+      "from": "          diskBytes: request.diskBytes,",
+      "to": "          diskBytes: 536870912,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,17 @@
+{
+  "label": "n135-svWrite",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "        const written = await write(true, false)\n",
+      "to": "        const written = await write(false, false)\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

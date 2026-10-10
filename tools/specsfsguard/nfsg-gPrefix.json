@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gPrefix",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": ".replace(/^\\\\\\\\[?.]\\\\(?=[A-Za-z]:(\\\\|$))/, '')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

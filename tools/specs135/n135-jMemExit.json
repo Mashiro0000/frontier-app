@@ -1,0 +1,17 @@
+{
+  "label": "n135-jMemExit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "const memGood = e.memory.kind === 'ran' && !e.memory.timedOut && e.memory.exitCode !== 0",
+      "to": "const memGood = e.memory.kind === 'ran' && !e.memory.timedOut"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

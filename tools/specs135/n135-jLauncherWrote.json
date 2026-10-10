@@ -1,0 +1,17 @@
+{
+  "label": "n135-jLauncherWrote",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "    nodeSame &&\n    !e.wroteSomething\n",
+      "to": "    nodeSame\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

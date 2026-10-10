@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gPatternLinkLast",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "if (info.isSymbolicLink() && i < names.length - 1) return false",
+      "to": "if (info.isSymbolicLink()) return false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

@@ -84,6 +84,11 @@ const fmt = (n: number): string => n.toLocaleString('en-US')
 export interface ProposalExecutorOptions {
   store: ProposalStore
   now?: () => number
+  /**
+   * The reply's proposals so far, shared with what else makes proposals in the same reply (a run that brings changes back, 13.5), so that one reply makes at most
+   * PROPOSAL_LIMITS.perReply in all. Without it the executors count their own.
+   */
+  counter?: { made: number }
 }
 
 /** The executors for ONE reply: they count the proposals the reply makes. */
@@ -92,7 +97,7 @@ export function createProposalExecutors(options: ProposalExecutorOptions): {
   propose_new_file: Executor
 } {
   const now = options.now ?? Date.now
-  let made = 0
+  const counter = options.counter ?? { made: 0 }
 
   /** What the model is told when a proposal is made, or why it was not. Never anything of the file. */
   const told = (
@@ -106,7 +111,7 @@ export function createProposalExecutors(options: ProposalExecutorOptions): {
     'The person will see the whole difference in a window of the app and decide. It is NOT applied yet: do not say that it is, and do not rely on it until the person has applied it (you can read the file again later to see).'
   const refusedText = (why: string): string => `No proposal was made: ${why}`
   const limit = (): string | null =>
-    made >= PROPOSAL_LIMITS.perReply
+    counter.made >= PROPOSAL_LIMITS.perReply
       ? refusedText(
           `this reply has already made ${PROPOSAL_LIMITS.perReply} proposals, the most one reply may make.`
         )
@@ -147,7 +152,7 @@ export function createProposalExecutors(options: ProposalExecutorOptions): {
     if (!made1.ok) return { text: refusedText(made1.why) }
     const kept = options.store.add(made1.proposal)
     if (!kept.ok) return { text: refusedText(kept.why) }
-    made++
+    counter.made++
     return {
       text: told(
         kept.proposal.id,
@@ -177,7 +182,7 @@ export function createProposalExecutors(options: ProposalExecutorOptions): {
     if (!made1.ok) return { text: refusedText(made1.why) }
     const kept = options.store.add(made1.proposal)
     if (!kept.ok) return { text: refusedText(kept.why) }
-    made++
+    counter.made++
     return {
       text: told(
         kept.proposal.id,

@@ -1,0 +1,17 @@
+{
+  "label": "n132-lLink",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "if (([System.IO.File]::GetAttributes($p) -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'a folder is a link' }",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

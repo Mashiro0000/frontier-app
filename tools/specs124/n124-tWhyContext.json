@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "executor(args, { signal: controller.signal, check: checkAgain, maxChars, again, why })",
-      "to": "executor(args, { signal: controller.signal, check: checkAgain, maxChars, again, why: '' })"
+      "from": "            why,\n            runMsLeft",
+      "to": "            why: '',\n            runMsLeft"
     }
   ],
   "argv": [

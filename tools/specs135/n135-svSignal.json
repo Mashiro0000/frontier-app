@@ -1,0 +1,17 @@
+{
+  "label": "n135-svSignal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "        signal: controller.signal,\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

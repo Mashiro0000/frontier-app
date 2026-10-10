@@ -1,0 +1,17 @@
+{
+  "label": "n135-svBusy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "      if (changing || testing) return { ok: false, error: BUSY }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

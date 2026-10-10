@@ -5,6 +5,7 @@
 //  C. what the source must keep true: the bridge, the handlers behind the sender check, the dialog in the one file that opens dialogs, nothing that gives the
 //     page a path.
 // Run: node tools/verify-9-2.mjs
+import './temp-on-a.mjs'
 import { checker } from './cdp.mjs'
 import { mkdirSync, readFileSync, readdirSync, symlinkSync, writeFileSync } from 'node:fs'
 import { randomUUID } from 'node:crypto'

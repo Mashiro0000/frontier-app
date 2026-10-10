@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gNoOpen",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "  symlink: 'symlink',\n  open: 'open'\n",
+      "to": "  symlink: 'symlink'\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

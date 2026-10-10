@@ -1,0 +1,17 @@
+{
+  "label": "n132-lDiskMax",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "$MAX_DISK = 536870912;",
+      "to": "$MAX_DISK = 536870912000;"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,17 @@
+{
+  "label": "n135-nnFolder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "  const folder = typeof args.folder === 'string' ? args.folder : '.'\n",
+      "to": "  const folder = '.'\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 600000
+}

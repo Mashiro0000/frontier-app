@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gRemoveInside",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "if (!anywhere && !rules.write.some((w) => inside(w.lex, root.lex) && inside(w.phys, root.phys))) throw",
+      "to": "if (false) throw"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

@@ -1,0 +1,17 @@
+{
+  "label": "n135-svTestingEarly",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "    testing = true\n    stoppedByPerson = false\n    const controller = new AbortController()\n",
+      "to": "    stoppedByPerson = false\n    const controller = new AbortController()\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

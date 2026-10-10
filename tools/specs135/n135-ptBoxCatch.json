@@ -1,0 +1,17 @@
+{
+  "label": "n135-ptBoxCatch",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "  try {\n    return await env.box()\n  } catch {\n    return { ok: false, why: 'the box could not be made' }\n  }\n",
+      "to": "  return await env.box()\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

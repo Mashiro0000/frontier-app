@@ -1,0 +1,17 @@
+{
+  "label": "n132-lNoParentWatch",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "IntPtr[] waitFor = parent != IntPtr.Zero ?",
+      "to": "IntPtr[] waitFor = parent != IntPtr.Zero && timeoutMs < 0 ?"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 600000
+}

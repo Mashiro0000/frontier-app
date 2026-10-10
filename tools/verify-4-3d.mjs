@@ -2,6 +2,7 @@
 // opens that conversation: partial text, "Stopped", and the person can carry on. Also re-checks D-004's window settings
 // from the main process, because this stage changed the preload and index.ts.
 // Needs INSPECT_PORT, MOCK_PORT, USER_DATA_DIR, APP_LOG.
+import './temp-on-a.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
 import { h4, mainInspector, shown } from './lib4.mjs'
@@ -40,7 +41,7 @@ const wins = await main.inMain(`process.mainModule.require('electron').webConten
 main.close()
 check('main process: one window, sandbox on, context isolation on, no Node.js, web security on, no <webview> (D-004 still holds)', wins.length === 1 && wins[0].sandbox === true && wins[0].contextIsolation === true && wins[0].nodeIntegration === false && wins[0].webSecurity !== false && !wins[0].webviewTag && !wins[0].nodeIntegrationInSubFrames, JSON.stringify(wins))
 const surface = await H.ev(`({ api: Object.keys(window.api).sort(), electron: typeof window.electron, require: typeof require, process: typeof process, ipc: typeof window.ipcRenderer })`)
-check('the page sees only window.api (no ipcRenderer, no require, no process; attachments since 9.2, instructions since 10.2, memory since 10.4, projects since 10.5)', JSON.stringify(surface) === JSON.stringify({ api: ['attachments', 'audit', 'changes', 'chat', 'history', 'instructions', 'memory', 'projects', 'settings', 'tools', 'usage', 'workspace'], electron: 'undefined', require: 'undefined', process: 'undefined', ipc: 'undefined' }), JSON.stringify(surface))
+check('the page sees only window.api (no ipcRenderer, no require, no process; attachments since 9.2, instructions since 10.2, memory since 10.4, projects since 10.5)', JSON.stringify(surface) === JSON.stringify({ api: ['attachments', 'audit', 'changes', 'chat', 'history', 'instructions', 'memory', 'programs', 'projects', 'settings', 'tools', 'usage', 'workspace'], electron: 'undefined', require: 'undefined', process: 'undefined', ipc: 'undefined' }), JSON.stringify(surface))
 check('no console errors, warnings or exceptions in the page', page.problems.length === 0, page.problems.join(' | '))
 const passed = check.summary()
 page.close()

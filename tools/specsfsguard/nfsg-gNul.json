@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gNul",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "if (raw.includes('\\0')) return { bad: 'a NUL character in a path' }",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

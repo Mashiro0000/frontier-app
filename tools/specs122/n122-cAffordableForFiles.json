@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "    if (def.counts !== 'file' && context.affordable !== undefined) {",
+      "from": "    if (def.counts !== 'file' && def.ask !== 'run' && context.affordable !== undefined) {",
       "to": "    if (context.affordable !== undefined) {"
     }
   ],

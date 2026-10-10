@@ -1,0 +1,17 @@
+{
+  "label": "n133-mkDirsCap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "        dirs.push(here)\n        if (dirs.length + files.length > maxFiles) return tooMany(maxFiles)",
+      "to": "        dirs.push(here)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}

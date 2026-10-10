@@ -4,6 +4,7 @@
 // instructions, and one of version 3 whose instructions are damaged (a number). The suite proves that reading never writes any of them, that
 // what is readable opens (with the instructions it was saved with), and that the damaged one is counted and left alone to the end.
 // Do not edit src/ while this runs: the launch builds from the tree.
+import './temp-on-a.mjs'
 import { mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { createHash, randomUUID } from 'node:crypto'
 import { join } from 'node:path'

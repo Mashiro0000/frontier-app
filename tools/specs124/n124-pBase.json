@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/proposals.ts",
-      "from": "    baseHash: sha256(input.bytes),",
-      "to": "    baseHash: null,"
+      "from": "    baseHash: sha256(input.bytes),\n    before: decoded.text,\n    after,\n    bom: decoded.bom,",
+      "to": "    baseHash: null,\n    before: decoded.text,\n    after,\n    bom: decoded.bom,"
     }
   ],
   "argv": [

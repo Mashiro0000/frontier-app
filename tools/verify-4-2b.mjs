@@ -1,6 +1,7 @@
 // Slice 4.2, SECOND launch on the same scratch profile that verify-4-2.mjs left behind (a key saved, three
 // conversations saved). Does history survive a real restart, does starting up leave the files alone, and is history
 // independent of the API key? Needs: MOCK_PORT, USER_DATA_DIR, APP_LOG.
+import './temp-on-a.mjs'
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'

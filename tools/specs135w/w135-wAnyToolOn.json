@@ -1,0 +1,19 @@
+{
+  "label": "w135-wAnyToolOn",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/App.tsx",
+      "from": "toolsOn={anyToolOn(toolSettings.status, toolSettings.workspace, toolSettings.programs)}",
+      "to": "toolsOn={anyToolOn(toolSettings.status, toolSettings.workspace)}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run135.mjs",
+    "dev"
+  ],
+  "env": {
+    "STOP_AFTER": "D",
+    "SKIP": "C1,C2"
+  },
+  "timeoutMs": 1500000
+}

@@ -1,0 +1,17 @@
+{
+  "label": "n135-svOffAgain",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "          if (tools.settings.enabled[TOOL_ID] !== true) return { ok: true, status: await status() }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

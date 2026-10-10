@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "    signal.addEventListener('abort', onStop, { once: true })\n    const timer",
-      "to": "    const timer"
+      "from": "    signal.addEventListener('abort', onStop, { once: true })\n    if (isRun) budget.pause()",
+      "to": "    if (isRun) budget.pause()"
     }
   ],
   "argv": [

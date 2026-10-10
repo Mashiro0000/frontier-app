@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "executor(args, { signal: controller.signal, check: checkAgain, maxChars, again, why })",
+      "from": "executor(args, {\n            signal: controller.signal,\n            check: checkAgain,\n            maxChars,\n            again,\n            why,\n            runMsLeft: isRun ? budget.runMsLeft() : 0\n          })",
       "to": "executor(args, { signal: controller.signal } as never)"
     }
   ],

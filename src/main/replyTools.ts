@@ -8,6 +8,8 @@ import type { ToolRegistry } from './toolRegistry'
 import type { WorkspaceGuard } from './workspaceGuard'
 import { createProposalExecutors } from './proposalTools'
 import type { ProposalStore } from './proposals'
+import { createProgramSupport, type ProgramEnvironment } from './programTools'
+import { createBringBack } from './runProposals'
 import { createWorkspaceExecutors, workspaceQuestions } from './workspaceTools'
 
 // The tools of ONE reply (Stage 11.3, D-041): the part between the reply's loop (chat.ts) and the core that decides (toolCore.ts). It makes the core for
@@ -23,8 +25,16 @@ export interface ToolRuntimeOptions {
   /** Keeps the audit record (auditLog.ts `append`); rejecting means the call is not made. */
   record: (event: ToolEvent) => Promise<void>
   holdsSavedKey: (text: string) => Promise<boolean>
-  /** The code workspace (12.3): its guard. Absent: no workspace tool can run (a call is refused as "no workspace"). */
-  workspace?: { guard: WorkspaceGuard; proposals: ProposalStore }
+  /**
+   * The code workspace (12.3): its guard, and the store of proposals (12.4). Absent: no workspace tool can run (a call is refused as "no workspace"). Without a store
+   * the tools that propose cannot run, and a run brings nothing back.
+   */
+  workspace?: { guard: WorkspaceGuard; proposals?: ProposalStore }
+  /**
+   * Running a program in a box (13.4): what the run needs. Absent: the run tool cannot run (a call is refused as "no runner"). Needs the workspace as well. The changes
+   * a run brings back (13.5) become proposals in the workspace's store, counted with the reply's other proposals, unless the environment brings its own back.
+   */
+  programs?: ProgramEnvironment
   now?: () => number
   newId?: () => string
   /** The clock of a reply's working time (milliseconds, monotonic); the checks hand in their own. */
@@ -156,13 +166,36 @@ export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
               guard: options.workspace.guard,
               questions: workspaceQuestions({ fileCaps: budget.fileCaps })
             }
+      // The proposals this reply has made, by the model and by runs together: one reply makes at most PROPOSAL_LIMITS.perReply in all.
+      const proposed = { made: 0 }
+      const store = options.workspace?.proposals
       const fileExecutors =
         options.workspace === undefined
           ? {}
           : {
               ...createWorkspaceExecutors({ holdsSavedKey: options.holdsSavedKey }),
-              ...createProposalExecutors({ store: options.workspace.proposals, now: options.now })
+              ...(store === undefined
+                ? {}
+                : createProposalExecutors({ store, now: options.now, counter: proposed }))
             }
+      // Running a program (13.4): only with a workspace (the folder to copy comes from it) and an environment for runs. What a run changes comes back as proposals
+      // (13.5) past the workspace guard, into the store, when there is one.
+      const program =
+        options.programs === undefined || options.workspace === undefined
+          ? undefined
+          : createProgramSupport({
+              ...options.programs,
+              ...(options.programs.bringBack !== undefined || store === undefined
+                ? {}
+                : {
+                    bringBack: createBringBack({
+                      guard: options.workspace.guard,
+                      store,
+                      counter: proposed,
+                      now: options.now
+                    })
+                  })
+            })
       const core = createToolCore({
         tools: options.tools,
         settings: () => current,
@@ -178,8 +211,10 @@ export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
         },
         holdsSavedKey: options.holdsSavedKey,
         ...(workspace === undefined ? {} : { workspace }),
+        ...(program === undefined ? {} : { programs: program.support }),
         executors: {
           ...fileExecutors,
+          ...(program === undefined ? {} : { run_program: program.executor }),
           web_search: async (args, context) => {
             const found = await input.search(String(args.query), context.signal)
             const note = found.end === 'done' ? '' : `\n\n${UNFINISHED[found.end]}`

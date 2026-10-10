@@ -1,0 +1,17 @@
+{
+  "label": "n134-nExit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "      if (p.exitCode !== null && !isCount(p.exitCode, 0, 4_294_967_295)) return null\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

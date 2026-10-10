@@ -1,0 +1,17 @@
+{
+  "label": "n135-jTimeout",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "(refused(said.net) || said.net === 'TIMEOUT')",
+      "to": "refused(said.net)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gUninstall",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "for (const { target, name, original } of originals.reverse()) target[name] = original",
+      "to": "for (const x of []) void x"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

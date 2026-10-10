@@ -29,6 +29,7 @@ import type { AuditDeleteResult, AuditExportResult, AuditView } from '../shared/
 import type { ToolChangeResult, ToolsStatus } from '../shared/tools'
 import type { AppliedChange, ChangeActionResult, ChangeSummary } from '../shared/changes'
 import type { WorkspaceChangeResult, WorkspaceStatus } from '../shared/workspace'
+import type { ProgramsChangeResult, ProgramsStatus } from '../shared/programs'
 import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from '../shared/memory'
 import type { ProjectChangeResult, ProjectsStatus } from '../shared/projects'
 import type { UsageSummary } from '../shared/usage'
@@ -100,6 +101,10 @@ import { parseUndoEntry, renderUndoEntry, UNDO_LIMITS, UNDO_VERSION } from './un
 import { createReviewWindows } from './reviewWindow'
 import { WORKSPACE_PROPOSE_TOOLS } from './proposalTools'
 import { WORKSPACE_READ_TOOLS } from './workspaceTools'
+import { createProgramBox } from './programBox'
+import { createProgramService, withPrograms } from './programService'
+import { RUN_PROGRAM } from './programTools'
+import { sweepSelfTest } from './selfTest'
 import { createToolSettings } from './toolSettings'
 import { createToolSettingsService } from './toolSettingsService'
 import { createUsageLedger } from './usageLedger'
@@ -443,7 +448,8 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   const toolRegistry = createToolRegistry([
     ...BUILT_IN_TOOLS,
     ...WORKSPACE_READ_TOOLS,
-    ...WORKSPACE_PROPOSE_TOOLS
+    ...WORKSPACE_PROPOSE_TOOLS,
+    RUN_PROGRAM
   ])
   // The code workspace (D-042): the one folder the model may list and read files in, kept in workspace.json like the tool settings. The guard holds the
   // containment rule beside the data-folder block; the service is what the page can ask for (choose, clear, switch on and off).
@@ -533,6 +539,27 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     store: toolSettings,
     registry: toolRegistry,
     gate: questions
+  })
+  // Running programs (D-043, 13.5): the box (a runner and a folder of runs that follows the workspace) and the service that owns the one switch: a self-test of the box
+  // on this PC first, then the person's yes in the system's message box. The generic switches above cannot change it.
+  const programBox = createProgramBox({
+    workspaceRoot: () => workspaceRoot,
+    tempDir: app.getPath('temp'),
+    // For testing the whole path in the real window (tools/run135.mjs): FRONTIER_RUN_ROOT names the folder of runs, so that nothing is made at the root of a drive. It works only
+    // when running from source, never in an installed app (the same rule as FRONTIER_API_BASE_URL, baseUrl.ts); a value that is not an ordinary absolute folder is ignored.
+    fixedRunRoot: () => {
+      const value = process.env['FRONTIER_RUN_ROOT']
+      return value && !app.isPackaged ? value : null
+    }
+  })
+  const programService = createProgramService({
+    toolSettings,
+    gate: questions,
+    workspace: { status: () => workspaceService.status() },
+    box: () => programBox.get(),
+    dataDir: app.getPath('userData'),
+    tempDir: app.getPath('temp'),
+    homeDir: app.getPath('home')
   })
   const encryption = createChatEncryptionService({
     store: history,
@@ -884,6 +911,36 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       }
     })
   )
+  // Running programs (D-043, 13.5). The page reads the status (with the last self-test) and asks for the switch to change; it never supplies a program or a path.
+  // Switching on makes the self-test and then asks in the system's box for the window that asked; switching off does neither.
+  ipcMain.handle(
+    CHANNELS.programsStatus,
+    guarded(async (): Promise<ProgramsStatus> => {
+      try {
+        return await programService.status()
+      } catch (error) {
+        console.error('Reading the setting for running programs failed:', reason(error))
+        throw new Error('The setting for running programs could not be read.')
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.programsSetOn,
+    guardedForWindow(async (window, input: unknown): Promise<ProgramsChangeResult> => {
+      try {
+        return await programService.setOn(window, input)
+      } catch (error) {
+        console.error('Changing the setting for running programs failed:', reason(error))
+        return { ok: false, error: 'Running programs could not be changed.' }
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.programsStopTest,
+    guarded(async (): Promise<void> => {
+      programService.stopTest()
+    })
+  )
   // The changes the model proposed (D-042, 12.5). The page reads a summary of each and asks main to open the Review window for one; it can do nothing else with them.
   ipcMain.handle(
     CHANNELS.changesList,
@@ -1060,11 +1117,31 @@ export function registerIpc(appUrl: string): () => Promise<void> {
 
   // The tools of a reply (D-041): the one tool of the build, the one place that decides what becomes of a call, the block that keeps every tool out of the
   // data folder, the audit log behind every question and run, and the app's one gate for questions in the system's box.
+  // At start, what a crash left behind in the folders of runs goes (scratch copies, spec files, drive letters), and so do the files of a self-test that was cut off;
+  // only then is a self-test made again if the switch for running programs is on (it is the test of THIS session that opens the box, never the file alone).
+  const programsSwept = workspaceService
+    .refresh() // the folder of the workspace is read first: its drive has a folder of runs too
+    .then(() => programBox.sweep())
+    .then(() => sweepSelfTest([app.getPath('userData'), app.getPath('temp')]))
+    .then(() => undefined)
+    .catch((error: unknown) => console.error('Clearing up after programs failed:', reason(error)))
+  void programsSwept.then(() => programService.startUp())
   const toolRuntime = createToolRuntime({
     tools: toolRegistry,
     gate: questions,
     guard: dataGuard,
     workspace: { guard: workspaceGuard, proposals },
+    // The run tool: the box as it is for the workspace now, the saved keys (a file that holds one is not copied, output that holds one is not passed on), and whether
+    // a run can be made at all (switched on, and the self-test of this session passed).
+    programs: {
+      box: () => programBox.get(),
+      savedKeys,
+      holdsSavedKey: async (text) => heldKey(text, await savedKeys()) !== null,
+      available: async () => {
+        await programsSwept
+        return programService.available()
+      }
+    },
     record: (event) => auditLog.append(event),
     holdsSavedKey: async (text) => heldKey(text, await savedKeys()) !== null
   })
@@ -1078,17 +1155,22 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     notes: (projectId) => memory.forRequest(projectId),
     project: (id) => projects.forRequest(id),
     tools: {
-      // Read before every request of a reply: the workspace tools are offered only while a folder is chosen, and the guard works from the folder as it is now.
+      // Read before every request of a reply: the workspace tools are offered only while a folder is chosen, and the guard works from the folder as it is now. The
+      // run tool is offered only while it is on AND a self-test of this session passed AND a folder is chosen (withPrograms).
       settings: async () => {
         const folder = await workspaceService.refresh()
-        return withWorkspace((await toolSettings.read()).settings, folder !== null)
+        const withFiles = withWorkspace((await toolSettings.read()).settings, folder !== null)
+        await programsSwept
+        return withPrograms(withFiles, folder !== null && (await programService.available()))
       },
       runtime: toolRuntime
     }
   })
-  // The lock the encryption flows run in is the backup service's, so waiting for it waits for them too.
-  return () =>
-    Promise.all([
+  // The lock the encryption flows run in is the backup service's, so waiting for it waits for them too. The app is closing when this is asked: a program that is still
+  // running in the box is ended first (13.5), and what its copy left is swept at the next start.
+  return () => {
+    programBox.stopAll()
+    return Promise.all([
       history.whenIdle(),
       ledger.whenIdle(),
       backups.whenIdle(),
@@ -1101,4 +1183,5 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       workspaceStore.file.whenIdle(),
       undoJournal.whenIdle()
     ]).then(() => undefined)
+  }
 }

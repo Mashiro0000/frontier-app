@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gAnywhereAlways",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "if (op !== 'remove' && anywhere) return null",
+      "to": "if (op !== \"remove\") return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

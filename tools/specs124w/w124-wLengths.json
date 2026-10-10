@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "        def.args[argName]?.kind === 'body' ? `(${String(value).length} characters)` : value",
+      "from": "        def.args[argName]?.kind === 'body'\n          ? `(${String(value).length} characters)`\n          : typeof value === 'string' || typeof value === 'number'\n            ? value\n            : JSON.stringify(value)",
       "to": "        value"
     }
   ],

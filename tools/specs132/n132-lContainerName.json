@@ -1,0 +1,17 @@
+{
+  "label": "n132-lContainerName",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "if ([string]$spec.container -notmatch '^FrontierApp\\.[A-Za-z0-9]{1,40}$') { throw 'the container name is not ours' }",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

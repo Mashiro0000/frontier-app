@@ -1,0 +1,17 @@
+{
+  "label": "n135-swPattern",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "  /^selftest-canary-[0-9a-f]{10}\\.txt$/,\n",
+      "to": "  /selftest-canary-[0-9a-f]{10}\\.txt/,\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 600000
+}

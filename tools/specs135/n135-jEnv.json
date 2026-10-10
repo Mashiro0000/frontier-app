@@ -1,0 +1,17 @@
+{
+  "label": "n135-jEnv",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "const envGood = ran && JSON.stringify(names) === JSON.stringify(ENVIRONMENT)",
+      "to": "const envGood = ran"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

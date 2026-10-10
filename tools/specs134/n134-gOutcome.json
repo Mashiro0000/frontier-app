@@ -1,0 +1,17 @@
+{
+  "label": "n134-gOutcome",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/audit.ts",
+      "from": "  if (call.result !== null && call.result.ok && call.program !== null) {",
+      "to": "  if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

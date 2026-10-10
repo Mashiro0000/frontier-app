@@ -1,0 +1,17 @@
+{
+  "label": "n132-rTimeoutWhy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/commandRunner.ts",
+      "from": "        why = 'timeout'",
+      "to": "        why = 'abort'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,17 @@
+{
+  "label": "n134-bRunCap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyBudget.ts",
+      "from": "      if (runs >= runLimits.runs) return 'run-cap'\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}

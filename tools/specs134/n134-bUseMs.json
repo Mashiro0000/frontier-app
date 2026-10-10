@@ -1,0 +1,17 @@
+{
+  "label": "n134-bUseMs",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyBudget.ts",
+      "from": "if (Number.isFinite(ms) && ms > 0) runMs += Math.floor(ms)",
+      "to": "runMs += ms"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,17 @@
+{
+  "label": "n133-mkPrefix",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "const kind = classifyNames([...prefix, ...here]).fileClass",
+      "to": "const kind = classifyNames([...here]).fileClass"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 600000
+}

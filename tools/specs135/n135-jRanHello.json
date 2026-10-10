@@ -1,0 +1,17 @@
+{
+  "label": "n135-jRanHello",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "      'ran',\n      ran && said?.hello === 'in the box',\n",
+      "to": "      'ran',\n      ran,\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

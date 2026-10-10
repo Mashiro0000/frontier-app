@@ -1,0 +1,17 @@
+{
+  "label": "n135-svCancelled",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "            ...(answer === 'no' || answer === 'stopped' ? { cancelled: true as const } : {})\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

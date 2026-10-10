@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gPatternName",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "if (!p.name.test(first)) return false",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gEsmSync",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "swap(fs, 'createWriteStream', 'write', 'sync')\n    syncBuiltinESMExports()",
+      "to": "swap(fs, 'createWriteStream', 'write', 'sync')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

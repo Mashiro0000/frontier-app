@@ -1,0 +1,17 @@
+{
+  "label": "n132-rWellFormed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/commandRunner.ts",
+      "from": "    if (!wellFormed(a))",
+      "to": "    if (false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 600000
+}

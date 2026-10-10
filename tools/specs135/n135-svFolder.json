@@ -1,0 +1,17 @@
+{
+  "label": "n135-svFolder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "        if (workspace.folder === null || workspace.unusable !== null) {\n          return { ok: false, error: NO_FOLDER }",
+      "to": "        if (false as boolean) {\n          return { ok: false, error: NO_FOLDER }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

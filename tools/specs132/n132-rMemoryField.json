@@ -1,0 +1,17 @@
+{
+  "label": "n132-rMemoryField",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/commandRunner.ts",
+      "from": "          memoryBytes: request.memoryBytes,",
+      "to": "          memoryBytes: RUN_LIMITS.memoryBytes.max,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

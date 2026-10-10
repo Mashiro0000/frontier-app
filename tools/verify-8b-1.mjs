@@ -3,6 +3,7 @@
 // before it replaces anything; every disk fault leaves the old file as it was or a whole copy beside it).
 // File checks run in a normal folder and in the EFS-encrypted %APPDATA% (D-010); the exhaustive ones (every cut, every changed byte) in the normal one.
 // Run: node tools/verify-8b-1.mjs
+import './temp-on-a.mjs'
 import { checker } from './cdp.mjs'
 import { promises as fsp, statSync } from 'node:fs'
 import { randomUUID } from 'node:crypto'

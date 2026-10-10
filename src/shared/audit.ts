@@ -5,11 +5,23 @@
 import {
   toolTitle,
   type AnswerCode,
+  type ProgramEnd,
   type RefusalCode,
   type ShownArguments,
   type ToolEvent,
   type ToolSource
 } from './tools'
+
+/** The numbers of a program run as the log keeps them (the `program` event without its head). */
+export interface ProgramSummary {
+  end: ProgramEnd
+  exitCode: number | null
+  ms: number
+  copied: number
+  changed: number
+  created: number
+  deleted: number
+}
 
 /** How many calls the window shows at once (the newest). The export holds more. */
 export const AUDIT_VIEW_CALLS = 300
@@ -24,6 +36,8 @@ export type AuditOutcome =
   | { kind: 'failed'; covered?: true }
   /** Allowed and started, and no end was recorded (the app was probably closed meanwhile). */
   | { kind: 'running'; covered?: true }
+  /** A program run (13.4) that came to its end: how, in numbers (the program event), and how much of its output went back to the model. */
+  | { kind: 'ran-program'; program: ProgramSummary; size: number }
   /** Asked, and no answer was recorded (the app was probably closed meanwhile). */
   | { kind: 'unanswered' }
 
@@ -93,7 +107,14 @@ export const REFUSED_TEXT: Record<RefusalCode, string> = {
   'file-cap': 'Refused: the reply had used all its file calls.',
   'chars-cap': 'Refused: the reply had been given all the file text it may read.',
   'grant-declined':
-    'Refused: you had said no to file access for this reply, so you were not asked again.'
+    'Refused: you had said no to file access for this reply, so you were not asked again.',
+  'no-program':
+    'Refused: the program is not one a run may use (not found, not a program, or a shell).',
+  'no-box': 'Refused: this PC cannot make the box for a run just now, so you were not asked.',
+  'run-cap': 'Refused: the reply had used all its runs.',
+  'run-time-cap': 'Refused: the reply had used all the run time it may.',
+  'run-declined': 'Refused: you had said no to a run in this reply, so you were not asked again.',
+  'copy-refused': 'Refused: the folder to copy is bigger than a run may copy, or cannot be copied.'
 }
 
 export const DECLINED_TEXT: Record<Exclude<AnswerCode, 'yes' | 'covered'>, string> = {
@@ -105,6 +126,24 @@ export const DECLINED_TEXT: Record<Exclude<AnswerCode, 'yes' | 'covered'>, strin
 }
 
 const fmt = (n: number): string => n.toLocaleString('en-US')
+
+const seconds = (ms: number): string => `${(ms / 1000).toFixed(1)} seconds`
+
+/** What became of a program run, in a sentence (the numbers of the program event, and how much of the output went back). */
+function programText(p: ProgramSummary, size: number): string {
+  const files = `${fmt(p.copied)} ${p.copied === 1 ? 'file was' : 'files were'} copied into the box; afterwards ${fmt(p.changed)} changed, ${fmt(p.created)} new, ${fmt(p.deleted)} deleted.`
+  const back = `${fmt(size)} characters of its output came back.`
+  switch (p.end) {
+    case 'exited':
+      return `You said yes. The program ran for ${seconds(p.ms)} and ended with exit code ${p.exitCode === null ? 'none' : fmt(p.exitCode)}. ${files} ${back}`
+    case 'timed-out':
+      return `You said yes. The clock ended the program after ${seconds(p.ms)}. ${files} ${back}`
+    case 'disk-full':
+      return `You said yes. The program was ended after ${seconds(p.ms)} because its folder grew past the limit. ${files} ${back}`
+    case 'not-run':
+      return 'You said yes. The program did not run (the box could not be made, or you pressed Stop first). Nothing was changed.'
+  }
+}
 
 /** What happened to a call, in a sentence. The window and the export say the same words. */
 export function outcomeText(outcome: AuditOutcome, tool = 'web_search'): string {
@@ -141,6 +180,8 @@ export function outcomeText(outcome: AuditOutcome, tool = 'web_search'): string 
       return outcome.covered === true
         ? 'Allowed by your yes for this reply. No end was recorded (the app may have been closed).'
         : 'You said yes. No end was recorded (the app may have been closed).'
+    case 'ran-program':
+      return programText(outcome.program, outcome.size)
     case 'unanswered':
       return 'You were asked. No answer was recorded (the app may have been closed).'
   }
@@ -156,6 +197,7 @@ interface Building {
   refused: RefusalCode | null
   answer: AnswerCode | null
   ran: boolean
+  program: ProgramSummary | null
   result: Extract<ToolEvent, { type: 'result' }> | null
 }
 
@@ -165,6 +207,9 @@ function outcomeOf(call: Building): AuditOutcome {
     return { kind: 'declined', answer: call.answer }
   }
   const covered = call.answer === 'covered' ? ({ covered: true } as const) : {}
+  if (call.result !== null && call.result.ok && call.program !== null) {
+    return { kind: 'ran-program', program: call.program, size: call.result.size }
+  }
   if (call.result !== null) {
     return call.result.ok
       ? {
@@ -200,11 +245,23 @@ export function groupCalls(events: readonly ToolEvent[]): AuditCall[] {
         refused: null,
         answer: null,
         ran: false,
+        program: null,
         result: null
       }
       byId.set(event.call, call)
     }
     switch (event.type) {
+      case 'program':
+        call.program = {
+          end: event.end,
+          exitCode: event.exitCode,
+          ms: event.ms,
+          copied: event.copied,
+          changed: event.changed,
+          created: event.created,
+          deleted: event.deleted
+        }
+        break
       case 'refused':
         call.refused = event.code
         break

@@ -1,0 +1,17 @@
+{
+  "label": "n133-mkHash",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "{ size: data.length, sha256: sha256(data) }",
+      "to": "{ size: data.length, sha256: sha256(Buffer.alloc(0)) }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 600000
+}

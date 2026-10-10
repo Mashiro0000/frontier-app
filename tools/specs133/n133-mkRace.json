@@ -1,0 +1,17 @@
+{
+  "label": "n133-mkRace",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "        if (data.length !== size) {",
+      "to": "        if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

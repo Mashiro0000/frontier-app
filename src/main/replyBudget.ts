@@ -1,3 +1,4 @@
+import { RUN_LIMITS } from '../shared/run'
 import { TOOL_CAPS_BOUNDS, TOOL_CAPS_DEFAULT, type ToolCaps } from '../shared/tools'
 import { WORKSPACE_LIMITS } from '../shared/workspace'
 
@@ -11,12 +12,20 @@ import { WORKSPACE_LIMITS } from '../shared/workspace'
 
 export type BudgetAnswer = 'ok' | 'step-cap' | 'time-cap'
 export type FileBudgetAnswer = 'ok' | 'file-cap' | 'time-cap'
+export type RunBudgetAnswer = 'ok' | 'run-cap' | 'run-time-cap'
 
 export interface ReplyBudget {
   /** Counts one tool call and says whether the reply may make it. Once a cap is reached it says so every time and counts nothing more. */
   take(): BudgetAnswer
   /** Counts one FILE call (12.2) and says whether the reply may make it: the same rules, with the file calls' own count. */
   takeFile(): FileBudgetAnswer
+  /** The runs (13.4) this reply may still make, and the milliseconds its programs may still run in all. */
+  runsLeft(): number
+  runMsLeft(): number
+  /** Counts one program RUN and says whether the reply may make it: its own count and its own clock, apart from the steps and the working time. Once a cap is reached it says so every time and counts nothing more. */
+  takeRun(): RunBudgetAnswer
+  /** Counts the milliseconds a program ran (as the launcher measured them). */
+  useRunMs(ms: number): void
   /** The characters of file text this reply may still be given. */
   charsLeft(): number
   /** Counts file text that was handed to the model. */
@@ -28,10 +37,30 @@ export interface ReplyBudget {
   /** The working milliseconds left; 0 when the time is used. */
   remainingMs(): number
   /** `calls` is every call so far, of either kind: the number a call is given in the record. */
-  used(): { steps: number; fileCalls: number; calls: number; chars: number; workingMs: number }
+  used(): {
+    steps: number
+    fileCalls: number
+    calls: number
+    chars: number
+    workingMs: number
+    runs: number
+    runMs: number
+  }
   readonly caps: Readonly<ToolCaps>
   readonly fileCaps: Readonly<FileCaps>
+  readonly runCaps: Readonly<RunCaps>
 }
+
+/** What a reply may use of program runs (the plan of Stage 13, E): fixed, not a setting. */
+export interface RunCaps {
+  runs: number
+  ms: number
+}
+
+export const RUN_CAPS_DEFAULT: Readonly<RunCaps> = Object.freeze({
+  runs: RUN_LIMITS.runsPerReply,
+  ms: RUN_LIMITS.msPerReply
+})
 
 /** What a reply may use of file calls (the plan, D6). Fixed for now: 12.3 puts them in the settings, and a raise asks in the system's box. */
 export interface FileCaps {
@@ -66,14 +95,18 @@ export function sensibleCaps(input: unknown): ToolCaps {
 export function createReplyBudget(
   input: unknown,
   now: () => number = () => performance.now(),
-  fileCaps: Readonly<FileCaps> = FILE_CAPS_DEFAULT
+  fileCaps: Readonly<FileCaps> = FILE_CAPS_DEFAULT,
+  runCaps: Readonly<RunCaps> = RUN_CAPS_DEFAULT
 ): ReplyBudget {
   const caps = Object.freeze(sensibleCaps(input))
   const files = Object.freeze({ calls: fileCaps.calls, chars: fileCaps.chars })
+  const runLimits = Object.freeze({ runs: runCaps.runs, ms: runCaps.ms })
   const started = now()
   let steps = 0
   let fileCalls = 0
   let chars = 0
+  let runs = 0
+  let runMs = 0
   let pausedFor = 0
   let pausedAt = 0
   // A count, not a flag: two calls of one reply can have a question open at the same time (the second is refused as "busy", but it still pauses and
@@ -90,6 +123,7 @@ export function createReplyBudget(
   return {
     caps,
     fileCaps: files,
+    runCaps: runLimits,
     take: () => {
       if (steps >= caps.steps) return 'step-cap'
       if (workingMs() >= limitMs) return 'time-cap'
@@ -101,6 +135,17 @@ export function createReplyBudget(
       if (workingMs() >= limitMs) return 'time-cap'
       fileCalls++
       return 'ok'
+    },
+    runsLeft: () => Math.max(0, runLimits.runs - runs),
+    runMsLeft: () => Math.max(0, runLimits.ms - runMs),
+    takeRun: () => {
+      if (runs >= runLimits.runs) return 'run-cap'
+      if (runMs >= runLimits.ms) return 'run-time-cap'
+      runs++
+      return 'ok'
+    },
+    useRunMs: (ms) => {
+      if (Number.isFinite(ms) && ms > 0) runMs += Math.floor(ms)
     },
     charsLeft: () => Math.max(0, files.chars - chars),
     useChars: (count) => {
@@ -121,7 +166,9 @@ export function createReplyBudget(
       fileCalls,
       calls: steps + fileCalls,
       chars,
-      workingMs: workingMs()
+      workingMs: workingMs(),
+      runs,
+      runMs
     })
   }
 }

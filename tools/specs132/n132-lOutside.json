@@ -1,0 +1,17 @@
+{
+  "label": "n132-lOutside",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "if (-not $p.StartsWith($runRoot + '\\', [System.StringComparison]::OrdinalIgnoreCase)) { throw 'a folder lies outside the run root' }",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

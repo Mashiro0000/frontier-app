@@ -12,6 +12,7 @@
 //     conform both ways byte for byte, a text file that begins like a sealed copy.
 //  H. what the source must keep true.
 // Run: node tools/verify-9-1.mjs      (QUICK=1: the normal folder only, for the negative controls)
+import './temp-on-a.mjs'
 import { checker } from './cdp.mjs'
 import { promises as fsp, existsSync, mkdirSync, readFileSync, readdirSync, statSync, utimesSync, writeFileSync, symlinkSync } from 'node:fs'
 import { randomUUID } from 'node:crypto'

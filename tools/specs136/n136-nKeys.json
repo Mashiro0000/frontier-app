@@ -1,0 +1,15 @@
+{
+  "label": "n136-nKeys",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "        !hasKeys(p, ['end', 'exitCode', 'ms', 'copied', 'changed', 'created', 'deleted'])\n",
+      "to": "        false\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

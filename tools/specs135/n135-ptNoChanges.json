@@ -1,0 +1,17 @@
+{
+  "label": "n135-ptNoChanges",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "  if (candidates === 0) {\n    return ['No text file was changed or made, so there is nothing to review.']\n  }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

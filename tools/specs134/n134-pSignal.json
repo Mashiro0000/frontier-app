@@ -1,0 +1,17 @@
+{
+  "label": "n134-pSignal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "        { signal: ctx.signal }",
+      "to": "        {}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

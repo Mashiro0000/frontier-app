@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gDisposable",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "disposable: (a) => [['write', a[0]], ['remove', a[0]]],",
+      "to": "disposable: (a) => [['write', a[0]]],"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

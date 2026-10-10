@@ -1,0 +1,17 @@
+{
+  "label": "n132-lQuote",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "sb.Append('\\\\', bs * 2 + 1); sb.Append('\"'); bs = 0;",
+      "to": "sb.Append('\\\\', bs * 2); sb.Append('\"'); bs = 0;"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

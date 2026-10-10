@@ -3,8 +3,10 @@ import type { FileHandle } from 'fs/promises'
 import { dirname } from 'path'
 import {
   ANSWER_CODES,
+  PROGRAM_ENDS,
   REFUSAL_CODES,
   TOOL_RESULT_LIMITS,
+  type ProgramEnd,
   type ToolEvent,
   type ToolSource
 } from '../shared/tools'
@@ -141,6 +143,32 @@ export function parseAuditEvent(raw: unknown): ToolEvent | null {
     }
     case 'ran':
       return exactKeys(o, HEAD) ? { type, at, call, tool, step } : null
+    case 'program': {
+      if (
+        !exactKeys(o, [...HEAD, 'end', 'exitCode', 'ms', 'copied', 'changed', 'created', 'deleted'])
+      )
+        return null
+      const { end, exitCode, ms, copied, changed, created, deleted } = o
+      if (typeof end !== 'string' || !(PROGRAM_ENDS as readonly string[]).includes(end)) return null
+      if (exitCode !== null && !isCount(exitCode, 4_294_967_295)) return null
+      if (!isCount(ms, 1_000_000_000)) return null
+      if (!isCount(copied, 1_000_000) || !isCount(changed, 1_000_000)) return null
+      if (!isCount(created, 1_000_000) || !isCount(deleted, 1_000_000)) return null
+      return {
+        type,
+        at,
+        call,
+        tool,
+        step,
+        end: end as ProgramEnd,
+        exitCode,
+        ms,
+        copied,
+        changed,
+        created,
+        deleted
+      }
+    }
     case 'result': {
       if (!exactKeys(o, [...HEAD, 'ok', 'size', 'sources', 'searched', 'searches'])) return null
       const { ok, size, sources, searched, searches } = o
@@ -184,6 +212,17 @@ function lineObject(event: ToolEvent): Record<string, unknown> {
       return { ...head, answer: event.answer }
     case 'ran':
       return head
+    case 'program':
+      return {
+        ...head,
+        end: event.end,
+        exitCode: event.exitCode,
+        ms: event.ms,
+        copied: event.copied,
+        changed: event.changed,
+        created: event.created,
+        deleted: event.deleted
+      }
     case 'result':
       return {
         ...head,

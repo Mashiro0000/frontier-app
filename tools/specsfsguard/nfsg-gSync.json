@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gSync",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "swap(fs, base + 'Sync', kind, 'sync')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

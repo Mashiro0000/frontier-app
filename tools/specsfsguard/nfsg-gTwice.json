@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gTwice",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "if (installed !== null) throw new Error('fsguard: it is installed already')",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

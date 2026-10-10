@@ -524,7 +524,7 @@ await guard('G', async () => {
   const sealed = createWorkspaceStore({ pathOf: () => sealedPath, box, writeMode: async () => ({ form: 'encrypted' }) })
   await sealed.write(rec)
   const sealedText = fs.readFileSync(sealedPath, 'utf8')
-  check('G: sealed like the chats when encryption is on: an envelope, no folder name readable', sealedText.startsWith('{"format":"frontier-chat-encrypted"') && !sealedText.includes('ws') && (await sealed.read()).record?.folder === real.WS)
+  check('G: sealed like the chats when encryption is on: an envelope, no folder name readable', sealedText.startsWith('{"format":"frontier-chat-encrypted"') && !sealedText.includes('folder') && !sealedText.includes(real.WS) && (await sealed.read()).record?.folder === real.WS)
   box.lose()
   const lost = await sealed.read()
   check('G: with the key lost there is no workspace, with the reason', lost.record === null && /could not be opened/.test(lost.problem ?? ''), show(lost))
@@ -566,7 +566,9 @@ await guard('I', async () => {
   check('I: no Electron, network, process or shell in the three files', ['workspaceGuard.ts', 'workspace.ts', 'workspaceText.ts'].every((f) => !/electron|child_process|\bfetch\(|https?:|\bspawn|\bexec\(|require\(|\.writeFile|\.rm\(|\.unlink|\.rename|\.mkdir|\.appendFile|\.copyFile/.test(code(fs.readFileSync(`${dir}/${f}`, 'utf8')).replace(/file\.write|file\.remove/g, ''))))
   check('I: the guard never writes: no write, delete, rename or make-folder call in it', !/fs\.(write|rm|unlink|rename|mkdir|append|copy|truncate|symlink|link)/.test(code(guardSource)))
   const used = fs.readdirSync(dir).filter((f) => f.endsWith('.ts') && !['workspaceGuard.ts', 'workspace.ts', 'workspaceText.ts'].includes(f)).filter((f) => /workspaceGuard|\.\/workspace'|workspaceText/.test(fs.readFileSync(`${dir}/${f}`, 'utf8')))
-  check("I: only the wiring, the core (as a type), the registry (the shared limits), the reply's tools, the workspace service and the read tools import them (12.2 to 12.4 wired them in)", used.sort().join() === 'applyService.ts,ipc.ts,proposalTools.ts,proposals.ts,replyTools.ts,reviewService.ts,toolCore.ts,toolRegistry.ts,workspaceService.ts,workspaceTools.ts', show(used))
+  // 13.3 again, on purpose: the scratch copy (scratchCopy.ts) uses the guard's classification of NAMES (classifyNames) and the text decoder, so that a copy for a run leaves out exactly what the tools of
+  // Stage 12 would not show; it never asks the guard about a path of the person's, and writes only inside the app's run folder (verify-13-3.mjs, part G).
+  check("I: only the wiring, the core (as a type), the registry (the shared limits), the reply's tools, the workspace service, the read tools and (13.3) the scratch copy import them (12.2 to 12.4 wired them in; 13.5: what a run brings back)", used.sort().join() === 'applyService.ts,ipc.ts,proposalTools.ts,proposals.ts,replyTools.ts,reviewService.ts,runProposals.ts,scratchCopy.ts,toolCore.ts,toolRegistry.ts,workspaceService.ts,workspaceTools.ts', show(used))
   const preload = fs.readFileSync(`${REPO}/src/preload/index.ts`, 'utf8') + fs.readFileSync(`${REPO}/src/shared/ipc.ts`, 'utf8')
   check("I: the page's bridge has no function that reads a file, lists a folder or takes a path (12.3 added only the four of the workspace group)", !/readFile|listFiles|readWorkspace|listWorkspace|workspacePath/i.test(preload))
 })

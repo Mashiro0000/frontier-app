@@ -1,0 +1,17 @@
+{
+  "label": "n132-rProgramAny",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/commandRunner.ts",
+      "from": "    if (isInside(systemRoot, program)) return program",
+      "to": "    return program"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

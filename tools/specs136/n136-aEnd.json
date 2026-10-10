@@ -1,0 +1,15 @@
+{
+  "label": "n136-aEnd",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "      if (typeof end !== 'string' || !(PROGRAM_ENDS as readonly string[]).includes(end)) return null\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

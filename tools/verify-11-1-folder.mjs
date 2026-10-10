@@ -23,6 +23,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import { win32 } from 'node:path'
 import { REPO, REPO_URL } from './paths.mjs'
+import { SYSTEM_TEMP } from './temp-on-a.mjs'
 
 const check = checker()
 const guard = async (name, fn) => { try { await fn() } catch (error) { check(`${name} did not run to its end: ${String(error?.stack ?? error).slice(0, 400)}`, false) } }
@@ -54,7 +55,7 @@ const NOT_THERE = ['newfile.json', 'audit\\new-dir\\x.log', 'memory.json.bak', '
 // ----- the scratch world -----
 
 function seed(label, { extras }) {
-  const ROOT = fs.realpathSync.native(fs.mkdtempSync(J(os.tmpdir(), `frontier-111f-${label}-`)))
+  const ROOT = fs.realpathSync.native(fs.mkdtempSync(J(SYSTEM_TEMP, `frontier-111f-${label}-`)))
   const DATA = J(ROOT, 'frontier-app') // named like the real one, so that it has a short name
   const WS = J(ROOT, 'ws')
   const EVIL = J(ROOT, 'frontier-app-evil') // the data folder's name as a prefix of another folder's: a different place
@@ -291,7 +292,7 @@ async function aim(S, rig, tally, group) {
   }
   const entries = [...DATA_FILES, ...DATA_DIRS, '', ...NOT_THERE]
   const sweep = ['memory.json', 'instructions.json', 'audit\\log.jsonl', 'conversations\\c-1.json', 'conversations', '', 'newfile.json', 'audit\\new-dir\\x.log', 'credentials.anthropic.json']
-  const above = [S.ROOT, win32.dirname(S.ROOT), `${S.ROOT.slice(0, 3)}`, os.tmpdir(), `${S.ROOT}\\.`, `${S.ROOT}\\frontier-app\\..`, `${S.ROOT}\\ws\\..`, S.ROOT.toUpperCase(), `\\\\?\\${S.ROOT}`]
+  const above = [S.ROOT, win32.dirname(S.ROOT), `${S.ROOT.slice(0, 3)}`, SYSTEM_TEMP, `${S.ROOT}\\.`, `${S.ROOT}\\frontier-app\\..`, `${S.ROOT}\\ws\\..`, S.ROOT.toUpperCase(), `\\\\?\\${S.ROOT}`]
   for (const tool of group) {
     // 1. everything in the data folder, as it is written
     for (const rel of entries) for (const args of callsFor(S, tool, rel === '' ? S.DATA : `${S.DATA}\\${rel}`)) await attempt(tool, `[${rel || 'the folder'}]`, args)
@@ -330,7 +331,7 @@ const safetyNet = (S) => {
   // the stand-in tools' own protection (the permissive run has no other): tried before anything dangerous
   const rig = executorsFor(S)
   const throws = async (p) => { try { await rig.fs_stat({ path: p }); return false } catch (error) { return /harness refused/.test(error.message) } }
-  return Promise.all([S.ROOT + '-evil', win32.dirname(S.ROOT), S.ROOT.slice(0, 3), 'C:\\Windows', os.tmpdir(), `\\\\localhost\\${S.ROOT[0]}$\\x`, `\\\\?\\${S.ROOT}`, 'Z:\\']).then((all) => all.every(Boolean))
+  return Promise.all([S.ROOT + '-evil', win32.dirname(S.ROOT), S.ROOT.slice(0, 3), 'C:\\Windows', SYSTEM_TEMP, `\\\\localhost\\${S.ROOT[0]}$\\x`, `\\\\?\\${S.ROOT}`, 'Z:\\']).then((all) => all.every(Boolean))
 }
 
 let real

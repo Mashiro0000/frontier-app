@@ -1,0 +1,17 @@
+{
+  "label": "n135-pbFixedRoot",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programBox.ts",
+      "from": "  return win32.dirname(resolved) === resolved ? null : resolved\n",
+      "to": "  return resolved\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 600000
+}

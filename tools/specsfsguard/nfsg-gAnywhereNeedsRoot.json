@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gAnywhereNeedsRoot",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "if (!anywhere && (!Array.isArray(writeList) || writeList.length === 0))",
+      "to": "if (false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

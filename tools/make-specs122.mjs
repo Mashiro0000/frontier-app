@@ -39,8 +39,9 @@ const s = {
   cWsCodeNever: [COR, "  never: { code: 'never', text: DATA_FOLDER_TEXT },", "  never: { code: 'outside', text: DATA_FOLDER_TEXT },"],
   cWsCodeWrong: [COR, "  'not-found': { code: 'wrong-path', text: WRONG_PATH_TEXT },", "  'not-found': { code: 'bad-path', text: WRONG_PATH_TEXT },"],
   cWsTextWithPath: [COR, "  'not-found': { code: 'wrong-path', text: WRONG_PATH_TEXT },", "  'not-found': { code: 'wrong-path', text: 'not found: ' + WRONG_PATH_TEXT + ' nothing-here' },"],
-  cWsAgain: [COR, 'executor(args, { signal: controller.signal, check: checkAgain, maxChars, again, why })', "executor(args, { signal: controller.signal, check: checkAgain, maxChars, again: async () => ({ ok: true, real: '', rel: [], kind: 'file', size: 0, fileClass: 'ok', note: '' }), why })"],
-  cBodyInRecord: [COR, "        def.args[argName]?.kind === 'body' ? `(${String(value).length} characters)` : value", '        value'],
+  // (13.4 moved some of these lines on purpose: the executor's context is spread over several lines, a list is shown as text, a run has its own limit)
+  cWsAgain: [COR, '            again,\n            why,\n', "            again: async () => ({ ok: true, real: '', rel: [], kind: 'file', size: 0, fileClass: 'ok', note: '' }),\n            why,\n"],
+  cBodyInRecord: [COR, "        def.args[argName]?.kind === 'body'\n          ? `(${String(value).length} characters)`\n          : typeof value === 'string' || typeof value === 'number'\n            ? value\n            : JSON.stringify(value)", '        value'],
   // ----- the core: the counts -----
   cCountFileAsStep: [COR, '    const taken = isFile ? budget.takeFile() : budget.take()', '    const taken = budget.take()'],
   cCountStepAsFile: [COR, '    const taken = isFile ? budget.takeFile() : budget.take()', '    const taken = budget.takeFile()'],
@@ -51,10 +52,10 @@ const s = {
   cCharsRefusal: [COR, "      return refused('chars-cap', CHARS_CAP_TEXT, step)", '      void 0'],
   cCharsEveryOp: [COR, "        return op === 'list' || op === 'read'", '        return true'],
   cCharsUsed: [COR, "      if (def.counts === 'file') budget.useChars(result.text.length)\n", ''],
-  cMaxChars: [COR, "        def.counts === 'file' ? Math.min(MAX_RESULT_CHARS, budget.charsLeft()) : MAX_RESULT_CHARS", '        MAX_RESULT_CHARS'],
-  cAffordableForFiles: [COR, "    if (def.counts !== 'file' && context.affordable !== undefined) {", '    if (context.affordable !== undefined) {'],
+  cMaxChars: [COR, "        def.counts === 'file'\n          ? Math.min(MAX_RESULT_CHARS, budget.charsLeft())\n          : isRun\n            ? Math.min(MAX_RESULT_CHARS, RUN_LIMITS.modelChars)\n            : MAX_RESULT_CHARS", '        MAX_RESULT_CHARS'],
+  cAffordableForFiles: [COR, "    if (def.counts !== 'file' && def.ask !== 'run' && context.affordable !== undefined) {", '    if (context.affordable !== undefined) {'],
   // ----- the registry -----
-  rAskCheck: [REG, "    if (def.ask !== 'each' && def.ask !== 'reply') {", '    if (false as boolean) {'],
+  rAskCheck: [REG, "    if (def.ask !== 'each' && def.ask !== 'reply' && def.ask !== 'run') {", '    if (false as boolean) {'],
   rCountsCheck: [REG, "    if (def.counts !== 'step' && def.counts !== 'file') {", '    if (false as boolean) {'],
   rReplyNeedsPath: [REG, "    if ((def.ask === 'reply' || def.counts === 'file') && !inWorkspace) {", '    if (false as boolean) {'],
   rBodyNeedsReply: [REG, "    if (specs.some((spec) => spec.kind === 'body') && def.ask !== 'reply') {", '    if (false as boolean) {'],

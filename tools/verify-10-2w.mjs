@@ -285,7 +285,7 @@ try {
 
   // ============ F. the bridge ============
   const api = await ev(`({ top: Object.keys(window.api).sort(), instructions: Object.keys(window.api.instructions).sort() })`)
-  check('F: window.api has instructions (since 10.2) with exactly checkForChat, getEveryChat and setEveryChat; nothing that writes the prompt or answers a question', show(api) === show({ top: ['attachments', 'audit', 'changes', 'chat', 'history', 'instructions', 'memory', 'projects', 'settings', 'tools', 'usage', 'workspace'], instructions: ['checkForChat', 'getEveryChat', 'setEveryChat'] }), show(api))
+  check('F: window.api has instructions (since 10.2) with exactly checkForChat, getEveryChat and setEveryChat; nothing that writes the prompt or answers a question', show(api) === show({ top: ['attachments', 'audit', 'changes', 'chat', 'history', 'instructions', 'memory', 'programs', 'projects', 'settings', 'tools', 'usage', 'workspace'], instructions: ['checkForChat', 'getEveryChat', 'setEveryChat'] }), show(api))
   const bad = await ev(`Promise.all([window.api.instructions.setEveryChat(12345), window.api.instructions.setEveryChat({ text: 'x' }), window.api.instructions.checkForChat(null)])`)
   check('F: text that is not text is "not understood" by main, and changes nothing', bad.every((x) => x.ok === false && /not understood/.test(x.error)) && fileText() === JSON.stringify({ version: 1, text: EVERY_TEXT }), show(bad))
 

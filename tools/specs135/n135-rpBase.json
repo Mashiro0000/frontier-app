@@ -1,0 +1,17 @@
+{
+  "label": "n135-rpBase",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/proposals.ts",
+      "from": "    baseHash: sha256(input.bytes),\n    before: decoded.text,\n    after,\n    bom: input.bom,\n",
+      "to": "    baseHash: null,\n    before: decoded.text,\n    after,\n    bom: input.bom,\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 600000
+}

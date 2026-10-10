@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/proposalTools.ts",
-      "from": "    made >= PROPOSAL_LIMITS.perReply",
+      "from": "    counter.made >= PROPOSAL_LIMITS.perReply",
       "to": "    false as boolean"
     }
   ],

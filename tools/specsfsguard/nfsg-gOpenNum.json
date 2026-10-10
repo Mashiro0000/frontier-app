@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gOpenNum",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "return (flags & (O.O_WRONLY | O.O_RDWR | O.O_CREAT | O.O_APPEND | O.O_TRUNC)) !== 0",
+      "to": "return false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

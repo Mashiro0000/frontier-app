@@ -1,0 +1,17 @@
+{
+  "label": "n133-rmRetry",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "maxRetries: 12, retryDelay: 250",
+      "to": "maxRetries: 0, retryDelay: 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

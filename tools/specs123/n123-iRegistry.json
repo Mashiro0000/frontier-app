@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "  const toolRegistry = createToolRegistry([\n    ...BUILT_IN_TOOLS,\n    ...WORKSPACE_READ_TOOLS,\n    ...WORKSPACE_PROPOSE_TOOLS\n  ])",
+      "from": "  const toolRegistry = createToolRegistry([\n    ...BUILT_IN_TOOLS,\n    ...WORKSPACE_READ_TOOLS,\n    ...WORKSPACE_PROPOSE_TOOLS,\n    RUN_PROGRAM\n  ])",
       "to": "  const toolRegistry = createToolRegistry(BUILT_IN_TOOLS)"
     }
   ],

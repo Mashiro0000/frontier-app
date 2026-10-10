@@ -67,13 +67,36 @@ const HIDDEN_RANGES: readonly (readonly [number, number])[] = [
   [0x180e, 0x180e]
 ]
 
+const isHidden = (code: number): boolean =>
+  HIDDEN_RANGES.some(([from, to]) => code >= from && code <= to)
+const codeName = (code: number): string => `U+${code.toString(16).toUpperCase().padStart(4, '0')}`
+
 /** The first hidden or reversing character in a text, as "U+202E", or null. */
 export function firstHiddenCharacter(text: string): string | null {
   for (const char of text) {
     const code = char.codePointAt(0) ?? 0
-    if (HIDDEN_RANGES.some(([from, to]) => code >= from && code <= to)) {
-      return `U+${code.toString(16).toUpperCase().padStart(4, '0')}`
-    }
+    if (isHidden(code)) return codeName(code)
+  }
+  return null
+}
+
+/**
+ * The first hidden or reversing character that `after` has MORE of than `before` (counted by character), as "U+202E", or null. A file that already holds such characters
+ * (an emoji joined with a zero-width joiner, a right-to-left text) keeps them; what a text must not do is gain one.
+ */
+export function firstAddedHiddenCharacter(before: string, after: string): string | null {
+  const had = new Map<number, number>()
+  for (const char of before) {
+    const code = char.codePointAt(0) ?? 0
+    if (isHidden(code)) had.set(code, (had.get(code) ?? 0) + 1)
+  }
+  const seen = new Map<number, number>()
+  for (const char of after) {
+    const code = char.codePointAt(0) ?? 0
+    if (!isHidden(code)) continue
+    const count = (seen.get(code) ?? 0) + 1
+    seen.set(code, count)
+    if (count > (had.get(code) ?? 0)) return codeName(code)
   }
   return null
 }
@@ -202,6 +225,52 @@ export function makeEdit(input: EditInput): Made {
     after,
     bom: decoded.bom,
     eol: decoded.eol,
+    why: input.why,
+    secret: input.secret,
+    now: input.now
+  })
+}
+
+export interface ReplaceInput {
+  /** The file as it is now: its bytes and the text they decode to. */
+  bytes: Uint8Array
+  decoded: Extract<DecodedText, { ok: true }>
+  rel: string[]
+  real: string
+  /** The file's whole new text, as a program wrote it (no byte-order mark in it: `bom` says whether the file has one). */
+  after: string
+  bom: boolean
+  why: string
+  /** True for a file of the one-by-one class. */
+  secret: boolean
+  now: number
+}
+
+/**
+ * A change to an existing file whose WHOLE new text is known (a program changed it in a copy, 13.5): the line endings are those of the new text, as the program wrote them.
+ * Refused in words when it would change nothing (a byte-order mark added or taken away is a change), when it holds a hidden or reversing character that the file did not
+ * have, or when the file would be bigger than a file may be.
+ */
+export function makeReplace(input: ReplaceInput): Made {
+  const { decoded, after } = input
+  if (after === decoded.text && input.bom === decoded.bom) {
+    return no('That would leave the file as it is, so nothing would change.')
+  }
+  const hidden = firstAddedHiddenCharacter(decoded.text, after)
+  if (hidden !== null) {
+    return no(
+      `The new text holds a hidden or reversing character (${hidden}) that the file did not have, which is never proposed: such characters can make code read differently from what it does.`
+    )
+  }
+  return build({
+    kind: 'edit',
+    rel: input.rel,
+    real: input.real,
+    baseHash: sha256(input.bytes),
+    before: decoded.text,
+    after,
+    bom: input.bom,
+    eol: lineEndings(after),
     why: input.why,
     secret: input.secret,
     now: input.now

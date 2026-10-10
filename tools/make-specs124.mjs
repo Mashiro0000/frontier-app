@@ -36,7 +36,7 @@ const node = {
   pOnce: [PR, '  if (count > 1) {', '  if (false as boolean) {'],
   pFound: [PR, '  if (count === 0) {', '  if (false as boolean) {'],
   pSame: [PR, '  if (find === replace)\n    return no(', '  if (false as boolean)\n    return no('],
-  pHiddenEdit: [PR, '  if (hidden !== null) {\n    return no(\n      `The new text holds a hidden', '  if (false as boolean) {\n    return no(\n      `The new text holds a hidden'],
+  pHiddenEdit: [PR, '  const hidden = firstHiddenCharacter(replace)\n  if (hidden !== null) {', '  const hidden = firstHiddenCharacter(replace)\n  if (false as boolean) {'],
   pHiddenCreate: [PR, '  if (hidden !== null) {\n    return no(\n      `The new file', '  if (false as boolean) {\n    return no(\n      `The new file'],
   pRange202a: range('[0x202a, 0x202e]'),
   pRange2066: range('[0x2066, 0x2069]'),
@@ -53,7 +53,7 @@ const node = {
   pNoChange: [PR, "  if (after === decoded.text) return no('That change would leave the file as it is.')\n", ''],
   pSize: [PR, '  if (bytes.length > WORKSPACE_LIMITS.maxFileBytes) {', '  if (false as boolean) {'],
   pBom: [PR, '    bom: decoded.bom,', '    bom: false,'],
-  pBase: [PR, '    baseHash: sha256(input.bytes),', '    baseHash: null,'],
+  pBase: [PR, '    baseHash: sha256(input.bytes),\n    before: decoded.text,\n    after,\n    bom: decoded.bom,', '    baseHash: null,\n    before: decoded.text,\n    after,\n    bom: decoded.bom,'],
   pFinger: [PR, '      fingerprint: sha256(bytes).slice(0, 12),', '      fingerprint: sha256(bytes).slice(0, 8),'],
   pBytesFor: [PR, "  Buffer.from(bom ? BOM + text : text, 'utf8')", "  Buffer.from(text, 'utf8')"],
   pEol: [PR, '    eol: decoded.eol,', "    eol: 'lf',"],
@@ -75,8 +75,8 @@ const node = {
   pLimitWaiting: [PR, '  waiting: 20,', '  waiting: 21,'],
   pLimitReply: [PR, '  perReply: 10', '  perReply: 11'],
   // ----- the tools -----
-  tPerReply: [PT, '    made >= PROPOSAL_LIMITS.perReply', '    false as boolean'],
-  tMade: [PT, '    made++\n    return {\n      text: told(\n        kept.proposal.id,\n        kept.proposal.path,\n        kept.proposal.added,\n        kept.proposal.removed,\n        false\n      )', '    return {\n      text: told(\n        kept.proposal.id,\n        kept.proposal.path,\n        kept.proposal.added,\n        kept.proposal.removed,\n        false\n      )'],
+  tPerReply: [PT, '    counter.made >= PROPOSAL_LIMITS.perReply', '    false as boolean'],
+  tMade: [PT, '    counter.made++\n    return {\n      text: told(\n        kept.proposal.id,\n        kept.proposal.path,\n        kept.proposal.added,\n        kept.proposal.removed,\n        false\n      )', '    return {\n      text: told(\n        kept.proposal.id,\n        kept.proposal.path,\n        kept.proposal.added,\n        kept.proposal.removed,\n        false\n      )'],
   tSize: [PT, '    if (verdict.size > WORKSPACE_LIMITS.maxFileBytes) {', '    if (false as boolean) {'],
   tDecode: [PT, '    if (!decoded.ok)\n      return { text: refusedText(`the file cannot be read as text', '    if (false as boolean)\n      return { text: refusedText(`the file cannot be read as text'],
   tNothing: [PT, ' Nothing was changed on disk. ', ' '],
@@ -86,17 +86,17 @@ const node = {
   tSecretCreate: [PT, "      content: String(args.content),\n      why: ctx.why,\n      secret: verdict.fileClass === 'one-by-one',", "      content: String(args.content),\n      why: ctx.why,\n      secret: false,"],
   tDescribeNothing: [PT, "    'Nothing is changed: the person sees the whole difference in a window of the app and decides, and you cannot apply it. For several places, make several proposals. ' +", "    'The person sees the whole difference in a window of the app and decides. For several places, make several proposals. ' +"],
   tIds: [WTL, "  'propose_edit',\n  'propose_new_file'\n]", "  'propose_edit'\n]"],
-  tNoExecutors: [RTL, '              ...createProposalExecutors({ store: options.workspace.proposals, now: options.now })', ''],
-  tWhyContext: [COR, 'executor(args, { signal: controller.signal, check: checkAgain, maxChars, again, why })', "executor(args, { signal: controller.signal, check: checkAgain, maxChars, again, why: '' })"],
+  tNoExecutors: [RTL, '                : createProposalExecutors({ store, now: options.now, counter: proposed }))', '                : {})'],
+  tWhyContext: [COR, '            why,\n            runMsLeft', "            why: '',\n            runMsLeft"],
   xWrites: [PT, '    const bytes = await fs.readFile(verdict.real)\n    if (bytes.length > WORKSPACE_LIMITS.maxFileBytes) {\n      return {\n        text: refusedText(`the file is larger', "    await fs.writeFile(verdict.real + '.x', '')\n    const bytes = await fs.readFile(verdict.real)\n    if (bytes.length > WORKSPACE_LIMITS.maxFileBytes) {\n      return {\n        text: refusedText(`the file is larger"],
   xFsInProposals: [PR, "import { createHash } from 'crypto'", "import { createHash } from 'crypto'\nimport { promises as fs } from 'fs'\nvoid fs"]
 }
 
 const win = {
-  wRegistry: [IPC, '    ...WORKSPACE_PROPOSE_TOOLS\n  ])', '  ])'],
+  wRegistry: [IPC, '    ...WORKSPACE_PROPOSE_TOOLS,\n    RUN_PROGRAM\n  ])', '    RUN_PROGRAM\n  ])'],
   wIds: [WTL, "  'propose_edit',\n  'propose_new_file'\n]", "  'propose_edit'\n]"],
-  wNoExecutors: [RTL, '              ...createProposalExecutors({ store: options.workspace.proposals, now: options.now })', ''],
-  wLengths: [COR, "        def.args[argName]?.kind === 'body' ? `(${String(value).length} characters)` : value", '        value']
+  wNoExecutors: [RTL, '                : createProposalExecutors({ store, now: options.now, counter: proposed }))', '                : {})'],
+  wLengths: [COR, "        def.args[argName]?.kind === 'body'\n          ? `(${String(value).length} characters)`\n          : typeof value === 'string' || typeof value === 'number'\n            ? value\n            : JSON.stringify(value)", '        value']
 }
 
 const write = (dir, specs, argv, env, timeoutMs, prefix) => {

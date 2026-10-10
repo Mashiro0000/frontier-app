@@ -3,9 +3,14 @@
 // usage: node tools/regress.mjs <tag> [node|window|seeds|scenarios|stage4|preview]...   (default: all of them, in that order)
 // Outputs of every run go to tools/.out/<label>.out.txt; the summary is printed and appended to tools/.out/regress-<tag>.txt.
 // PROVIDER_TEST / REGISTRY_TEST (env): the plain-Node provider and registry suites to run (defaults: the current ones).
+//
+// Since the incident of 2026-10-09 (D-044) the whole run is started as `node tools/guarded-window.mjs tools/regress.mjs <tag> ...`, which makes the run's own folder in C:\frontier-tmp,
+// puts TEMP there and confines every Node process of the run to removing only that folder, the throwaway profiles and the repo's `out` folder. This file removes nothing itself.
+// The plain-Node suites are started so that no other guard stands over them: the older ones through tools/guarded.mjs (its own fresh folder), the 13.x ones and the guard's own
+// directly (they have the guard in them and need TEMP to be C:\frontier-tmp itself and FRONTIER_MAY_REMOVE=1, which the owner has allowed in words).
 import { REPO_WIN } from './paths.mjs'
 import { spawnSync } from 'node:child_process'
-import { appendFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { appendFileSync, copyFileSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { OUT, ensureSeeds, here, runApp, runNode, scratch } from './drive.mjs'
 
@@ -30,9 +35,22 @@ const launcher = (script, mode, label, what) => {
   note(r.status === 0, `${r.status === 0 ? 'OK  ' : 'BAD '} ${pfx(label).padEnd(26)} ${what.padEnd(58)} ${total}`)
 }
 
+// The suites that have the guard of tools/fsguard.mjs in them, and the one that is the guard's own: run directly, without the window wrapper's preload (their own guard is stricter).
+const OWN_GUARD = new Set(['verify-13-2.mjs', 'verify-13-3.mjs', 'verify-13-4.mjs', 'verify-13-5.mjs', 'verify-fsguard.mjs'])
+// A launcher that starts Electron on a throwaway profile is not a plain-Node suite: it stays under the wrapper's preload like every window launcher.
+const LAUNCHERS = new Set(['run91.mjs'])
+const NO_PRELOAD = { NODE_OPTIONS: '' }
+function nodeSuite(label, script) {
+  if (OWN_GUARD.has(script)) return runNode({ label: pfx(label), script, env: { ...NO_PRELOAD, TEMP: 'C:\\frontier-tmp', TMP: 'C:\\frontier-tmp', FRONTIER_MAY_REMOVE: '1' } })
+  if (LAUNCHERS.has(script)) return runNode({ label: pfx(label), script })
+  // an older plain-Node suite: under the wrapper's guard like every window launcher (writes are not limited; what it may remove is its own folder, the throwaway profiles in Roaming and out)
+  // (these suites make throwaway folders in the real AppData to test this PC's EFS conditions (D-010), so they get the real one back)
+  return runNode({ label: pfx(label), script, env: process.env.FRONTIER_REAL_APPDATA ? { APPDATA: process.env.FRONTIER_REAL_APPDATA } : {} })
+}
+
 if (parts.includes('node')) {
-  for (const [label, script] of [['provider', process.env.PROVIDER_TEST ?? 'provider-node-test-5.mjs'], ['registry', process.env.REGISTRY_TEST ?? 'verify-5-2.mjs'], ['store', 'verify-4-1.mjs'], ['adapter', 'provider-adapter-test-5.mjs'], ['credstore', 'verify-5-3-store.mjs'], ['store54', 'verify-5-4-store.mjs'], ['openai', 'provider-openai-test-5.mjs'], ['rankings', 'verify-6-1.mjs'], ['effort', 'verify-7-1.mjs'], ['markdown', 'verify-7-2.mjs'], ['rewrite', 'verify-7-3.mjs'], ['instructions', 'verify-7-4.mjs'], ['usage', 'verify-8-1.mjs'], ['limits', 'verify-8-2.mjs'], ['askfirst', 'verify-8-3.mjs'], ['backupfile', 'verify-8b-1.mjs'], ['restore', 'verify-8b-2.mjs'], ['encrypt', 'verify-8b-3.mjs'], ['wording', 'verify-8b-wording.mjs'], ['attach91', 'verify-9-1.mjs'], ['images91', 'run91.mjs'], ['attach92', 'verify-9-2.mjs'], ['attach93', 'verify-9-3.mjs'], ['cost94', 'verify-9-4.mjs'], ['backup95', 'verify-9-5.mjs'], ['question101', 'verify-10-1.mjs'], ['instructions102', 'verify-10-2.mjs'], ['memory103', 'verify-10-3.mjs'], ['notes104', 'verify-10-4.mjs'], ['projects105', 'verify-10-5.mjs'], ['projreq106', 'verify-10-6.mjs'], ['backup107', 'verify-10-7.mjs'], ['tools111', 'verify-11-1.mjs'], ['folder111', 'verify-11-1-folder.mjs'], ['tools112', 'verify-11-2.mjs'], ['tools113', 'verify-11-3.mjs'], ['tools114', 'verify-11-4.mjs'], ['tools115', 'verify-11-5.mjs'], ['tools116', 'verify-11-6.mjs'], ['tools117', 'verify-11-7.mjs'], ['workspace121', 'verify-12-1.mjs'], ['workspace122', 'verify-12-2.mjs'], ['workspace123', 'verify-12-3.mjs'], ['proposals124', 'verify-12-4.mjs'], ['review125', 'verify-12-5.mjs'], ['apply126', 'verify-12-6.mjs'], ['cost127', 'verify-12-7.mjs'], ...(process.env.EXTRA_NODE_TESTS ? process.env.EXTRA_NODE_TESTS.split(',').map((t, i) => ['extra' + i, t]) : [])]) {
-    const r = runNode({ label: pfx(label), script })
+  for (const [label, script] of [['provider', process.env.PROVIDER_TEST ?? 'provider-node-test-5.mjs'], ['registry', process.env.REGISTRY_TEST ?? 'verify-5-2.mjs'], ['store', 'verify-4-1.mjs'], ['adapter', 'provider-adapter-test-5.mjs'], ['credstore', 'verify-5-3-store.mjs'], ['store54', 'verify-5-4-store.mjs'], ['openai', 'provider-openai-test-5.mjs'], ['rankings', 'verify-6-1.mjs'], ['effort', 'verify-7-1.mjs'], ['markdown', 'verify-7-2.mjs'], ['rewrite', 'verify-7-3.mjs'], ['instructions', 'verify-7-4.mjs'], ['usage', 'verify-8-1.mjs'], ['limits', 'verify-8-2.mjs'], ['askfirst', 'verify-8-3.mjs'], ['backupfile', 'verify-8b-1.mjs'], ['restore', 'verify-8b-2.mjs'], ['encrypt', 'verify-8b-3.mjs'], ['wording', 'verify-8b-wording.mjs'], ['attach91', 'verify-9-1.mjs'], ['images91', 'run91.mjs'], ['attach92', 'verify-9-2.mjs'], ['attach93', 'verify-9-3.mjs'], ['cost94', 'verify-9-4.mjs'], ['backup95', 'verify-9-5.mjs'], ['question101', 'verify-10-1.mjs'], ['instructions102', 'verify-10-2.mjs'], ['memory103', 'verify-10-3.mjs'], ['notes104', 'verify-10-4.mjs'], ['projects105', 'verify-10-5.mjs'], ['projreq106', 'verify-10-6.mjs'], ['backup107', 'verify-10-7.mjs'], ['tools111', 'verify-11-1.mjs'], ['folder111', 'verify-11-1-folder.mjs'], ['tools112', 'verify-11-2.mjs'], ['tools113', 'verify-11-3.mjs'], ['tools114', 'verify-11-4.mjs'], ['tools115', 'verify-11-5.mjs'], ['tools116', 'verify-11-6.mjs'], ['tools117', 'verify-11-7.mjs'], ['workspace121', 'verify-12-1.mjs'], ['workspace122', 'verify-12-2.mjs'], ['workspace123', 'verify-12-3.mjs'], ['proposals124', 'verify-12-4.mjs'], ['review125', 'verify-12-5.mjs'], ['apply126', 'verify-12-6.mjs'], ['cost127', 'verify-12-7.mjs'], ['launcher132', 'verify-13-2.mjs'], ['fsguard', 'verify-fsguard.mjs'], ['scratch133', 'verify-13-3.mjs'], ['programs134', 'verify-13-4.mjs'], ['programs135', 'verify-13-5.mjs'], ['costs136', 'verify-13-6.mjs'],...(process.env.EXTRA_NODE_TESTS ? process.env.EXTRA_NODE_TESTS.split(',').map((t, i) => ['extra' + i, t]) : [])]) {
+    const r = nodeSuite(label, script)
     note(r.ok, `${r.ok ? 'OK  ' : 'BAD '} ${pfx(label).padEnd(26)} ${script}`)
   }
 }
@@ -76,6 +94,7 @@ if (parts.includes('window')) {
   launcher('run125.mjs', 'dev', 'w125', 'verify-12-5 (the Review window and the list of changes: the window as a second page, its policy and bridge, the scroll rule, drop, Escape)')
   launcher('run126.mjs', 'dev', 'w126', 'verify-12-6 (apply and undo: the box, a no and a yes, the applied list, undo, deleting the history, what the pages cannot do)')
   launcher('run127.mjs', 'dev', 'w127', 'verify-12-7 (what a file costs: the question in the middle of a reply, the limit, a proposal\'s text)')
+  launcher('run135.mjs', 'dev', 'w135', 'verify-13-5 (running programs: the real box, the self-test, a run on a copy, Stop everything, the switch off)')
   launcher('run93.mjs', 'dev', 'w93', 'verify-9-3 (sending and saving files: both providers, History, delete, encryption, the sweep, a model that cannot read them)')
   rec(seeded('w76', 'dev', 'setup-key.mjs,verify-7-6w.mjs', { USER_DATA_DIR: scratch('s76'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('w76'), 'verify-7-6 (header one row, chat bar under the box)')
   const mtime = statSync(join(P, 'preferences.json')).mtimeMs
@@ -90,7 +109,8 @@ if (parts.includes('seeds')) {
 }
 
 if (parts.includes('scenarios')) {
-  rmSync(join(OUT, 'registry-saved.json'), { force: true }) // the scenarios save the project's current registry as their baseline
+  // the scenarios compare against a saved copy of the project's registry: it is made again from the current file (nothing is removed: the wrapper allows only its own folder)
+  copyFileSync(join(REPO_WIN, 'registry', 'models.json'), join(OUT, 'registry-saved.json'))
   for (const s of ['wrong-version', 'no-usable-models', 'default-missing', 'default-is-broken-entry', 'one-bad-entry', 'unknown-provider', 'reordered', 'default-sonnet', 'saved-skipped', 'broken-json-syntax']) {
     const run = spawnSync(process.execPath, [join(here, 'run-scenario.mjs'), s], { encoding: 'utf8', timeout: 900000, env: { ...process.env, NODE_NO_WARNINGS: '1' } })
     const out = (run.stdout ?? '') + (run.stderr ?? '')
@@ -151,6 +171,7 @@ if (parts.includes('preview')) {
   launcher('run125.mjs', 'preview', 'prev-w125', 'built: verify-12-5 (the Review window)')
   launcher('run126.mjs', 'preview', 'prev-w126', 'built: verify-12-6 (apply and undo)')
   launcher('run127.mjs', 'preview', 'prev-w127', 'built: verify-12-7 (what a file costs)')
+  launcher('run135.mjs', 'preview', 'prev-w135', 'built: verify-13-5 (running programs)')
   launcher('run93.mjs', 'preview', 'prev-w93', 'built: verify-9-3 (sending and saving files)')
   rec(seeded('prev-w76', 'preview', 'setup-key.mjs,verify-7-6w.mjs', { USER_DATA_DIR: scratch('s76p'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('prev-w76'), 'built: verify-7-6 (header one row, chat bar)')
   stage4('preview')

@@ -1,0 +1,17 @@
+{
+  "label": "n135-ptMadeWords",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "for the person to review; nothing is changed until they apply it.`\n",
+      "to": "for the person to review.`\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

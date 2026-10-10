@@ -1,0 +1,17 @@
+{
+  "label": "n134-pRemoveCopy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "      await removeScratch(made.dir, box.runRoot)",
+      "to": "      void 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

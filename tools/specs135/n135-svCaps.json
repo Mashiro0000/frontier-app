@@ -1,0 +1,17 @@
+{
+  "label": "n135-svCaps",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "{ enabled: { ...settings.enabled, [TOOL_ID]: on }, caps: { ...settings.caps } },",
+      "to": "{ enabled: { ...settings.enabled, [TOOL_ID]: on }, caps: {} },"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

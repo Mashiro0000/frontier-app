@@ -1,0 +1,17 @@
+{
+  "label": "n135-rtNoBring",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "options.programs.bringBack !== undefined || store === undefined",
+      "to": "true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

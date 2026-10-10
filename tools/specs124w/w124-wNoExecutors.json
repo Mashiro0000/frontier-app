@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/replyTools.ts",
-      "from": "              ...createProposalExecutors({ store: options.workspace.proposals, now: options.now })",
-      "to": ""
+      "from": "                : createProposalExecutors({ store, now: options.now, counter: proposed }))",
+      "to": "                : {})"
     }
   ],
   "argv": [

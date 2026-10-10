@@ -1,0 +1,17 @@
+{
+  "label": "n135-rpHiddenMore",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/proposals.ts",
+      "from": "    if (count > (had.get(code) ?? 0)) return codeName(code)\n",
+      "to": "    if (!had.has(code)) return codeName(code)\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 600000
+}

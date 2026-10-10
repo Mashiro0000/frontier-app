@@ -1,0 +1,17 @@
+{
+  "label": "n135-tsSet",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolSettingsService.ts",
+      "from": "      if (PROGRAM_TOOL_IDS.includes(tool)) {\n",
+      "to": "      if (false as boolean) {\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,17 @@
+{
+  "label": "n135-brWhy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/runProposals.ts",
+      "from": "const reasonFor = (why: string): string => `Made by a program that was run: ${why}`.slice(0, 300)\n",
+      "to": "const reasonFor = (why: string): string => why\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}

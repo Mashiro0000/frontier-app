@@ -8,6 +8,7 @@ import {
   type ToolSettings,
   type ToolsStatus
 } from '../shared/tools'
+import { PROGRAM_TOOL_IDS } from '../shared/programs'
 import { KeptRefused } from './keptFile'
 import {
   QUESTION_BUSY,
@@ -32,6 +33,8 @@ export const CAPS_NOT_RAISED = 'The limits are as they were.'
 const NOT_UNDERSTOOD = 'That change was not understood.'
 const BUSY = 'The tool settings are still being changed.'
 const NO_TOOL = 'That tool does not exist in this version of the app.'
+const OWN_SWITCH =
+  'That tool has its own switch, in its own section of the Tools page: it is switched on only after a test of the box.'
 const NOTHING_TO_RESET = 'The tool settings can be read, so there is nothing to start again.'
 
 const changeRefused = (why: string): string =>
@@ -120,8 +123,9 @@ export function createToolSettingsService(
   const infoOf = (settings: ToolSettings): ToolInfo[] =>
     registry.ids().flatMap((id): ToolInfo[] => {
       const def = registry.get(id)
-      // The tools of the code workspace have their own switch (workspaceService.ts): they are not listed here.
-      return def === undefined || def.counts === 'file'
+      // The tools of the code workspace have their own switch (workspaceService.ts), and so has running programs, which needs a self-test (programService.ts):
+      // they are not listed here.
+      return def === undefined || def.counts === 'file' || PROGRAM_TOOL_IDS.includes(id)
         ? []
         : [{ id, title: def.title, about: def.effect, on: toolIsOn(settings, id) }]
     })
@@ -167,6 +171,10 @@ export function createToolSettingsService(
       }
       const { tool, on } = input as { tool: string; on: boolean }
       const def = registry.get(tool)
+      if (PROGRAM_TOOL_IDS.includes(tool)) {
+        // On or off: running programs is the program service's alone, so that no change of it can skip the self-test (the page's "off" goes there as well).
+        return Promise.resolve({ ok: false, error: OWN_SWITCH })
+      }
       if (def === undefined || def.counts === 'file') {
         return Promise.resolve({ ok: false, error: NO_TOOL })
       }

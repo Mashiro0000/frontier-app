@@ -1,0 +1,17 @@
+{
+  "label": "n133-cmpLink",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "      if (entry.isSymbolicLink()) {\n        out(key, 'link', 'link')",
+      "to": "      if (false) {\n        out(key, 'link', 'link')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

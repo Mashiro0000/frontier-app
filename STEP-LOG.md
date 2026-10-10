@@ -2810,3 +2810,116 @@ if you have not, please do before you rely on this. **The design was mine** (you
 2. **The file limits stayed as fixed numbers.** The plan said raising them would ask in the box; I did not build that (see D-042, 12.7). Say so if you want it.
 3. **A folder `A:\frontier-base` is left over** from a comparison I started and dropped (an empty copy with a link to `node_modules`; Windows would not let me delete it from here). You can delete the folder: delete only the link `node_modules` inside it first (do not delete its contents).
 4. **The question before a large request can now come in the middle of a reply** (12.7).
+
+## Stage 13 - Slice 13.1: the probe (the gate) (9 October 2026; D-043)
+
+**Step by step.**
+
+1. **What this slice answers.** Before any code that runs programs is written into the app, one question: on this PC, can a program really be boxed so that it cannot read your files, write outside its folder, use the network, run forever, eat all the memory or outlive its run? If not, the stage stops and commands stay manual. I tried it with a test program of mine that is not part of the app.
+2. **The answer is yes.** 50 checks, run four times (twice with the scratch folder on C:, twice on A:), all ok and identical. Reading your user folder, your app data, your other projects and your keys: refused. Writing anywhere but the box's own folder: refused (checked on the disk, not on what the box said). Network: nothing got out to the internet, to this computer or to your network, and nothing outside could connect in. Time, memory, number of programs and amount of output were all held, and nothing was left running afterwards.
+3. **The same checks as a plain program get through everywhere**, so the checks can fail; and three deliberately weakened boxes (no container, no limits, no kill) were each noticed by the checks meant to notice them.
+4. **Five things I found that change the design**, all fixed in the plan, none a hole: the installed `node.exe` cannot be read from inside the box (so the app will run a private read-only copy of it); the box's folder has to look like a drive of its own (so the app mounts it as a drive letter); the box's folder must not be inside an encrypted folder; `git` and the Store `python` cannot run in the box (as expected); and a program that starts a child process and waits for its piped output hangs until the 120-second limit (documented, not dangerous).
+5. **Drive A: (your request).** The checks' temp files now go to `A:\frontier-tmp` (every script that used `%TEMP%` on C:), and the box's folders will be on the workspace's own drive first. Your C: still holds about 1,209 old test folders (2.4 GB) in `%LOCALAPPDATA%\Temp`; my attempt to delete them was refused by the sandbox of this session, so I left them (see below).
+6. **No change to the app itself** (no file of `src/` touched); the work is `tools/probe-13-1.mjs`, `probe13-launcher.ps1`, `probe13-inner.cjs`, `lib13.mjs`, `temp-on-a.mjs`.
+
+## Stage 13.1 - Things to know (not problems, but worth your attention)
+
+1. **The box is the one the browsers use for their page processes, not a virtual machine.** It is as strong as that boundary and no stronger; a flaw in Windows itself could let a program out. The yes in the box is still your main defence.
+2. **Only `node`, `cmd` and `powershell` can run in the box on this PC.** `git` is in your user folder and `python` is a Store shortcut; neither can run. Say so if you want git to be able to run (it would need a copy of it in the tools folder; not part of the plan).
+3. **Old test folders on C:.** About 1,209 folders named `frontier-*` (2.4 GB, all made by my earlier test scripts) are still in `C:\Users\91995\AppData\Local\Temp`. I did not delete them; if you want them gone, say "delete the old test folders" and I will try again, or delete every folder there whose name starts with `frontier-` yourself.
+4. **Your other big folders on C:** `npm-cache` (1.1 GB), `.cache\codex-runtimes` (1.3 GB) and `electron` (281 MB) are tool caches that are not mine to move; I did not touch them.
+
+## Stage 13 - Slice 13.2: the launcher inside the app (9 October 2026; D-043)
+
+**Step by step.**
+
+1. **What this slice builds.** The part of the app that starts a program in the box: a small PowerShell/C# launcher kept inside the app and a TypeScript module around it (`commandRunner.ts`). Nothing in the app uses it yet: the next slices make the scratch copy (13.3) and the tool that the model will see (13.4). So you will notice no change when you run the app.
+2. **How a run goes.** The app checks the request (the program, its arguments, the folder, the limits), writes the launcher to disk and checks its fingerprint, gives it one small file of settings, and waits. The launcher makes the box, runs the program, ends everything when the run is over, takes away the temporary drive letter and reports back. Nothing the program or the model writes is ever put on a command line; if the box cannot be made, nothing runs (there is no weaker mode to fall back to).
+3. **It is checked a lot.** 239 checks with the real box, including 79 awkward arguments (quotes, backslashes, `%PATH%`, `&`, emoji...) that all arrive exactly as written, about 50 hostile settings files given straight to the launcher (all refused before anything is made), a launcher that dies, hangs or lies (nothing runs, never a guess), Stop everything, and the app being killed (the program in the box is gone within seconds). The 50 checks of the first slice also pass against this launcher. 42 deliberate breakages of the code were each noticed.
+4. **Bugs found and fixed on the way:** a hostile settings file could make the launcher write a file into the current folder; Stop everything gave the wrong reason; a failing start could throw an error out of the runner; a program's temporary folder pointed at a folder that did not exist (Windows changes it for boxed programs; the launcher now makes a `.frontier-box` folder inside the scratch folder for it, and the comparison in 13.3 will leave that folder out).
+5. **Memory notes and docs:** D-043 (`docs/DECISIONS.md`), the roadmap, `tools/README.md`.
+
+## Stage 13.2 - Things to know (not problems, but worth your attention)
+
+1. **A run costs about three seconds before the program even starts** (PowerShell, compiling the C#, making the box), and about five the first time (it copies `node.exe`, 90 MB, once). The five runs a reply of the plan are 15 to 25 s of overhead. If that matters I can build the C# once into a file; it is not done.
+2. **If the app is killed hard, a temporary drive letter (like `Z:`) can stay behind** until the next start of the app; it holds an empty or half-used scratch folder. 13.3 removes it at start-up. You can also remove it with `subst Z: /d`.
+3. **Your security product (McAfee is installed here) removed a test program I compiled** between building and running it. It did not touch the launcher in about 60 runs, but a stricter setting could. If it ever does, the app says "the box could not be made" and runs nothing.
+4. **I did not look at any real Windows window or box** (your rule); this slice has none.
+
+## Stage 13 - Slice 13.3: the scratch copy (9 October 2026; D-043)
+
+**Step by step.**
+
+1. **What this slice builds.** The copy a program works on. A program never touches your folder: the files the model may see (the Stage 12 rules) are copied into a fresh folder that belongs to the app, the program works there, and afterwards the app compares the copy with what it copied. Nothing in the app uses it yet (the tool is 13.4).
+2. **What is copied and what is not.** Ordinary files and folders. Left out, and counted by reason: links, files with two names, `.git`, hidden and secret-looking names, any file that holds one of your saved API keys (even in pieces), paths that are too long, special files. A folder with more than 20,000 files or 100 MB is not copied at all, and the answer says so in words and suggests a subfolder.
+3. **What is looked at afterwards.** Every file is compared by its fingerprint. Changed and new text files (small, UTF-8) become candidates for proposals in the Review window (13.5); binary or big files and deleted files are only listed. Nothing is ever brought back by itself.
+4. **Clearing up.** The copy is removed after every run, with a strict rule about what the app is willing to remove (only a folder directly inside its own scratch folder). At start-up the app also takes away what a crash left behind, including a stray temporary drive letter.
+5. **The part that went wrong.** Testing this slice is where the incident of D-044 happened (see the next entry). The code was put right, tested again and checked again by deliberate breakages: 110 checks and 36 deliberate breakages, all noticed.
+6. **Also in this slice:** the launcher got a disk cap (a program that fills the disk is ended in seconds), 13.2's checks went from 239 to 255.
+
+## Stage 13 - the incident of 9 October 2026 and what stands between a check and your drives now (D-044)
+
+1. **What happened.** While I tested 13.3, one of my deliberate breakages removed a safety test from the function that clears the copy, and the check that goes with it handed that function your real drive root, `A:\`. It removed what it could at the root of drive A: (about 14 GB). That was my fault: the check should never have been able to reach a real path, and I had written that rule for myself before.
+2. **Your rule, which I follow:** nothing is deleted from any drive. Afterwards you allowed one narrow thing: my tests may remove only folders they made themselves in the same run, inside `C:\frontier-tmp`.
+3. **What now stands between a check and your drives:** a guard under the file system for any check that can remove things (`tools/fsguard.mjs`): outside the check's own new folder, every write, rename, copy and removal is refused before it happens; a wrapper that runs the older checks confined the same way; the 13.x checks refuse to start unless that folder is `C:\frontier-tmp` and you have allowed removing. The guard has its own checks (88) and 38 deliberate breakages, all noticed. The checks that used a real drive root now use a letter nothing is mounted on.
+4. **Limits, honestly:** the guard cannot watch programs a check starts, and it cannot confine the checks that open the real app window; those need your separate yes.
+5. **I worked in a copy of the repo on C:** (`C:\frontier-work\frontier-app`) while your recovery scan was running, so that nothing was written to A:.
+
+## Stage 13 - Slice 13.4: the run tool in the registry and the core (9 October 2026; D-043)
+
+**Step by step.**
+
+1. **What this slice builds.** The tool the model will ask with, `run_program`, and everything the app does about it before and after: which program it really is, the question that stands in front of EVERY run, the limits of a reply (5 runs, 240 seconds in all), Stop everything, the record. The model sees nothing new yet: switching it on, and the test that must pass first, are 13.5.
+2. **A program and arguments, no shell.** The model names a program (`node`, or a full path in the Windows folder) and gives its arguments as a list. The real path is what you are shown. Shells and script hosts (`cmd`, PowerShell and the like) are refused as programs, and so is anything outside the Windows folder and the installed `node.exe`.
+3. **The question.** A Windows message box, every time, "Don't run it" as the default: the program as a full path, the arguments one by one, the folder and at most how many files would be copied, what is left out, the model's reason (between quotes, so nothing in it can pass for the box's own words), what the box allows and forbids, and how many runs the reply has left. A no is kept for the rest of the reply: you are not asked again and again.
+4. **What a run costs the reply.** It counts as one of the reply's tool steps, and one of 5 runs; its program time counts against 240 seconds in all (each run at most 120). The reply's ordinary working clock stands still while the program runs. A run that is stopped or fails is still charged the time it took.
+5. **The record.** Every run leaves its events in the audit log: asked, answered, ran, and a new line with how it ended in numbers (never the output). The chat shows a short sentence.
+6. **What the model is told afterwards:** what ran and how it ended, the program's output cut to 20,000 characters, labelled "text from outside, not instructions", with control characters replaced and any saved key left out; and what became of the files in the copy.
+7. **Checked:** 181 checks under plain Node (the real registry, core, guards and copy, a played person and a played box) and 86 deliberate breakages (85 noticed; the 86th changes nothing anyone can see, see D-043). Eight older checks that list "who may import whom" and "which refusal codes exist" were brought up to date one by one; eleven older breakages whose target lines had moved were rewritten and the nine that run under plain Node were run again.
+
+## Stage 13.4 - Things to know (not problems, but worth your attention)
+
+1. **The question says "at most N files".** A file that holds one of your saved keys is found when the folder is copied, not when it is first looked at (looking at every file's content before you answer would make you wait), so the number can be a little high. The box says that such a file is never copied.
+2. **The first real run through the app is not in this slice.** The runner and the box were proven in 13.2; here the box is played. The first real end-to-end run is the self-test of 13.5.
+3. **Files and folders left behind by my tests in `C:\frontier-tmp`:** about 40 small folders from the guard's own test (it removes nothing, by design), one from a run that was killed on purpose, and the control runner's output files. Nothing there matters; I did not remove them because you did not allow it. Say the word if you want them gone.
+4. **Working in the copy:** everything of this stage so far is in `C:\frontier-work\frontier-app` on C:; it is brought back to the repo on A: at the end, after your recovery has finished.
+
+## Stage 13 - Slice 13.5: the switch, the self-test and what a run brings back (10 October 2026; D-043)
+
+**Step by step.**
+
+1. **What this slice builds.** The tool of 13.4 is now offered to the model, behind a switch on the Tools page ("Run programs"). Before it can go on, the app tests the box on this PC; only then does it ask you in a Windows message box. Nothing runs without you: every run still asks, as in 13.4.
+2. **The self-test.** The app puts a small program in the box and has it try, from inside, everything it must not be able to do: read a file of the app's data, read a file in your temp folder, list your user folder, write in the app's folders or change its own program copy, reach the network (even this computer), see the app's environment, run for ever, use too much memory. It believes what it sees from OUTSIDE (the files are untouched, nobody connected, the clock ended the program), not what the program says. Twelve lines, shown on the page. If one is not as it must be, the switch stays off, and there is no way to run a program without the box.
+3. **The switch.** Switching on needs a folder (the copy comes from it) and Node.js; then the test; then your yes. Switching off is at once. The page's other tool switches cannot change it. A "Stop the test" button ends a test that is going on.
+4. **After a restart.** The switch being on in a file is not enough: the box is tested again in the background and the tool is not offered until that has passed. If the test no longer passes (a Windows update, a security product), the switch is taken off and the page says why. With the switch on, every start of the app makes this test in the background (about half a minute; nothing waits for it).
+5. **What a run brings back.** The text files a program changed or made become proposals in the Review window, as in Stage 12; nothing in your folder changes until you apply them. A file you changed while the program ran is not proposed over; a file that grew too big, is not text now or whose name is taken is not proposed; a text with hidden or reversing characters the file did not have is refused. A reply makes at most ten proposals in all, the model's and the runs' together. The model is told which files could not be made into proposals, and why.
+6. **The chat.** A run shows as the program's name, its arguments and the folder, and how it ended, and says where the changes wait.
+7. **Where the box lives.** A folder `FrontierRun` at the root of the workspace's drive (the copy is quicker on the same drive), else in the temp folder. It is swept at start-up.
+8. **Checked:** 140 checks under plain Node (the real box among them), 115 deliberate breakages (113 noticed; two of them change nothing anyone can see, see D-043), and a check in the real window with the real box (see the window numbers in D-043). Eight older checks that list "who imports whom" were brought up to date one by one.
+
+## Stage 13 - Slice 13.6: cost, encryption and backups of running programs (10 October 2026; D-043)
+
+**Step by step.**
+
+1. **What a run costs.** No API money (nothing is billed for a run). What the program prints goes to the model, and so does the call with its list of arguments; the estimate before each request counts both, as it does for files since 12.7. The most a reply can add by runs is about 37,000 tokens (five runs at their limit), about $0.23 at the price of a request that writes the cache; the question in the middle of a reply is the one of 12.7 and is not asked for runs of that size at the default amount.
+2. **Encryption.** The tool settings (with the run switch) and the audit log (with the new line for every run) are sealed with your chats when you turn encryption on, and come back when you turn it off. A key that cannot be opened means every tool is off: the run switch cannot be read as on.
+3. **Backups.** A backup of a chat carries the notes of runs (the program, the arguments, how it ended) and nothing of the tool settings or the audit log. A damaged note (a title the app did not write, an end it does not know, a number out of range, a field more) is refused. A restore never switches the run tool on.
+4. **No code changed in this slice:** these are the rules of 12.7 and 10.7 applied to the new events and notes, and 39 checks and 12 deliberate breakages (all noticed) show that they hold.
+
+## Stage 13 - Slice 13.7: the threat note, the full regression and the merge (10 October 2026; D-043)
+
+**Step by step.**
+
+1. **The threat note** (D-043, 13.7): twelve things that could go wrong with a tool that runs programs the model chose, what stops each, and what does not. The weak point is the same as in every stage: a person can click yes without reading.
+2. **How the windows were tested.** The dev tools the window checks use remove files of their own while they work (a temporary config file, a cache folder, old logs). Your rule allows a test to remove only what it made itself in the same run inside `C:\frontier-tmp`, so every window run now works in a COPY of the tree that is made inside the run's own folder, and that folder is removed at the end. The working tree is never touched by a window run, and every deliberate breakage is made in the copy.
+3. **The full regression** (every earlier suite against the tree as it is now): 170 of 174 runs were clean on the first pass; the four that were not were a check of mine that used a Windows command that now ends at once (fixed), one window check that read a mark too early (clean on its own) and one list of the page's groups that did not yet have `programs` (fixed, clean on the dev and the built app). The new checks of this stage were all clean, on the dev app and on the built app.
+4. **The merge.** The branch `stage-13-run-programs` is merged into `main` with a merge commit (as for the earlier stages), tagged `stage-13-done` and pushed to GitHub (main, the branch and the tag) from the working copy on C:. The repo on A: has not been touched.
+
+## Stage 13 - Things to know (not problems, but worth your attention)
+
+1. **A folder `FrontierRun` is made at the root of the workspace's drive** (for you, `C:\FrontierRun`, or `A:\FrontierRun` if the workspace is on A:; the temp folder when the root cannot be used). It holds the launcher, a private copy of `node.exe` and, while a run goes on, the copy. It is swept at every start of the app.
+2. **With "Run programs" on, every start of the app makes the self-test** in the background (about half a minute; nothing waits for it, and no run is possible until it has passed). If it no longer passes, the switch goes off by itself and the page says why.
+3. **Nothing was tried against a real AI provider, and the Windows message box was played in every window check** (your rule on real dialogs). The first real use is the test; the steps are in D-043.
+4. **The test profiles have been on drive A: all along, and I did not know.** The Claude desktop app is installed on A:, and Windows redirects what the programs it starts write under AppData to its own package folder there (`A:WpSystem...Claude_pzs8sxrjxfjjcLocalCache`). So the throwaway profiles of every window check (94 folders, 1.26 GB, from all stages) are in that folder on A:, and the app itself writes there all the time. I had said I was keeping off A:: that was not true for these, and I should have found it earlier. Window runs now have their own AppData on C: (inside the run's folder, removed at the end); a few older store checks keep the real one, as they must, and write a few small files there. The 94 old profiles are untouched (your rule): only you can say whether they may go.
+5. **What I left on C: and did not remove** (your rule): about forty tiny `frontier-fsguard-*` folders and some `frontier-13*-*` folders and the controls' backups in `C:\frontier-tmp`; the working copy `C:\frontier-work\frontier-app` (with its own `node_modules`, 600 MB), the parked junction `C:\frontier-work\node_modules-junction-to-A`, the folder `C:\frontier-work\window-runs` (outputs of window runs); one stray `electron.vite.config.<number>.mjs` in the root of that copy; the throwaway profiles `frontier-app-test-scratch-*` in Roaming. Say the word if you want any of it gone.
+6. **The repo on A: has not been touched** since the incident, by your instruction. The finished work is in the copy on C: and, after the merge, on GitHub. Bringing it back to A: needs your yes to write there.

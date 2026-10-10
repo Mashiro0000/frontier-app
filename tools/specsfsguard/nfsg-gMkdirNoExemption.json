@@ -1,0 +1,15 @@
+{
+  "label": "nfsg-gMkdirNoExemption",
+  "edits": [
+    {
+      "file": "{{REPO}}/tools/fsguard.mjs",
+      "from": "a[1] !== null && typeof a[1] === 'object' && a[1].recursive === true && asText(a[0]) !== null && isFolder(asText(a[0]))",
+      "to": "false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-fsguard.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

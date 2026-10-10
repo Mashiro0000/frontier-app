@@ -1,6 +1,7 @@
 // Slice 5.4: each reply records which provider and model wrote it; the saved file is version 2; a version 1 file (Stages 2-4) is read as
 // version 2 without being rewritten. In the real window, against the Stage 5 mock. Run through run54.mjs, which seeds the version 1 file.
 // Needs USER_DATA_DIR (a scratch profile), MOCK_PORT, APP_LOG, TEMP (the seed's manifest) and a key saved by setup-key.mjs.
+import './temp-on-a.mjs'
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'

@@ -1,0 +1,15 @@
+{
+  "label": "n136-aMs",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "      if (!isCount(ms, 1_000_000_000)) return null\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

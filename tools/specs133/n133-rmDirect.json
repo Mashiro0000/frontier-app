@@ -1,0 +1,17 @@
+{
+  "label": "n133-rmDirect",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": " || win32.dirname(target).toLowerCase() !== home.toLowerCase())",
+      "to": ")"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

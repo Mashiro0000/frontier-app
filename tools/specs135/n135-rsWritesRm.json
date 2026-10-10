@@ -1,0 +1,17 @@
+{
+  "label": "n135-rsWritesRm",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "    for (const file of [writeData, writeLauncher, writeTools]) {\n      await fs.rm(file, { force: true }).catch(() => undefined)\n    }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

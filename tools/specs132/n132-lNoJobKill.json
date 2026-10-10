@@ -1,0 +1,17 @@
+{
+  "label": "n132-lNoJobKill",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "0x2000 | 0x8 | 0x400 | 0x200;",
+      "to": "0x8 | 0x400 | 0x200;"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 600000
+}

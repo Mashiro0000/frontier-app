@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolSettingsService.ts",
-      "from": "      return def === undefined || def.counts === 'file'\n        ? []",
-      "to": "      return def === undefined\n        ? []"
+      "from": "      return def === undefined || def.counts === 'file' || PROGRAM_TOOL_IDS.includes(id)\n        ? []",
+      "to": "      return def === undefined || PROGRAM_TOOL_IDS.includes(id)\n        ? []"
     }
   ],
   "argv": [

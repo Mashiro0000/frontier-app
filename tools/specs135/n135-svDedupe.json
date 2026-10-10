@@ -1,0 +1,17 @@
+{
+  "label": "n135-svDedupe",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "    if (background === null) {\n      background = testInBackground()",
+      "to": "    if (true as boolean) {\n      background = testInBackground()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

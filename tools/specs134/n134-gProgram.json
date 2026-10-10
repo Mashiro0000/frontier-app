@@ -1,0 +1,17 @@
+{
+  "label": "n134-gProgram",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/audit.ts",
+      "from": "      case 'program':\n",
+      "to": "      case 'program-ignored':\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

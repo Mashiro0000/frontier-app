@@ -1,0 +1,22 @@
+{
+  "label": "n134-pPlace",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "      isInside(places.systemRoot, candidate) ||",
+      "to": "      true ||"
+    },
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "        isInside(realSystem, real) ||",
+      "to": "        true ||"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

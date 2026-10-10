@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "    const timer = setTimeout(endBecause('time'), Math.max(0, budget.remainingMs()))",
+      "from": "    const timer = setTimeout(\n      endBecause('time'),\n      Math.max(0, isRun ? budget.runMsLeft() + RUN_BACKSTOP_MS : budget.remainingMs())\n    )",
       "to": "    const timer = setTimeout(() => undefined, 1)"
     }
   ],

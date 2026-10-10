@@ -4,6 +4,7 @@
 // difference was scrolled to its end, cannot load or run anything that is not its own, and closes on Escape; dropping a change takes it from the list; the chat page
 // has no way to reach the window and the window has no way to reach the chat page's functions. Nothing is written to the workspace.
 // Needs: USER_DATA_DIR (scratch), INSPECT_PORT, MOCK_PORT, a saved key (setup-key.mjs).
+import './temp-on-a.mjs'
 import './ts-resolve.mjs'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'

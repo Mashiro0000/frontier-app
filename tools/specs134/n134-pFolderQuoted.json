@@ -1,0 +1,17 @@
+{
+  "label": "n134-pFolderQuoted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "${shown(f.folder)}  (at most",
+      "to": "${f.folder}  (at most"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

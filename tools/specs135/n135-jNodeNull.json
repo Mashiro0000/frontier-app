@@ -1,0 +1,17 @@
+{
+  "label": "n135-jNodeNull",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "const nodeSame = sizes.before !== null && sizes.before === sizes.after",
+      "to": "const nodeSame = sizes.before === sizes.after"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

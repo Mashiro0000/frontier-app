@@ -1,0 +1,17 @@
+{
+  "label": "n133-mkReserved",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/scratchCopy.ts",
+      "from": "      if (rel.length === 0 && entry.name.toLowerCase() === SCRATCH.reserved) {\n        leave",
+      "to": "      if (rel.length === 0 && entry.name.toLowerCase() === 'x') {\n        leave"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-3.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 600000
+}

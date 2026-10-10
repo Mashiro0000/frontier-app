@@ -1,0 +1,17 @@
+{
+  "label": "n134-pNoButton",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "    no: \"Don't run it\"",
+      "to": "    no: 'Run it'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}
