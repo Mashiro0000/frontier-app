@@ -75,13 +75,12 @@ if (!ok) {
 // The run's own AppData (D-044, 2026-10-10). The Claude desktop app is a packaged app installed on drive A:, and Windows redirects what its processes write under the real AppData
 // (Roaming and Local) to the package's own data folder on A: (A:\WpSystem\...\LocalCache): the throwaway profiles of every window run were being written there, and the real path of a
 // file in one is not the path it is called by (so a guard that compares real paths refused to remove it). The run's profiles are made in the run's own folders, on C:, which is also
-// where the rule allows a run to remove what it made. Roaming is EFS-encrypted like the real one (the checks of this PC's EFS conditions, D-010, still test them).
+// where the rule allows a run to remove what it made. (They are plain folders: the "EFS-encrypted AppData" of this PC is the package's store, and EFS is not available on C:; the few
+// plain-Node suites that test those conditions get the real AppData back, see tools/regress.mjs.)
 const roaming = win32.join(run, 'roaming')
 const local = win32.join(run, 'local')
 fs.mkdirSync(roaming)
 fs.mkdirSync(local)
-const efs = spawnSync('cipher', ['/E', roaming], { encoding: 'utf8', windowsHide: true })
-if (efs.status !== 0) console.error(`guarded-window-copy.mjs: the Roaming folder of the run could not be EFS-encrypted (${String(efs.stdout).trim().slice(0, 120)}): the checks of the EFS conditions will say so.`)
 const preload = pathToFileURL(win32.join(app, 'tools', 'harness-guard-preload.mjs')).href
 const child = spawn(process.execPath, [win32.join(app, 'tools', rel), ...process.argv.slice(3)], {
   stdio: 'inherit',

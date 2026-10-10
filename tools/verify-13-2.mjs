@@ -266,7 +266,9 @@ await guard('C', async () => {
   const fillSmall = await R(d, ['fill.cjs', '2'], { diskBytes: 5 * 1024 * 1024 })
   check('C: a program that stays within the cap is not touched, and the size of the folder is reported', fillSmall.kind === 'ran' && fillSmall.diskExceeded === false && fillSmall.exitCode === 0 && fillSmall.scratchBytes >= 2 * 1024 * 1024, show(fillSmall))
   for (const f of fs.readdirSync(d).filter((x) => x.startsWith('fill-'))) fs.rmSync(J(d, f))
-  put(d, 'kids.cjs', "const cp = require('child_process'); let ok = 0, bad = 0; for (let i = 0; i < 20; i++) { try { const c = cp.spawn('C:\\\\Windows\\\\System32\\\\cmd.exe', ['/c', 'for /l %i in (1,1,600000000) do @rem'], { stdio: 'ignore', windowsHide: true }); c.on('error', () => {}); if (c.pid) ok++; else bad++ } catch { bad++ } } setTimeout(() => { require('fs').writeFileSync('kids.json', JSON.stringify({ ok, bad })); process.exit(0) }, 1500)")
+  // (10 October 2026: the children are node sleepers now. The counting loop of cmd.exe that they used to be does not stay alive in the box on the Windows build of this PC any more: it
+  // exits at once, so the run had nothing left to end; the property is the same, and it is kept by a child that really sleeps and that is not tied to its parent's exit)
+  put(d, 'kids.cjs', "const cp = require('child_process'); let ok = 0, bad = 0; for (let i = 0; i < 20; i++) { try { const c = cp.spawn(process.execPath, ['-e', 'setTimeout(function(){},120000)'], { detached: true, stdio: 'ignore', windowsHide: true }); c.on('error', () => {}); c.unref(); if (c.pid) ok++; else bad++ } catch { bad++ } } setTimeout(() => { require('fs').writeFileSync('kids.json', JSON.stringify({ ok, bad })); process.exit(0) }, 1500)")
   const kids = await R(d, ['kids.cjs'], { maxProcesses: 6, timeoutMs: 20000 })
   const kj = readJsonOr(d, 'kids.json', { ok: 99, bad: 0 })
   check('C: a limit of 6 processes lets at most 5 children start', kids.kind === 'ran' && kj.ok <= 5 && kj.bad >= 15, show(kj))
