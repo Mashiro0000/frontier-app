@@ -1,0 +1,18 @@
+{
+  "label": "w135-wToggleNoFolder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/RunProgramsSection.tsx",
+      "from": "disabled={busy || testGoingOn || (!status.on && !ready)}",
+      "to": "disabled={busy || testGoingOn}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run135.mjs",
+    "dev"
+  ],
+  "env": {
+    "STOP_AFTER": "A"
+  },
+  "timeoutMs": 1500000
+}

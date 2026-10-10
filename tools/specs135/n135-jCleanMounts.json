@@ -1,0 +1,17 @@
+{
+  "label": "n135-jCleanMounts",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "    e.leftovers.processes === 0 && e.leftovers.mounts === 0 && e.leftovers.live === 0\n",
+      "to": "    e.leftovers.processes === 0 && e.leftovers.live === 0\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

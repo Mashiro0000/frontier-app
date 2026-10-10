@@ -1,0 +1,17 @@
+{
+  "label": "n135-jLeakData",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "      'read-data',\n      refusedRead('readData') && !leaked,\n",
+      "to": "      'read-data',\n      refusedRead('readData'),\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

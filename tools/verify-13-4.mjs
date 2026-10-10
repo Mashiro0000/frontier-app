@@ -166,7 +166,7 @@ function makeReply(options = {}) {
   const root = options.root === undefined ? WS : options.root
   const wsGuard = wsGuardMod.createWorkspaceGuard({ root: () => root, dataGuard })
   const runner = options.runner ?? playedRunner(options.runs ?? [])
-  const env = { runner, runRoot: RUNROOT, savedKeys: async () => [{ provider: 'anthropic', key: KEY }], holdsSavedKey: async (t) => t.includes(KEY), places: PLACES, ...(options.env ?? {}) }
+  const env = { box: async () => ({ ok: true, runner, runRoot: RUNROOT }), savedKeys: async () => [{ provider: 'anthropic', key: KEY }], holdsSavedKey: async (t) => t.includes(KEY), places: PLACES, ...(options.env ?? {}) }
   const runtime = replyMod.createToolRuntime({
     tools: registry,
     gate,
@@ -569,7 +569,7 @@ await guard('E', async () => {
   // ---- what is brought back (13.5 supplies it)
   {
     let seen = null
-    const r = makeReply({ runs: [{ before: (req) => { put(req.scratchDir, 'new.txt', 'n') } }], env: { bringBack: async (comparison, call) => { seen = { cand: comparison.candidates.map((c) => c.path), why: call.why }; return 1 } } })
+    const r = makeReply({ runs: [{ before: (req) => { put(req.scratchDir, 'new.txt', 'n') } }], env: { bringBack: async (comparison, call) => { seen = { cand: comparison.candidates.map((c) => c.path), why: call.why }; return { made: 1, notMade: [] } } } })
     const res = await r.run({})
     check('E: when something is wired to bring changes back it is given the comparison and the reason, and the model is told how many came back', seen !== null && seen.cand.join() === 'new.txt' && seen.why === 'to run the tests' && /1 text file was made into a proposal/.test(res.text), show({ seen, tail: res.text.slice(-300) }))
     const bad = makeReply({ runs: [{ before: (req) => { put(req.scratchDir, 'new.txt', 'n') } }], env: { bringBack: async () => { throw new Error('x') } } })
@@ -691,14 +691,14 @@ await guard('G', async () => {
   check('G: programTools.ts starts no program and uses no shell (it goes through the runner)', !/child_process|\bspawn\(|\bexec\(|\bexecFile\b|\bexecSync\b/.test(code))
   check('G: it has no Electron import', !/from ['"]electron['"]/.test(code))
   check('G: the only calls it makes to the file system are looks (lstat, realpath); it writes and removes only through the scratch copy', [...code.matchAll(/fs\.(\w+)\(/g)].every((m) => m[1] === 'lstat' || m[1] === 'realpath'), [...code.matchAll(/fs\.(\w+)\(/g)].map((m) => m[1]).join())
-  check('G: the copy is removed in a finally, so every way out removes it', /finally\s*\{[^}]*removeScratch\(made\.dir, env\.runRoot\)/s.test(code))
-  check('G: nothing in the app imports programTools yet except the reply\'s runtime (13.5 wires it into the app)', (() => {
+  check('G: the copy is removed in a finally, so every way out removes it', /finally\s*\{[^}]*removeScratch\(made\.dir, box\.runRoot\)/s.test(code))
+  check('G: what imports programTools in the app: the reply\'s runtime, the service of the switch (13.5) and the app\'s wiring (ipc.ts) and nothing else', (() => {
     const users = []
     const walk = (dir) => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = `${dir}/${e.name}`; if (e.isDirectory()) walk(p); else if (/\.(ts|tsx)$/.test(e.name) && /from ['"][^'"]*programTools['"]/.test(fs.readFileSync(p, 'utf8'))) users.push(p.replace(`${REPO}/`, '')) } }
     walk(`${REPO}/src`)
-    return users.join() === 'src/main/replyTools.ts'
+    return users.sort().join() === 'src/main/ipc.ts,src/main/programService.ts,src/main/replyTools.ts'
   })())
-  check('G: the app\'s window of tools (ipc.ts) does not list the run tool yet', !/programTools|RUN_PROGRAM|run_program/.test(src('src/main/ipc.ts')))
+  check('G: the app has the run tool in its one registry (ipc.ts), and the page cannot list or switch it in the generic list (13.5 checks that)', /RUN_PROGRAM/.test(src('src/main/ipc.ts')))
   const core = src('src/main/toolCore.ts')
   check('G: the core counts a run only at the yes (takeRun appears once, after the question)', (core.match(/takeRun\(\)/g) ?? []).length === 1 && core.indexOf('takeRun()') > core.indexOf("grants.set('run', 'declined')"))
   check('G: the core\'s run branch asks with `put`, the same function as every question (recorded before, recorded after)', /const r = await put\(prepared\.question\)/.test(core))

@@ -1,0 +1,17 @@
+{
+  "label": "n135-pbStopCatch",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programBox.ts",
+      "from": "        try {\n          runner.stopAll()\n        } catch {\n          /* ending the rest matters more */\n        }\n",
+      "to": "        runner.stopAll()\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 600000
+}

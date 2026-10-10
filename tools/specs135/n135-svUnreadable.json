@@ -1,0 +1,17 @@
+{
+  "label": "n135-svUnreadable",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "        if (tools.problem !== null) {\n          return {\n            ok: false,\n            error: `Nothing was changed: your tool settings could not be read (${tools.problem}). Every tool is off.",
+      "to": "        if (false as boolean) {\n          return {\n            ok: false,\n            error: `Nothing was changed: your tool settings could not be read (${tools.problem}). Every tool is off."
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

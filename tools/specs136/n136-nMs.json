@@ -1,0 +1,15 @@
+{
+  "label": "n136-nMs",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "      if (!isCount(p.ms, 0, 1_000_000_000)) return null\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

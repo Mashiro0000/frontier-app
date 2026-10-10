@@ -84,13 +84,18 @@ export function noteOutcomeText(outcome: AuditOutcome, live: boolean, tool = 'we
       const { program } = outcome
       const secs = `${(program.ms / 1000).toFixed(1)} seconds`
       const back = `${plural(outcome.size, 'character', 'characters')} of its output came back`
+      // What the program changed or made in its copy never reaches the real folder by itself: the text files wait to be reviewed (13.5).
+      const review =
+        program.changed + program.created > 0
+          ? ' Any text files it changed or made wait for you to review in Tools; nothing is changed until you apply them.'
+          : ''
       switch (program.end) {
         case 'exited':
-          return `You allowed it. The program ran for ${secs} and ended with exit code ${program.exitCode === null ? 'none' : program.exitCode.toLocaleString('en-US')}; ${back}.`
+          return `You allowed it. The program ran for ${secs} and ended with exit code ${program.exitCode === null ? 'none' : program.exitCode.toLocaleString('en-US')}; ${back}.${review}`
         case 'timed-out':
-          return `You allowed it. The clock ended the program after ${secs}; ${back}.`
+          return `You allowed it. The clock ended the program after ${secs}; ${back}.${review}`
         case 'disk-full':
-          return `You allowed it. The program was ended after ${secs} because its folder grew past the limit; ${back}.`
+          return `You allowed it. The program was ended after ${secs} because its folder grew past the limit; ${back}.${review}`
         case 'not-run':
           return 'You allowed it. The program did not run, and nothing was changed.'
       }
@@ -134,9 +139,33 @@ export function settleNotes(
   )
 }
 
-/** The arguments of a call as one line, as the person was shown them: each value in quotes (numbers as they are), joined by commas. Empty when there are none. */
-export function noteAbout(note: Pick<ReplyToolNote, 'args'>): string {
+/**
+ * A program run as one line, as the person was shown it: the program's file name, then its arguments (one that has a space, or is empty, in quotes), then the folder
+ * of the workspace that was copied. The program's FULL path was in the question; the chat keeps to the name.
+ */
+function runAbout(args: Readonly<Record<string, string | number>>): string {
+  const program = typeof args.program === 'string' ? args.program : ''
+  const name = program.split(/[\\/]/).pop() ?? program
+  let list: string[] = []
+  try {
+    const parsed: unknown = JSON.parse(typeof args.arguments === 'string' ? args.arguments : '[]')
+    if (Array.isArray(parsed))
+      list = parsed.filter((item): item is string => typeof item === 'string')
+  } catch {
+    list = [] // not a list: shown without arguments, never as it was written
+  }
+  const shown = list.map((item) => (item === '' || /\s/.test(item) ? `“${item}”` : item))
+  const folder = typeof args.folder === 'string' ? args.folder : '.'
+  return `${[name, ...shown].filter((part) => part !== '').join(' ')} in “${folder}”`
+}
+
+/**
+ * The arguments of a call as one line, as the person was shown them: each value in quotes (numbers as they are), joined by commas. Empty when there are none. A run of a
+ * program (13.5) is shown as the program's name, its arguments and the folder, which is how the person reads it.
+ */
+export function noteAbout(note: Pick<ReplyToolNote, 'args'> & { tool?: string }): string {
   if (note.args === null) return ''
+  if (note.tool === 'run_program') return runAbout(note.args)
   return Object.values(note.args)
     .map((value) => (typeof value === 'number' ? String(value) : `“${value}”`))
     .join(', ')

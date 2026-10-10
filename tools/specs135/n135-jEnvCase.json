@@ -1,0 +1,17 @@
+{
+  "label": "n135-jEnvCase",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": ".map((n) => String(n).toLowerCase())",
+      "to": ".map((n) => String(n))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

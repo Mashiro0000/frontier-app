@@ -1,0 +1,17 @@
+{
+  "label": "n135-svWithCopy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "  const enabled = { ...settings.enabled }\n  for (const id of PROGRAM_TOOL_IDS) delete enabled[id]\n",
+      "to": "  const enabled = settings.enabled\n  for (const id of PROGRAM_TOOL_IDS) delete enabled[id]\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

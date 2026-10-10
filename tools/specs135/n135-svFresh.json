@@ -1,0 +1,17 @@
+{
+  "label": "n135-svFresh",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "        if (fresh.problem !== null) {\n          return {\n            ok: false,\n            error: `Nothing was changed: your tool settings could not be read (${fresh.problem}).`",
+      "to": "        if (false as boolean) {\n          return {\n            ok: false,\n            error: `Nothing was changed: your tool settings could not be read (${fresh.problem}).`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

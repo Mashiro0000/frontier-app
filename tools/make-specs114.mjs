@@ -43,7 +43,7 @@ const s = {
   ipcOwnerNull: [IPC, 'toolsService.setEnabled(window, input)', 'toolsService.setEnabled(null, input)'],
   ipcCapsOwnerNull: [IPC, 'toolsService.setCaps(window, input)', 'toolsService.setCaps(null, input)'],
   stopLabel: [COMPOSER, "{stopEverything ? 'Stop everything' : 'Stop'}", '{`Stop`}'],
-  stopNotTold: [APP, 'toolsOn={anyToolOn(toolSettings.status, toolSettings.workspace)}', 'toolsOn={false}'],
+  stopNotTold: [APP, 'toolsOn={anyToolOn(toolSettings.status, toolSettings.workspace, toolSettings.programs)}', 'toolsOn={false}'],
   noteNotShown: [BUBBLE, '<ToolNote key={`note-${piece.note.id}`} note={piece.note} live={live} />', 'null'],
   sourcesNotShown: [BUBBLE, '{sources.length > 0 && <Sources sources={sources} />}', '{false && <Sources sources={sources} />}'],
   offsetZero: [USECHAT, 'if (!toolOffsets.has(event.call)) toolOffsets.set(event.call, written)', 'if (!toolOffsets.has(event.call)) toolOffsets.set(event.call, 0)'],

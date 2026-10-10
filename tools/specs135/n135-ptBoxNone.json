@@ -1,0 +1,17 @@
+{
+  "label": "n135-ptBoxNone",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "      if (!box.ok) return { ok: false, code: 'no-box', text: NO_BOX_TEXT }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

@@ -1,0 +1,17 @@
+{
+  "label": "n135-jRefused",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "typeof v === 'string' && v.startsWith('ERR:')",
+      "to": "typeof v === 'string'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

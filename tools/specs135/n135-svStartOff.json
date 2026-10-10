@@ -1,0 +1,17 @@
+{
+  "label": "n135-svStartOff",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "      problem = `Running programs was switched off at start-up: ${result.error}`\n      await write(false, false)\n",
+      "to": "      problem = `Running programs was switched off at start-up: ${result.error}`\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

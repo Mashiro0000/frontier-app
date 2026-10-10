@@ -1,0 +1,17 @@
+{
+  "label": "n135-ptNames",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programTools.ts",
+      "from": "paths.slice(0, NOT_MADE_NAMES).map(nameForModel).join(', ')",
+      "to": "paths.slice(0, NOT_MADE_NAMES).join(', ')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

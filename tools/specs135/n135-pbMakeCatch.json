@@ -1,0 +1,17 @@
+{
+  "label": "n135-pbMakeCatch",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programBox.ts",
+      "from": "        try {\n          runner = make({ runRoot: chosen.root })\n        } catch (error) {\n          return {\n            ok: false,\n            why: error instanceof Error ? error.message : 'the runner could not be made'\n          }\n        }\n",
+      "to": "        runner = make({ runRoot: chosen.root })\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 600000
+}

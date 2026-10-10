@@ -1,0 +1,18 @@
+{
+  "label": "w135-wPreloadStop",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/preload/index.ts",
+      "from": "    stopTest: () => ipcRenderer.invoke(CHANNELS.programsStopTest)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run135.mjs",
+    "dev"
+  ],
+  "env": {
+    "STOP_AFTER": "A"
+  },
+  "timeoutMs": 1500000
+}

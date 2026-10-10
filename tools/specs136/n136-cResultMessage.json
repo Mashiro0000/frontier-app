@@ -1,0 +1,15 @@
+{
+  "label": "n136-cResultMessage",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "          content: turn.results.map((result) => result.text).join('\\n\\n'),\n",
+      "to": "          content: '',\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

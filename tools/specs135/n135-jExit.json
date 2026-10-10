@@ -1,0 +1,17 @@
+{
+  "label": "n135-jExit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "  const ran = e.first.kind === 'ran' && e.first.exitCode === 0 && said !== null\n",
+      "to": "  const ran = e.first.kind === 'ran' && said !== null\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

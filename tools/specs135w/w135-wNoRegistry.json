@@ -1,0 +1,19 @@
+{
+  "label": "w135-wNoRegistry",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    ...WORKSPACE_PROPOSE_TOOLS,\n    RUN_PROGRAM\n  ])",
+      "to": "    ...WORKSPACE_PROPOSE_TOOLS\n  ])"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run135.mjs",
+    "dev"
+  ],
+  "env": {
+    "STOP_AFTER": "D",
+    "SKIP": "C1,C2"
+  },
+  "timeoutMs": 1500000
+}

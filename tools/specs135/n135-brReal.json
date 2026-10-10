@@ -1,0 +1,17 @@
+{
+  "label": "n135-brReal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/runProposals.ts",
+      "from": "          rel: verdict.rel,\n          real: verdict.real,\n          after: candidate.text,\n",
+      "to": "          rel: verdict.rel,\n          real: candidate.path,\n          after: candidate.text,\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}

@@ -90,7 +90,7 @@ const controls = {
   // ----- the run tool: the executor -----
   pTimeout: [PRG, 'Math.min(RUN_LIMITS.timeoutMs.max, Math.floor(ctx.runMsLeft))', 'RUN_LIMITS.timeoutMs.max', 'E'],
   pSignal: [PRG, '        { signal: ctx.signal }', '        {}', 'E'],
-  pRemoveCopy: [PRG, '      await removeScratch(made.dir, env.runRoot)', '      void 0', 'E'],
+  pRemoveCopy: [PRG, '      await removeScratch(made.dir, box.runRoot)', '      void 0', 'E'],
   pKeyInOutput: [PRG, '        return held ? KEY_IN_OUTPUT : text', '        return text', 'E'],
   pEnd: [PRG, "          end: outcome.timedOut ? 'timed-out' : outcome.diskExceeded ? 'disk-full' : 'exited',", "          end: 'exited',", 'E'],
   pExitCode: [PRG, '          exitCode: outcome.timedOut || outcome.diskExceeded ? null : outcome.exitCode,', '          exitCode: outcome.exitCode,', 'E'],

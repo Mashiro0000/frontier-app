@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "    ...WORKSPACE_PROPOSE_TOOLS\n  ])",
-      "to": "  ])"
+      "from": "    ...WORKSPACE_PROPOSE_TOOLS,\n    RUN_PROGRAM\n  ])",
+      "to": "    RUN_PROGRAM\n  ])"
     }
   ],
   "argv": [

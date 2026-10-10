@@ -1,0 +1,17 @@
+{
+  "label": "n135-brOp",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/runProposals.ts",
+      "from": "        op: changed ? 'edit' : 'create'\n",
+      "to": "        op: 'edit'\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}

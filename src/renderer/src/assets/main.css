@@ -2387,3 +2387,35 @@ body {
   color: var(--color-warning-text, #9a6700);
   font-weight: 600;
 }
+
+.programs-stop {
+  display: flex;
+  margin: 4px 0 8px;
+}
+
+.programs-report {
+  margin-top: 8px;
+}
+
+.programs-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.programs-good .programs-label {
+  color: var(--color-text);
+}
+
+.programs-bad {
+  color: var(--color-danger);
+}
+
+.programs-bad .programs-label {
+  font-weight: 600;
+}

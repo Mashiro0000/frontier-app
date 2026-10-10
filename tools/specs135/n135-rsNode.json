@@ -1,0 +1,17 @@
+{
+  "label": "n135-rsNode",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "  if (options.nodePath === null) {\n    return failed(\n",
+      "to": "  if (false as boolean) {\n    return failed(\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

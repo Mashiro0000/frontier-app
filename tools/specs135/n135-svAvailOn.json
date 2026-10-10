@@ -1,0 +1,17 @@
+{
+  "label": "n135-svAvailOn",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "      if (tools.problem !== null || tools.settings.enabled[TOOL_ID] !== true) return false\n      // A switch that is on in the file",
+      "to": "      // A switch that is on in the file"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

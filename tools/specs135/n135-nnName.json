@@ -1,0 +1,17 @@
+{
+  "label": "n135-nnName",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "  const name = program.split(/[\\\\/]/).pop() ?? program\n",
+      "to": "  const name = program\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 600000
+}

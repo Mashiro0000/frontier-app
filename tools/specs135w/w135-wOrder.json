@@ -1,0 +1,18 @@
+{
+  "label": "w135-wOrder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/ToolsDialog.tsx",
+      "from": "      <RunProgramsSection settings={settings} busy={busy} working={working} />\n      <ChangesSection settings={settings} busy={busy} working={working} />",
+      "to": "      <ChangesSection settings={settings} busy={busy} working={working} />\n      <RunProgramsSection settings={settings} busy={busy} working={working} />"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run135.mjs",
+    "dev"
+  ],
+  "env": {
+    "STOP_AFTER": "A"
+  },
+  "timeoutMs": 1500000
+}

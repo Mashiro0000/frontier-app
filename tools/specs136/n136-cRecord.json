@@ -1,0 +1,15 @@
+{
+  "label": "n136-cRecord",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "      bytes += utf8Length(JSON.stringify(message.toolTurn.record) ?? '')\n",
+      "to": "      bytes += 0\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-6.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

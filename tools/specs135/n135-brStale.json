@@ -1,0 +1,17 @@
+{
+  "label": "n135-brStale",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/runProposals.ts",
+      "from": "        if (sha256(bytes) !== candidate.baseSha256) {\n",
+      "to": "        if (false as boolean) {\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}

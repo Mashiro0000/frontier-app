@@ -8,6 +8,7 @@ import type { AuditDeleteResult, AuditExportResult, AuditView } from './audit'
 import type { ReplyToolNote } from './toolNotes'
 import type { Limits, LimitsChoice } from './limits'
 import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from './memory'
+import type { ProgramsChangeResult, ProgramsStatus } from './programs'
 import type { ProjectChangeResult, ProjectsStatus } from './projects'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
@@ -624,6 +625,19 @@ export interface FrontierApi {
     setOn(on: boolean): Promise<WorkspaceChangeResult>
   }
   /**
+   * Running programs (Stage 13.5, D-043): the switch that lets the model ask to run ONE program on a copy of a folder of the workspace, in a locked box (an
+   * AppContainer with no network, inside a job object with limits). The page can read the status (with the last self-test) and ask for the switch to be changed.
+   * Switching ON makes the self-test of the box first, on this PC, and then asks in the system's own message box, which the page cannot answer; a failed test keeps
+   * it off and there is no way to run a program without the box. Switching OFF does neither. The page never supplies a program, a path or an argument, cannot
+   * approve a run and cannot see what a program printed.
+   */
+  programs: {
+    status(): Promise<ProgramsStatus>
+    setOn(on: boolean): Promise<ProgramsChangeResult>
+    /** Ends a self-test that is going on (the switch stays off). Does nothing when none is. */
+    stopTest(): Promise<void>
+  }
+  /**
    * The changes the model has proposed and the person has not decided on (Stage 12.5, D-042): a summary of each (the path, the counts, the warnings: never a line
    * of the change) and a way to ask main to open the Review window for one. The Review window is a window of its own that main opens and this page cannot
    * script; applying and dropping a change are done there, never here. The page has no way to see a change's text, to apply it or to answer a question.
@@ -709,6 +723,9 @@ export const CHANNELS = {
   workspaceChoose: 'workspace:choose',
   workspaceClear: 'workspace:clear',
   workspaceSetOn: 'workspace:set-on',
+  programsStatus: 'programs:status',
+  programsSetOn: 'programs:set-on',
+  programsStopTest: 'programs:stop-test',
   changesList: 'changes:list',
   changesReview: 'changes:review',
   changesApplied: 'changes:applied',

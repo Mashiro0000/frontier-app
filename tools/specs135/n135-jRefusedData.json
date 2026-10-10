@@ -1,0 +1,17 @@
+{
+  "label": "n135-jRefusedData",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "      'write-data',\n      ran && refused(said?.writeData) && !e.wroteSomething && e.canariesIntact,\n",
+      "to": "      'write-data',\n      ran && !e.wroteSomething && e.canariesIntact,\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

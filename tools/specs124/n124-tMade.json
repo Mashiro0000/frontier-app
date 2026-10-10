@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/proposalTools.ts",
-      "from": "    made++\n    return {\n      text: told(\n        kept.proposal.id,\n        kept.proposal.path,\n        kept.proposal.added,\n        kept.proposal.removed,\n        false\n      )",
+      "from": "    counter.made++\n    return {\n      text: told(\n        kept.proposal.id,\n        kept.proposal.path,\n        kept.proposal.added,\n        kept.proposal.removed,\n        false\n      )",
       "to": "    return {\n      text: told(\n        kept.proposal.id,\n        kept.proposal.path,\n        kept.proposal.added,\n        kept.proposal.removed,\n        false\n      )"
     }
   ],

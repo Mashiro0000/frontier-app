@@ -1,0 +1,17 @@
+{
+  "label": "n135-svNoBox",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "    if (!box.ok) return { ok: false, error: `${NO_BOX} (${box.why})` }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

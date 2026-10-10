@@ -3,7 +3,9 @@ import { win32 } from 'path'
 import { RUN_LIMITS, type RunOutcome } from '../shared/run'
 import type { Comparison, ScratchManifest } from './scratchCopy'
 import { compareScratch, makeScratch, removeScratch } from './scratchCopy'
-import { isInside, type CommandRunner } from './commandRunner'
+import { isInside } from './commandRunner'
+import type { BoxAnswer } from './programBox'
+import type { BroughtBack } from './runProposals'
 import type { SavedKey } from './secrets'
 import type {
   Executor,
@@ -66,9 +68,6 @@ export const RUN_PROGRAM: ToolDefinition = {
     }
   }
 }
-
-/** The ids of the tools that the one "Run programs" switch turns on and off (13.5). */
-export const PROGRAM_TOOL_IDS: readonly string[] = ['run_program']
 
 /** Programs that are not run, whatever their place: shells and script hosts (the tool takes a program and arguments, never a shell line), and loaders that run other code. */
 const NOT_RUN = new Set([
@@ -254,9 +253,11 @@ export function programQuestion(f: RunQuestionFacts): SystemQuestion {
 }
 
 export interface ProgramEnvironment {
-  runner: CommandRunner
-  /** The app's folder for runs (commandRunner.ts, scratchCopy.ts): the scratch copies are made inside it. */
-  runRoot: string
+  /**
+   * The box: the runner and the app's folder for runs (commandRunner.ts, scratchCopy.ts: the scratch copies are made inside it), or why there is none. It is asked for
+   * at every look and every run, because the folder of runs follows the workspace (programBox.ts).
+   */
+  box: () => Promise<BoxAnswer>
   /** The saved API keys: a file that holds one is not copied, and output that holds one is not passed on. */
   savedKeys: () => Promise<readonly SavedKey[]>
   holdsSavedKey: (text: string) => Promise<boolean>
@@ -265,8 +266,11 @@ export interface ProgramEnvironment {
   places?: ProgramPlaces
   /** For checks only: smaller caps for the copy (the app never passes this). */
   copyLimits?: { files?: number; bytes?: number }
-  /** 13.5: turns the text files a run changed or made into proposals; answers how many it made. Absent: nothing is brought back. */
-  bringBack?: (comparison: Comparison, call: { why: string }) => Promise<number>
+  /**
+   * 13.5: turns the text files a run changed or made into proposals and answers how many it made and which it could not and why. Absent: nothing is brought back.
+   * The reply's runtime makes it for each reply (replyTools.ts), from the workspace and the reply's one count of proposals.
+   */
+  bringBack?: (comparison: Comparison, call: { why: string }) => Promise<BroughtBack>
 }
 
 const SECONDS = (ms: number): string => `${(ms / 1000).toFixed(1)} seconds`
@@ -293,6 +297,44 @@ const UNSEEN_IN_OUTPUT = /[\p{Cf}\p{Zl}\p{Zp}\p{Co}\p{Cn}\p{Cs}]/u
 /** The least of the output that is shown of each stream when both are long. */
 const MIN_SHARE = 2000
 
+const textFiles = (n: number): string => `${fmt(n)} text ${n === 1 ? 'file' : 'files'}`
+
+/** The most names of files that could not be made into proposals that are listed after the reason. */
+const NOT_MADE_NAMES = 5
+
+/**
+ * What became of the text files a run changed or made, in words for the model: how many are proposals now (waiting for the person; nothing is changed until they apply
+ * them), and which could not be made and why. The reasons are fixed sentences (runProposals.ts); the names come from whoever made the files, so they are cleaned like
+ * every other name in a result.
+ */
+function broughtLines(brought: BroughtBack | null, candidates: number): string[] {
+  if (brought === null) {
+    return ['They stay in the copy, which is removed now: nothing was brought back.']
+  }
+  if (candidates === 0) {
+    return ['No text file was changed or made, so there is nothing to review.']
+  }
+  const lines: string[] = []
+  lines.push(
+    brought.made === 0
+      ? 'No text file could be brought back as a proposal.'
+      : `${textFiles(brought.made)} ${brought.made === 1 ? 'was' : 'were'} made into ${brought.made === 1 ? 'a proposal' : 'proposals'} for the person to review; nothing is changed until they apply it.`
+  )
+  const byReason = new Map<string, string[]>()
+  for (const item of brought.notMade) {
+    const list = byReason.get(item.why) ?? []
+    list.push(item.path)
+    byReason.set(item.why, list)
+  }
+  for (const [why, paths] of byReason) {
+    const shown = paths.slice(0, NOT_MADE_NAMES).map(nameForModel).join(', ')
+    lines.push(
+      `${textFiles(paths.length)} could not be made into proposals (${why}): ${shown}${paths.length > NOT_MADE_NAMES ? ' and others' : ''}`
+    )
+  }
+  return lines
+}
+
 export interface ResultFacts {
   program: string
   args: readonly string[]
@@ -300,8 +342,8 @@ export interface ResultFacts {
   outcome: RunOutcome
   /** Null when no comparison was made (it did not run, or the copy could not be looked at). */
   comparison: Comparison | null
-  /** Text files made into proposals (13.5), or null when nothing is brought back. */
-  proposed: number | null
+  /** What became of the text files the run changed or made (13.5): proposals made, and what could not be and why; null when nothing is brought back. */
+  brought: BroughtBack | null
   /** The output after the key check; a stream that held a key is a notice instead. */
   stdout: string
   stderr: string
@@ -345,13 +387,7 @@ export function runResultText(f: ResultFacts): string {
       '',
       `Files in the copy afterwards: ${fmt(c.changed)} changed, ${fmt(c.created)} new, ${fmt(c.deleted)} deleted.`
     )
-    tail.push(
-      f.proposed === null
-        ? 'They stay in the copy, which is removed now: nothing was brought back.'
-        : f.proposed === 0
-          ? 'No text file could be brought back as a proposal.'
-          : `${fmt(f.proposed)} text ${f.proposed === 1 ? 'file was' : 'files were'} made into ${f.proposed === 1 ? 'a proposal' : 'proposals'} for the person to review; nothing is changed until they apply it.`
-    )
+    tail.push(...broughtLines(f.brought, f.comparison.candidates.length))
     const names = [
       ...f.comparison.candidates.map((x) => x.path),
       ...f.comparison.leftOut.filter((x) => x.kind !== 'link').map((x) => x.path)
@@ -396,6 +432,15 @@ export function runResultText(f: ResultFacts): string {
 export const KEY_IN_OUTPUT =
   "(This output held text that must never be sent, one of the person's saved API keys, so it was left out.)"
 
+/** The box as it is now, or why not; whatever the environment does, a fault is "no box". */
+async function boxOf(env: ProgramEnvironment): Promise<BoxAnswer> {
+  try {
+    return await env.box()
+  } catch {
+    return { ok: false, why: 'the box could not be made' }
+  }
+}
+
 /** The look at a call before anybody is asked (the core calls it for a tool that is asked about as a run) and the executor that runs it after the yes. */
 export function createProgramSupport(env: ProgramEnvironment): {
   support: ProgramSupport
@@ -412,6 +457,8 @@ export function createProgramSupport(env: ProgramEnvironment): {
         available = false
       }
       if (!available) return { ok: false, code: 'no-box', text: NO_BOX_TEXT }
+      const box = await boxOf(env)
+      if (!box.ok) return { ok: false, code: 'no-box', text: NO_BOX_TEXT }
       const named = call.args['program']
       const list = call.args['args']
       if (typeof named !== 'string' || !Array.isArray(list)) {
@@ -425,7 +472,7 @@ export function createProgramSupport(env: ProgramEnvironment): {
       if (program === null) return { ok: false, code: 'no-program', text: NO_PROGRAM_TEXT }
       // what would be copied: a look only, nothing is made (the copy itself is made after the yes, and looks again)
       const look = await makeScratch({
-        runRoot: env.runRoot,
+        runRoot: box.runRoot,
         source: call.folder.verdict.real,
         prefix: call.folder.verdict.rel,
         savedKeys: env.savedKeys,
@@ -476,7 +523,7 @@ export function createProgramSupport(env: ProgramEnvironment): {
           folder: verdict.ok ? relText(verdict.rel) : '.',
           outcome: { kind: 'not-run', why: 'refused', message },
           comparison: null,
-          proposed: null,
+          brought: null,
           stdout: '',
           stderr: '',
           maxChars: ctx.maxChars
@@ -494,8 +541,10 @@ export function createProgramSupport(env: ProgramEnvironment): {
     if (!verdict.ok || verdict.kind !== 'folder') {
       return notRan('that folder is not available just now')
     }
+    const box = await boxOf(env)
+    if (!box.ok) return notRan('the box for running programs is not available just now')
     const made = await makeScratch({
-      runRoot: env.runRoot,
+      runRoot: box.runRoot,
       source: verdict.real,
       prefix: verdict.rel,
       savedKeys: env.savedKeys,
@@ -504,7 +553,7 @@ export function createProgramSupport(env: ProgramEnvironment): {
     if (!made.ok) return notRan(made.message)
     const manifest: ScratchManifest = made.manifest
     try {
-      const outcome = await env.runner.run(
+      const outcome = await box.runner.run(
         {
           program,
           args: list,
@@ -524,7 +573,7 @@ export function createProgramSupport(env: ProgramEnvironment): {
             folder: relText(verdict.rel),
             outcome,
             comparison: null,
-            proposed: null,
+            brought: null,
             stdout: '',
             stderr: '',
             maxChars: ctx.maxChars
@@ -541,12 +590,12 @@ export function createProgramSupport(env: ProgramEnvironment): {
         }
       }
       const comparison = await compareScratch(made.dir, manifest)
-      let proposed: number | null = null
+      let brought: BroughtBack | null = null
       if (env.bringBack !== undefined) {
         try {
-          proposed = await env.bringBack(comparison, { why: ctx.why })
+          brought = await env.bringBack(comparison, { why: ctx.why })
         } catch {
-          proposed = 0
+          brought = { made: 0, notMade: [] }
         }
       }
       // output that holds one of the saved keys is not passed on (a stream at a time)
@@ -569,7 +618,7 @@ export function createProgramSupport(env: ProgramEnvironment): {
           folder: relText(verdict.rel),
           outcome,
           comparison,
-          proposed,
+          brought,
           stdout,
           stderr,
           maxChars: ctx.maxChars
@@ -586,7 +635,7 @@ export function createProgramSupport(env: ProgramEnvironment): {
       }
     } finally {
       // the copy always goes: whatever happened (a run that failed, Stop everything, a throw), nothing of it stays behind
-      await removeScratch(made.dir, env.runRoot)
+      await removeScratch(made.dir, box.runRoot)
     }
   }
 

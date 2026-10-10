@@ -1,0 +1,17 @@
+{
+  "label": "n135-svAvail",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "      return !testing && lastTest !== null && lastTest.ok\n",
+      "to": "      return !testing\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

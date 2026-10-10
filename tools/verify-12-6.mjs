@@ -596,7 +596,7 @@ await guard('H', async () => {
   const scratchSource = source('src/main/scratchCopy.ts').replace(/^\s*\/\/.*$/gm, '')
   check('H: the only file of the app that writes AND holds a path from the workspace guard is applyService.ts (ipc.ts only builds the guard and the pieces; scratchCopy.ts takes only classifyNames from the guard, holds no verdict, and writes only in the run folder)', show(both.filter((n) => n !== 'ipc.ts' && n !== 'scratchCopy.ts')) === show(['applyService.ts']) && /import \{ classifyNames \} from '\.\/workspaceGuard'/.test(scratchSource) && !/verdict|\.real\b|createWorkspaceGuard|wsGuard/.test(scratchSource), show(both))
   const guardUsers = main.filter((name) => /workspaceGuard/.test(source(`src/main/${name}`))).sort()
-  check('H: the files that use the guard are the known ones (a new one has to be looked at)', show(guardUsers) === show(['applyService.ts', 'ipc.ts', 'reviewService.ts', 'workspace.ts', 'workspaceGuard.ts', 'workspaceService.ts', 'workspaceTools.ts', 'proposalTools.ts'].sort()) || guardUsers.length <= 10, show(guardUsers))
+  check('H: the files that use the guard are the known ones (a new one has to be looked at)', show(guardUsers) === show(['applyService.ts', 'ipc.ts', 'replyTools.ts', 'reviewService.ts', 'runProposals.ts', 'scratchCopy.ts', 'toolCore.ts', 'toolRegistry.ts', 'workspace.ts', 'workspaceService.ts', 'workspaceTools.ts'].sort()), show(guardUsers))
   for (const name of ['replyTools.ts', 'chat.ts', 'workspaceTools.ts', 'proposalTools.ts', 'toolCore.ts', 'toolRegistry.ts', 'proposals.ts', 'workspaceService.ts']) {
     check(`H: ${name} does not import the applier, the journal or the undo records`, !/applyService|undoRecords|from '\.\/journal'/.test(source(`src/main/${name}`)))
   }

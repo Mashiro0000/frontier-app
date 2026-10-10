@@ -91,6 +91,11 @@ const api: FrontierApi = {
     clear: () => ipcRenderer.invoke(CHANNELS.workspaceClear),
     setOn: (on) => ipcRenderer.invoke(CHANNELS.workspaceSetOn, { on })
   },
+  programs: {
+    status: () => ipcRenderer.invoke(CHANNELS.programsStatus),
+    setOn: (on) => ipcRenderer.invoke(CHANNELS.programsSetOn, { on }),
+    stopTest: () => ipcRenderer.invoke(CHANNELS.programsStopTest)
+  },
   changes: {
     list: () => ipcRenderer.invoke(CHANNELS.changesList),
     review: (id) => ipcRenderer.invoke(CHANNELS.changesReview, { id }),

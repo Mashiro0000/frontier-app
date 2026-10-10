@@ -411,4 +411,21 @@ console.log(`(known holes, not guarded: ${[...KNOWN_HOLES].join(', ')}; child pr
   check('H: the scope is fixed in the two files: C:\\frontier-tmp, the run\'s folder, the throwaway profiles and `out`; nothing is read from the environment but where the run\'s folder is', /BASE = 'C:\\\\frontier-tmp'/.test(wtext) && /frontier-app-test-scratch-\[A-Za-z0-9\._-\]\+/.test(ptext) && /join\(repo, 'out'\)/.test(ptext) && /FRONTIER_GUARD_ROOT/.test(ptext) && /writeAnywhere: true/.test(ptext))
 }
 
+// ============================ I. a window run from a disposable copy of the tree ==============
+{
+  const listRuns = () => fs.readdirSync('C:\\frontier-tmp').filter((n) => /^guarded-w-/.test(n))
+  const beforeRuns = new Set(listRuns())
+  const run = spawnSync(process.execPath, [J(TOOLS, 'guarded-window-copy.mjs'), J(TOOLS, 'guarded-window-copy-selftest.mjs')], { encoding: 'utf8', env: { ...process.env, FRONTIER_COPY_NODE_MODULES: '0' }, timeout: 300000 })
+  const line = /FACTS (\{.*\})/.exec(run.stdout ?? '')
+  const facts = line === null ? null : JSON.parse(line[1])
+  check('I: a script run through guarded-window-copy.mjs starts in a COPY of the tree inside the run\'s own folder (C:\\frontier-tmp\\guarded-w-*\\app): the sources are there, .git, out and the plan PDFs are not', run.status === 0 && facts !== null && facts.cwdInRun === true && /^C:\\frontier-tmp\\guarded-w-[A-Za-z0-9]+\\app$/.test(facts.cwd ?? '') && facts.hasSrc === true && facts.hasGit === false && facts.hasOut === false && facts.hasPdf === false, show({ status: run.status, out: (run.stdout ?? '').slice(0, 300), err: (run.stderr ?? '').slice(0, 300) }))
+  check('I: inside the copy a removal is allowed, outside the run\'s folder one is refused by its name; the preload is loaded; the run\'s temp folder and npm\'s cache are the run\'s own', facts !== null && facts.removedInside === true && facts.refusedOutside === true && facts.preload === true && facts.temp === facts.run && /\\npm-cache$/.test(facts.npmCache ?? '') && (facts.npmCache ?? '').toLowerCase().startsWith((facts.run ?? '?').toLowerCase()), show(facts))
+  check('I: the run\'s folder (the copy with it) is removed when the run is over, and no other guarded-w folder', run.status === 0 && listRuns().every((n) => beforeRuns.has(n)), show(listRuns().filter((n) => !beforeRuns.has(n))))
+  const outsideTools = spawnSync(process.execPath, [J(TOOLS, 'guarded-window-copy.mjs'), 'C:\\Windows\\Temp\\not-in-tools.mjs'], { encoding: 'utf8', env: { ...process.env, FRONTIER_COPY_NODE_MODULES: '0' } })
+  check('I: a script that is not in the tools folder is not run (exit code 2) and no folder is made for it', outsideTools.status === 2 && listRuns().every((n) => beforeRuns.has(n)))
+  const wtext = fs.readFileSync(J(TOOLS, 'guarded-window-copy.mjs'), 'utf8')
+  const wcode = wtext.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n') // the code, without the comment lines (which name /MIR and /PURGE to say they are not used)
+  check('I: the scope is fixed in the file: C:\\frontier-tmp, the run\'s folder; the copy is made with robocopy and nothing is removed by it (no /MIR, no /PURGE); node_modules that is a link is refused; outputs go to C:\\frontier-work\\window-runs', /BASE = 'C:\\\\frontier-tmp'/.test(wtext) && /robocopy/.test(wtext) && !/\/MIR|\/PURGE/.test(wcode) && /isSymbolicLink\(\)/.test(wtext) && /OUTPUTS = 'C:\\\\frontier-work\\\\window-runs'/.test(wtext) && /installFsGuard\(\{ write: \[run\], remove: \[run\] \}\)/.test(wtext))
+}
+
 process.exit(check.summary() ? 0 : 1)

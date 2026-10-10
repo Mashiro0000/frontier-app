@@ -1,0 +1,17 @@
+{
+  "label": "n135-pbFixedAbsolute",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programBox.ts",
+      "from": "  if (!win32.isAbsolute(value) || /^[\\\\/]{2}/.test(value) || !/^[A-Za-z]:/.test(value)) return null\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 600000
+}

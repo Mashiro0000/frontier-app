@@ -1,0 +1,17 @@
+{
+  "label": "n135-nnJson",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/toolNotes.ts",
+      "from": "    list = [] // not a list: shown without arguments, never as it was written\n",
+      "to": "    list = [String(args.arguments)]\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 600000
+}

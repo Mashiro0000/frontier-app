@@ -1,0 +1,17 @@
+{
+  "label": "n135-jLabel",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "  label: SELFTEST_PROBES.find((p) => p.id === id)?.label ?? id,\n",
+      "to": "  label: id,\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

@@ -2883,3 +2883,25 @@ if you have not, please do before you rely on this. **The design was mine** (you
 2. **The first real run through the app is not in this slice.** The runner and the box were proven in 13.2; here the box is played. The first real end-to-end run is the self-test of 13.5.
 3. **Files and folders left behind by my tests in `C:\frontier-tmp`:** about 40 small folders from the guard's own test (it removes nothing, by design), one from a run that was killed on purpose, and the control runner's output files. Nothing there matters; I did not remove them because you did not allow it. Say the word if you want them gone.
 4. **Working in the copy:** everything of this stage so far is in `C:\frontier-work\frontier-app` on C:; it is brought back to the repo on A: at the end, after your recovery has finished.
+
+## Stage 13 - Slice 13.5: the switch, the self-test and what a run brings back (10 October 2026; D-043)
+
+**Step by step.**
+
+1. **What this slice builds.** The tool of 13.4 is now offered to the model, behind a switch on the Tools page ("Run programs"). Before it can go on, the app tests the box on this PC; only then does it ask you in a Windows message box. Nothing runs without you: every run still asks, as in 13.4.
+2. **The self-test.** The app puts a small program in the box and has it try, from inside, everything it must not be able to do: read a file of the app's data, read a file in your temp folder, list your user folder, write in the app's folders or change its own program copy, reach the network (even this computer), see the app's environment, run for ever, use too much memory. It believes what it sees from OUTSIDE (the files are untouched, nobody connected, the clock ended the program), not what the program says. Twelve lines, shown on the page. If one is not as it must be, the switch stays off, and there is no way to run a program without the box.
+3. **The switch.** Switching on needs a folder (the copy comes from it) and Node.js; then the test; then your yes. Switching off is at once. The page's other tool switches cannot change it. A "Stop the test" button ends a test that is going on.
+4. **After a restart.** The switch being on in a file is not enough: the box is tested again in the background and the tool is not offered until that has passed. If the test no longer passes (a Windows update, a security product), the switch is taken off and the page says why. With the switch on, every start of the app makes this test in the background (about half a minute; nothing waits for it).
+5. **What a run brings back.** The text files a program changed or made become proposals in the Review window, as in Stage 12; nothing in your folder changes until you apply them. A file you changed while the program ran is not proposed over; a file that grew too big, is not text now or whose name is taken is not proposed; a text with hidden or reversing characters the file did not have is refused. A reply makes at most ten proposals in all, the model's and the runs' together. The model is told which files could not be made into proposals, and why.
+6. **The chat.** A run shows as the program's name, its arguments and the folder, and how it ended, and says where the changes wait.
+7. **Where the box lives.** A folder `FrontierRun` at the root of the workspace's drive (the copy is quicker on the same drive), else in the temp folder. It is swept at start-up.
+8. **Checked:** 140 checks under plain Node (the real box among them), 115 deliberate breakages (113 noticed; two of them change nothing anyone can see, see D-043), and a check in the real window with the real box (see the window numbers in D-043). Eight older checks that list "who imports whom" were brought up to date one by one.
+
+## Stage 13 - Slice 13.6: cost, encryption and backups of running programs (10 October 2026; D-043)
+
+**Step by step.**
+
+1. **What a run costs.** No API money (nothing is billed for a run). What the program prints goes to the model, and so does the call with its list of arguments; the estimate before each request counts both, as it does for files since 12.7. The most a reply can add by runs is about 37,000 tokens (five runs at their limit), about $0.23 at the price of a request that writes the cache; the question in the middle of a reply is the one of 12.7 and is not asked for runs of that size at the default amount.
+2. **Encryption.** The tool settings (with the run switch) and the audit log (with the new line for every run) are sealed with your chats when you turn encryption on, and come back when you turn it off. A key that cannot be opened means every tool is off: the run switch cannot be read as on.
+3. **Backups.** A backup of a chat carries the notes of runs (the program, the arguments, how it ended) and nothing of the tool settings or the audit log. A damaged note (a title the app did not write, an end it does not know, a number out of range, a field more) is refused. A restore never switches the run tool on.
+4. **No code changed in this slice:** these are the rules of 12.7 and 10.7 applied to the new events and notes, and 39 checks and 12 deliberate breakages (all noticed) show that they hold.

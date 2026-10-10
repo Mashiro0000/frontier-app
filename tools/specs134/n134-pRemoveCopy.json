@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/programTools.ts",
-      "from": "      await removeScratch(made.dir, env.runRoot)",
+      "from": "      await removeScratch(made.dir, box.runRoot)",
       "to": "      void 0"
     }
   ],

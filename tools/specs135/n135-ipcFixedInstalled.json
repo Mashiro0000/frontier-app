@@ -1,0 +1,17 @@
+{
+  "label": "n135-ipcFixedInstalled",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      return value && !app.isPackaged ? value : null\n",
+      "to": "      return value ? value : null\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 600000
+}

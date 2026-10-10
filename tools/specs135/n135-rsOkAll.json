@@ -1,0 +1,17 @@
+{
+  "label": "n135-rsOkAll",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/selfTest.ts",
+      "from": "      ok: !aborted && lines.length === SELFTEST_PROBES.length && lines.every((l) => l.good),\n",
+      "to": "      ok: !aborted,\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 600000
+}

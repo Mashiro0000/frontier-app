@@ -1,0 +1,17 @@
+{
+  "label": "n135-svStoppedEarly",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/programService.ts",
+      "from": "      if (controller.signal.aborted) return { ok: false, error: STOPPED_EARLY }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 600000
+}

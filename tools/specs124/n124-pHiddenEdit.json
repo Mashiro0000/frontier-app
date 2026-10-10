@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/proposals.ts",
-      "from": "  if (hidden !== null) {\n    return no(\n      `The new text holds a hidden",
-      "to": "  if (false as boolean) {\n    return no(\n      `The new text holds a hidden"
+      "from": "  const hidden = firstHiddenCharacter(replace)\n  if (hidden !== null) {",
+      "to": "  const hidden = firstHiddenCharacter(replace)\n  if (false as boolean) {"
     }
   ],
   "argv": [
