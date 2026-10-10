@@ -12,7 +12,13 @@ const R = '{{REPO}}/'
 const RUNNER = R + 'src/main/commandRunner.ts'
 const PS = R + 'src/main/launcher/commandLauncher.ps1'
 
-// name: [file, from, to, sections of verify-13-2.mjs that run (or 'probe')]
+// the two places of the launcher where the process is put INSIDE the job (13.7) and checked to be there
+const JOB_LIST_CALL =
+  '      if (!UpdateProcThreadAttribute(attr, 0, ATTR_JOB_LIST, jlMem, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero))\n' + '        throw Err(Marshal.GetLastWin32Error(), "UpdateProcThreadAttribute job list");\n'
+// (the sabotages put 'if (inJob) {' in its place: inJob is false there, so nothing is checked, and the C# still compiles: Add-Type makes a warning an error)
+const IN_JOB_IF = '      if (!IsProcessInJob(pi.hProcess, job, out inJob) || !inJob) {'
+
+// name: [file, from, to, sections of verify-13-2.mjs that run (or 'probe'), more edits of the same file as [from, to] pairs (optional)]
 const controls = {
   // ----- the runner: the request -----
   rContain: [RUNNER, "  if (!isInside(root, scratch)) return refuse('the folder is not inside the run root')", '', 'A'],
@@ -52,6 +58,13 @@ const controls = {
   lDiskMax: [PS, '$MAX_DISK = 536870912;', '$MAX_DISK = 536870912000;', 'E'],
   lSuspended: [PS, 'uint flags = EXTENDED_STARTUPINFO_PRESENT | CREATE_SUSPENDED | CREATE_NO_WINDOW', 'uint flags = EXTENDED_STARTUPINFO_PRESENT | CREATE_NO_WINDOW', 'B'],
   lUi: [PS, 'ui.UIRestrictionsClass = 0xFF;', 'ui.UIRestrictionsClass = 0;', 'B'],
+  // (13.7: the process is made INSIDE the job by the job list attribute, and is checked to be in it before it is resumed)
+  lNoJobList: [PS, JOB_LIST_CALL, '', 'I'],
+  lNoInJobCheck: [PS, IN_JOB_IF, '      if (inJob) {', 'B'],
+  lOutsideJob: [PS, JOB_LIST_CALL, '', 'I', [[IN_JOB_IF, '      if (inJob) {']]],
+  // (13.7: one launcher at a time makes the container and takes a drive letter; without the gate runs that start together share a letter or fail)
+  lNoGate: [PS, '  [Box]::Enter()\n', '', 'J'],
+  lGateEarly: [PS, '    $mounted = [Box]::Mount($scratch)\n  } finally { [Box]::Leave() }', '  } finally { [Box]::Leave() }\n  $mounted = [Box]::Mount($scratch)', 'B'],
   // ----- the launcher: the environment -----
   lEnvLeak: [PS, "$envd['PATHEXT'] = '.COM;.EXE;.BAT;.CMD'", "$envd['PATHEXT'] = '.COM;.EXE;.BAT;.CMD'; $envd['FRONTIER_CANARY_KEY'] = $env:FRONTIER_CANARY_KEY", 'C'],
   lEnvAppdata: [PS, "$envd['PATHEXT'] = '.COM;.EXE;.BAT;.CMD'", "$envd['PATHEXT'] = '.COM;.EXE;.BAT;.CMD'; $envd['APPDATA'] = $root", 'C'],
@@ -69,11 +82,11 @@ const controls = {
 }
 
 mkdirSync(join(TOOLS, 'specs132'), { recursive: true })
-for (const [name, [file, from, to, only]] of Object.entries(controls)) {
+for (const [name, [file, from, to, only, more]] of Object.entries(controls)) {
   const probe = only === 'probe'
   const spec = {
     label: `n132-${name}`,
-    edits: [{ file, from, to }],
+    edits: [{ file, from, to }, ...(more ?? []).map(([f, x]) => ({ file, from: f, to: x }))],
     argv: probe ? ['{{TOOLS}}/probe-13-1.mjs', '1'] : ['{{TOOLS}}/verify-13-2.mjs'],
     env: probe ? { PROBE_LAUNCHER: 'product' } : { ONLY: only },
     timeoutMs: probe ? 900000 : 600000

@@ -1,0 +1,17 @@
+{
+  "label": "n132-lNoGate",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "  [Box]::Enter()\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "J"
+  },
+  "timeoutMs": 600000
+}

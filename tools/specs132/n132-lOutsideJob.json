@@ -1,0 +1,22 @@
+{
+  "label": "n132-lOutsideJob",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "      if (!UpdateProcThreadAttribute(attr, 0, ATTR_JOB_LIST, jlMem, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero))\n        throw Err(Marshal.GetLastWin32Error(), \"UpdateProcThreadAttribute job list\");\n",
+      "to": ""
+    },
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "      if (!IsProcessInJob(pi.hProcess, job, out inJob) || !inJob) {",
+      "to": "      if (inJob) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "I"
+  },
+  "timeoutMs": 600000
+}

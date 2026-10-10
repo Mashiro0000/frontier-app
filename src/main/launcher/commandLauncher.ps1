@@ -57,6 +57,9 @@ public static class Box {
   const uint SYNCHRONIZE = 0x00100000;
   static readonly IntPtr ATTR_SECURITY_CAPABILITIES = (IntPtr)0x20009;
   static readonly IntPtr ATTR_HANDLE_LIST = (IntPtr)0x20002;
+  // PROC_THREAD_ATTRIBUTE_JOB_LIST: the process is made INSIDE the job, so that there is no moment at which a process of the box exists outside it (a launcher that is ended
+  // between CreateProcess and a later AssignProcessToJobObject used to leave a suspended process that nothing ever ended)
+  static readonly IntPtr ATTR_JOB_LIST = (IntPtr)0x2000D;
 
   [StructLayout(LayoutKind.Sequential)]
   struct SECURITY_ATTRIBUTES { public int nLength; public IntPtr lpSecurityDescriptor; public int bInheritHandle; }
@@ -130,7 +133,7 @@ public static class Box {
   static extern bool SetInformationJobObject(IntPtr job, int cls, IntPtr info, int len);
   [DllImport("kernel32.dll", SetLastError = true)]
   static extern bool QueryInformationJobObject(IntPtr job, int cls, IntPtr info, int len, IntPtr ret);
-  [DllImport("kernel32.dll", SetLastError = true)] static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
+  [DllImport("kernel32.dll", SetLastError = true)] static extern bool IsProcessInJob(IntPtr process, IntPtr job, out bool result);
   [DllImport("kernel32.dll", SetLastError = true)] static extern bool TerminateJobObject(IntPtr job, uint code);
   [DllImport("kernel32.dll", SetLastError = true)] static extern uint ResumeThread(IntPtr t);
   [DllImport("kernel32.dll", SetLastError = true)] static extern uint WaitForSingleObject(IntPtr h, uint ms);
@@ -174,6 +177,27 @@ public static class Box {
 
   public static bool Unmount(string dev, string folder) {
     return DefineDosDeviceW(1 | 2 | 4, dev, "\\??\\" + folder);
+  }
+
+  // ---- one launcher at a time makes the container and takes a drive letter ----------------------------------------------------------
+  // Two launchers that look at the free letters at the same moment both take the highest one (DefineDosDevice puts a second definition on the first
+  // without failing) and the two runs then share one drive; a container profile that two of them make at once fails in ways of its own. Both were
+  // seen when three runs were started together (13.7). The gate is held from the container to the letter and not a moment longer; a launcher that
+  // is ended while it holds it abandons it, and the next one takes it over.
+  static Mutex gate;
+  public static void Enter() {
+    gate = new Mutex(false, "Local\\FrontierApp.RunBox.Gate");
+    try {
+      if (!gate.WaitOne(60000)) { gate.Dispose(); gate = null; throw new Exception("another run has been making its box for more than a minute"); }
+    } catch (AbandonedMutexException) {
+      // the launcher that held the gate was ended: it is ours now
+    }
+  }
+  public static void Leave() {
+    if (gate == null) return;
+    try { gate.ReleaseMutex(); } catch (Exception) { }
+    gate.Dispose();
+    gate = null;
   }
 
   // ---- the command line (the rules CommandLineToArgvW reads back) --------------------------------------------------------------------
@@ -274,7 +298,7 @@ public static class Box {
     r.Stage = "start";
     IntPtr job = IntPtr.Zero, parent = IntPtr.Zero;
     IntPtr inR = IntPtr.Zero, inW = IntPtr.Zero, outR = IntPtr.Zero, outW = IntPtr.Zero, errR = IntPtr.Zero, errW = IntPtr.Zero;
-    IntPtr attr = IntPtr.Zero, hlMem = IntPtr.Zero, scMem = IntPtr.Zero, envMem = IntPtr.Zero, sidPtr = IntPtr.Zero;
+    IntPtr attr = IntPtr.Zero, hlMem = IntPtr.Zero, scMem = IntPtr.Zero, jlMem = IntPtr.Zero, envMem = IntPtr.Zero, sidPtr = IntPtr.Zero;
     PROCESS_INFORMATION pi = new PROCESS_INFORMATION();
     bool created = false;
     try {
@@ -306,9 +330,9 @@ public static class Box {
 
       r.Stage = "attributes";
       IntPtr size = IntPtr.Zero;
-      InitializeProcThreadAttributeList(IntPtr.Zero, 2, 0, ref size);
+      InitializeProcThreadAttributeList(IntPtr.Zero, 3, 0, ref size);
       attr = Marshal.AllocHGlobal(size);
-      if (!InitializeProcThreadAttributeList(attr, 2, 0, ref size)) throw Err(Marshal.GetLastWin32Error(), "InitializeProcThreadAttributeList");
+      if (!InitializeProcThreadAttributeList(attr, 3, 0, ref size)) throw Err(Marshal.GetLastWin32Error(), "InitializeProcThreadAttributeList");
       IntPtr[] hs = new IntPtr[] { inR, outW, errW };
       hlMem = Marshal.AllocHGlobal(IntPtr.Size * 3);
       Marshal.Copy(hs, 0, hlMem, 3);
@@ -322,6 +346,10 @@ public static class Box {
       Marshal.StructureToPtr(sc, scMem, false);
       if (!UpdateProcThreadAttribute(attr, 0, ATTR_SECURITY_CAPABILITIES, scMem, (IntPtr)scLen, IntPtr.Zero, IntPtr.Zero))
         throw Err(Marshal.GetLastWin32Error(), "UpdateProcThreadAttribute capabilities");
+      jlMem = Marshal.AllocHGlobal(IntPtr.Size);
+      Marshal.WriteIntPtr(jlMem, job);
+      if (!UpdateProcThreadAttribute(attr, 0, ATTR_JOB_LIST, jlMem, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero))
+        throw Err(Marshal.GetLastWin32Error(), "UpdateProcThreadAttribute job list");
 
       STARTUPINFOEX si = new STARTUPINFOEX();
       si.StartupInfo.cb = Marshal.SizeOf(typeof(STARTUPINFOEX));
@@ -340,10 +368,12 @@ public static class Box {
       created = true;
       r.ProcessId = pi.dwProcessId;
       r.Stage = "assign";
-      if (!AssignProcessToJobObject(job, pi.hProcess)) {
+      // it was made inside the job (the job list above): this only makes sure of it, and a process that is not in the job is ended and is no run
+      bool inJob = false;
+      if (!IsProcessInJob(pi.hProcess, job, out inJob) || !inJob) {
         int e = Marshal.GetLastWin32Error();
         TerminateProcess(pi.hProcess, 1);
-        throw Err(e, "AssignProcessToJobObject");
+        throw Err(e, "the process is not in the job");
       }
       // the child's ends are now the child's; close ours so that the pipes end when the child side closes
       CloseHandle(inR); inR = IntPtr.Zero; CloseHandle(outW); outW = IntPtr.Zero; CloseHandle(errW); errW = IntPtr.Zero;
@@ -401,6 +431,7 @@ public static class Box {
       if (attr != IntPtr.Zero) { DeleteProcThreadAttributeList(attr); Marshal.FreeHGlobal(attr); }
       if (hlMem != IntPtr.Zero) Marshal.FreeHGlobal(hlMem);
       if (scMem != IntPtr.Zero) Marshal.FreeHGlobal(scMem);
+      if (jlMem != IntPtr.Zero) Marshal.FreeHGlobal(jlMem);
       if (envMem != IntPtr.Zero) Marshal.FreeHGlobal(envMem);
       if (sidPtr != IntPtr.Zero) LocalFree(sidPtr);
     }
@@ -467,16 +498,19 @@ try {
 
   $stage = 'container'
   Add-Type -TypeDefinition $src -Language CSharp
-  $sid = [Box]::ContainerSid([string]$spec.container)
-  $stage = 'grants'
-  $sidObj = New-Object System.Security.Principal.SecurityIdentifier($sid)
-  foreach ($pair in @(@($scratch, [System.Security.AccessControl.FileSystemRights]::Modify), @($tools, [System.Security.AccessControl.FileSystemRights]::ReadAndExecute))) {
-    $acl = [System.IO.Directory]::GetAccessControl($pair[0], [System.Security.AccessControl.AccessControlSections]::Access)
-    $acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule($sidObj, $pair[1], 'ContainerInherit,ObjectInherit', 'None', 'Allow')))
-    [System.IO.Directory]::SetAccessControl($pair[0], $acl)
-  }
-  $stage = 'mount'
-  $mounted = [Box]::Mount($scratch)
+  [Box]::Enter()
+  try {
+    $sid = [Box]::ContainerSid([string]$spec.container)
+    $stage = 'grants'
+    $sidObj = New-Object System.Security.Principal.SecurityIdentifier($sid)
+    foreach ($pair in @(@($scratch, [System.Security.AccessControl.FileSystemRights]::Modify), @($tools, [System.Security.AccessControl.FileSystemRights]::ReadAndExecute))) {
+      $acl = [System.IO.Directory]::GetAccessControl($pair[0], [System.Security.AccessControl.AccessControlSections]::Access)
+      $acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule($sidObj, $pair[1], 'ContainerInherit,ObjectInherit', 'None', 'Allow')))
+      [System.IO.Directory]::SetAccessControl($pair[0], $acl)
+    }
+    $stage = 'mount'
+    $mounted = [Box]::Mount($scratch)
+  } finally { [Box]::Leave() }
   $root = $mounted + '\'
   # the environment is built here, from nothing: nothing of the app goes in. LOCALAPPDATA must be there and APPDATA must not (measured, D-043)
   $envd = New-Object 'System.Collections.Generic.Dictionary[string,string]'

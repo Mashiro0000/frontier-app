@@ -8,7 +8,9 @@
 //   E. the launcher's own defence: hostile specs handed to it directly are refused before anything is made;
 //   F. a launcher that dies, hangs, says nonsense or says the box could not be made (a stand-in compiled here): never a guess, never a run;
 //   G. Stop everything (an AbortSignal and stopAll) and the death of the app: the box is gone and the drive letter with it;
-//   H. what the source must keep true (the only place that starts the launcher; nothing wired to it yet).
+//   H. what the source must keep true (the only place that starts the launcher; nothing wired to it yet);
+//   I. (13.7) the process is made INSIDE the job and is counted there; a Stop at sixteen different moments of the start leaves no process, no letter and no spec file;
+//   J. (13.7) runs started at the same moment never share a drive letter and never fail to make their box (the gate of the launcher).
 // The 50 checks of the probe (tools/probe-13-1.mjs) run against this launcher too: PROBE_LAUNCHER=product node tools/probe-13-1.mjs 2.
 //
 // Run: FRONTIER_MAY_REMOVE=1 node tools/verify-13-2.mjs
@@ -189,7 +191,13 @@ await guard('B', async () => {
   check('B: its hash is the SHA-256 of that text', LAUNCHER_SHA256 === sha(LAUNCHER_TEXT) && /^[0-9a-f]{64}$/.test(LAUNCHER_SHA256))
   check('B: the container has NO capabilities (that is what removes the network)', /CapabilityCount = 0/.test(LAUNCHER_TEXT) && /sc\.Capabilities = IntPtr\.Zero/.test(LAUNCHER_TEXT))
   check('B: the job kills on close, counts processes, limits memory, and shuts the desktop, clipboard and handles', /0x2000 \| 0x8 \| 0x400 \| 0x200/.test(LAUNCHER_TEXT) && /ActiveProcessLimit = maxProcesses/.test(LAUNCHER_TEXT) && /JobMemoryLimit/.test(LAUNCHER_TEXT) && /UIRestrictionsClass = 0xFF/.test(LAUNCHER_TEXT))
-  check('B: the process is made SUSPENDED, put in the job, and only then resumed', /uint flags = [^;]*CREATE_SUSPENDED/.test(LAUNCHER_TEXT) && LAUNCHER_TEXT.indexOf('AssignProcessToJobObject(job') < LAUNCHER_TEXT.indexOf('ResumeThread(pi.hThread) =='))
+  // (13.7: the process is made INSIDE the job, by the job list attribute of CreateProcess, so that there is no moment at which a process of the box exists outside it: a launcher that was ended
+  // between CreateProcess and a later AssignProcessToJobObject used to leave a suspended process that nothing ended; found when a Stop landed in that moment, 10 October 2026)
+  check('B: the process is made SUSPENDED and INSIDE the job (the job list attribute), is checked to be in it, and only then resumed', /uint flags = [^;]*CREATE_SUSPENDED/.test(LAUNCHER_TEXT) && /UpdateProcThreadAttribute\(attr, 0, ATTR_JOB_LIST, jlMem/.test(LAUNCHER_TEXT) && LAUNCHER_TEXT.indexOf('UpdateProcThreadAttribute(attr, 0, ATTR_JOB_LIST') < LAUNCHER_TEXT.indexOf('CreateProcessW(program') && LAUNCHER_TEXT.indexOf('IsProcessInJob(pi.hProcess, job') > LAUNCHER_TEXT.indexOf('CreateProcessW(program') && LAUNCHER_TEXT.indexOf('IsProcessInJob(pi.hProcess, job') < LAUNCHER_TEXT.indexOf('ResumeThread(pi.hThread) =='))
+  // (the comment that tells the story names the call, so only the code lines are looked at: no line that is a comment in C# or in PowerShell)
+  const LAUNCHER_CODE = LAUNCHER_TEXT.split('\n').filter((line) => !/^\s*(\/\/|#)/.test(line)).join('\n')
+  check('B: there is no AssignProcessToJobObject any more (an assignment after the process exists is the gap this closes)', !/AssignProcessToJobObject/.test(LAUNCHER_CODE) && LAUNCHER_CODE.length > 1000)
+  check('B: one launcher at a time makes the container and takes a drive letter: a named gate, taken before the container and let go in a finally after the letter (13.7)', /new Mutex\(false, "Local\\\\FrontierApp\.RunBox\.Gate"\)/.test(LAUNCHER_TEXT) && /gate\.WaitOne\(60000\)/.test(LAUNCHER_TEXT) &&LAUNCHER_TEXT.indexOf('[Box]::Enter()') > 0 && LAUNCHER_TEXT.indexOf('[Box]::Enter()') < LAUNCHER_TEXT.indexOf('[Box]::ContainerSid(') && LAUNCHER_TEXT.indexOf('[Box]::Mount($scratch)') < LAUNCHER_TEXT.indexOf('} finally { [Box]::Leave() }') && LAUNCHER_TEXT.indexOf('} finally { [Box]::Leave() }') < LAUNCHER_TEXT.indexOf('[Box]::Run($sid'))
   check('B: only the three pipe ends are inherited', /ATTR_HANDLE_LIST/.test(LAUNCHER_TEXT) && /new IntPtr\[\] \{ inR, outW, errW \}/.test(LAUNCHER_TEXT))
   check('B: it watches the size of the scratch folder (every quarter of a second) and ends the job past the cap', /TreeBytes\(scratch, diskBytes\) > diskBytes/.test(LAUNCHER_TEXT) && /DiskExceeded = true/.test(LAUNCHER_TEXT) && /MAX_DISK = 536870912/.test(LAUNCHER_TEXT))
   check('B: it takes ONE parameter, the spec file, and nothing else', /param\(\[Parameter\(Mandatory = \$true\)\]\[string\]\$SpecPath\)/.test(LAUNCHER_TEXT) && (LAUNCHER_TEXT.match(/^param\(/gm) ?? []).length === 1)
@@ -304,8 +312,8 @@ await guard('C', async () => {
   const ds = [scratch('par'), scratch('par'), scratch('par')]
   for (const x of ds) put(x, 'p.cjs', "require('fs').writeFileSync('who.txt', process.cwd()); setTimeout(() => process.exit(0), 2500)")
   const outs = await Promise.all(ds.map((x) => R(x, ['p.cjs'])))
-  const letters = ds.map((x) => fs.readFileSync(J(x, 'who.txt'), 'utf8'))
-  check('C: three runs at once all finish, each with a drive letter of its own', outs.every((o) => o.kind === 'ran' && o.exitCode === 0) && new Set(letters).size === 3, show(letters))
+  const letters = ds.map((x) => (fs.existsSync(J(x, 'who.txt')) ? fs.readFileSync(J(x, 'who.txt'), 'utf8') : ''))
+  check('C: three runs at once all finish, each with a drive letter of its own', outs.every((o) => o.kind === 'ran' && o.exitCode === 0) && letters.every((l) => l !== '') && new Set(letters).size === 3, show({ letters, outs: outs.map((o) => (o.kind === 'ran' ? o.exitCode : `${o.why}: ${o.message}`)) }))
   check('C: and every letter is gone afterwards', noMounts())
 
   // ---- what a person would see in the box's words later: refused things never start
@@ -676,6 +684,80 @@ await guard('H', async () => {
   check('H: the runner has no flag, option or environment variable that turns the box off', !/process\.env\.FRONTIER_[A-Z_]*/.test(code) && !/sandbox\s*[:=]\s*false|noBox|unsandboxed|insecure/i.test(code))
   const shared = source('src/shared/run.ts')
   check('H: src/shared/run.ts has no imports (plain data)', !/^import /m.test(shared))
+})
+
+// ============================ I. the process is IN the job, and a Stop at any moment leaves nothing ===========================
+// (13.7, 10 October 2026: a Stop that landed between the creation of the process and its assignment to the job left a suspended process that nothing ended. The process is now made
+// INSIDE the job by the job list attribute and checked there; these runs look from outside: what is in the job is counted and has a peak of memory, and Stops at sixteen different
+// moments of the start leave no process of the box, no drive letter and no spec file behind. All of it with programs that end by themselves or are ended by the run.)
+await guard('I', async () => {
+  const specsIn = () => (fs.existsSync(runner.folders.specs) ? fs.readdirSync(runner.folders.specs) : [])
+  const specsBefore = new Set(specsIn())
+  const d = scratch('injob')
+  put(d, 'nap.cjs', 'setTimeout(function () {}, 2500)')
+  const nap = await R(d, ['nap.cjs'], { timeoutMs: 700 })
+  check('I: a program that is still running when its clock ends was counted in the job (at least one process), and was ended with it', nap.kind === 'ran' && nap.timedOut === true && nap.leftoverKilled >= 1 && nap.leftoverAfter === 0, show(nap))
+  const quick = await R(d, ['-e', 'process.exit(0)'])
+  check('I: the job has a peak of memory for a program that ran (the process was in it from the start)', quick.kind === 'ran' && quick.exitCode === 0 && quick.peakMemoryBytes > 4 * 1024 * 1024, show(quick))
+
+  // Stops at sixteen moments, one run after the other: the launcher takes about one to three seconds to make the box (PowerShell, the compile, the container, the letter, the process)
+  const sleepy = "require('fs').writeFileSync('box.pid', String(process.pid)); setTimeout(() => {}, 120000)"
+  const offsets = [0, 500, 1000, 1500, 2000, 2400, 2700, 3000, 3200, 3400, 3600, 3800, 4000, 4300, 4600, 5000]
+  const kinds = []
+  const pids = []
+  for (const ms of offsets) {
+    const dir = scratch('storm')
+    put(dir, 'sleepy.cjs', sleepy)
+    const ac = new AbortController()
+    const p = runner.run({ program: NODE, args: ['sleepy.cjs'], scratchDir: dir, timeoutMs: 120000 }, { signal: ac.signal })
+    await wait(ms)
+    ac.abort()
+    const o = await p
+    kinds.push(`${o.kind}:${o.why ?? ''}`)
+    if (fs.existsSync(J(dir, 'box.pid'))) pids.push(Number(fs.readFileSync(J(dir, 'box.pid'), 'utf8')))
+  }
+  check('I: every one of them came back as "aborted", and some of them had started the program (the moments cover the start)', kinds.every((k) => k === 'not-run:aborted') && pids.length >= 1 && pids.length < offsets.length, `${kinds.join(' ')} | started ${pids.length}`)
+  await until(() => noMounts() && runner.live() === 0, 15000)
+  await wait(1500)
+  const toolsLike = runner.folders.tools.replace(/'/g, "''")
+  const strays = () =>
+    execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', `Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like '*${toolsLike}*' } | ForEach-Object { $_.ProcessId }`], { encoding: 'utf8', windowsHide: true })
+      .split(/\r?\n/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map(Number)
+  const left = strays()
+  for (const pid of left) {
+    try {
+      process.kill(pid, 'SIGKILL') // only so that a failed check does not leave a program of the box running on the PC
+    } catch {
+      /* gone */
+    }
+  }
+  check('I: and nothing of the box is left running (no process made from the private node.exe), whenever the Stop came', left.length === 0, left.join(','))
+  // (a spec file that an app killed hard left behind in G is not this section's)
+  const specsNew = specsIn().filter((f) => !specsBefore.has(f))
+  check('I: no drive letter and no spec file of these runs is left either', noMounts() && specsNew.length === 0, `${show(listMounts(runRoot))} ${specsNew}`)
+})
+
+// ============================ J. runs at the same moment ===============================
+// (13.7, 10 October 2026: three runs started together failed about one time in eight: two launchers took the same drive letter (DefineDosDevice does not fail for a second
+// definition, so two runs shared one drive: one wrote into the other's folder) or made the container profile at the same moment and failed. The launcher now takes a named gate
+// from the container to the letter. Eight rounds of five runs; the sabotage without the gate fails most rounds.)
+await guard('J', async () => {
+  const bad = []
+  let runs = 0
+  for (let round = 1; round <= 8; round++) {
+    const ds = [1, 2, 3, 4, 5].map(() => scratch('together'))
+    for (const x of ds) put(x, 'p.cjs', "require('fs').writeFileSync('who.txt', process.cwd()); setTimeout(() => process.exit(0), 2000)")
+    const outs = await Promise.all(ds.map((x) => R(x, ['p.cjs'])))
+    runs += outs.length
+    const letters = ds.map((x) => (fs.existsSync(J(x, 'who.txt')) ? fs.readFileSync(J(x, 'who.txt'), 'utf8') : ''))
+    const fine = outs.every((o) => o.kind === 'ran' && o.exitCode === 0) && letters.every((l) => /^[D-Z]:\\$/.test(l.trim())) && new Set(letters).size === ds.length
+    if (!fine) bad.push(`round ${round}: ${show({ letters, outs: outs.map((o) => (o.kind === 'ran' ? o.exitCode : `${o.why}: ${o.message}`)) })}`)
+  }
+  check('J: eight rounds of five runs started together: every run finished, each with a drive letter of its own and its file in its own folder', bad.length === 0 && runs === 40, bad.slice(0, 2).join(' || '))
+  check('J: and no letter is left', noMounts(), show(listMounts(runRoot)))
 })
 
 check('the guard under the real file system refused nothing during the run (the module under test touched nothing outside the folder it was given)', fsGuard.refusals.length === 0, show(fsGuard.refusals.slice(0, 3)))

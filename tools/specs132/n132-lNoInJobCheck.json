@@ -1,0 +1,17 @@
+{
+  "label": "n132-lNoInJobCheck",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "      if (!IsProcessInJob(pi.hProcess, job, out inJob) || !inJob) {",
+      "to": "      if (inJob) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}

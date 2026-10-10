@@ -1,0 +1,17 @@
+{
+  "label": "n132-lGateEarly",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
+      "from": "    $mounted = [Box]::Mount($scratch)\n  } finally { [Box]::Leave() }",
+      "to": "  } finally { [Box]::Leave() }\n  $mounted = [Box]::Mount($scratch)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-13-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}
