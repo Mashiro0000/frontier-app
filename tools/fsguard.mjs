@@ -133,13 +133,34 @@ export function installFsGuard(options) {
     rules.patterns.push({ base: rootOf(pattern.base, 'remove pattern'), name: pattern.name })
   }
 
-  /** True when the path lies in a folder directly inside a pattern's base whose name the pattern accepts (the base itself never). */
-  const patternAllows = (written, path, real) =>
+  /**
+   * True when no name on the way from `from` down to `written` is a link or a junction, except the last one (a link itself may go; what it leads to never). This is what the real
+   * path used to be compared for, and it does not depend on where the file system keeps the files: a packaged app's AppData is redirected by Windows (the Claude desktop app's
+   * lives in a folder of its own on another drive), so the real path of a file in a throwaway profile is not the path it is called by, with no link anywhere.
+   */
+  const linkFree = (from, written) => {
+    const names = written.slice(from.length + 1).split('\\')
+    let current = from
+    for (let i = 0; i < names.length; i++) {
+      current = `${current}\\${names[i]}`
+      let info
+      try {
+        info = fs.lstatSync(current)
+      } catch {
+        return true // not there from here on: there is nothing to follow
+      }
+      if (info.isSymbolicLink() && i < names.length - 1) return false
+    }
+    return true
+  }
+
+  /** True when the path lies in a folder directly inside a pattern's base whose name the pattern accepts (the base itself never), with no link on the way. */
+  const patternAllows = (written, path) =>
     rules.patterns.some((p) => {
       if (!inside(p.base.lex, path) || path === p.base.lex) return false
       const first = written.slice(p.base.path.length + 1).split('\\')[0]
       if (!p.name.test(first)) return false
-      return inside(`${p.base.phys}\\${fold(first)}`, real)
+      return linkFree(p.base.path, written)
     })
 
   /** null when allowed, else the reason. */
@@ -153,7 +174,7 @@ export function installFsGuard(options) {
     const path = fold(lex.path)
     const real = fold(physical(lex.path))
     if (roots.some((r) => inside(r.lex, path) && inside(r.phys, real))) return null
-    if (op === 'remove' && patternAllows(lex.path, path, real)) return null
+    if (op === 'remove' && patternAllows(lex.path, path)) return null
     return `${op} of ${lex.path}: not inside a folder this check may ${op === 'remove' ? 'remove from' : 'write in'}`
   }
 

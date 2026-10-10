@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/tools/fsguard.mjs",
-      "from": "if (op === 'remove' && patternAllows(lex.path, path, real)) return null",
-      "to": "if (patternAllows(lex.path, path, real)) return null"
+      "from": "if (op === 'remove' && patternAllows(lex.path, path)) return null",
+      "to": "if (patternAllows(lex.path, path)) return null"
     }
   ],
   "argv": [

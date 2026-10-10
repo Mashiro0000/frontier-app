@@ -43,7 +43,9 @@ const NO_PRELOAD = { NODE_OPTIONS: '' }
 function nodeSuite(label, script) {
   if (OWN_GUARD.has(script)) return runNode({ label: pfx(label), script, env: { ...NO_PRELOAD, TEMP: 'C:\\frontier-tmp', TMP: 'C:\\frontier-tmp', FRONTIER_MAY_REMOVE: '1' } })
   if (LAUNCHERS.has(script)) return runNode({ label: pfx(label), script })
-  return runNode({ label: pfx(label), script: 'guarded.mjs', args: [join(here, script)], env: NO_PRELOAD })
+  // an older plain-Node suite: under the wrapper's guard like every window launcher (writes are not limited; what it may remove is its own folder, the throwaway profiles in Roaming and out)
+  // (these suites make throwaway folders in the real AppData to test this PC's EFS conditions (D-010), so they get the real one back)
+  return runNode({ label: pfx(label), script, env: process.env.FRONTIER_REAL_APPDATA ? { APPDATA: process.env.FRONTIER_REAL_APPDATA } : {} })
 }
 
 if (parts.includes('node')) {

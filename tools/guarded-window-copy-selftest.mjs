@@ -8,6 +8,8 @@ import { win32 } from 'node:path'
 const run = process.env.FRONTIER_GUARD_ROOT ?? ''
 const cwd = process.cwd()
 const facts = { cwd, run, temp: process.env.TEMP, npmCache: process.env.npm_config_cache, preload: /harness-guard-preload/.test(process.env.NODE_OPTIONS ?? '') }
+facts.appdata = process.env.APPDATA
+facts.localappdata = process.env.LOCALAPPDATA
 facts.cwdInRun = run !== '' && cwd.toLowerCase().startsWith(run.toLowerCase() + '\\')
 facts.hasGit = fs.existsSync(win32.join(cwd, '.git'))
 facts.hasSrc = fs.existsSync(win32.join(cwd, 'src', 'main', 'ipc.ts'))

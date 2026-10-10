@@ -662,9 +662,9 @@ await guard('H', async () => {
   walk(`${REPO}/src`)
   const users = srcFiles.filter((f) => /from ['"][^'"]*(commandRunner|commandLauncher)[^'"]*['"]/.test(fs.readFileSync(f, 'utf8')) && !/commandRunner\.ts$/.test(f))
   // scratchCopy.ts (13.3) takes two helpers from the runner (isInside, sweepMounts), and the run tool (programTools.ts, 13.4) runs through it and resolves the program with isInside;
-  // nothing else uses it until 13.5 wires the tool into the app
-  const others = users.filter((f) => !/(scratchCopy|programTools)\.ts$/.test(f))
-  check('H: nothing else in the app imports the runner yet but the scratch copy (13.3) and the run tool (13.4); 13.5 wires the tool', others.length === 0, others.join(', '))
+  // (13.5) the box (programBox.ts) makes the runner and the self-test (selfTest.ts) runs through it; nothing else uses it
+  const others = users.filter((f) => !/(scratchCopy|programTools|programBox|selfTest)\.ts$/.test(f))
+  check('H: nothing else in the app imports the runner but the scratch copy (13.3), the run tool (13.4), the box and the self-test (13.5)', others.length === 0, others.join(', '))
   const powershellUsers = srcFiles.filter((f) => /powershell/i.test(fs.readFileSync(f, 'utf8')))
   // (13.4, on purpose: the run tool names PowerShell only to REFUSE it, as a program a run may never use: in the model's description of the tool and in its list of programs that are not run)
   const refusalOnly = (file) => fs.readFileSync(file, 'utf8').split('\n').filter((l) => /powershell/i.test(l)).every((l) => /cmd, PowerShell and script hosts are refused/.test(l) || /^\s*'powershell(_ise)?',?\s*$/.test(l))

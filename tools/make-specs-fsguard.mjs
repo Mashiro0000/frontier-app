@@ -60,9 +60,11 @@ const controls = {
   gAnywhereNeedsRoot: ["if (!anywhere && (!Array.isArray(writeList) || writeList.length === 0))", 'if (false)'],
   // (not here: `path === p.base.lex` in patternAllows is a second wall behind the last containment test, so taking it out changes nothing: an equivalent mutant)
   gPatternName: ['if (!p.name.test(first)) return false', ''],
-  gPatternReal: ['return inside(`${p.base.phys}\\\\${fold(first)}`, real)', 'return true'],
+  // (10 October 2026: the real path is not compared any more, because a packaged app's AppData is redirected by Windows; a link on the way is looked for name by name)
+  gPatternReal: ['return linkFree(p.base.path, written)', 'return true'],
+  gPatternLinkLast: ['if (info.isSymbolicLink() && i < names.length - 1) return false', 'if (info.isSymbolicLink()) return false'],
   gPatternFirst: ["const first = written.slice(p.base.path.length + 1).split('\\\\')[0]", 'const first = written.slice(p.base.path.length + 1)'],
-  gPatternChecked: ["if (op === 'remove' && patternAllows(lex.path, path, real)) return null", "if (patternAllows(lex.path, path, real)) return null"],
+  gPatternChecked: ["if (op === 'remove' && patternAllows(lex.path, path)) return null", "if (patternAllows(lex.path, path)) return null"],
   gPatternRegex: ["if (!(pattern?.name instanceof RegExp)) throw new Error('fsguard: a remove pattern needs a name (a regular expression)')", ''],
   gUninstall: ['for (const { target, name, original } of originals.reverse()) target[name] = original', 'for (const x of []) void x'],
   gTwice: ["if (installed !== null) throw new Error('fsguard: it is installed already')", ''],

@@ -59,7 +59,9 @@ function copyTree(from, to, extra) {
   return result.status !== null && result.status < 8
 }
 const skipDirs = [win32.join(repo, '.git'), win32.join(repo, 'out'), win32.join(repo, 'node_modules'), win32.join(repo, 'tools', '.out')]
-let ok = copyTree(repo, app, ['/XD', ...skipDirs, '/XF', '*.pdf'])
+// the plan PDFs of the repo's root are left out; the fixtures that are PDFs (tools\fixtures9) are not
+const rootPdfs = fs.readdirSync(repo).filter((n) => /\.pdf$/i.test(n)).map((n) => win32.join(repo, n))
+let ok = copyTree(repo, app, ['/XD', ...skipDirs, ...(rootPdfs.length > 0 ? ['/XF', ...rootPdfs] : [])])
 if (ok && copyModules) ok = copyTree(win32.join(repo, 'node_modules'), win32.join(app, 'node_modules'), [])
 if (!ok) {
   console.error(`guarded-window-copy.mjs: the copy of the tree into ${app} failed.`)
@@ -70,6 +72,16 @@ if (!ok) {
   }
   process.exit(2)
 }
+// The run's own AppData (D-044, 2026-10-10). The Claude desktop app is a packaged app installed on drive A:, and Windows redirects what its processes write under the real AppData
+// (Roaming and Local) to the package's own data folder on A: (A:\WpSystem\...\LocalCache): the throwaway profiles of every window run were being written there, and the real path of a
+// file in one is not the path it is called by (so a guard that compares real paths refused to remove it). The run's profiles are made in the run's own folders, on C:, which is also
+// where the rule allows a run to remove what it made. Roaming is EFS-encrypted like the real one (the checks of this PC's EFS conditions, D-010, still test them).
+const roaming = win32.join(run, 'roaming')
+const local = win32.join(run, 'local')
+fs.mkdirSync(roaming)
+fs.mkdirSync(local)
+const efs = spawnSync('cipher', ['/E', roaming], { encoding: 'utf8', windowsHide: true })
+if (efs.status !== 0) console.error(`guarded-window-copy.mjs: the Roaming folder of the run could not be EFS-encrypted (${String(efs.stdout).trim().slice(0, 120)}): the checks of the EFS conditions will say so.`)
 const preload = pathToFileURL(win32.join(app, 'tools', 'harness-guard-preload.mjs')).href
 const child = spawn(process.execPath, [win32.join(app, 'tools', rel), ...process.argv.slice(3)], {
   stdio: 'inherit',
@@ -78,6 +90,10 @@ const child = spawn(process.execPath, [win32.join(app, 'tools', rel), ...process
     ...process.env,
     TEMP: run,
     TMP: run,
+    // the real AppData folders, for the few older plain-Node suites that test this PC's EFS conditions in them (tools/regress.mjs hands them to those)
+    FRONTIER_REAL_APPDATA: process.env.APPDATA ?? '',
+    APPDATA: roaming,
+    LOCALAPPDATA: local,
     // npm writes its logs and removes the old ones in its cache folder: here it is the run's own
     npm_config_cache: win32.join(run, 'npm-cache'),
     FRONTIER_KEEP_TEMP: '1',
