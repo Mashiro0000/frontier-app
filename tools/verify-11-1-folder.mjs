@@ -42,7 +42,7 @@ console.error = (...args) => { logged.push(args.map(String).join(' ')) }
 
 // every file the app keeps in its data folder (names as the main process builds them), plus the audit log that 11.2 adds, plus Chromium's own
 const DATA_FILES = [
-  'memory.json', 'instructions.json', 'projects.json', 'limits.json', 'ask-first.json', 'chat-encryption.json', 'preferences.json', 'tools.json' /* the tool switches and caps (11.3) */, 'workspace.json' /* the workspace folder (12.3) */,
+  'memory.json', 'instructions.json', 'projects.json', 'limits.json', 'ask-first.json', 'chat-encryption.json', 'preferences.json', 'tools.json' /* the tool switches and caps (11.3) */, 'workspace.json' /* the workspace folder (12.3) */, 'connectors.json' /* the connectors (14.6) */,
   'credentials.anthropic.json', 'credentials.openai.json', 'credentials.json',
   'conversations\\c-1.json', 'conversations\\c-2.json', 'attachments\\0f3a9c', 'usage\\ledger.jsonl',
   'audit\\log.jsonl', // the audit log (11.2 writes it; the owner named it, so it is here from the start)

@@ -5,6 +5,7 @@
 import {
   toolTitle,
   type AnswerCode,
+  type ConnectorEvent,
   type ProgramEnd,
   type RefusalCode,
   type ShownArguments,
@@ -23,6 +24,13 @@ export interface ProgramSummary {
   deleted: number
 }
 
+/** What the log keeps of a call to a connector's tool (the `connector-call` event without its head). */
+export interface ConnectorCallSummary {
+  ms: number
+  isError: boolean
+  dropped: number
+}
+
 /** How many calls the window shows at once (the newest). The export holds more. */
 export const AUDIT_VIEW_CALLS = 300
 
@@ -38,6 +46,10 @@ export type AuditOutcome =
   | { kind: 'running'; covered?: true }
   /** A program run (13.4) that came to its end: how, in numbers (the program event), and how much of its output went back to the model. */
   | { kind: 'ran-program'; program: ProgramSummary; size: number }
+  /** A call to a connector's tool (14.5) that came back: how long it took, whether the connector said it failed, what was not passed on, and how much text went back. */
+  | { kind: 'ran-connector'; connector: ConnectorCallSummary; size: number }
+  /** Not a call: something that happened to a connector (14.6), with its name. */
+  | { kind: 'connector-event'; what: ConnectorEvent; connector: string }
   /** Asked, and no answer was recorded (the app was probably closed meanwhile). */
   | { kind: 'unanswered' }
 
@@ -114,7 +126,9 @@ export const REFUSED_TEXT: Record<RefusalCode, string> = {
   'run-cap': 'Refused: the reply had used all its runs.',
   'run-time-cap': 'Refused: the reply had used all the run time it may.',
   'run-declined': 'Refused: you had said no to a run in this reply, so you were not asked again.',
-  'copy-refused': 'Refused: the folder to copy is bigger than a run may copy, or cannot be copied.'
+  'copy-refused': 'Refused: the folder to copy is bigger than a run may copy, or cannot be copied.',
+  'connector-declined':
+    'Refused: you had said no to this connector in this reply, so you were not asked again.'
 }
 
 export const DECLINED_TEXT: Record<Exclude<AnswerCode, 'yes' | 'covered'>, string> = {
@@ -143,6 +157,51 @@ function programText(p: ProgramSummary, size: number): string {
     case 'not-run':
       return 'You said yes. The program did not run (the box could not be made, or you pressed Stop first). Nothing was changed.'
   }
+}
+
+/** What happened to a connector, in a sentence (the name is the person's own, shown as text). */
+export function connectorEventText(what: ConnectorEvent, connector: string): string {
+  const name = JSON.stringify(connector)
+  switch (what) {
+    case 'added':
+      return `You added the connector ${name}. Every tool of it starts off.`
+    case 'removed':
+      return `You removed the connector ${name}; its tools and its token are gone.`
+    case 'started':
+      return `The connector ${name} was started.`
+    case 'stopped':
+      return `The connector ${name} was stopped.`
+    case 'failed':
+      return `The connector ${name} could not be started, or it ended by itself.`
+    case 'tool-on':
+      return `You switched this tool of ${name} on, after reading it.`
+    case 'tool-off':
+      return `This tool of ${name} was switched off.`
+    case 'tool-changed':
+      return `The connector ${name} changed this tool since you switched it on, so it was switched off.`
+    case 'network-on':
+      return `You let the connector ${name} use the network.`
+    case 'network-off':
+      return `The connector ${name} may no longer use the network.`
+    case 'folder-on':
+      return `You let the connector ${name} see a copy of the workspace folder.`
+    case 'folder-off':
+      return `The connector ${name} no longer sees a copy of the workspace folder.`
+    case 'as-you-on':
+      return `You let the connector ${name} run NOT boxed, with every right you have.`
+    case 'as-you-off':
+      return `The connector ${name} runs in the box again.`
+  }
+}
+
+/** What became of a call to a connector's tool, in a sentence. */
+function connectorCallText(c: ConnectorCallSummary, size: number): string {
+  const said = c.isError ? ' and said the call did not work' : ''
+  const dropped =
+    c.dropped === 0
+      ? ''
+      : ` ${c.dropped === 1 ? '1 piece' : `${fmt(c.dropped)} pieces`} (a picture, a sound or a link to a file) ${c.dropped === 1 ? 'was' : 'were'} not passed on.`
+  return `You said yes. The connector answered after ${seconds(c.ms)}${said}: ${fmt(size)} characters went back to the model.${dropped}`
 }
 
 /** What happened to a call, in a sentence. The window and the export say the same words. */
@@ -182,6 +241,10 @@ export function outcomeText(outcome: AuditOutcome, tool = 'web_search'): string 
         : 'You said yes. No end was recorded (the app may have been closed).'
     case 'ran-program':
       return programText(outcome.program, outcome.size)
+    case 'ran-connector':
+      return connectorCallText(outcome.connector, outcome.size)
+    case 'connector-event':
+      return connectorEventText(outcome.what, outcome.connector)
     case 'unanswered':
       return 'You were asked. No answer was recorded (the app may have been closed).'
   }
@@ -198,10 +261,13 @@ interface Building {
   answer: AnswerCode | null
   ran: boolean
   program: ProgramSummary | null
+  connectorCall: ConnectorCallSummary | null
+  event: { what: ConnectorEvent; connector: string } | null
   result: Extract<ToolEvent, { type: 'result' }> | null
 }
 
 function outcomeOf(call: Building): AuditOutcome {
+  if (call.event !== null) return { kind: 'connector-event', ...call.event }
   if (call.refused !== null) return { kind: 'refused', code: call.refused }
   if (call.answer !== null && call.answer !== 'yes' && call.answer !== 'covered') {
     return { kind: 'declined', answer: call.answer }
@@ -209,6 +275,9 @@ function outcomeOf(call: Building): AuditOutcome {
   const covered = call.answer === 'covered' ? ({ covered: true } as const) : {}
   if (call.result !== null && call.result.ok && call.program !== null) {
     return { kind: 'ran-program', program: call.program, size: call.result.size }
+  }
+  if (call.result !== null && call.result.ok && call.connectorCall !== null) {
+    return { kind: 'ran-connector', connector: call.connectorCall, size: call.result.size }
   }
   if (call.result !== null) {
     return call.result.ok
@@ -246,6 +315,8 @@ export function groupCalls(events: readonly ToolEvent[]): AuditCall[] {
         answer: null,
         ran: false,
         program: null,
+        connectorCall: null,
+        event: null,
         result: null
       }
       byId.set(event.call, call)
@@ -261,6 +332,12 @@ export function groupCalls(events: readonly ToolEvent[]): AuditCall[] {
           created: event.created,
           deleted: event.deleted
         }
+        break
+      case 'connector-call':
+        call.connectorCall = { ms: event.ms, isError: event.isError, dropped: event.dropped }
+        break
+      case 'connector':
+        call.event = { what: event.what, connector: event.connector }
         break
       case 'refused':
         call.refused = event.code

@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolRegistry.ts",
-      "from": "      required: [...Object.keys(def.args), 'why'],\n      additionalProperties: false",
-      "to": "      required: [...Object.keys(def.args), 'why'],\n      additionalProperties: true"
+      "from": "        'why'\n      ],\n      additionalProperties: false",
+      "to": "        'why'\n      ],\n      additionalProperties: true"
     }
   ],
   "argv": [

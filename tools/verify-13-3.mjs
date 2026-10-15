@@ -561,8 +561,8 @@ await guard('G', async () => {
     }
   }
   walk(`${REPO}/src`)
-  // (13.4, on purpose: the run tool, programTools.ts, makes the copy; 13.5 wires that tool into the app)
-  check('G: no file of the app imports scratchCopy but the run tool (programTools.ts, 13.4), the box, the self-test and what a run brings back (13.5)', users.map((u) => u.replace(`${REPO}/`, '')).sort().join() === 'src/main/programBox.ts,src/main/programTools.ts,src/main/runProposals.ts,src/main/selfTest.ts', users.join(', '))
+  // (13.4, on purpose: the run tool, programTools.ts, makes the copy; 13.5 wires that tool into the app; 14.6, on purpose: a boxed connector gets a copy of its folder, and of the workspace when granted)
+  check('G: no file of the app imports scratchCopy but the run tool (programTools.ts, 13.4), the box, the self-test, what a run brings back (13.5) and the connectors (14.6)', users.map((u) => u.replace(`${REPO}/`, '')).sort().join() === 'src/main/connectorService.ts,src/main/programBox.ts,src/main/programTools.ts,src/main/runProposals.ts,src/main/selfTest.ts', users.join(', '))
 })
 
 check('the guard under the real file system refused nothing during the run (the module under test touched nothing outside the folders it was given)', fsGuard.refusals.length === 0, show(fsGuard.refusals.slice(0, 3)))

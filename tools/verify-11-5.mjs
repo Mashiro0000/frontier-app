@@ -159,7 +159,7 @@ await guard('D', async () => {
     check(`D: nothing that ${start.split('/').at(-1)} reaches, however deep, is a store of notes, instructions, limits, keys, chats or files, or the wiring (the one exception: the scratch copy takes the pure look for a saved key from secrets.ts)`, hit.length === 0 || (start.endsWith('replyTools.ts') && onlyTheKeyLook), show({ hit, secretsImporters }))
   }
   const executorSrc = source('src/main/replyTools.ts')
-  check('D: the executors of the build: web search calls the search handed to it and does nothing else with the result but word it; the run tool is the one made by programTools.ts; no file, process or network call in this file', /executors: \{\s*(\.\.\.fileExecutors,\s*)?(\.\.\.\(program === undefined \? \{\} : \{ run_program: program\.executor \}\),\s*)?web_search: async/.test(executorSrc) && !/fs\.|writeFile|require\(|child_process|fetch\(/.test(executorSrc))
+  check('D: the executors of the build: web search calls the search handed to it and does nothing else with the result but word it; the run tool is the one made by programTools.ts; no file, process or network call in this file', /executors: \{\s*(\.\.\.connectorExecutors,\s*)?(\.\.\.fileExecutors,\s*)?(\.\.\.\(program === undefined \? \{\} : \{ run_program: program\.executor \}\),\s*)?web_search: async/.test(executorSrc) && !/fs\.|writeFile|require\(|child_process|fetch\(/.test(executorSrc))
   check('D: the settings can be changed only by the settings service, which asks (nothing on the path of a tool imports it)', !closure('src/main/toolCore.ts').concat(closure('src/main/replyTools.ts')).some((f) => /toolSettingsService/.test(f)))
 })
 

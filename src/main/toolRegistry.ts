@@ -18,6 +18,8 @@ interface ArgBase {
   label: string
   /** What the model is told about it. */
   describe: string
+  /** The call may leave it out (14.4, a connector's tool). Every argument of the app's own tools is required. */
+  optional?: boolean
 }
 export interface TextArg extends ArgBase {
   kind: 'text'
@@ -28,6 +30,16 @@ export interface IntegerArg extends ArgBase {
   kind: 'integer'
   min: number
   max: number
+}
+/** A number that need not be whole (14.4, a connector's tool), finite and within its limits. */
+export interface NumberArg extends ArgBase {
+  kind: 'number'
+  min: number
+  max: number
+}
+/** True or false (14.4, a connector's tool). */
+export interface BooleanArg extends ArgBase {
+  kind: 'boolean'
 }
 export interface ChoiceArg extends ArgBase {
   kind: 'choice'
@@ -71,7 +83,15 @@ export interface ListArg extends ArgBase {
   totalMax: number
 }
 export type ArgSpec =
-  TextArg | IntegerArg | ChoiceArg | PathArg | WorkspacePathArg | BodyArg | ListArg
+  | TextArg
+  | IntegerArg
+  | NumberArg
+  | BooleanArg
+  | ChoiceArg
+  | PathArg
+  | WorkspacePathArg
+  | BodyArg
+  | ListArg
 
 export interface ToolDefinition {
   /** The name the model calls it by; also the key of its setting. */
@@ -128,8 +148,11 @@ function hasControlCharacter(text: string): boolean {
   return false
 }
 
-/** What a call's arguments have been reduced to: main's own copy, field by field, with nothing the tool does not take. A list is a frozen array of its items. */
-export type CheckedArgs = Readonly<Record<string, string | number | readonly string[]>>
+/**
+ * What a call's arguments have been reduced to: main's own copy, field by field, with nothing the tool does not take. A list is a frozen array of its items. An optional
+ * argument the call left out is not there at all.
+ */
+export type CheckedArgs = Readonly<Record<string, string | number | boolean | readonly string[]>>
 
 export type ArgumentsCheck =
   { ok: true; args: CheckedArgs; why: string } | { ok: false; reason: string }
@@ -148,6 +171,11 @@ function problemWith(spec: ArgSpec, value: unknown): string | null {
     case 'integer':
       if (typeof value !== 'number' || !Number.isSafeInteger(value)) return 'must be a whole number'
       return value < spec.min || value > spec.max ? `must be from ${spec.min} to ${spec.max}` : null
+    case 'number':
+      if (typeof value !== 'number' || !Number.isFinite(value)) return 'must be a number'
+      return value < spec.min || value > spec.max ? `must be from ${spec.min} to ${spec.max}` : null
+    case 'boolean':
+      return typeof value === 'boolean' ? null : 'must be true or false'
     case 'choice':
       return typeof value === 'string' && spec.values.includes(value)
         ? null
@@ -220,15 +248,22 @@ export function checkArguments(def: ToolDefinition, input: unknown): ArgumentsCh
     return refuse('an argument that the tool does not take was given')
   }
   const values = input as Record<string, unknown>
-  const args: Record<string, string | number | readonly string[]> = {}
+  const args: Record<string, string | number | boolean | readonly string[]> = {}
   for (const [name, spec] of Object.entries(def.args)) {
-    if (!Object.prototype.hasOwnProperty.call(values, name)) return refuse(`"${name}" is missing`)
+    const given = Object.prototype.hasOwnProperty.call(values, name)
+    // An optional argument may be left out, or given as null (the same thing to the model); a required one may not.
+    if (!given || (spec.optional === true && values[name] === null)) {
+      if (spec.optional === true) continue
+      return refuse(`"${name}" is missing`)
+    }
     const value = values[name]
     const problem = problemWith(spec, value)
     if (problem !== null) return refuse(`"${name}" ${problem}`)
     // A list is copied item by item into a frozen array of main's own: nothing of the model's object is kept.
     args[name] =
-      spec.kind === 'list' ? Object.freeze([...(value as string[])]) : (value as string | number)
+      spec.kind === 'list'
+        ? Object.freeze([...(value as string[])])
+        : (value as string | number | boolean)
   }
   const why = cleanWhy(
     Object.prototype.hasOwnProperty.call(values, 'why') ? values['why'] : undefined
@@ -269,6 +304,17 @@ export function offeredTool(def: ToolDefinition): OfferedTool {
           maximum: spec.max
         }
         break
+      case 'number':
+        properties[name] = {
+          type: 'number',
+          description: spec.describe,
+          minimum: spec.min,
+          maximum: spec.max
+        }
+        break
+      case 'boolean':
+        properties[name] = { type: 'boolean', description: spec.describe }
+        break
       case 'choice':
         properties[name] = { type: 'string', description: spec.describe, enum: [...spec.values] }
         break
@@ -307,7 +353,12 @@ export function offeredTool(def: ToolDefinition): OfferedTool {
     parameters: {
       type: 'object',
       properties,
-      required: [...Object.keys(def.args), 'why'],
+      required: [
+        ...Object.entries(def.args)
+          .filter(([, spec]) => spec.optional !== true)
+          .map(([name]) => name),
+        'why'
+      ],
       additionalProperties: false
     }
   }
@@ -347,15 +398,22 @@ function copyOf(given: unknown): ToolDefinition {
       throw new Error(`Tool "${String(def.id)}": "${name}" must be an object`)
     }
     const { label, describe } = spec
+    const optional = spec.optional === true ? { optional: true } : {}
     switch (spec.kind) {
       case 'text':
-        args[name] = { kind: 'text', label, describe, min: spec.min, max: spec.max }
+        args[name] = { kind: 'text', label, describe, min: spec.min, max: spec.max, ...optional }
         break
       case 'integer':
-        args[name] = { kind: 'integer', label, describe, min: spec.min, max: spec.max }
+        args[name] = { kind: 'integer', label, describe, min: spec.min, max: spec.max, ...optional }
+        break
+      case 'number':
+        args[name] = { kind: 'number', label, describe, min: spec.min, max: spec.max, ...optional }
+        break
+      case 'boolean':
+        args[name] = { kind: 'boolean', label, describe, ...optional }
         break
       case 'choice':
-        args[name] = { kind: 'choice', label, describe, values: [...spec.values] }
+        args[name] = { kind: 'choice', label, describe, values: [...spec.values], ...optional }
         break
       case 'path':
         args[name] = {
@@ -379,7 +437,8 @@ function copyOf(given: unknown): ToolDefinition {
           describe,
           max: spec.max,
           itemMax: spec.itemMax,
-          totalMax: spec.totalMax
+          totalMax: spec.totalMax,
+          ...optional
         }
         break
       default:
@@ -408,25 +467,30 @@ function copyOf(given: unknown): ToolDefinition {
  * when it is made (toolCore.ts), whatever this estimate said.
  */
 function worstCase(def: ToolDefinition): number {
-  const args: Record<string, string | number | readonly string[]> = {}
+  const args: Record<string, string | number | boolean | readonly string[]> = {}
   for (const [name, spec] of Object.entries(def.args)) {
     args[name] =
       spec.kind === 'text'
         ? '"'.repeat(spec.max)
-        : spec.kind === 'integer'
-          ? Math.max(Math.abs(spec.min), Math.abs(spec.max)) * -1
-          : spec.kind === 'choice'
-            ? spec.values.reduce((a, b) => (b.length > a.length ? b : a), '')
-            : spec.kind === 'body'
-              ? 'x'.repeat(spec.max)
-              : spec.kind === 'list'
-                ? // the most items, each the longest it may be as far as the total allows, all of quotes
-                  Array.from({ length: spec.max }, () =>
-                    '"'.repeat(
-                      Math.min(spec.itemMax, Math.floor(spec.totalMax / Math.max(1, spec.max)))
-                    )
-                  )
-                : 'a\\'.repeat(MAX_PATH_ARG / 2)
+        : spec.kind === 'boolean'
+          ? false
+          : spec.kind === 'number'
+            ? // the longest a finite number prints as: a minus, seventeen digits, a point and an exponent
+              -2.2250738585072014e-308
+            : spec.kind === 'integer'
+              ? Math.max(Math.abs(spec.min), Math.abs(spec.max)) * -1
+              : spec.kind === 'choice'
+                ? spec.values.reduce((a, b) => (b.length > a.length ? b : a), '')
+                : spec.kind === 'body'
+                  ? 'x'.repeat(spec.max)
+                  : spec.kind === 'list'
+                    ? // the most items, each the longest it may be as far as the total allows, all of quotes
+                      Array.from({ length: spec.max }, () =>
+                        '"'.repeat(
+                          Math.min(spec.itemMax, Math.floor(spec.totalMax / Math.max(1, spec.max)))
+                        )
+                      )
+                    : 'a\\'.repeat(MAX_PATH_ARG / 2)
   }
   return approvalQuestion(def, args, '"'.repeat(WHY.max)).detail.length
 }
@@ -454,7 +518,8 @@ export function createToolRegistry(definitions: readonly ToolDefinition[]): Tool
       ['title', def.title, 60],
       ['noun', def.noun, 40],
       ['yes', def.yes, 40],
-      ['describe', def.describe, 600],
+      // (a connector's tool, 14.4, carries the connector's own words framed by the app's: up to 1,000 characters in all)
+      ['describe', def.describe, 1000],
       ['effect', def.effect, 600]
     ]
     for (const [field, text, max] of texts) {
@@ -475,7 +540,16 @@ export function createToolRegistry(definitions: readonly ToolDefinition[]): Tool
           `Tool "${def.id}": the label and description of "${name}" must be plain text`
         )
       }
-      if (spec.kind === 'text' || spec.kind === 'integer') {
+      if (spec.optional !== undefined && spec.optional !== true) {
+        throw new Error(`Tool "${def.id}": "${name}" says it is optional in a way that is not one`)
+      }
+      if (spec.kind === 'number') {
+        if (!Number.isFinite(spec.min) || !Number.isFinite(spec.max) || spec.min > spec.max) {
+          throw new Error(`Tool "${def.id}": "${name}" has limits that do not fit`)
+        }
+      } else if (spec.kind === 'boolean') {
+        // nothing to bound
+      } else if (spec.kind === 'text' || spec.kind === 'integer') {
         if (
           !Number.isSafeInteger(spec.min) ||
           !Number.isSafeInteger(spec.max) ||

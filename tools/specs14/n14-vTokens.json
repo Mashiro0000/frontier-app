@@ -1,0 +1,15 @@
+{
+  "label": "n14-vTokens",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorService.ts",
+      "from": "    return connectors.map((c) => unseal(c.token)).filter((t): t is string => t !== null && t !== '')",
+      "to": "    return []"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 900000
+}

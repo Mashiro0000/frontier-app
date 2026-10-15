@@ -45,6 +45,8 @@ public class BoxResult {
   public string Letter;
   public bool DiskExceeded;
   public long ScratchBytes;
+  public bool InputEnded;
+  public long StdinTotal;
 }
 
 public static class Box {
@@ -80,6 +82,9 @@ public static class Box {
 
   [StructLayout(LayoutKind.Sequential)]
   struct SECURITY_CAPABILITIES { public IntPtr AppContainerSid; public IntPtr Capabilities; public int CapabilityCount; public int Reserved; }
+
+  [StructLayout(LayoutKind.Sequential)]
+  struct SID_AND_ATTRIBUTES { public IntPtr Sid; public int Attributes; }
 
   [StructLayout(LayoutKind.Sequential)]
   struct JOBOBJECT_BASIC_LIMIT_INFORMATION {
@@ -437,6 +442,196 @@ public static class Box {
     }
     return r;
   }
+
+  // ---- serve (Stage 14, D-045): ONE long-lived program in the same kind of box, talking over its standard streams ------------------------
+  // The box is the one above: a container of its own, a job (kill on close, a count of processes, job memory, no desktop tricks), its own pipes, an
+  // environment built from nothing. What differs: the program's input is NOT closed, it is fed from this launcher's own input, and what the program
+  // writes on its output and error streams is passed on to this launcher's own, as it comes. There is no clock: it runs until its input ends (the app
+  // closed it: the program gets end of file, then a few seconds to end before the job is ended), until it ends by itself, until the app dies, or until its
+  // data folder grows past its cap. The network ability (internetClient, and nothing else: no private network, no loopback) is given only when the spec
+  // says so. Nothing else is different, and Run above is not touched by any of it.
+  static void Relay(Stream from, Stream to, long[] counter, ManualResetEvent ended) {
+    byte[] chunk = new byte[65536];
+    try {
+      int n;
+      while ((n = from.Read(chunk, 0, chunk.Length)) > 0) {
+        to.Write(chunk, 0, n);
+        to.Flush();
+        counter[0] += n;
+      }
+    } catch (Exception) { }
+    if (ended != null) ended.Set();
+  }
+
+  public static BoxResult Serve(string containerSid, string program, string[] args, string cwd, Dictionary<string, string> env,
+                                long memoryBytes, int maxProcesses, int parentPid, string dataDir, long diskBytes, bool network) {
+    BoxResult r = new BoxResult();
+    r.Stage = "start";
+    IntPtr job = IntPtr.Zero, parent = IntPtr.Zero;
+    IntPtr inR = IntPtr.Zero, inW = IntPtr.Zero, outR = IntPtr.Zero, outW = IntPtr.Zero, errR = IntPtr.Zero, errW = IntPtr.Zero;
+    IntPtr attr = IntPtr.Zero, hlMem = IntPtr.Zero, scMem = IntPtr.Zero, jlMem = IntPtr.Zero, envMem = IntPtr.Zero, sidPtr = IntPtr.Zero;
+    IntPtr capSid = IntPtr.Zero, capMem = IntPtr.Zero;
+    PROCESS_INFORMATION pi = new PROCESS_INFORMATION();
+    bool created = false;
+    FileStream input = null;
+    try {
+      if (parentPid > 0) {
+        parent = OpenProcess(SYNCHRONIZE, false, parentPid);
+        if (parent == IntPtr.Zero) throw Err(Marshal.GetLastWin32Error(), "OpenProcess (the app)");
+      }
+      r.Stage = "job";
+      job = CreateJobObjectW(IntPtr.Zero, null);
+      if (job == IntPtr.Zero) throw Err(Marshal.GetLastWin32Error(), "CreateJobObject");
+      JOBOBJECT_EXTENDED_LIMIT_INFORMATION ext = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION();
+      ext.BasicLimitInformation.LimitFlags = 0x2000 | 0x8 | 0x400 | 0x200; // kill on close, active processes, die on unhandled exception, job memory
+      ext.BasicLimitInformation.ActiveProcessLimit = maxProcesses;
+      ext.JobMemoryLimit = new UIntPtr((ulong)memoryBytes);
+      SetJob(job, 9, ext);
+      JOBOBJECT_BASIC_UI_RESTRICTIONS ui = new JOBOBJECT_BASIC_UI_RESTRICTIONS();
+      ui.UIRestrictionsClass = 0xFF;
+      SetJob(job, 4, ui);
+
+      r.Stage = "pipes";
+      SECURITY_ATTRIBUTES sa = new SECURITY_ATTRIBUTES();
+      sa.nLength = Marshal.SizeOf(typeof(SECURITY_ATTRIBUTES)); sa.bInheritHandle = 1;
+      if (!CreatePipe(out inR, out inW, ref sa, 65536)) throw Err(Marshal.GetLastWin32Error(), "CreatePipe");
+      if (!CreatePipe(out outR, out outW, ref sa, 65536)) throw Err(Marshal.GetLastWin32Error(), "CreatePipe");
+      if (!CreatePipe(out errR, out errW, ref sa, 65536)) throw Err(Marshal.GetLastWin32Error(), "CreatePipe");
+      SetHandleInformation(inW, HANDLE_FLAG_INHERIT, 0);
+      SetHandleInformation(outR, HANDLE_FLAG_INHERIT, 0);
+      SetHandleInformation(errR, HANDLE_FLAG_INHERIT, 0);
+
+      r.Stage = "attributes";
+      IntPtr size = IntPtr.Zero;
+      InitializeProcThreadAttributeList(IntPtr.Zero, 3, 0, ref size);
+      attr = Marshal.AllocHGlobal(size);
+      if (!InitializeProcThreadAttributeList(attr, 3, 0, ref size)) throw Err(Marshal.GetLastWin32Error(), "InitializeProcThreadAttributeList");
+      IntPtr[] hs = new IntPtr[] { inR, outW, errW };
+      hlMem = Marshal.AllocHGlobal(IntPtr.Size * 3);
+      Marshal.Copy(hs, 0, hlMem, 3);
+      if (!UpdateProcThreadAttribute(attr, 0, ATTR_HANDLE_LIST, hlMem, (IntPtr)(IntPtr.Size * 3), IntPtr.Zero, IntPtr.Zero))
+        throw Err(Marshal.GetLastWin32Error(), "UpdateProcThreadAttribute handle list");
+      if (!ConvertStringSidToSid(containerSid, out sidPtr)) throw Err(Marshal.GetLastWin32Error(), "ConvertStringSidToSid");
+      SECURITY_CAPABILITIES sc = new SECURITY_CAPABILITIES();
+      sc.AppContainerSid = sidPtr; sc.Capabilities = IntPtr.Zero; sc.CapabilityCount = 0;
+      if (network) {
+        // internetClient (S-1-15-3-1) and nothing more: the internet, outbound. Not the private network (S-1-15-3-3), not the loopback, nothing that listens.
+        if (!ConvertStringSidToSid("S-1-15-3-1", out capSid)) throw Err(Marshal.GetLastWin32Error(), "ConvertStringSidToSid (network)");
+        SID_AND_ATTRIBUTES cap = new SID_AND_ATTRIBUTES();
+        cap.Sid = capSid; cap.Attributes = 4; // SE_GROUP_ENABLED
+        capMem = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(SID_AND_ATTRIBUTES)));
+        Marshal.StructureToPtr(cap, capMem, false);
+        sc.Capabilities = capMem; sc.CapabilityCount = 1;
+      }
+      int scLen = Marshal.SizeOf(typeof(SECURITY_CAPABILITIES));
+      scMem = Marshal.AllocHGlobal(scLen);
+      Marshal.StructureToPtr(sc, scMem, false);
+      if (!UpdateProcThreadAttribute(attr, 0, ATTR_SECURITY_CAPABILITIES, scMem, (IntPtr)scLen, IntPtr.Zero, IntPtr.Zero))
+        throw Err(Marshal.GetLastWin32Error(), "UpdateProcThreadAttribute capabilities");
+      jlMem = Marshal.AllocHGlobal(IntPtr.Size);
+      Marshal.WriteIntPtr(jlMem, job);
+      if (!UpdateProcThreadAttribute(attr, 0, ATTR_JOB_LIST, jlMem, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero))
+        throw Err(Marshal.GetLastWin32Error(), "UpdateProcThreadAttribute job list");
+
+      STARTUPINFOEX si = new STARTUPINFOEX();
+      si.StartupInfo.cb = Marshal.SizeOf(typeof(STARTUPINFOEX));
+      si.StartupInfo.dwFlags = STARTF_USESTDHANDLES;
+      si.StartupInfo.hStdInput = inR; si.StartupInfo.hStdOutput = outW; si.StartupInfo.hStdError = errW;
+      si.lpAttributeList = attr;
+
+      StringBuilder cmd = new StringBuilder(Quote(program));
+      foreach (string a in args) { cmd.Append(' '); cmd.Append(Quote(a)); }
+      if (cmd.Length > 32000) throw new Exception("the command line is longer than Windows allows");
+      envMem = MakeEnv(env);
+      r.Stage = "create-process";
+      uint flags = EXTENDED_STARTUPINFO_PRESENT | CREATE_SUSPENDED | CREATE_NO_WINDOW | CREATE_UNICODE_ENVIRONMENT;
+      if (!CreateProcessW(program, cmd, IntPtr.Zero, IntPtr.Zero, true, flags, envMem, cwd, ref si, out pi))
+        throw Err(Marshal.GetLastWin32Error(), "CreateProcess");
+      created = true;
+      r.ProcessId = pi.dwProcessId;
+      r.Stage = "assign";
+      bool inJob = false;
+      if (!IsProcessInJob(pi.hProcess, job, out inJob) || !inJob) {
+        int e = Marshal.GetLastWin32Error();
+        TerminateProcess(pi.hProcess, 1);
+        throw Err(e, "the process is not in the job");
+      }
+      CloseHandle(inR); inR = IntPtr.Zero; CloseHandle(outW); outW = IntPtr.Zero; CloseHandle(errW); errW = IntPtr.Zero;
+      // the three relays: this launcher's input to the program's, the program's output and error streams to this launcher's own
+      input = new FileStream(new SafeFileHandle(inW, true), FileAccess.Write, 4096, false); inW = IntPtr.Zero;
+      FileStream output = new FileStream(new SafeFileHandle(outR, true), FileAccess.Read, 4096, false); outR = IntPtr.Zero;
+      FileStream errors = new FileStream(new SafeFileHandle(errR, true), FileAccess.Read, 4096, false); errR = IntPtr.Zero;
+      Stream myIn = Console.OpenStandardInput(), myOut = Console.OpenStandardOutput(), myErr = Console.OpenStandardError();
+      ManualResetEvent inputEnded = new ManualResetEvent(false);
+      long[] inCount = new long[1], outCount = new long[1], errCount = new long[1];
+      FileStream inputRef = input;
+      Thread ti = new Thread(delegate() { Relay(myIn, inputRef, inCount, inputEnded); try { inputRef.Dispose(); } catch (Exception) { } });
+      ti.IsBackground = true;
+      Thread to = new Thread(delegate() { Relay(output, myOut, outCount, null); try { output.Dispose(); } catch (Exception) { } });
+      to.IsBackground = true;
+      Thread te = new Thread(delegate() { Relay(errors, myErr, errCount, null); try { errors.Dispose(); } catch (Exception) { } });
+      te.IsBackground = true;
+      r.Stage = "run";
+      System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+      sw.Start();
+      if (ResumeThread(pi.hThread) == 0xFFFFFFFF) throw Err(Marshal.GetLastWin32Error(), "ResumeThread");
+      r.Started = true;
+      ti.Start(); to.Start(); te.Start();
+      // the wait: the program ends, the app dies, the input ends, or the data folder grows past its cap (looked at every two seconds)
+      IntPtr endedHandle = inputEnded.SafeWaitHandle.DangerousGetHandle();
+      IntPtr[] waitFor = parent != IntPtr.Zero ? new IntPtr[] { pi.hProcess, endedHandle, parent } : new IntPtr[] { pi.hProcess, endedHandle };
+      long lastScan = 0;
+      while (true) {
+        uint w = WaitForMultipleObjects((uint)waitFor.Length, waitFor, false, 1000);
+        if (w == 0) break;
+        if (w == 1) {
+          // the app closed the input: the program has had end of file; a few seconds to end by itself, then the job is ended
+          WaitForSingleObject(pi.hProcess, 3000);
+          r.InputEnded = true;
+          break;
+        }
+        if (w == 2) { r.ParentGone = true; break; }
+        if (w != 0x102) break;
+        if (sw.ElapsedMilliseconds - lastScan >= 2000) {
+          lastScan = sw.ElapsedMilliseconds;
+          if (TreeBytes(dataDir, diskBytes) > diskBytes) { r.DiskExceeded = true; break; }
+        }
+      }
+      r.ActiveBeforeKill = ActiveCount(job);
+      r.PeakJobMemory = PeakMemory(job);
+      TerminateJobObject(job, 1);
+      WaitForSingleObject(pi.hProcess, 5000);
+      sw.Stop();
+      r.ElapsedMs = sw.ElapsedMilliseconds;
+      uint code; GetExitCodeProcess(pi.hProcess, out code);
+      r.ExitCode = (long)code;
+      to.Join(5000); te.Join(5000);
+      r.ActiveAfterKill = ActiveCount(job);
+      r.ScratchBytes = TreeBytes(dataDir, long.MaxValue);
+      r.Stdout = new byte[0]; r.Stderr = new byte[0];
+      r.StdoutTotal = outCount[0]; r.StderrTotal = errCount[0]; r.StdinTotal = inCount[0];
+      r.Stage = "done";
+    } catch (Exception ex) {
+      r.Error = ex.Message;
+    } finally {
+      if (created) {
+        if (job != IntPtr.Zero) TerminateJobObject(job, 1);
+        CloseHandle(pi.hThread); CloseHandle(pi.hProcess);
+      }
+      if (job != IntPtr.Zero) CloseHandle(job);
+      if (parent != IntPtr.Zero) CloseHandle(parent);
+      foreach (IntPtr h in new IntPtr[] { inR, inW, outR, outW, errR, errW }) if (h != IntPtr.Zero) CloseHandle(h);
+      if (attr != IntPtr.Zero) { DeleteProcThreadAttributeList(attr); Marshal.FreeHGlobal(attr); }
+      if (hlMem != IntPtr.Zero) Marshal.FreeHGlobal(hlMem);
+      if (scMem != IntPtr.Zero) Marshal.FreeHGlobal(scMem);
+      if (jlMem != IntPtr.Zero) Marshal.FreeHGlobal(jlMem);
+      if (capMem != IntPtr.Zero) Marshal.FreeHGlobal(capMem);
+      if (envMem != IntPtr.Zero) Marshal.FreeHGlobal(envMem);
+      if (sidPtr != IntPtr.Zero) LocalFree(sidPtr);
+      if (capSid != IntPtr.Zero) LocalFree(capSid);
+    }
+    return r;
+  }
 }
 '@
 
@@ -461,8 +656,111 @@ try {
 } catch { exit 2 }
 
 $mounted = $null; $scratch = $null
+
+# ---- serve (Stage 14, D-045): a connector, a program that stays and talks over its standard streams ----------------------------------------
+# A spec of version 2. The folder of the connector (homeDir, inside the run root) is shown to the box as the root of a drive letter and may only be
+# read; its data folder (dataDir, inside it) is the one place the box may write. The program is the private node.exe in the tools folder, or an .exe
+# in the connector's folder (never in its data folder). An argument may start with <<HOME>>, which becomes the drive letter: the app cannot know it
+# before the letter is taken. NOTHING of this script writes to its own output stream: that stream is the connector's.
+function Invoke-Serve {
+  $script:stage = 'check-spec'
+  $names = @($spec.PSObject.Properties | ForEach-Object { $_.Name })
+  foreach ($n in @('version', 'mode', 'container', 'runRoot', 'homeDir', 'dataDir', 'toolsDir', 'program', 'args', 'memoryBytes', 'maxProcesses', 'diskBytes', 'network', 'parentPid', 'result')) {
+    if ($names -notcontains $n) { throw "the spec has no field $n" }
+  }
+  if ($names.Count -ne 15) { throw 'the spec has a field too many' }
+  if ([string]$spec.mode -ne 'serve') { throw 'the mode is not one this launcher knows' }
+  if ([string]$spec.container -notmatch '^FrontierApp\.[A-Za-z0-9]{1,40}$') { throw 'the container name is not ours' }
+  if ($spec.network -isnot [bool]) { throw 'network is not true or false' }
+  $memoryBytes = [long]$spec.memoryBytes; $maxProcesses = [int]$spec.maxProcesses; $diskBytes = [long]$spec.diskBytes; $parentPid = [int]$spec.parentPid
+  if ($memoryBytes -lt 16777216 -or $memoryBytes -gt $MAX_MEMORY) { throw 'memoryBytes is out of range' }
+  if ($maxProcesses -lt 1 -or $maxProcesses -gt $MAX_PROCESSES) { throw 'maxProcesses is out of range' }
+  if ($diskBytes -lt 1048576 -or $diskBytes -gt $MAX_DISK) { throw 'diskBytes is out of range' }
+  if ($parentPid -lt 0) { throw 'parentPid is out of range' }
+  $argv = @($spec.args | ForEach-Object { [string]$_ })
+  if ($argv.Count -gt $MAX_ARGS) { throw 'too many arguments' }
+  foreach ($a in $argv) { if ($a.Length -gt $MAX_ARG_CHARS -or $a.IndexOf([char]0) -ge 0) { throw 'an argument is too long or holds a NUL' } }
+  foreach ($p in @($spec.runRoot, $spec.homeDir, $spec.dataDir, $spec.toolsDir)) {
+    if (-not [System.IO.Path]::IsPathRooted([string]$p) -or ([string]$p).StartsWith('\\') -or ([string]$p).IndexOf([char]0) -ge 0) { throw 'a path is not an ordinary absolute drive path' }
+  }
+  $runRoot = [System.IO.Path]::GetFullPath([string]$spec.runRoot).TrimEnd('\')
+  $homeDir = [System.IO.Path]::GetFullPath([string]$spec.homeDir).TrimEnd('\')
+  $dataDir = [System.IO.Path]::GetFullPath([string]$spec.dataDir).TrimEnd('\')
+  $tools = [System.IO.Path]::GetFullPath([string]$spec.toolsDir).TrimEnd('\')
+  if ($runRoot.Length -lt 6) { throw 'the run root is a drive root' }
+  foreach ($p in @($homeDir, $tools)) {
+    if (-not $p.StartsWith($runRoot + '\', [System.StringComparison]::OrdinalIgnoreCase)) { throw 'a folder lies outside the run root' }
+  }
+  if (-not $dataDir.StartsWith($homeDir + '\', [System.StringComparison]::OrdinalIgnoreCase)) { throw 'the data folder is not inside the connector folder' }
+  foreach ($p in @($homeDir, $dataDir, $tools)) {
+    if (-not [System.IO.Directory]::Exists($p)) { throw 'a folder is not there' }
+    if (([System.IO.File]::GetAttributes($p) -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'a folder is a link' }
+  }
+  if ($homeDir.StartsWith($tools + '\', [System.StringComparison]::OrdinalIgnoreCase) -or $tools.StartsWith($homeDir + '\', [System.StringComparison]::OrdinalIgnoreCase) -or $homeDir -eq $tools) { throw 'the connector and tools folders overlap' }
+  # the program: <<HOME>>\<a path in the connector folder, not in its data folder>, or the private node.exe of the tools folder
+  $programText = [string]$spec.program
+  $fromHome = $programText.StartsWith('<<HOME>>\')
+  if ($fromHome) {
+    $rest = $programText.Substring(8)
+    if ($rest.IndexOf('..') -ge 0 -or $rest.IndexOf(':') -ge 0 -or $rest.IndexOf([char]0) -ge 0) { throw 'the program path is not a plain path in the connector folder' }
+    $realProgram = [System.IO.Path]::GetFullPath($homeDir + $rest)
+    if (-not $realProgram.StartsWith($homeDir + '\', [System.StringComparison]::OrdinalIgnoreCase)) { throw 'the program is not in the connector folder' }
+    if ($realProgram.StartsWith($dataDir + '\', [System.StringComparison]::OrdinalIgnoreCase)) { throw 'the program is in the data folder' }
+  } else {
+    $realProgram = [System.IO.Path]::GetFullPath($programText)
+    if ($realProgram -ne ($tools + '\node.exe')) { throw 'the program is neither in the connector folder nor the private node.exe' }
+  }
+  if (-not [System.IO.File]::Exists($realProgram) -or -not $realProgram.EndsWith('.exe', [System.StringComparison]::OrdinalIgnoreCase)) { throw 'the program is not an .exe file that exists' }
+  if (([System.IO.File]::GetAttributes($realProgram) -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'the program is a link' }
+
+  $script:stage = 'container'
+  Add-Type -TypeDefinition $src -Language CSharp
+  [Box]::Enter()
+  try {
+    $sid = [Box]::ContainerSid([string]$spec.container)
+    $script:stage = 'grants'
+    $sidObj = New-Object System.Security.Principal.SecurityIdentifier($sid)
+    foreach ($pair in @(@($homeDir, [System.Security.AccessControl.FileSystemRights]::ReadAndExecute), @($dataDir, [System.Security.AccessControl.FileSystemRights]::Modify), @($tools, [System.Security.AccessControl.FileSystemRights]::ReadAndExecute))) {
+      $acl = [System.IO.Directory]::GetAccessControl($pair[0], [System.Security.AccessControl.AccessControlSections]::Access)
+      $acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule($sidObj, $pair[1], 'ContainerInherit,ObjectInherit', 'None', 'Allow')))
+      [System.IO.Directory]::SetAccessControl($pair[0], $acl)
+    }
+    $script:stage = 'mount'
+    $script:mounted = [Box]::Mount($homeDir)
+    $script:scratch = $homeDir
+  } finally { [Box]::Leave() }
+  $letter = $script:mounted
+  $argv = @($argv | ForEach-Object { if ($_.StartsWith('<<HOME>>')) { $letter + $_.Substring(8) } else { $_ } })
+  $program = if ($fromHome) { $letter + $programText.Substring(8) } else { $realProgram }
+  $dataSeen = $letter + $dataDir.Substring($homeDir.Length)
+  $envd = New-Object 'System.Collections.Generic.Dictionary[string,string]'
+  $envd['SystemRoot'] = $env:SystemRoot
+  $envd['windir'] = $env:SystemRoot
+  $envd['ComSpec'] = Join-Path $env:SystemRoot 'System32\cmd.exe'
+  $envd['PATHEXT'] = '.COM;.EXE;.BAT;.CMD'
+  $envd['PATH'] = $tools + ';' + (Join-Path $env:SystemRoot 'System32') + ';' + $env:SystemRoot
+  $boxTemp = [System.IO.Path]::Combine($dataDir, '.frontier-box', 'Packages', ([string]$spec.container).ToLowerInvariant(), 'AC', 'Temp')
+  [void][System.IO.Directory]::CreateDirectory($boxTemp)
+  $envd['LOCALAPPDATA'] = $dataSeen + '\.frontier-box'
+  $envd['TEMP'] = $dataSeen + '\.frontier-box\Packages\' + ([string]$spec.container).ToLowerInvariant() + '\AC\Temp'
+  $envd['TMP'] = $envd['TEMP']
+  foreach ($k in @('HOME', 'USERPROFILE')) { $envd[$k] = $dataSeen }
+  $script:stage = 'run'
+  $r = [Box]::Serve($sid, $program, $argv, ($dataSeen + '\'), $envd, $memoryBytes, $maxProcesses, $parentPid, $dataDir, $diskBytes, [bool]$spec.network)
+  $out = [ordered]@{
+    ok = ($null -eq $r.Error); stage = $r.Stage; error = $r.Error; started = $r.Started; pid = $r.ProcessId; exitCode = $r.ExitCode
+    parentGone = $r.ParentGone; inputEnded = $r.InputEnded; elapsedMs = $r.ElapsedMs; peakJobMemory = $r.PeakJobMemory
+    activeBeforeKill = $r.ActiveBeforeKill; activeAfterKill = $r.ActiveAfterKill
+    stdinBytes = $r.StdinTotal; stdoutBytes = $r.StdoutTotal; stderrBytes = $r.StderrTotal
+    diskExceeded = $r.DiskExceeded; dataBytes = $r.ScratchBytes; letter = $letter
+  }
+  [void][Box]::Unmount($script:mounted, $homeDir); $script:mounted = $null
+  Write-Result $out
+}
+
 try {
   $stage = 'check-spec'
+  if ($spec.version -eq 2) { $null = Invoke-Serve; exit 0 }
   if ($spec.version -ne 1) { throw 'unknown spec version' }
   $names = @($spec.PSObject.Properties | ForEach-Object { $_.Name })
   foreach ($n in @('version', 'container', 'runRoot', 'scratchDir', 'toolsDir', 'program', 'args', 'timeoutMs', 'memoryBytes', 'maxProcesses', 'capBytes', 'diskBytes', 'parentPid', 'result')) {

@@ -96,6 +96,19 @@ const api: FrontierApi = {
     setOn: (on) => ipcRenderer.invoke(CHANNELS.programsSetOn, { on }),
     stopTest: () => ipcRenderer.invoke(CHANNELS.programsStopTest)
   },
+  connectors: {
+    status: () => ipcRenderer.invoke(CHANNELS.connectorsStatus),
+    addLocal: (name, args) => ipcRenderer.invoke(CHANNELS.connectorsAddLocal, { name, args }),
+    addRemote: (name, url, token) =>
+      ipcRenderer.invoke(CHANNELS.connectorsAddRemote, { name, url, token }),
+    remove: (id) => ipcRenderer.invoke(CHANNELS.connectorsRemove, { id }),
+    refresh: (id) => ipcRenderer.invoke(CHANNELS.connectorsRefresh, { id }),
+    stop: (id) => ipcRenderer.invoke(CHANNELS.connectorsStop, { id }),
+    setTool: (id, name, on) => ipcRenderer.invoke(CHANNELS.connectorsSetTool, { id, name, on }),
+    setGrant: (id, grant, on) => ipcRenderer.invoke(CHANNELS.connectorsSetGrant, { id, grant, on }),
+    setPlace: (id, place, typed) =>
+      ipcRenderer.invoke(CHANNELS.connectorsSetPlace, { id, place, typed })
+  },
   changes: {
     list: () => ipcRenderer.invoke(CHANNELS.changesList),
     review: (id) => ipcRenderer.invoke(CHANNELS.changesReview, { id }),

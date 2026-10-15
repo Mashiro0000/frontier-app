@@ -100,6 +100,21 @@ export const pickWorkspaceFolder = async (owner: unknown): Promise<string | null
   return result.canceled || result.filePaths.length === 0 ? null : result.filePaths[0]
 }
 
+/** The system's file dialog for a connector's program (D-045): a script for node or an .exe, or null if they close it. The page never supplies a path. */
+export const pickConnectorProgram = async (owner: unknown): Promise<string | null> => {
+  const options = {
+    title: 'Choose the program of the connector (a script for node, or an .exe)',
+    defaultPath: app.getPath('documents'),
+    properties: ['openFile' as const],
+    filters: [{ name: 'A connector program', extensions: ['js', 'mjs', 'cjs', 'exe'] }]
+  }
+  const window = windowOf(owner)
+  const result = window
+    ? await dialog.showOpenDialog(window, options)
+    : await dialog.showOpenDialog(options)
+  return result.canceled || result.filePaths.length === 0 ? null : result.filePaths[0]
+}
+
 export const systemAskers: Askers = {
   confirmPlain: async (owner, facts) => {
     const { title, message, detail } = plainQuestion(facts)

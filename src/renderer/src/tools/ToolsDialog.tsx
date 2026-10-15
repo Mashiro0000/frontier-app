@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { outcomeText, type AuditCall } from '../../../shared/audit'
 import SwitchesSection from './SwitchesSection'
 import ChangesSection from './ChangesSection'
+import ConnectorsSection from './ConnectorsSection'
 import RunProgramsSection from './RunProgramsSection'
 import WorkspaceSection from './WorkspaceSection'
 import type { AuditState } from './useAudit'
@@ -146,6 +147,7 @@ function ToolsBody({ audit, settings, onBusy, onClose }: ToolsBodyProps): React.
       <WorkspaceSection settings={settings} busy={busy} working={working} />
       <RunProgramsSection settings={settings} busy={busy} working={working} />
       <ChangesSection settings={settings} busy={busy} working={working} />
+      <ConnectorsSection busy={busy} working={working} />
       <section className="tools-section" aria-labelledby="tools-audit-title">
         <h3 id="tools-audit-title" className="tools-section-title">
           Audit log
@@ -198,7 +200,9 @@ function ToolsBody({ audit, settings, onBusy, onClose }: ToolsBodyProps): React.
                 <div className="tools-call-head">
                   <span className="tools-call-title">{call.title}</span>
                   <span className="tools-call-when">
-                    {when(call.at)}, step {call.step}
+                    {when(call.at)}
+                    {/* (an event of a connector, 14.6, is not a step of a reply) */}
+                    {call.step > 0 ? `, step ${call.step}` : ''}
                   </span>
                 </div>
                 {call.args !== null && (

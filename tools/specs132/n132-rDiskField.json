@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/commandRunner.ts",
       "from": "          diskBytes: request.diskBytes,",
-      "to": "          diskBytes: 536870912,"
+      "to": "          diskBytes: 536870912,",
+      "count": 2,
+      "nth": 1
     }
   ],
   "argv": [

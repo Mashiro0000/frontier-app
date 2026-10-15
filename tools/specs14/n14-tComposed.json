@@ -1,0 +1,17 @@
+{
+  "label": "n14-tComposed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/mcpTools.ts",
+      "from": "  if (COMPOSED.some((k) => Object.prototype.hasOwnProperty.call(raw, k))) {\n    return `its argument",
+      "to": "  if (false) {\n    return `its argument"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

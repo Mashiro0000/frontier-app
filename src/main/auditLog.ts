@@ -3,9 +3,11 @@ import type { FileHandle } from 'fs/promises'
 import { dirname } from 'path'
 import {
   ANSWER_CODES,
+  CONNECTOR_EVENTS,
   PROGRAM_ENDS,
   REFUSAL_CODES,
   TOOL_RESULT_LIMITS,
+  type ConnectorEvent,
   type ProgramEnd,
   type ToolEvent,
   type ToolSource
@@ -56,7 +58,7 @@ export const AUDIT_LIMITS = Object.freeze({
 })
 const MAX_SEALED_LINE_CHARS = Math.ceil((AUDIT_LIMITS.maxLineChars + 256) / 3) * 4 + 128
 
-const TOOL_ID = /^(?:[a-z][a-z0-9_]{1,31}|\(unknown\))$/
+const TOOL_ID = /^(?:[a-z][a-z0-9_]{1,31}|\(unknown\)|\(connector\))$/
 const CALL_ID = /^[a-z0-9][a-z0-9-]{0,39}$/
 const ARG_NAME = /^[a-z][a-z0-9_]{0,31}$/
 /** Controls, invisible and reversing characters, line and paragraph separators, private-use, unassigned and lone surrogates: never in a line of the log. */
@@ -169,6 +171,23 @@ export function parseAuditEvent(raw: unknown): ToolEvent | null {
         deleted
       }
     }
+    case 'connector-call': {
+      if (!exactKeys(o, [...HEAD, 'ms', 'isError', 'dropped'])) return null
+      const { ms, isError, dropped } = o
+      if (!isCount(ms, 1_000_000_000) || typeof isError !== 'boolean' || !isCount(dropped, 1000)) {
+        return null
+      }
+      return { type, at, call, tool, step, ms, isError, dropped }
+    }
+    case 'connector': {
+      if (!exactKeys(o, [...HEAD, 'what', 'connector'])) return null
+      const { what, connector } = o
+      if (typeof what !== 'string' || !(CONNECTOR_EVENTS as readonly string[]).includes(what)) {
+        return null
+      }
+      if (!isText(connector, 1, 40) || connector.trim() !== connector) return null
+      return { type, at, call, tool, step, what: what as ConnectorEvent, connector }
+    }
     case 'result': {
       if (!exactKeys(o, [...HEAD, 'ok', 'size', 'sources', 'searched', 'searches'])) return null
       const { ok, size, sources, searched, searches } = o
@@ -223,6 +242,10 @@ function lineObject(event: ToolEvent): Record<string, unknown> {
         created: event.created,
         deleted: event.deleted
       }
+    case 'connector-call':
+      return { ...head, ms: event.ms, isError: event.isError, dropped: event.dropped }
+    case 'connector':
+      return { ...head, what: event.what, connector: event.connector }
     case 'result':
       return {
         ...head,

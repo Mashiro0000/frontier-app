@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
       "from": "  [void][System.IO.Directory]::CreateDirectory($boxTemp)",
-      "to": ""
+      "to": "",
+      "count": 2,
+      "nth": 2
     }
   ],
   "argv": [

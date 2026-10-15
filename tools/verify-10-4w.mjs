@@ -366,7 +366,7 @@ try {
 
   // ============ J. the bridge ============
   const api = await ev(`({ top: Object.keys(window.api).sort(), memory: Object.keys(window.api.memory).sort() })`)
-  check('J: window.api has memory (since 10.4) with exactly add, edit, exportAll, remove, removeAll, setOn and status: nothing that answers a question or names a path', show(api) === show({ top: ['attachments', 'audit', 'changes', 'chat', 'history', 'instructions', 'memory', 'programs', 'projects', 'settings', 'tools', 'usage', 'workspace'], memory: ['add', 'edit', 'exportAll', 'remove', 'removeAll', 'setOn', 'status'] }), show(api))
+  check('J: window.api has memory (since 10.4) with exactly add, edit, exportAll, remove, removeAll, setOn and status: nothing that answers a question or names a path', show(api) === show({ top: ['attachments', 'audit', 'changes', 'chat', 'connectors', 'history', 'instructions', 'memory', 'programs', 'projects', 'settings', 'tools', 'usage', 'workspace'], memory: ['add', 'edit', 'exportAll', 'remove', 'removeAll', 'setOn', 'status'] }), show(api))
   const bad = await ev(`Promise.all([window.api.memory.add(12345, 'all'), window.api.memory.add('x', 'ALL'), window.api.memory.edit('x', 'y'), window.api.memory.remove(null), window.api.memory.setOn('true')])`)
   check('J: input that is not what main takes is "not understood", and changes nothing', bad.every((x) => x.ok === false && /not understood/.test(x.error)) && memJson()?.notes?.length === 1, show(bad))
   const project = await ev(`window.api.memory.add('For a project', '11111111-2222-4333-8444-555555555555')`)

@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "      toolSettings.file,\n      workspaceStore.file,\n      undoJournal.document\n    ])",
+      "from": "      toolSettings.file,\n      workspaceStore.file,\n      undoJournal.document,\n      connectorStore.file\n    ])",
       "to": "      toolSettings.file\n    ])"
     }
   ],

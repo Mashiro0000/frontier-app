@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/commandRunner.ts",
       "from": "          parentPid,\n",
-      "to": "          parentPid: 0,\n"
+      "to": "          parentPid: 0,\n",
+      "count": 2,
+      "nth": 1
     }
   ],
   "argv": [

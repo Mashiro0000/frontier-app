@@ -24,7 +24,16 @@ export const scratch = (name) => {
 function waitForPortFree(port) {
   const script = `const t0 = Date.now(); const p = ${Number(port)};
     (async () => { while (Date.now() - t0 < 30000) { try { await fetch('http://127.0.0.1:' + p + '/json'); } catch { process.exit(0) } await new Promise(r => setTimeout(r, 250)) } console.error('port ' + p + ' still busy after 30 s'); process.exit(1) })()`
-  const r = spawnSync(process.execPath, ['-e', script], { encoding: 'utf8' })
+  let r = spawnSync(process.execPath, ['-e', script], { encoding: 'utf8' })
+  // (Stage 14) A launch that its clock ended leaves its app running (only the test script is killed), and that app keeps the port: every later launch of a regression then
+  // failed. Inside a confined run (tools/guarded-window-copy.mjs) the app of THIS run is ended: only Electron and the dev or preview server started from the run's own folder.
+  const runRoot = process.env.FRONTIER_GUARD_ROOT
+  if (r.status !== 0 && runRoot && /^C:\\frontier-tmp\\guarded-w-[^\\]+$/i.test(runRoot)) {
+    const ps = `Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine.Contains('${runRoot.replace(/'/g, "''")}') -and ($_.Name -eq 'electron.exe' -or $_.CommandLine -match 'electron-vite|npm-cli\\.js"? run (dev|preview)') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue; $_.ProcessId }`
+    const killed = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', ps], { encoding: 'utf8', timeout: 60000 })
+    console.log(`!! port ${port} was still busy: ended the app this run had left running (${(killed.stdout ?? '').trim().split(/\s+/).filter(Boolean).length} processes)`)
+    r = spawnSync(process.execPath, ['-e', script], { encoding: 'utf8' })
+  }
   if (r.status !== 0) throw new Error(r.stderr.trim() || `debug port ${port} did not become free`)
 }
 
@@ -127,8 +136,8 @@ function runAppOnce({ label, mode = 'dev', scripts, env = {}, port = 9222, timeo
 }
 
 /** Runs a plain Node script. */
-export function runNode({ label, script, args = [], env = {} }) {
-  const run = spawnSync(process.execPath, [join(here, script), ...args], { env: { ...process.env, NODE_NO_WARNINGS: '1', ...env }, encoding: 'utf8', timeout: 300000, maxBuffer: 64 * 1024 * 1024 })
+export function runNode({ label, script, args = [], env = {}, timeoutMs = 300000 }) {
+  const run = spawnSync(process.execPath, [join(here, script), ...args], { env: { ...process.env, NODE_NO_WARNINGS: '1', ...env }, encoding: 'utf8', timeout: timeoutMs, maxBuffer: 64 * 1024 * 1024 })
   const out = (run.stdout ?? '') + (run.stderr ?? '')
   writeFileSync(join(OUT, `${label}.out.txt`), out)
   const m = [...out.matchAll(/^(\d+)\/(\d+) checks passed/gm)].at(-1)

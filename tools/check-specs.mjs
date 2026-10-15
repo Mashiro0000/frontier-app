@@ -21,7 +21,8 @@ for (const entry of readdirSync(TOOLS, { withFileTypes: true }).filter((e) => e.
         continue
       }
       const matches = readFileSync(edit.file, 'utf8').split(edit.from).length - 1
-      if (matches !== 1) {
+      // (an edit may say how many times its text is there, `count`, and which one it sabotages, `nth`: nc.mjs)
+      if (matches !== (edit.count ?? 1) || (edit.nth ?? 1) > (edit.count ?? 1)) {
         console.log(`STALE   ${entry.name}/${name}: ${matches} matches in ${edit.file.replace(REPO, '')} for: ${edit.from.slice(0, 80).replaceAll('\n', ' / ')}`)
         stale++
       }

@@ -4,12 +4,16 @@
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
       "from": "      if (!UpdateProcThreadAttribute(attr, 0, ATTR_JOB_LIST, jlMem, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero))\n        throw Err(Marshal.GetLastWin32Error(), \"UpdateProcThreadAttribute job list\");\n",
-      "to": ""
+      "to": "",
+      "count": 2,
+      "nth": 1
     },
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
       "from": "      if (!IsProcessInJob(pi.hProcess, job, out inJob) || !inJob) {",
-      "to": "      if (inJob) {"
+      "to": "      if (inJob) {",
+      "count": 2,
+      "nth": 1
     }
   ],
   "argv": [

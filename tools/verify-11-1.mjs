@@ -63,7 +63,7 @@ await guard('A', async () => {
     ['no title', { title: '' }],
     ['a title with a control character', { title: 'De\nmo' }],
     ['a title with an invisible character', { title: `De${ZWSP}mo` }],
-    ['a description over 600 characters', { describe: 'x'.repeat(601) }],
+    ['a description over 1,000 characters (600 until 14.4, D-045: a connector\'s tool is framed in its own description)', { describe: 'x'.repeat(1001) }],
     ['an empty effect', { effect: '   ' }],
     ['a yes that is not text', { yes: 5 }],
     ['a noun over 40 characters', { noun: 'n'.repeat(41) }]
@@ -668,10 +668,13 @@ await guard('F', async () => {
   // 12.1 and 12.2 again, on purpose: the workspace guard and the choice of the folder (workspace.ts, workspaceGuard.ts) ask the data-folder guard, as the core does.
   // 13.4 again, on purpose: the run tool (programTools.ts) is part of the reply's tools, as the workspace tools are.
   // 13.5 again, on purpose: the service of the run switch (programService.ts) reads the tool settings and asks in the system's box, as the workspace service does.
-  const wired = ['src/main/auditLog.ts', 'src/main/auditService.ts', 'src/main/replyTools.ts', 'src/main/toolSettings.ts', 'src/main/toolSettingsService.ts', 'src/main/chat.ts', 'src/main/ipc.ts', 'src/main/workspace.ts', 'src/main/workspaceGuard.ts', 'src/main/workspaceService.ts', 'src/main/workspaceTools.ts', 'src/main/proposalTools.ts', 'src/main/applyService.ts', 'src/main/programTools.ts', 'src/main/programService.ts']
+  const wired = ['src/main/auditLog.ts', 'src/main/auditService.ts', 'src/main/replyTools.ts', 'src/main/toolSettings.ts', 'src/main/toolSettingsService.ts', 'src/main/chat.ts', 'src/main/ipc.ts', 'src/main/workspace.ts', 'src/main/workspaceGuard.ts', 'src/main/workspaceService.ts', 'src/main/workspaceTools.ts', 'src/main/proposalTools.ts', 'src/main/applyService.ts', 'src/main/programTools.ts', 'src/main/programService.ts', 'src/main/mcpTools.ts', 'src/main/connectorService.ts'] // 14 again, on purpose: a connector's tools are translated into registry tools (mcpTools.ts) and run as executors of the reply (connectorService.ts)
   const typesOnly = /^(src\/shared|src\/renderer|src\/preload)\//
-  const namesCore = /(toolCore|createToolCore|toolRegistry|createToolRegistry|toolQuestion|approvalQuestion|replyBudget|createReplyBudget|dataFolderGuard|createDataFolderGuard|BUILT_IN_TOOLS)/
-  const users = files.filter((f) => !modules.includes(f) && !wired.includes(f) && (typesOnly.test(f) ? namesCore : names).test(readFileSync(join(REPO, f), 'utf8')))
+  const namesCore = /\b(toolCore|createToolCore|toolRegistry|createToolRegistry|toolQuestion|approvalQuestion|replyBudget|createReplyBudget|dataFolderGuard|createDataFolderGuard|BUILT_IN_TOOLS)\b/
+  // (Stage 14: `namesCore` had two raw backspace characters where word boundaries were meant, so it matched nothing; with them put right, a page-side file is judged by its code, not
+  // by a comment that names main's files)
+  const code = (f) => readFileSync(join(REPO, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+  const users = files.filter((f) => !modules.includes(f) && !wired.includes(f) && (typesOnly.test(f) ? namesCore.test(code(f)) : names.test(readFileSync(join(REPO, f), 'utf8'))))
   check('F: no other file of the app uses the registry, the core, the budget or the guard than the six that 11.3 wires (the audit log, the reply tools, the settings file, the chat loop, the wiring)', users.length === 0, show(users))
   const pageSide = ['src/preload/index.ts', 'src/preload/index.d.ts', 'src/shared/ipc.ts'].map((f) => [f, source(f)])
   // 11.2 moved this on purpose: the page may read, export and ask to delete the audit log (verify-11-2.mjs checks those three, and only those). It still has no tool or approval.

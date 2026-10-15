@@ -1,0 +1,17 @@
+{
+  "label": "n14-hLoopback",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/mcpHttp.ts",
+      "from": "url.protocol !== 'https:' && !(url.protocol === 'http:' && LOOPBACK.has(url.hostname))",
+      "to": "url.protocol !== 'https:' && url.protocol !== 'http:'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

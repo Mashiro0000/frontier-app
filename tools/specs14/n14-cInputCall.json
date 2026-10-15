@@ -1,0 +1,17 @@
+{
+  "label": "n14-cInputCall",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/mcpClient.ts",
+      "from": "\n      const kind = resultKind(result)\n      if (kind === 'input') throw new McpError('needs-input', NEEDS_INPUT)\n",
+      "to": "\n      const kind = resultKind(result)\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-2.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 400000
+}

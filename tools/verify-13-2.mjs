@@ -197,11 +197,15 @@ await guard('B', async () => {
   // (the comment that tells the story names the call, so only the code lines are looked at: no line that is a comment in C# or in PowerShell)
   const LAUNCHER_CODE = LAUNCHER_TEXT.split('\n').filter((line) => !/^\s*(\/\/|#)/.test(line)).join('\n')
   check('B: there is no AssignProcessToJobObject any more (an assignment after the process exists is the gap this closes)', !/AssignProcessToJobObject/.test(LAUNCHER_CODE) && LAUNCHER_CODE.length > 1000)
-  check('B: one launcher at a time makes the container and takes a drive letter: a named gate, taken before the container and let go in a finally after the letter (13.7)', /new Mutex\(false, "Local\\\\FrontierApp\.RunBox\.Gate"\)/.test(LAUNCHER_TEXT) && /gate\.WaitOne\(60000\)/.test(LAUNCHER_TEXT) &&LAUNCHER_TEXT.indexOf('[Box]::Enter()') > 0 && LAUNCHER_TEXT.indexOf('[Box]::Enter()') < LAUNCHER_TEXT.indexOf('[Box]::ContainerSid(') && LAUNCHER_TEXT.indexOf('[Box]::Mount($scratch)') < LAUNCHER_TEXT.indexOf('} finally { [Box]::Leave() }') && LAUNCHER_TEXT.indexOf('} finally { [Box]::Leave() }') < LAUNCHER_TEXT.indexOf('[Box]::Run($sid'))
+  check('B: one launcher at a time makes the container and takes a drive letter: a named gate, taken before the container and let go in a finally after the letter (13.7)', /new Mutex\(false, "Local\\\\FrontierApp\.RunBox\.Gate"\)/.test(LAUNCHER_TEXT) && /gate\.WaitOne\(60000\)/.test(LAUNCHER_TEXT) &&
+    // (since 14: the serve mode of a connector comes first in the file and takes the same gate the same way; the run mode is the last of the two)
+    (LAUNCHER_TEXT.match(/\[Box\]::Enter\(\)/g) ?? []).length === 2 && (LAUNCHER_TEXT.match(/\} finally \{ \[Box\]::Leave\(\) \}/g) ?? []).length === 2 &&
+    LAUNCHER_TEXT.lastIndexOf('[Box]::Enter()') < LAUNCHER_TEXT.lastIndexOf('[Box]::ContainerSid(') && LAUNCHER_TEXT.indexOf('[Box]::Mount($scratch)') > LAUNCHER_TEXT.lastIndexOf('[Box]::Enter()') && LAUNCHER_TEXT.indexOf('[Box]::Mount($scratch)') < LAUNCHER_TEXT.lastIndexOf('} finally { [Box]::Leave() }') && LAUNCHER_TEXT.lastIndexOf('} finally { [Box]::Leave() }') < LAUNCHER_TEXT.indexOf('[Box]::Run($sid') &&
+    LAUNCHER_TEXT.indexOf('[Box]::Enter()') < LAUNCHER_TEXT.indexOf('[Box]::ContainerSid(') && LAUNCHER_TEXT.indexOf('[Box]::Mount($homeDir)') > LAUNCHER_TEXT.indexOf('[Box]::Enter()') && LAUNCHER_TEXT.indexOf('[Box]::Mount($homeDir)') < LAUNCHER_TEXT.indexOf('} finally { [Box]::Leave() }') && LAUNCHER_TEXT.indexOf('} finally { [Box]::Leave() }') < LAUNCHER_TEXT.indexOf('[Box]::Serve($sid'))
   check('B: only the three pipe ends are inherited', /ATTR_HANDLE_LIST/.test(LAUNCHER_TEXT) && /new IntPtr\[\] \{ inR, outW, errW \}/.test(LAUNCHER_TEXT))
   check('B: it watches the size of the scratch folder (every quarter of a second) and ends the job past the cap', /TreeBytes\(scratch, diskBytes\) > diskBytes/.test(LAUNCHER_TEXT) && /DiskExceeded = true/.test(LAUNCHER_TEXT) && /MAX_DISK = 536870912/.test(LAUNCHER_TEXT))
   check('B: it takes ONE parameter, the spec file, and nothing else', /param\(\[Parameter\(Mandatory = \$true\)\]\[string\]\$SpecPath\)/.test(LAUNCHER_TEXT) && (LAUNCHER_TEXT.match(/^param\(/gm) ?? []).length === 1)
-  check('B: there is no unsandboxed way in it (no plain mode, no switch, no fallback)', !/\bplain\b|unsandbox|nocontainer|-Mode|\$spec\.mode|fallback/i.test(LAUNCHER_TEXT.replace(/^#.*$/gm, '')), 'the comments say there is none; the code has no word for one')
+  check('B: there is no unsandboxed way in it (no plain mode, no switch, no fallback)', !/\bplain\b|unsandbox|nocontainer|-Mode|fallback/i.test(LAUNCHER_TEXT.replace(/^#.*$/gm, '').replace(/'[^'\n]*'/g, "''")) && (LAUNCHER_TEXT.match(/\$spec\.mode/g) ?? []).length === (LAUNCHER_TEXT.match(/\[string\]\$spec\.mode -ne 'serve'/g) ?? []).length, 'the comments say there is none; the code has no word for one')
   check('B: it does not run what it is given (no Invoke-Expression, no Start-Process, no & call, no cmd /c)', !/Invoke-Expression|\biex\b|Start-Process|\bcmd(\.exe)?\s+\/c|\[scriptblock\]::Create|Invoke-Command/i.test(LAUNCHER_TEXT.replace(/^#.*$/gm, '')))
   check('B: the folders it grants on must be inside the run root and not links; the scratch and tools folders must not overlap', /StartsWith\(\$runRoot \+ '\\'/.test(LAUNCHER_TEXT) && /ReparsePoint/.test(LAUNCHER_TEXT) && /overlap/.test(LAUNCHER_TEXT))
   check('B: the environment is built from nothing and has LOCALAPPDATA but never APPDATA', /\$envd\['SystemRoot'\]/.test(LAUNCHER_TEXT) && /'LOCALAPPDATA'/.test(LAUNCHER_TEXT) && !/\$envd\['APPDATA'\]|\bAPPDATA'/.test(LAUNCHER_TEXT.replace(/LOCALAPPDATA/g, '')))
@@ -410,7 +414,8 @@ await guard('E', async () => {
     check(`E: ${name} is refused by the launcher before anything is made`, x.r?.ok === false && x.r.stage === 'check-spec' && (!fragment || x.r.error.includes(fragment)) && noLetter(), show(x.r))
   }
   const mutate = (patch) => ({ ...template(), ...patch })
-  refused('version 2', mutate({ version: 2 }), 'version')
+  refused('version 3', mutate({ version: 3 }), 'version')
+  refused('a run spec that says version 2 (the serve spec of a connector since 14: it is read as one, and its fields are not those)', mutate({ version: 2 }), 'mode')
   refused('a field more', mutate({ shell: 'cmd' }), 'too many')
   const missing = template()
   delete missing.capBytes
@@ -673,8 +678,9 @@ await guard('H', async () => {
   const users = srcFiles.filter((f) => /from ['"][^'"]*(commandRunner|commandLauncher)[^'"]*['"]/.test(fs.readFileSync(f, 'utf8')) && !/commandRunner\.ts$/.test(f))
   // scratchCopy.ts (13.3) takes two helpers from the runner (isInside, sweepMounts), and the run tool (programTools.ts, 13.4) runs through it and resolves the program with isInside;
   // (13.5) the box (programBox.ts) makes the runner and the self-test (selfTest.ts) runs through it; nothing else uses it
-  const others = users.filter((f) => !/(scratchCopy|programTools|programBox|selfTest)\.ts$/.test(f))
-  check('H: nothing else in the app imports the runner but the scratch copy (13.3), the run tool (13.4), the box and the self-test (13.5)', others.length === 0, others.join(', '))
+  // (14, on purpose: the connectors' service and the wiring take isInside from it, to keep a connector's folder and its removal inside the folder for connectors)
+  const others = users.filter((f) => !/(scratchCopy|programTools|programBox|selfTest|connectorService|ipc)\.ts$/.test(f))
+  check('H: nothing else in the app imports the runner but the scratch copy (13.3), the run tool (13.4), the box and the self-test (13.5), and the connectors\' service and the wiring (14)', others.length === 0, others.join(', '))
   const powershellUsers = srcFiles.filter((f) => /powershell/i.test(fs.readFileSync(f, 'utf8')))
   // (13.4, on purpose: the run tool names PowerShell only to REFUSE it, as a program a run may never use: in the model's description of the tool and in its list of programs that are not run)
   const refusalOnly = (file) => fs.readFileSync(file, 'utf8').split('\n').filter((l) => /powershell/i.test(l)).every((l) => /cmd, PowerShell and script hosts are refused/.test(l) || /^\s*'powershell(_ise)?',?\s*$/.test(l))

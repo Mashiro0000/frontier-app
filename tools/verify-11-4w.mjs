@@ -58,7 +58,7 @@ try {
   // ============ A. the page, with every tool off ============
   await openTools()
   const first = await ev(`(() => { const d = document.querySelector('dialog.tools'); return { sections: [...d.querySelectorAll('.tools-section-title')].map((x) => x.textContent), switchTitle: d.querySelector('.tools-switch-title')?.textContent, about: d.querySelector('.tools-switch-text .tools-hint')?.textContent }})()`)
-  check('A: the Tools page has the switches first, then (since 12.3, 13.5 and 12.5) the code workspace, running programs and the changes waiting, and the audit log after them', show(first.sections) === show(['What the model may ask for', 'Code workspace', 'Run programs', 'Changes waiting', 'Audit log']) && first.switchTitle === 'Search the web' && /sends the search words to your AI provider/.test(first.about ?? ''), show(first))
+  check('A: the Tools page has the switches first, then (since 12.3, 13.5 and 12.5) the code workspace, running programs and the changes waiting, and the audit log after them', show(first.sections) === show(['What the model may ask for', 'Code workspace', 'Run programs', 'Changes waiting', 'Connectors', 'Audit log']) && first.switchTitle === 'Search the web' && /sends the search words to your AI provider/.test(first.about ?? ''), show(first))
   let t = await toggle()
   check('A: the search is off, and the switch says so', t?.on === false && t.text === 'Off' && t.disabled === false, show(t))
   check('A: the caps are the defaults, 5 steps and 60 seconds', show(await capsNow()) === show(['5', '60']))

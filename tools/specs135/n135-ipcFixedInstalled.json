@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/ipc.ts",
       "from": "      return value && !app.isPackaged ? value : null\n",
-      "to": "      return value ? value : null\n"
+      "to": "      return value ? value : null\n",
+      "count": 2,
+      "nth": 1
     }
   ],
   "argv": [

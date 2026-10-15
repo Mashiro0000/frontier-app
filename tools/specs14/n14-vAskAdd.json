@@ -1,0 +1,15 @@
+{
+  "label": "n14-vAskAdd",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorService.ts",
+      "from": "        const answer = await ask(owner, addQuestion(candidate, null))",
+      "to": "        const answer: GateAnswer = 'yes'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 900000
+}

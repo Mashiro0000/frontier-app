@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
       "from": "if (-not $p.StartsWith($runRoot + '\\', [System.StringComparison]::OrdinalIgnoreCase)) { throw 'a folder lies outside the run root' }",
-      "to": ""
+      "to": "",
+      "count": 2,
+      "nth": 2
     }
   ],
   "argv": [

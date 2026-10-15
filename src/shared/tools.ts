@@ -68,13 +68,39 @@ export const REFUSAL_CODES = [
   'run-cap', //        the reply has used all its runs (13.4)
   'run-time-cap', //   the reply has used all the run time it may (13.4)
   'run-declined', //   the person said no to a run in this reply, so nobody was asked again (13.4)
-  'copy-refused' //    the folder to copy is bigger than a run may copy, or cannot be copied (13.4)
+  'copy-refused', //   the folder to copy is bigger than a run may copy, or cannot be copied (13.4)
+  'connector-declined' // the person said no to this connector in this reply, so nobody was asked again (14)
 ] as const
 export type RefusalCode = (typeof REFUSAL_CODES)[number]
 
 /** How a run ended, in one word (the audit log keeps it, 13.4): the program finished; the clock ended it; the scratch folder grew past its cap; it never ran. */
 export const PROGRAM_ENDS = ['exited', 'timed-out', 'disk-full', 'not-run'] as const
 export type ProgramEnd = (typeof PROGRAM_ENDS)[number]
+
+/**
+ * What happened to a connector (14, D-045), for the audit log: added or removed, started or stopped (or failed), a tool switched on or off or changed by the connector since it
+ * was switched on, and each grant given or taken back. The tool events carry the tool's id; the rest carry `(connector)`.
+ */
+export const CONNECTOR_EVENTS = [
+  'added',
+  'removed',
+  'started',
+  'stopped',
+  'failed',
+  'tool-on',
+  'tool-off',
+  'tool-changed',
+  'network-on',
+  'network-off',
+  'folder-on',
+  'folder-off',
+  'as-you-on',
+  'as-you-off'
+] as const
+export type ConnectorEvent = (typeof CONNECTOR_EVENTS)[number]
+
+/** The `tool` of a connector event that is about the connector as a whole. */
+export const CONNECTOR_TOOL = '(connector)'
 
 /** What came of the question in the system's box. `stopped`: Stop everything came while it was open. */
 export const ANSWER_CODES = [
@@ -102,9 +128,16 @@ export const TOOL_TITLES: Readonly<Record<string, string>> = Object.freeze({
   run_program: 'Run a program on a copy of the workspace'
 })
 
-/** What to call a tool in a sentence: its title, or its id for a tool this version does not know (an entry of the log from another version). */
-export const toolTitle = (id: string): string =>
-  Object.prototype.hasOwnProperty.call(TOOL_TITLES, id) ? TOOL_TITLES[id] : id
+/**
+ * What to call a tool in a sentence: its title; for a connector's tool (`notes__search`, 14) its own name and the connector's prefix; for an event about a connector,
+ * "A connector"; or its id for a tool this version does not know (an entry of the log from another version).
+ */
+export const toolTitle = (id: string): string => {
+  if (Object.prototype.hasOwnProperty.call(TOOL_TITLES, id)) return TOOL_TITLES[id]
+  if (id === CONNECTOR_TOOL) return 'A connector'
+  const at = id.indexOf('__')
+  return at > 0 ? `${id.slice(at + 2)} (connector ${id.slice(0, at)})` : id
+}
 
 /** The arguments of a call as the person was shown them: exactly what the tool is given, with every path as the real one. */
 export type ShownArguments = Readonly<Record<string, string | number>>
@@ -174,6 +207,29 @@ export type ToolEvent =
       changed: number
       created: number
       deleted: number
+    }
+  | {
+      /** What became of a call to a connector's tool (14.5): how long it took, whether the connector said it failed, and how many pieces were not passed on. Never the result. */
+      type: 'connector-call'
+      at: number
+      call: string
+      tool: string
+      step: number
+      ms: number
+      isError: boolean
+      /** Pictures, sounds and links to files that came back and were not passed on. */
+      dropped: number
+    }
+  | {
+      /** Something that happened to a connector (14.6), not to a call: `call` is an id of its own, `step` is 0, `tool` is the tool's id or `(connector)`. */
+      type: 'connector'
+      at: number
+      call: string
+      tool: string
+      step: number
+      what: ConnectorEvent
+      /** The connector's name as the person gave it (one visible line). */
+      connector: string
     }
   | {
       type: 'result'

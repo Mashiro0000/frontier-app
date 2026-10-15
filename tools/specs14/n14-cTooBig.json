@@ -1,0 +1,17 @@
+{
+  "label": "n14-cTooBig",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/mcpClient.ts",
+      "from": "end('The connector sent a message larger than the app accepts (1 MB).', 'too-big')",
+      "to": "end('The connector sent a message larger than the app accepts (1 MB).')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-2.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 400000
+}

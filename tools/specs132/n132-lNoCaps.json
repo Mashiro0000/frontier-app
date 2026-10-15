@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
       "from": "if (!UpdateProcThreadAttribute(attr, 0, ATTR_SECURITY_CAPABILITIES, scMem, (IntPtr)scLen, IntPtr.Zero, IntPtr.Zero))",
-      "to": "if (false)"
+      "to": "if (false)",
+      "count": 2,
+      "nth": 1
     }
   ],
   "argv": [

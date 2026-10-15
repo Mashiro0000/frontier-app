@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
       "from": "IntPtr[] waitFor = parent != IntPtr.Zero ?",
-      "to": "IntPtr[] waitFor = parent != IntPtr.Zero && timeoutMs < 0 ?"
+      "to": "IntPtr[] waitFor = parent != IntPtr.Zero && timeoutMs < 0 ?",
+      "count": 2,
+      "nth": 1
     }
   ],
   "argv": [

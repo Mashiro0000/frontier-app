@@ -1,0 +1,16 @@
+{
+  "label": "n14-eKept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      undoJournal.document,\n      connectorStore.file\n",
+      "to": "      undoJournal.document\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 400000
+}

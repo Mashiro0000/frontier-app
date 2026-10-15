@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
       "from": "if (([System.IO.File]::GetAttributes($p) -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'a folder is a link' }",
-      "to": ""
+      "to": "",
+      "count": 2,
+      "nth": 2
     }
   ],
   "argv": [

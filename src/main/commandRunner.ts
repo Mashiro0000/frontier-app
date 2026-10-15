@@ -39,8 +39,56 @@ export interface RunnerDeps {
   launcherGraceMs?: number
 }
 
+/**
+ * A connector to start in the box (Stage 14, D-045): a program that stays and talks over its standard streams. Its folder (`homeDir`, inside `<run root>\connectors`) is shown
+ * to it as the root of a drive letter and may only be read; `dataDir` (inside it) is the one place it may write. The program is the installed node.exe (a private copy runs) or
+ * an .exe in the connector's folder, written `<<HOME>>\...` (the launcher puts the drive letter in; an argument may start with `<<HOME>>` too).
+ */
+export interface ServeRequest {
+  /** FrontierApp.<letters and digits>: a container of the connector's own, so that no connector can read another's folders. */
+  container: string
+  homeDir: string
+  dataDir: string
+  program: string
+  args: string[]
+  /** The container's network ability (internetClient only). */
+  network: boolean
+  memoryBytes?: number
+  maxProcesses?: number
+  diskBytes?: number
+}
+
+/** What a connector's launcher said when it ended, read strictly (anything else is a launcher that failed). */
+export type ServeEnd =
+  | {
+      kind: 'ended'
+      exitCode: number
+      /** The app closed its input (a stop). */
+      inputEnded: boolean
+      parentGone: boolean
+      diskExceeded: boolean
+      elapsedMs: number
+      peakMemoryBytes: number
+      leftoverAfter: number
+    }
+  | { kind: 'not-run'; why: NotRunWhy; message: string }
+
+/** A connector that the launcher is starting or running: its three streams, and the end. */
+export interface ServeHandle {
+  stdin: NodeJS.WritableStream
+  stdout: NodeJS.ReadableStream
+  stderr: NodeJS.ReadableStream
+  /** Ends its input (the program gets end of file and a few seconds), then ends the launcher and the box if it is still there. */
+  close(): void
+  /** Ends the launcher and the box at once. */
+  kill(): void
+  readonly ended: Promise<ServeEnd>
+}
+
 export interface CommandRunner {
   run(request: unknown, options?: { signal?: AbortSignal }): Promise<RunOutcome>
+  /** Starts a connector in the box (14, D-045), or says why it cannot. Nothing is started without the box. */
+  serve(request: ServeRequest): Promise<ServeHandle | Extract<RunOutcome, { kind: 'not-run' }>>
   /** Ends every run that is going on (the app is closing). Synchronous on purpose. */
   stopAll(): void
   /** How many runs are going on now. */
@@ -538,6 +586,292 @@ export function createCommandRunner(deps: RunnerDeps): CommandRunner {
     }
   }
 
+  // ---- serve (Stage 14, D-045): a connector in the box --------------------------------------------------------------------------------
+  const connectorsHome = win32.join(runRoot, 'connectors')
+
+  async function plainFolder(path: string): Promise<boolean> {
+    try {
+      const info = await fs.lstat(path)
+      return info.isDirectory() && !info.isSymbolicLink()
+    } catch {
+      return false
+    }
+  }
+
+  /** The request checked, and the program as the launcher is to be given it (the private node.exe, or `<<HOME>>\...`), or why not. */
+  async function checkServe(
+    input: unknown
+  ): Promise<{ ok: true; request: ServeRequest; program: string } | NotRun> {
+    if (typeof input !== 'object' || input === null || Array.isArray(input))
+      return notRun('refused', 'the request is not an object')
+    const o = input as Record<string, unknown>
+    const allowed = new Set([
+      'container',
+      'homeDir',
+      'dataDir',
+      'program',
+      'args',
+      'network',
+      'memoryBytes',
+      'maxProcesses',
+      'diskBytes'
+    ])
+    for (const key of Object.keys(o))
+      if (!allowed.has(key))
+        return notRun('refused', `the request has a field it should not have: ${key.slice(0, 40)}`)
+    const { container, homeDir, dataDir, program, args, network } = o
+    if (typeof container !== 'string' || !/^FrontierApp\.[A-Za-z0-9]{1,40}$/.test(container))
+      return notRun('refused', 'the container name is not one of the app')
+    if (typeof network !== 'boolean') return notRun('refused', 'network is not true or false')
+    if (typeof homeDir !== 'string' || typeof dataDir !== 'string')
+      return notRun('refused', 'the folders are not text')
+    for (const p of [homeDir, dataDir])
+      if (!DRIVE_PATH.test(p) || p.includes('\0'))
+        return notRun('refused', 'a folder is not a full path on a local drive')
+    const home = win32.resolve(homeDir)
+    const data = win32.resolve(dataDir)
+    if (!isInside(connectorsHome, home))
+      return notRun('refused', "the connector's folder is not inside the folder for connectors")
+    if (!isInside(home, data))
+      return notRun('refused', "the data folder is not inside the connector's folder")
+    if (!(await plainFolder(home)) || !(await plainFolder(data)))
+      return notRun('refused', 'a folder is not there, or is a link')
+    if (!Array.isArray(args)) return notRun('refused', 'the arguments are not a list')
+    if (args.length > RUN_ARGS.count)
+      return notRun('refused', `more than ${RUN_ARGS.count} arguments`)
+    for (const a of args) {
+      if (
+        typeof a !== 'string' ||
+        a.length > RUN_ARGS.charsEach ||
+        a.includes('\0') ||
+        !wellFormed(a)
+      )
+        return notRun('refused', 'an argument is not text the box can pass on')
+    }
+    const memoryBytes = integerIn(o.memoryBytes, RUN_LIMITS.memoryBytes, 'memoryBytes')
+    if (typeof memoryBytes === 'string') return notRun('refused', memoryBytes)
+    const maxProcesses = integerIn(o.maxProcesses, RUN_LIMITS.maxProcesses, 'maxProcesses')
+    if (typeof maxProcesses === 'string') return notRun('refused', maxProcesses)
+    const diskBytes = integerIn(o.diskBytes, RUN_LIMITS.diskBytes, 'diskBytes')
+    if (typeof diskBytes === 'string') return notRun('refused', diskBytes)
+    if (typeof program !== 'string' || program.includes('\0') || program.length > 260)
+      return notRun('refused', 'the program is not a path')
+    let toRun: string
+    if (program.startsWith('<<HOME>>\\')) {
+      const rest = program.slice(8)
+      if (rest.includes('..') || rest.includes(':') || !/\.exe$/i.test(rest))
+        return notRun('refused', "the program is not a plain .exe path in the connector's folder")
+      const real = win32.resolve(home + rest)
+      if (!isInside(home, real) || isInside(data, real))
+        return notRun(
+          'refused',
+          "the program is not in the connector's folder (or is in its data folder)"
+        )
+      try {
+        const info = await fs.lstat(real)
+        if (!info.isFile() || info.isSymbolicLink())
+          return notRun('refused', 'the program is not an ordinary file')
+      } catch {
+        return notRun('refused', 'the program is not there')
+      }
+      toRun = program
+    } else {
+      if (!DRIVE_PATH.test(program)) return notRun('refused', 'the program is not a full path')
+      const resolved = win32.resolve(program)
+      if (
+        win32.basename(resolved).toLowerCase() !== 'node.exe' ||
+        !programFilesDirs.some((d) => isInside(d, resolved))
+      )
+        return notRun(
+          'refused',
+          "the program is neither the installed node.exe nor an .exe in the connector's folder"
+        )
+      try {
+        const info = await fs.lstat(resolved)
+        if (!info.isFile() || info.isSymbolicLink())
+          return notRun('refused', 'the program is not an ordinary file')
+      } catch {
+        return notRun('refused', 'the program is not there')
+      }
+      const copy = await ensureNodeCopy(resolved)
+      if (typeof copy !== 'string') return copy
+      toRun = copy
+    }
+    return {
+      ok: true,
+      program: toRun,
+      request: {
+        container,
+        homeDir: home,
+        dataDir: data,
+        program,
+        args: (args as string[]).slice(),
+        network,
+        memoryBytes,
+        maxProcesses,
+        diskBytes
+      }
+    }
+  }
+
+  /** What a serving launcher wrote when it ended, read strictly. */
+  function parseServeResult(text: string): ServeEnd {
+    let value: unknown
+    try {
+      value = JSON.parse(text.charCodeAt(0) === 0xfeff ? text.slice(1) : text)
+    } catch {
+      return notRun('launcher-failed', 'the launcher left a result that is not JSON')
+    }
+    if (typeof value !== 'object' || value === null || Array.isArray(value))
+      return notRun('launcher-failed', 'the launcher left a result that is not an object')
+    const r = value as Record<string, unknown>
+    if (r.ok === false && typeof r.stage === 'string' && typeof r.error === 'string') {
+      return notRun(
+        ISOLATION_STAGES.has(r.stage) ? 'isolation-unavailable' : 'launcher-failed',
+        `${r.stage}: ${cleanMessage(r.error)}`
+      )
+    }
+    if (r.ok !== true) return notRun('launcher-failed', 'the launcher result is malformed')
+    for (const n of [
+      'exitCode',
+      'elapsedMs',
+      'peakJobMemory',
+      'activeAfterKill',
+      'stdinBytes',
+      'stdoutBytes',
+      'stderrBytes',
+      'dataBytes'
+    ])
+      if (typeof r[n] !== 'number' || !Number.isFinite(r[n]) || (r[n] as number) < -1)
+        return notRun('launcher-failed', `the launcher result has a bad ${n}`)
+    if (
+      typeof r.inputEnded !== 'boolean' ||
+      typeof r.parentGone !== 'boolean' ||
+      typeof r.diskExceeded !== 'boolean'
+    )
+      return notRun('launcher-failed', 'the launcher result has a bad flag')
+    return {
+      kind: 'ended',
+      exitCode: r.exitCode as number,
+      inputEnded: r.inputEnded,
+      parentGone: r.parentGone,
+      diskExceeded: r.diskExceeded,
+      elapsedMs: r.elapsedMs as number,
+      peakMemoryBytes: Math.max(0, r.peakJobMemory as number),
+      leftoverAfter: r.activeAfterKill as number
+    }
+  }
+
+  async function serve(input: unknown): Promise<ServeHandle | NotRun> {
+    if (stopped) return notRun('aborted', 'the app is closing')
+    const checked = await checkServe(input)
+    if (!('ok' in checked)) return checked
+    const { request, program } = checked
+    const launcherPath = await ensureLauncher()
+    if (typeof launcherPath !== 'string') return launcherPath
+    const id = randomBytes(8).toString('hex')
+    const specPath = win32.join(folders.specs, `${id}.json`)
+    const resultPath = win32.join(folders.specs, `${id}.result.json`)
+    const forget = async (): Promise<void> => {
+      await fs.rm(specPath, { force: true }).catch(() => undefined)
+      await fs.rm(resultPath, { force: true }).catch(() => undefined)
+    }
+    try {
+      await fs.mkdir(folders.specs, { recursive: true })
+      await fs.mkdir(folders.tools, { recursive: true })
+      await fs.writeFile(
+        specPath,
+        JSON.stringify({
+          version: 2,
+          mode: 'serve',
+          container: request.container,
+          runRoot,
+          homeDir: request.homeDir,
+          dataDir: request.dataDir,
+          toolsDir: folders.tools,
+          program,
+          args: request.args,
+          memoryBytes: request.memoryBytes,
+          maxProcesses: request.maxProcesses,
+          diskBytes: request.diskBytes,
+          network: request.network,
+          parentPid,
+          result: resultPath
+        }),
+        'utf8'
+      )
+    } catch (error) {
+      await forget()
+      return notRun(
+        'launcher-failed',
+        `the spec could not be written: ${cleanMessage((error as Error).message)}`
+      )
+    }
+    let child: ChildProcess
+    try {
+      child = spawn(powershell, launcherArguments(launcherPath, specPath), {
+        windowsHide: true,
+        stdio: ['pipe', 'pipe', 'pipe']
+      })
+    } catch (error) {
+      await forget()
+      return notRun(
+        'launcher-failed',
+        `the launcher could not be started: ${cleanMessage((error as Error).message)}`
+      )
+    }
+    children.set(child, request.homeDir)
+    // a write to a launcher that has gone is not an error of the app's (the end says what happened)
+    child.stdin?.on('error', () => undefined)
+    let killed = false
+    const endNow = (): void => {
+      if (killed) return
+      killed = true
+      void kill(child)
+    }
+    const ended = new Promise<ServeEnd>((resolve) => {
+      let settled = false
+      const finish = async (): Promise<void> => {
+        if (settled) return
+        settled = true
+        children.delete(child)
+        let text: string | null = null
+        try {
+          text = await fs.readFile(resultPath, 'utf8')
+        } catch {
+          text = null
+        }
+        if (text === null) unmountFolder(request.homeDir)
+        await forget()
+        if (text === null)
+          return resolve(
+            notRun(stopped || killed ? 'aborted' : 'launcher-failed', 'the launcher left no result')
+          )
+        const end = parseServeResult(text)
+        if (end.kind !== 'ended') unmountFolder(request.homeDir)
+        resolve(end)
+      }
+      child.on('error', () => void finish())
+      child.on('close', () => void finish())
+    })
+    return {
+      stdin: child.stdin as NodeJS.WritableStream,
+      stdout: child.stdout as NodeJS.ReadableStream,
+      stderr: child.stderr as NodeJS.ReadableStream,
+      close: () => {
+        try {
+          child.stdin?.end()
+        } catch {
+          /* already closed */
+        }
+        // the program has a few seconds after end of file (the launcher's own wait), then the launcher ends the job; this is the backstop
+        setTimeout(endNow, 10_000).unref()
+      },
+      kill: endNow,
+      ended
+    }
+  }
+
   function stopAll(): void {
     stopped = true
     for (const [child, scratch] of children) {
@@ -555,7 +889,7 @@ export function createCommandRunner(deps: RunnerDeps): CommandRunner {
     }
   }
 
-  return { run, stopAll, live: () => children.size, folders }
+  return { run, serve, stopAll, live: () => children.size, folders }
 }
 
 type NotRun = Extract<RunOutcome, { kind: 'not-run' }>

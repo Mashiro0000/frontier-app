@@ -28,8 +28,12 @@ export function shown(text: string): string {
 }
 
 /** One argument's value as the box shows it: a number as it is, a text between quotes, a list as its items between quotes one after another (or "(none)"). */
-export function shownValue(value: string | number | readonly string[] | undefined): string {
-  if (typeof value === 'number') return String(value)
+export function shownValue(
+  value: string | number | boolean | readonly string[] | undefined
+): string {
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  // an optional argument (14.4) that the call left out
+  if (value === undefined) return '(not given)'
   if (Array.isArray(value)) return value.length === 0 ? '(none)' : value.map(shown).join(' ')
   return shown(String(value))
 }

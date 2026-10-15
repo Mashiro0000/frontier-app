@@ -50,7 +50,7 @@ import type {
   ToolSpec,
   Usage
 } from './providers/types'
-import type { ToolRuntime, TurnEnd } from './replyTools'
+import type { ConnectorTools, ToolRuntime, TurnEnd } from './replyTools'
 import { heldKey, keyInInstructions, keyInNotes, type SavedKey } from './secrets'
 import { isTrustedSender } from './security'
 import { RequestRefused, type UsageLedger } from './usageLedger'
@@ -207,6 +207,8 @@ interface ReplyContext {
   tools?: {
     settings: () => Promise<ToolSettings>
     runtime: ToolRuntime
+    /** The tools of the connectors that are switched on (14, D-045), read when a reply begins; the settings say at every turn which of them are still on. */
+    connectors?: () => Promise<ConnectorTools>
   }
 }
 
@@ -464,7 +466,10 @@ async function runReply(
             provider: PROVIDER_NAMES[entry.provider],
             affordable: affordableSearch,
             search: countedSearch,
-            onEvent: (event) => send({ streamId, type: 'tool', event })
+            onEvent: (event) => send({ streamId, type: 'tool', event }),
+            ...(toolsContext.connectors === undefined
+              ? {}
+              : { connectors: await toolsContext.connectors().catch(() => undefined) })
           })
     let specs: ToolSpec[] = replyTools === null ? [] : replyTools.specs()
     /** The tool turns of this reply so far, after the conversation: what the model asked for, and what came of each call. */

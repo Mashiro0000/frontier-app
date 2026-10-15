@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
       "from": "  [Box]::Enter()\n",
-      "to": ""
+      "to": "",
+      "count": 2,
+      "nth": 2
     }
   ],
   "argv": [

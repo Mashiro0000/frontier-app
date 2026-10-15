@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "        return withPrograms(withFiles, folder !== null && (await programService.available()))\n",
-      "to": "        return withFiles\n"
+      "from": "        const settings = withPrograms(\n          withFiles,\n          folder !== null && (await programService.available())\n        )\n",
+      "to": "        const settings = withFiles\n"
     }
   ],
   "argv": [

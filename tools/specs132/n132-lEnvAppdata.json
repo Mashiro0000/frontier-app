@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
       "from": "$envd['PATHEXT'] = '.COM;.EXE;.BAT;.CMD'",
-      "to": "$envd['PATHEXT'] = '.COM;.EXE;.BAT;.CMD'; $envd['APPDATA'] = $root"
+      "to": "$envd['PATHEXT'] = '.COM;.EXE;.BAT;.CMD'; $envd['APPDATA'] = $root",
+      "count": 2,
+      "nth": 2
     }
   ],
   "argv": [
