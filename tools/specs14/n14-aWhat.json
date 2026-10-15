@@ -1,0 +1,17 @@
+{
+  "label": "n14-aWhat",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/auditLog.ts",
+      "from": "      if (typeof what !== 'string' || !(CONNECTOR_EVENTS as readonly string[]).includes(what)) {",
+      "to": "      if (typeof what !== 'string') {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-2.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 400000
+}

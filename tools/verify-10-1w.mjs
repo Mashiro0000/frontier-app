@@ -198,7 +198,7 @@ try {
   const yes = await ev(`window.api.settings.setLimits({ daily: { kind: 'usd', usd: 25 }, monthly: { kind: 'usd', usd: 100 } })`)
   check('D: through the bridge, only the person\'s yes in the box lets a raise through (and then main sends the new settings)', yes.ok === true && yes.status?.limits?.daily?.usd === 25 && limitsText() === '{"version":1,"daily":25,"monthly":100}', show(yes).slice(0, 120))
   check('D: the bridge has no way to answer a question: window.api.settings is the eight functions of Stage 8', show(await ev(`Object.keys(window.api.settings).sort()`)) === show(['clearApiKey', 'getStatus', 'setApiKey', 'setAskFirst', 'setEffort', 'setLimits', 'setModel', 'testApiKey']), show(await ev(`Object.keys(window.api.settings)`)))
-  check('D: ...and no top-level part of window.api that could (attachments, chat, history, instructions since 10.2, memory since 10.4, projects since 10.5, settings, usage)', show(await ev(`Object.keys(window.api).sort()`)) === show(['attachments', 'audit', 'changes', 'chat', 'history', 'instructions', 'memory', 'programs', 'projects', 'settings', 'tools', 'usage', 'workspace']), show(await ev(`Object.keys(window.api)`)))
+  check('D: ...and no top-level part of window.api that could (attachments, chat, history, instructions since 10.2, memory since 10.4, projects since 10.5, settings, usage)', show(await ev(`Object.keys(window.api).sort()`)) === show(['attachments', 'audit', 'changes', 'chat', 'connectors', 'history', 'instructions', 'memory', 'programs', 'projects', 'settings', 'tools', 'usage', 'workspace']), show(await ev(`Object.keys(window.api)`)))
 
   // ============ E. narrow windows ============
   for (const width of [420, 280]) {

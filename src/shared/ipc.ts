@@ -9,6 +9,7 @@ import type { ReplyToolNote } from './toolNotes'
 import type { Limits, LimitsChoice } from './limits'
 import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from './memory'
 import type { ProgramsChangeResult, ProgramsStatus } from './programs'
+import type { ConnectorChangeResult, ConnectorsStatus } from './connectors'
 import type { ProjectChangeResult, ProjectsStatus } from './projects'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
@@ -638,6 +639,28 @@ export interface FrontierApi {
     stopTest(): Promise<void>
   }
   /**
+   * Connectors (Stage 14, D-045): tools that other programs offer through MCP. The page can read the list and ASK: to add one (a program the person chooses in the
+   * system's own file dialog, which main opens, or a web address), to remove one, to start one and list its tools, to stop one, to switch one of its tools on or off,
+   * to give or take back a grant, and to let it run "as you". Every change that lets the app do more is asked about in the system's own message box, which the page
+   * cannot answer. The page never supplies a program path, never sees a token again, cannot start a call and cannot approve one.
+   */
+  connectors: {
+    status(): Promise<ConnectorsStatus>
+    addLocal(name: string, args: string[]): Promise<ConnectorChangeResult>
+    addRemote(name: string, url: string, token: string): Promise<ConnectorChangeResult>
+    remove(id: string): Promise<ConnectorChangeResult>
+    refresh(id: string): Promise<ConnectorChangeResult>
+    stop(id: string): Promise<ConnectorChangeResult>
+    setTool(id: string, name: string, on: boolean): Promise<ConnectorChangeResult>
+    setGrant(
+      id: string,
+      grant: 'network' | 'workspace',
+      on: boolean
+    ): Promise<ConnectorChangeResult>
+    /** `typed`: the connector's name as the person typed it, to confirm "as you". */
+    setPlace(id: string, place: 'box' | 'as-you', typed: string): Promise<ConnectorChangeResult>
+  }
+  /**
    * The changes the model has proposed and the person has not decided on (Stage 12.5, D-042): a summary of each (the path, the counts, the warnings: never a line
    * of the change) and a way to ask main to open the Review window for one. The Review window is a window of its own that main opens and this page cannot
    * script; applying and dropping a change are done there, never here. The page has no way to see a change's text, to apply it or to answer a question.
@@ -726,6 +749,15 @@ export const CHANNELS = {
   programsStatus: 'programs:status',
   programsSetOn: 'programs:set-on',
   programsStopTest: 'programs:stop-test',
+  connectorsStatus: 'connectors:status',
+  connectorsAddLocal: 'connectors:add-local',
+  connectorsAddRemote: 'connectors:add-remote',
+  connectorsRemove: 'connectors:remove',
+  connectorsRefresh: 'connectors:refresh',
+  connectorsStop: 'connectors:stop',
+  connectorsSetTool: 'connectors:set-tool',
+  connectorsSetGrant: 'connectors:set-grant',
+  connectorsSetPlace: 'connectors:set-place',
   changesList: 'changes:list',
   changesReview: 'changes:review',
   changesApplied: 'changes:applied',

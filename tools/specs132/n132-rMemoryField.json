@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/commandRunner.ts",
       "from": "          memoryBytes: request.memoryBytes,",
-      "to": "          memoryBytes: RUN_LIMITS.memoryBytes.max,"
+      "to": "          memoryBytes: RUN_LIMITS.memoryBytes.max,",
+      "count": 2,
+      "nth": 1
     }
   ],
   "argv": [

@@ -101,6 +101,19 @@ export function noteOutcomeText(outcome: AuditOutcome, live: boolean, tool = 'we
       }
       return ''
     }
+    case 'ran-connector': {
+      const c = outcome.connector
+      const secs = `${(c.ms / 1000).toFixed(1)} seconds`
+      const said = c.isError ? ' and said the call did not work' : ''
+      const dropped =
+        c.dropped === 0
+          ? ''
+          : ` ${plural(c.dropped, 'piece', 'pieces')} (a picture, a sound or a link to a file) ${c.dropped === 1 ? 'was' : 'were'} not passed on.`
+      return `You allowed it. The connector answered after ${secs}${said}; ${plural(outcome.size, 'character', 'characters')} came back.${dropped}`
+    }
+    case 'connector-event':
+      // (never part of a reply: a connector's own events are in the log only)
+      return ''
     case 'running':
       return live
         ? 'Working on it...'
@@ -350,6 +363,20 @@ function checkOutcome(raw: unknown): AuditOutcome | null {
           created: p.created as number,
           deleted: p.deleted as number
         },
+        size: raw.size
+      }
+    }
+    case 'ran-connector': {
+      if (!hasKeys(raw, ['kind', 'connector', 'size']) || !isCount(raw.size, 0, NOTE_LIMITS.size)) {
+        return null
+      }
+      const c = raw.connector
+      if (!isRecord(c) || !hasKeys(c, ['ms', 'isError', 'dropped'])) return null
+      if (!isCount(c.ms, 0, 1_000_000_000) || typeof c.isError !== 'boolean') return null
+      if (!isCount(c.dropped, 0, 1000)) return null
+      return {
+        kind: 'ran-connector',
+        connector: { ms: c.ms as number, isError: c.isError, dropped: c.dropped as number },
         size: raw.size
       }
     }

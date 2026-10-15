@@ -1,0 +1,15 @@
+{
+  "label": "n14-vFingerprint",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorService.ts",
+      "from": "    const gone = c.tools.filter((t) => byName.get(t.name)?.fingerprint !== t.fingerprint)",
+      "to": "    const gone: ServerTool[] = []"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 900000
+}

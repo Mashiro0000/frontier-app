@@ -1,0 +1,17 @@
+{
+  "label": "n14-tClean",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/mcpTools.ts",
+      "from": "        ? oneLine(raw.description, CONNECTOR_LIMITS.descriptionChars)",
+      "to": "        ? raw.description"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

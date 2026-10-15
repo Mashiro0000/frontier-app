@@ -3,8 +3,8 @@ import type { DataFolderGuard } from './dataFolderGuard'
 import type { NeutralToolCall, NeutralToolResult, SearchResult, ToolSpec } from './providers/types'
 import { createReplyBudget, type ReplyBudget } from './replyBudget'
 import type { QuestionGate } from './systemQuestion'
-import { createToolCore, type ToolOutcome, type ToolResult } from './toolCore'
-import type { ToolRegistry } from './toolRegistry'
+import { createToolCore, type Executor, type ToolOutcome, type ToolResult } from './toolCore'
+import { createToolRegistry, type ToolDefinition, type ToolRegistry } from './toolRegistry'
 import type { WorkspaceGuard } from './workspaceGuard'
 import { createProposalExecutors } from './proposalTools'
 import type { ProposalStore } from './proposals'
@@ -41,6 +41,12 @@ export interface ToolRuntimeOptions {
   clock?: () => number
 }
 
+/** The tools of the connectors that are switched on (14, D-045), as a reply is handed them: their definitions and how each is run (connectorService.ts makes them). */
+export interface ConnectorTools {
+  defs: ToolDefinition[]
+  executors: Record<string, Executor>
+}
+
 export interface ReplyToolsInput {
   /** The window the questions are for. */
   owner: unknown
@@ -59,6 +65,11 @@ export interface ReplyToolsInput {
   search: (query: string, signal: AbortSignal) => Promise<SearchResult>
   /** Told of every event of a call after it was recorded, in order (the window shows the activity from these). Its faults are not the call's. */
   onEvent?: (event: ToolEvent) => void
+  /**
+   * The tools of the connectors that are switched on (14, D-045) and how each is run: added to the build's registry for this reply (their names, `prefix__name`, can never
+   * be one of the app's own). A tool is still offered and run only while the settings say it is on.
+   */
+  connectors?: ConnectorTools
 }
 
 /** Why a reply must end now, or null: a cap was reached, or the person pressed Stop everything. */
@@ -152,6 +163,23 @@ function endOf(outcome: ToolOutcome): TurnEnd {
   return outcome.code === 'time-cap' || outcome.code === 'stopped' ? outcome.code : null
 }
 
+/** The build's registry with a reply's connector tools added; the build's alone when they cannot be added (logged). */
+function withConnectorTools(base: ToolRegistry, extra: readonly ToolDefinition[]): ToolRegistry {
+  if (extra.length === 0) return base
+  try {
+    return createToolRegistry([
+      ...base.ids().map((id) => base.get(id) as ToolDefinition),
+      ...extra.filter((def) => def.id.includes('__'))
+    ])
+  } catch (error) {
+    console.error(
+      'The connector tools could not be added to this reply:',
+      error instanceof Error ? error.message : error
+    )
+    return base
+  }
+}
+
 export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
   return {
     forReply: (input) => {
@@ -196,8 +224,20 @@ export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
                     })
                   })
             })
+      const connectorDefs = input.connectors?.defs ?? []
+      const tools = withConnectorTools(options.tools, connectorDefs)
+      const connectorExecutors: Record<
+        string,
+        NonNullable<ConnectorTools['executors'][string]>
+      > = {}
+      if (tools !== options.tools) {
+        for (const def of connectorDefs) {
+          const run = input.connectors?.executors[def.id]
+          if (run !== undefined && def.id.includes('__')) connectorExecutors[def.id] = run
+        }
+      }
       const core = createToolCore({
-        tools: options.tools,
+        tools,
         settings: () => current,
         gate: options.gate,
         guard: options.guard,
@@ -213,6 +253,7 @@ export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
         ...(workspace === undefined ? {} : { workspace }),
         ...(program === undefined ? {} : { programs: program.support }),
         executors: {
+          ...connectorExecutors,
           ...fileExecutors,
           ...(program === undefined ? {} : { run_program: program.executor }),
           web_search: async (args, context) => {
@@ -261,7 +302,8 @@ export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
                       outcome.tool === 'web_search'
                         ? toolResultText(approvedQuery(call), outcome.result)
                         : outcome.result.text,
-                    isError: false
+                    // a connector that says its call did not work (or could not be reached) is a failed call for the model too (14.5)
+                    isError: outcome.result.connector?.isError === true
                   }
                 : { callId: call.id, text: outcome.text, isError: true }
             )

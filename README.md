@@ -64,6 +64,11 @@ key is ever lost, encrypted chats cannot be opened, and the backup is how you ge
 empty chat; **History** opens a saved one or deletes it, and backs chats up to a file or restores them from one (D-034). Each reply records which model wrote it (D-021), and the file holds the chat's
 instructions (D-027; a chat saved by this version cannot be read by one from before Stage 7.4). See docs/DECISIONS.md D-016 and D-017.
 
+Tools are off until you switch them on in **Tools**, and every call the model asks for is asked about in a Windows message box first (D-041): a web
+search, files in one workspace folder (D-042), running a program in a locked box (D-043), and **connectors** (Stage 14, D-045): tools that another
+program on this PC (run in the same locked box by default) or a web address offers through MCP. You add a connector in Tools, read each of its tools
+and switch on the ones you want; nothing is installed or downloaded by the app.
+
 ### Checks
 
 The app has no test framework (D-007). `tools/` holds the check scripts that drive the real window against a fake

@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/toolCore.ts",
-      "from": "      if (isOutcome(r)) return r\n      if (r.answer !== 'yes') return declined(r.answer)\n      if (!r.recorded)",
-      "to": "      if (isOutcome(r)) return r\n      if (r.answer === 'busy') return declined(r.answer)\n      if (!r.recorded)"
+      "from": "      if (r.answer !== 'yes') {\n        if (r.answer === 'no' && connector !== null) grants.set(connector, 'declined')\n",
+      "to": "      if (r.answer === 'busy') {\n        if (r.answer === 'no' && connector !== null) grants.set(connector, 'declined')\n"
     }
   ],
   "argv": [

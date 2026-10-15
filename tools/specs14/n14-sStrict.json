@@ -1,0 +1,17 @@
+{
+  "label": "n14-sStrict",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorStore.ts",
+      "from": "  if (!isPlain(raw) || !exactKeys(raw, CONNECTOR_KEYS)) return null",
+      "to": "  if (!isPlain(raw)) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-2.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 400000
+}

@@ -350,13 +350,24 @@ the backup has been tried on real chats is not known, and it is still the thing 
 
 **Questions for the owner** (**answered 9 October 2026: "Stage 13 all picks kept"**): (A) run on a copy and bring changes back as proposals, or run in the real folder? (B) program and arguments only, no shell line? (C) a box for every run, no "always allow"? (D) no network at all in this stage? (E) the limits above? (G) switching on needs a passing self-test and there is no fallback without isolation? And the stop rule.
 
-## Stage 14 - Connectors through MCP (not started)
+## Stage 14 - Connectors through MCP (plan approved 15 October 2026: all picks kept; DONE 15 October 2026)
 
-- An **MCP client**: add a local server (a command) or a remote one (a URL); the app lists its tools; every call goes through Stage 11's
-  approval. Local servers first; remote servers with an OAuth sign-in later (the owner signs in; the assistant never enters passwords).
-- Safety: servers are untrusted code and data: a local server is started only by the owner's explicit command, in its own process, with a
-  stripped environment; tools default to **ask each time**; read-only tools are marked as such by the owner, never taken on the server's word;
-  tokens in encrypted storage; tool results are untrusted text (prompt injection tests); a server can be disabled or removed at once.
+**The plan** (mine, written 15 October 2026 as `Frontier App Stage 14 plan.pdf`; **approved by the owner the same day: "all picks kept in stage 14 now go. And try if you can finish early. With smart decision.. Ok"**; question J, which connectors first, was not answered, so nothing was downloaded). D-045 has the whole of it.
+
+- **Tools only** (pick A): no resources, prompts, sampling, questions, folders or logging; the app declares no ability to a server.
+- **A program on this PC** (pick B) is a script for node or an `.exe` that the person chooses in the system's file dialog, with arguments; never a shell, never npx, nothing installed. **A web address** (pick D) is Streamable HTTP, https only (plain http only to this PC), with an optional pasted token kept by the system's secure storage; no redirect is followed.
+- **Where a program runs** (pick C): in the Stage 13 box by default (a container of its own, a read-only copy of its folder, a data folder of its own, no network); the network and a read-only copy of the workspace are grants, each asked about; "as you" (not boxed) only after the person types the connector's name and says yes.
+- **Every call asked** (pick E) in the system's box, every time; a no is kept for that connector for the rest of the reply; a "read-only" claim skips nothing.
+- **Untrusted words** (pick F): names `prefix__name`; descriptions cut to 600 characters, cleaned, framed; every tool off until the person reads it; a fingerprint switches a tool off when the connector changes it.
+- **Only what the box shows in full** (pick G): flat arguments, at most six, optional ones; sizes made smaller until the largest call fits.
+- **Our own client** (pick H), both revisions of MCP (2026-07-28 and 2025-11-25), no package.
+- **Limits** (pick I): 10 connectors, 50 tools each listed, 20 tools on at once, 1 MB a message, 60 s a call, 20,000 characters back, started when needed, stopped after 5 idle minutes and when the app closes.
+- **Slices:** 14.1 the probe (the gate: 129/129 twice); 14.2 the client; 14.3 the transports and the box's serve mode; 14.4 the translation; 14.5 the call; 14.6 the service and the page; 14.7 cost, encryption, backups; 14.8 the threat note, the regression, the merge.
+- **Not in this stage:** OAuth sign-in (Stage 14b, below); resources and prompts; sampling, questions and folders for a server; installing a package or downloading a server; a connector that starts at start-up; connectors that call each other.
+
+## Stage 14b - Sign-in for web connectors (OAuth) (not started; needs a plan)
+
+- OAuth 2.1 with PKCE for a remote connector, as the specification describes (discovery documents, resource indicators, issuer checks), with its own threat note: the person signs in in the system's browser, the app never sees a password, tokens in the secure storage, refresh and revoke, and the specification's own list of attacks on a client (server-side request forgery, opening addresses) checked one by one. Whether the official SDK earns its place here is a question for that plan.
 
 ## Stage 15 - Voice in and out (not started, _investigate_ the providers' voice APIs)
 

@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/commandRunner.ts",
       "from": "  'container',\n",
-      "to": ""
+      "to": "",
+      "count": 2,
+      "nth": 1
     }
   ],
   "argv": [

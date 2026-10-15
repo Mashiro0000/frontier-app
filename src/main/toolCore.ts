@@ -58,6 +58,15 @@ export interface ToolResult {
   searches: number
   /** For a program run (13.4): how it ended, in numbers. Null for every other tool. */
   program: ProgramFacts | null
+  /** For a call to a connector's tool (14.5): how long it took, whether the connector said it failed, what was not passed on. Null for every other tool. */
+  connector: ConnectorCallFacts | null
+}
+
+/** What the audit log keeps of a call to a connector's tool (the "connector-call" event without its head), as the connector's executor reports it. */
+export interface ConnectorCallFacts {
+  ms: number
+  isError: boolean
+  dropped: number
 }
 
 /** What the audit log keeps of a program run (the "program" event without its head), as the run's executor reports it. */
@@ -97,6 +106,7 @@ export type Executor = (
   searched?: string | null
   searches?: number
   program?: ProgramFacts | null
+  connector?: ConnectorCallFacts | null
 }>
 
 /** A call as the model made it: nothing in it has been checked. */
@@ -270,6 +280,8 @@ export const NO_PROGRAM_TEXT = 'The call was not accepted: that is not a program
 export const COPY_REFUSED_TEXT =
   'The call was not accepted: that folder is bigger than a run may copy (20,000 files and folders, 100 MB), or it cannot be copied. Run in a subfolder instead.'
 export const RUN_DECLINED_TEXT = 'The person did not allow a program run in this reply.'
+export const CONNECTOR_DECLINED_TEXT =
+  'The person said no to this connector earlier in this reply, so they were not asked again.'
 export const RUN_TIME_TEXT = 'This reply has used all the run time it may.'
 export const runCapText = (runs: number): string =>
   `This reply has used all ${runs} of its program runs.`
@@ -365,17 +377,34 @@ function shapeProgram(raw: unknown): ProgramFacts | null {
   }
 }
 
+/** The facts of a connector call as the executor reported them, or null when anything in them is not what the audit log can keep. */
+function shapeConnector(raw: unknown): ConnectorCallFacts | null {
+  if (raw === null || typeof raw !== 'object') return null
+  const c = raw as Record<string, unknown>
+  if (
+    !isCount(c.ms, 1_000_000_000) ||
+    typeof c.isError !== 'boolean' ||
+    !isCount(c.dropped, 1000)
+  ) {
+    return null
+  }
+  return { ms: c.ms, isError: c.isError, dropped: c.dropped }
+}
+
 /** What a tool handed back, as the app passes it on, or null when it is not a result at all. */
 export function shapeResult(raw: unknown): ToolResult | null {
   if (raw === null || typeof raw !== 'object') return null
-  const { text, sources, searched, searches, program } = raw as {
+  const { text, sources, searched, searches, program, connector } = raw as {
     text?: unknown
     sources?: unknown
     searched?: unknown
     searches?: unknown
     program?: unknown
+    connector?: unknown
   }
   if (typeof text !== 'string') return null
+  const called = connector === undefined || connector === null ? null : shapeConnector(connector)
+  if (connector !== undefined && connector !== null && called === null) return null
   // Numbers about a run, if the tool gave any: they are kept as they are, or the result is not believed (a fault of the tool's own, never the model's)
   const facts = program === undefined || program === null ? null : shapeProgram(program)
   if (program !== undefined && program !== null && facts === null) return null
@@ -408,7 +437,8 @@ export function shapeResult(raw: unknown): ToolResult | null {
       searches <= TOOL_RESULT_LIMITS.maxSearches
         ? searches
         : 0,
-    program: facts
+    program: facts,
+    connector: called
   }
 }
 
@@ -427,7 +457,7 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
   const executors = new Map<string, Executor>(Object.entries(options.executors))
   const workspace = options.workspace
   /** What the person said to file access for THIS reply (a core is made for one reply): yes covers the calls after it, a no is not asked again. */
-  const grants = new Map<'workspace' | 'run', 'granted' | 'declined'>()
+  const grants = new Map<string, 'granted' | 'declined'>()
   const programs = options.programs
 
   const settings = (): ToolSettings => {
@@ -593,6 +623,9 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
           await keep({ type: 'program', at: now(), call, tool, step, ...result.program })
         }
       }
+      if (result.connector !== null) {
+        await keep({ type: 'connector-call', at: now(), call, tool, step, ...result.connector })
+      }
       await keep({
         type: 'result',
         at: now(),
@@ -654,7 +687,7 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       checked.why,
       // (a list's items are text too: a saved key must not leave as the argument of a program either)
       ...Object.values(checked.args).flatMap((v) =>
-        typeof v === 'string' ? [v] : typeof v === 'number' ? [] : [...v]
+        typeof v === 'string' ? [v] : typeof v === 'number' || typeof v === 'boolean' ? [] : [...v]
       )
     ]
     for (const text of texts) {
@@ -669,7 +702,7 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
 
     // Every path goes past its guard, and the tool is given only the real path that the guard hands back: a path in the data folder past the data-folder
     // guard, a path in the code workspace past the workspace guard (which asks the data-folder guard as well).
-    const args: Record<string, string | number | readonly string[]> = { ...checked.args }
+    const args: Record<string, string | number | boolean | readonly string[]> = { ...checked.args }
     const paths: WorkspacePathFacts[] = []
     for (const [argName, spec] of Object.entries(def.args)) {
       if (spec.kind === 'workspace_path') {
@@ -717,8 +750,13 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       return refused('chars-cap', CHARS_CAP_TEXT, step)
     }
 
-    // (a run costs no API money: the spending limits are for calls the provider bills)
-    if (def.counts !== 'file' && def.ask !== 'run' && context.affordable !== undefined) {
+    // (a run and a connector's call cost no API money: the spending limits are for calls the provider bills, and the next request is checked against them when it is made)
+    if (
+      def.counts !== 'file' &&
+      def.ask !== 'run' &&
+      !def.id.includes('__') &&
+      context.affordable !== undefined
+    ) {
       let affordable = true
       try {
         affordable = await context.affordable()
@@ -909,6 +947,13 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
         )
       }
     } else {
+      // A connector's tool (14, `prefix__name`): every call is asked about, and a no to the connector is kept for the rest of the reply.
+      const connector = def.id.includes('__')
+        ? `connector:${def.id.slice(0, def.id.indexOf('__'))}`
+        : null
+      if (connector !== null && grants.get(connector) === 'declined') {
+        return refused('connector-declined', CONNECTOR_DECLINED_TEXT, step)
+      }
       const question = approvalQuestion(def, args, checked.why, {
         step: budget.used().steps,
         steps: budget.caps.steps,
@@ -916,7 +961,10 @@ export function createToolCore(options: ToolCoreOptions): ToolCore {
       })
       const r = await put(question)
       if (isOutcome(r)) return r
-      if (r.answer !== 'yes') return declined(r.answer)
+      if (r.answer !== 'yes') {
+        if (r.answer === 'no' && connector !== null) grants.set(connector, 'declined')
+        return declined(r.answer)
+      }
       if (!r.recorded) return refused('not-recorded', NOT_RECORDED, step)
     }
 

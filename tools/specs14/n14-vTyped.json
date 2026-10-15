@@ -1,0 +1,15 @@
+{
+  "label": "n14-vTyped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorService.ts",
+      "from": "          if (input.typed !== c.name)",
+      "to": "          if (false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 900000
+}

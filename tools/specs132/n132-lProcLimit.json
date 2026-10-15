@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
       "from": "ext.BasicLimitInformation.ActiveProcessLimit = maxProcesses;",
-      "to": "ext.BasicLimitInformation.ActiveProcessLimit = 1000;"
+      "to": "ext.BasicLimitInformation.ActiveProcessLimit = 1000;",
+      "count": 2,
+      "nth": 1
     }
   ],
   "argv": [

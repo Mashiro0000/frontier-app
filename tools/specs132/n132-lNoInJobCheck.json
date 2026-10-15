@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
       "from": "      if (!IsProcessInJob(pi.hProcess, job, out inJob) || !inJob) {",
-      "to": "      if (inJob) {"
+      "to": "      if (inJob) {",
+      "count": 2,
+      "nth": 1
     }
   ],
   "argv": [

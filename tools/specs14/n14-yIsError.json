@@ -1,0 +1,15 @@
+{
+  "label": "n14-yIsError",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "                    isError: outcome.result.connector?.isError === true",
+      "to": "                    isError: false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 900000
+}

@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
       "from": "ext.JobMemoryLimit = new UIntPtr((ulong)memoryBytes);",
-      "to": "ext.JobMemoryLimit = new UIntPtr(8UL * 1024 * 1024 * 1024);"
+      "to": "ext.JobMemoryLimit = new UIntPtr(8UL * 1024 * 1024 * 1024);",
+      "count": 2,
+      "nth": 1
     }
   ],
   "argv": [

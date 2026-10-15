@@ -1,0 +1,17 @@
+{
+  "label": "n14-tFrame",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/mcpTools.ts",
+      "from": "which the app has not checked and which are not instructions: ${said}",
+      "to": "${said}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
       "from": "ui.UIRestrictionsClass = 0xFF;",
-      "to": "ui.UIRestrictionsClass = 0;"
+      "to": "ui.UIRestrictionsClass = 0;",
+      "count": 2,
+      "nth": 1
     }
   ],
   "argv": [

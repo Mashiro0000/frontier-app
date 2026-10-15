@@ -1,0 +1,15 @@
+{
+  "label": "n14-vStopOnAbort",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorService.ts",
+      "from": "          if (c.place !== 'remote') {\n            stopLive(c.id)\n            void note('stopped', c)\n          }\n          throw error",
+      "to": "          throw error"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 900000
+}

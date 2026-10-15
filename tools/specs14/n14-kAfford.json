@@ -1,0 +1,17 @@
+{
+  "label": "n14-kAfford",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/toolCore.ts",
+      "from": "      !def.id.includes('__') &&\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-2.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 400000
+}

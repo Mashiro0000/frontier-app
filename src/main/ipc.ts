@@ -61,6 +61,7 @@ import {
   askPerson,
   pickAttachmentPaths,
   pickAuditExportPath,
+  pickConnectorProgram,
   pickWorkspaceFolder,
   pickNotesExportPath,
   systemAskers,
@@ -103,7 +104,12 @@ import { WORKSPACE_PROPOSE_TOOLS } from './proposalTools'
 import { WORKSPACE_READ_TOOLS } from './workspaceTools'
 import { createProgramBox } from './programBox'
 import { createProgramService, withPrograms } from './programService'
-import { RUN_PROGRAM } from './programTools'
+import { defaultPlaces, resolveProgram, RUN_PROGRAM } from './programTools'
+import { isInside } from './commandRunner'
+import { createConnectorService } from './connectorService'
+import { createConnectorStore } from './connectorStore'
+import type { ConnectorChangeResult, ConnectorsStatus } from '../shared/connectors'
+import type { ToolSettings } from '../shared/tools'
 import { sweepSelfTest } from './selfTest'
 import { createToolSettings } from './toolSettings'
 import { createToolSettingsService } from './toolSettingsService'
@@ -561,6 +567,54 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     tempDir: app.getPath('temp'),
     homeDir: app.getPath('home')
   })
+  // Connectors (D-045, 14.6): the person's list in connectors.json (kept like the tool settings; tokens sealed by the secure storage), a box of their own whose folder of runs
+  // does not follow the workspace (a connector's data folder stays where it is: at the root of the drive of the user's folder, or in the system's temp folder), and the
+  // service that owns every change. A connector starts only when it is needed, never at start-up, and only after the start-up sweep of the folders of runs.
+  const connectorStore = createConnectorStore({
+    pathOf: () => join(app.getPath('userData'), 'connectors.json'),
+    box: secureStorage,
+    writeMode: protection.writeMode
+  })
+  const connectorBox = createProgramBox({
+    workspaceRoot: () => app.getPath('home'),
+    tempDir: app.getPath('temp'),
+    fixedRunRoot: () => {
+      const value = process.env['FRONTIER_CONNECTOR_ROOT']
+      return value && !app.isPackaged ? value : null
+    }
+  })
+  const connectorService = createConnectorService({
+    store: connectorStore,
+    gate: questions,
+    secrets: secureStorage,
+    box: async () => {
+      await programsSwept
+      return connectorBox.get()
+    },
+    nodePath: () => resolveProgram('node', defaultPlaces()),
+    workspaceRoot: () => workspaceRoot,
+    pickProgram: pickConnectorProgram,
+    // never the app's data folder or a folder that holds it, the user's folder or one that holds it, or the system's own folder
+    forbidden: async (path) => {
+      const verdict = await dataGuard
+        .check({ path, base: null, op: 'list', recursive: true })
+        .catch(() => ({ ok: false }))
+      if (!verdict.ok) return true
+      const real = path.toLowerCase().replace(/\\+$/, '')
+      const places = avoidPlaces()
+      if (
+        places.holds.some((h) => h.toLowerCase().replace(/\\+$/, '') === real || isInside(path, h))
+      )
+        return true
+      const systemRoot = process.env['SystemRoot']
+      return (
+        systemRoot !== undefined &&
+        (isInside(systemRoot, path) || systemRoot.toLowerCase() === real)
+      )
+    },
+    savedKeys,
+    record: (event) => auditLog.append(event)
+  })
   const encryption = createChatEncryptionService({
     store: history,
     protection,
@@ -574,8 +628,9 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       auditLog.document,
       toolSettings.file,
       workspaceStore.file,
-      undoJournal.document
-    ]) // rewritten with the chats (D-039, D-041)
+      undoJournal.document,
+      connectorStore.file
+    ]) // rewritten with the chats (D-039, D-041, D-045)
   })
 
   ipcMain.handle(
@@ -941,6 +996,63 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       programService.stopTest()
     })
   )
+  // Connectors (D-045, 14.6). The page reads the list and asks; every change that lets the app do more is asked about in the system's box for the window that asked. The
+  // page never supplies a program path (main opens the file dialog) and never sees a token again.
+  ipcMain.handle(
+    CHANNELS.connectorsStatus,
+    guarded(async (): Promise<ConnectorsStatus> => {
+      try {
+        return await connectorService.status()
+      } catch (error) {
+        console.error('Reading the connectors failed:', reason(error))
+        throw new Error('The connectors could not be read.')
+      }
+    })
+  )
+  const connectorChange =
+    (
+      work: (window: BrowserWindow | null, input: unknown) => Promise<ConnectorChangeResult>
+    ): ((window: BrowserWindow | null, input: unknown) => Promise<ConnectorChangeResult>) =>
+    async (window, input) => {
+      try {
+        return await work(window, input)
+      } catch (error) {
+        console.error('Changing a connector failed:', reason(error))
+        return { ok: false, error: 'The connector could not be changed.' }
+      }
+    }
+  ipcMain.handle(
+    CHANNELS.connectorsAddLocal,
+    guardedForWindow(connectorChange((w, i) => connectorService.addLocal(w, i)))
+  )
+  ipcMain.handle(
+    CHANNELS.connectorsAddRemote,
+    guardedForWindow(connectorChange((w, i) => connectorService.addRemote(w, i)))
+  )
+  ipcMain.handle(
+    CHANNELS.connectorsRemove,
+    guardedForWindow(connectorChange((w, i) => connectorService.remove(w, i)))
+  )
+  ipcMain.handle(
+    CHANNELS.connectorsRefresh,
+    guardedForWindow(connectorChange((_w, i) => connectorService.refresh(i)))
+  )
+  ipcMain.handle(
+    CHANNELS.connectorsStop,
+    guardedForWindow(connectorChange((_w, i) => connectorService.stop(i)))
+  )
+  ipcMain.handle(
+    CHANNELS.connectorsSetTool,
+    guardedForWindow(connectorChange((w, i) => connectorService.setTool(w, i)))
+  )
+  ipcMain.handle(
+    CHANNELS.connectorsSetGrant,
+    guardedForWindow(connectorChange((w, i) => connectorService.setGrant(w, i)))
+  )
+  ipcMain.handle(
+    CHANNELS.connectorsSetPlace,
+    guardedForWindow(connectorChange((w, i) => connectorService.setPlace(w, i)))
+  )
   // The changes the model proposed (D-042, 12.5). The page reads a summary of each and asks main to open the Review window for one; it can do nothing else with them.
   ipcMain.handle(
     CHANNELS.changesList,
@@ -1122,10 +1234,17 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   const programsSwept = workspaceService
     .refresh() // the folder of the workspace is read first: its drive has a folder of runs too
     .then(() => programBox.sweep())
+    .then(() => connectorBox.sweep())
     .then(() => sweepSelfTest([app.getPath('userData'), app.getPath('temp')]))
     .then(() => undefined)
     .catch((error: unknown) => console.error('Clearing up after programs failed:', reason(error)))
   void programsSwept.then(() => programService.startUp())
+  // The keys saved in the app and the tokens of the connectors: neither may leave in a tool call, and a result that holds one is not passed on. (A token is checked the
+  // way a key is: whole, without its white space, or a long enough piece of it.)
+  const savedKeysAndTokens = async (): Promise<SavedKey[]> => [
+    ...(await savedKeys()),
+    ...(await connectorService.tokens()).map((key) => ({ provider: 'anthropic' as const, key }))
+  ]
   const toolRuntime = createToolRuntime({
     tools: toolRegistry,
     gate: questions,
@@ -1136,14 +1255,14 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     programs: {
       box: () => programBox.get(),
       savedKeys,
-      holdsSavedKey: async (text) => heldKey(text, await savedKeys()) !== null,
+      holdsSavedKey: async (text) => heldKey(text, await savedKeysAndTokens()) !== null,
       available: async () => {
         await programsSwept
         return programService.available()
       }
     },
     record: (event) => auditLog.append(event),
-    holdsSavedKey: async (text) => heldKey(text, await savedKeys()) !== null
+    holdsSavedKey: async (text) => heldKey(text, await savedKeysAndTokens()) !== null
   })
   registerChatIpc(appUrl, {
     ledger,
@@ -1161,14 +1280,22 @@ export function registerIpc(appUrl: string): () => Promise<void> {
         const folder = await workspaceService.refresh()
         const withFiles = withWorkspace((await toolSettings.read()).settings, folder !== null)
         await programsSwept
-        return withPrograms(withFiles, folder !== null && (await programService.available()))
+        const settings = withPrograms(
+          withFiles,
+          folder !== null && (await programService.available())
+        )
+        return withConnectorTools(settings, await connectorService.onIds().catch(() => []))
       },
-      runtime: toolRuntime
+      runtime: toolRuntime,
+      // the tools of the connectors that are switched on (D-045): their definitions as the person read them, and how each is run
+      connectors: () => connectorService.forReply()
     }
   })
   // The lock the encryption flows run in is the backup service's, so waiting for it waits for them too. The app is closing when this is asked: a program that is still
   // running in the box is ended first (13.5), and what its copy left is swept at the next start.
   return () => {
+    connectorService.stopAll()
+    connectorBox.stopAll()
     programBox.stopAll()
     return Promise.all([
       history.whenIdle(),
@@ -1181,7 +1308,16 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       auditLog.whenIdle(),
       toolSettings.file.whenIdle(),
       workspaceStore.file.whenIdle(),
-      undoJournal.whenIdle()
+      undoJournal.whenIdle(),
+      connectorStore.file.whenIdle()
     ]).then(() => undefined)
   }
+}
+
+/** The settings with the connector tools that are switched on (D-045): each is its own yes, kept in connectors.json, never in tools.json. */
+function withConnectorTools(settings: ToolSettings, ids: readonly string[]): ToolSettings {
+  if (ids.length === 0) return settings
+  const enabled: Record<string, boolean> = { ...settings.enabled }
+  for (const id of ids) if (id.includes('__')) enabled[id] = true
+  return { enabled, caps: settings.caps }
 }

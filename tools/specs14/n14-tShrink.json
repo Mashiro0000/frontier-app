@@ -1,0 +1,17 @@
+{
+  "label": "n14-tShrink",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/mcpTools.ts",
+      "from": "        if (max < spec.max) {",
+      "to": "        if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-14-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

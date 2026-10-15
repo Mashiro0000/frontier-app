@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/launcher/commandLauncher.ps1",
       "from": "if ([string]$spec.container -notmatch '^FrontierApp\\.[A-Za-z0-9]{1,40}$') { throw 'the container name is not ours' }",
-      "to": ""
+      "to": "",
+      "count": 2,
+      "nth": 2
     }
   ],
   "argv": [

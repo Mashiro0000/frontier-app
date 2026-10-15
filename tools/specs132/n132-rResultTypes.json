@@ -4,7 +4,9 @@
     {
       "file": "{{REPO}}/src/main/commandRunner.ts",
       "from": "    if (typeof r[n] !== 'number' || !Number.isFinite(r[n]) || (r[n] as number) < -1)",
-      "to": "    if (false)"
+      "to": "    if (false)",
+      "count": 2,
+      "nth": 1
     }
   ],
   "argv": [

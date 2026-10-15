@@ -25,10 +25,17 @@ const files = [...new Set(spec.edits.map((e) => e.file))]
 const before = Object.fromEntries(files.map((f) => [f, sha(f)]))
 const backups = Object.fromEntries(files.map((f) => [f, join(dir, `${label}-${basename(f)}.bak`)]))
 
-// every sabotage text must exist exactly once, or nothing is touched
+// every sabotage text must exist exactly once, or nothing is touched. (Stage 14: an edit may say `count`, the exact number of times its text is in the file, and `nth`, the one it
+// sabotages: the launcher's serve mode repeats lines of its run mode, and the older controls target the run mode's.)
+const nthIndex = (text, from, nth) => {
+  let at = -1
+  for (let i = 0; i < nth; i++) at = text.indexOf(from, at + 1)
+  return at
+}
 for (const e of spec.edits) {
   const n = readFileSync(e.file, 'utf8').split(e.from).length - 1
-  if (n !== 1) { console.error(`ABORT [${label}]: ${n} matches (need exactly 1) in ${e.file} for: ${e.from.slice(0, 70)}`); process.exit(2) }
+  const want = e.count ?? 1
+  if (n !== want || (e.nth ?? 1) < 1 || (e.nth ?? 1) > want) { console.error(`ABORT [${label}]: ${n} matches (need exactly ${want}) in ${e.file} for: ${e.from.slice(0, 70)}`); process.exit(2) }
 }
 for (const f of files) copyFileSync(f, backups[f])
 console.log(`[${label}] backed up: ${files.map((f) => basename(f) + ' ' + before[f]).join(', ')}`)
@@ -36,7 +43,10 @@ let exit = 1
 try {
   for (const f of files) {
     let text = readFileSync(f, 'utf8')
-    for (const e of spec.edits.filter((x) => x.file === f)) text = text.replace(e.from, e.to)
+    for (const e of spec.edits.filter((x) => x.file === f)) {
+      const at = nthIndex(text, e.from, e.nth ?? 1)
+      text = text.slice(0, at) + e.to + text.slice(at + e.from.length)
+    }
     writeFileSync(f, text)
   }
   console.log(`[${label}] sabotaged: ${spec.edits.length} edit(s) in ${files.length} file(s): ${spec.edits.map((e) => e.to.slice(0, 60).replace(/\s+/g, ' ')).join('  ||  ')}`)
