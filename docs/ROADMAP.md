@@ -365,9 +365,18 @@ the backup has been tried on real chats is not known, and it is still the thing 
 - **Slices:** 14.1 the probe (the gate: 129/129 twice); 14.2 the client; 14.3 the transports and the box's serve mode; 14.4 the translation; 14.5 the call; 14.6 the service and the page; 14.7 cost, encryption, backups; 14.8 the threat note, the regression, the merge.
 - **Not in this stage:** OAuth sign-in (Stage 14b, below); resources and prompts; sampling, questions and folders for a server; installing a package or downloading a server; a connector that starts at start-up; connectors that call each other.
 
-## Stage 14b - Sign-in for web connectors (OAuth) (not started; needs a plan)
+## Stage 14b - Sign-in for web connectors (OAuth) (plan approved 16 October 2026: all picks kept; DONE 16 October 2026)
 
-- OAuth 2.1 with PKCE for a remote connector, as the specification describes (discovery documents, resource indicators, issuer checks), with its own threat note: the person signs in in the system's browser, the app never sees a password, tokens in the secure storage, refresh and revoke, and the specification's own list of attacks on a client (server-side request forgery, opening addresses) checked one by one. Whether the official SDK earns its place here is a question for that plan.
+**The plan** (mine, written 16 October 2026 and put to the owner through the plan box; **approved the same day**; D-046 has the whole of it). The person signs in in their own browser, the app never sees a password, and a hosted MCP connector works the way "Connect" works elsewhere.
+
+- **The flow** (pick A): authorization code with PKCE (S256), the system's browser, a listener on `127.0.0.1` with a port the system picks (RFC 8252). No window of our own that shows the provider's page, no device flow, no client-credentials flow.
+- **Registering the app** (pick B): a client id the person typed (an optional secret, sealed), else dynamic registration (RFC 7591), else a sentence. Client ID Metadata Documents are not built (they need a public https file the app has no site for).
+- **Who starts a sign-in** (pick C): only the person's click on Sign in, then a box the page cannot answer. Never a model call, a server's 401 or start-up.
+- **A guard under every address a server names** (pick D): https only, the name resolved inside the connection and every answer checked (private, loopback, link-local, shared, metadata and tunnel ranges refused), no redirect, caps and clocks.
+- **Tokens** (pick E): sealed like saved keys inside `connectors.json` (version 2), never to the page, refreshed early and once after a 401, the rotated renewal token kept before it is used. **Sign out and remove revoke** (pick F). **Permissions** as the specification says, shown in words (pick G). **Our own code, no package** (pick H). **Limits** (pick I): one sign-in at a time, 5 minutes, 6 discovery requests, 256 KB and 10 s a request.
+- **Slices:** 14b.1 the guard; 14b.2 discovery; 14b.3 the flow; 14b.4 the tokens; 14b.5 the service and the page; 14b.6 the window; 14b.7 the threat note, the regression, the merge.
+- **Not in this stage:** Client ID Metadata Documents, client-credentials and device flows, token binding (DPoP), more than one account per connector, a sign-in for a local boxed program, resources and prompts, a sign-in that starts without the person.
+- **Not proven:** a real provider (no account, no real browser sign-in), the Windows firewall staying silent for a `127.0.0.1` listener, the default browser as a person sees it (played by the checks).
 
 ## Stage 15 - Voice in and out (not started, _investigate_ the providers' voice APIs)
 

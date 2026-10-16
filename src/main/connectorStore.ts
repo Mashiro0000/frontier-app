@@ -13,7 +13,9 @@ import type { ServerTool } from './mcpTools'
 // is started (it starts when it is first needed) and so that a tool the connector changes later is noticed. A pasted token is kept SEALED by the system's secure storage
 // (as base64); the page never sees it again. No Electron imports.
 
-export const CONNECTORS_VERSION = 1
+/** The version this app writes. Version 1 (before the sign-in of Stage 14b, which has no `auth`) is still read. */
+export const CONNECTORS_VERSION = 2
+const FIRST_VERSION = 1
 const MAX_FILE_BYTES = 1024 * 1024
 const ID = /^[a-z0-9]{8,16}$/
 const PREFIX = /^[a-z][a-z0-9]{0,11}$/
@@ -34,6 +36,8 @@ export interface StoredConnector {
   url: string | null
   /** The pasted token, sealed by the system's secure storage, as base64; null for none. */
   token: string | null
+  /** The sign-in (Stage 14b): the whole record of oauthRecord.ts sealed by the system's secure storage, as base64; null for none. Never together with a pasted token. */
+  auth: string | null
   /** The grants (each asked about in the system's box): the network, and a copy of the workspace folder. Only for a boxed program. */
   network: boolean
   workspace: boolean
@@ -66,7 +70,7 @@ const TOOL_KEYS = [
   'readOnly',
   'fingerprint'
 ] as const
-const CONNECTOR_KEYS = [
+const CONNECTOR_KEYS_V1 = [
   'id',
   'name',
   'prefix',
@@ -82,6 +86,7 @@ const CONNECTOR_KEYS = [
   'changed',
   'added'
 ] as const
+const CONNECTOR_KEYS = [...CONNECTOR_KEYS_V1, 'auth'] as const
 
 function parseTool(raw: unknown): ServerTool | null {
   if (!isPlain(raw) || !exactKeys(raw, TOOL_KEYS)) return null
@@ -97,8 +102,12 @@ function parseTool(raw: unknown): ServerTool | null {
   return { name, title, description, inputSchema, readOnly, fingerprint }
 }
 
-function parseConnector(raw: unknown): StoredConnector | null {
-  if (!isPlain(raw) || !exactKeys(raw, CONNECTOR_KEYS)) return null
+function parseConnector(raw: unknown, version: number): StoredConnector | null {
+  if (
+    !isPlain(raw) ||
+    !exactKeys(raw, version === FIRST_VERSION ? CONNECTOR_KEYS_V1 : CONNECTOR_KEYS)
+  )
+    return null
   const o = raw
   if (typeof o.id !== 'string' || !ID.test(o.id)) return null
   if (!isText(o.name, 1, CONNECTOR_LIMITS.nameChars) || o.name.trim() !== o.name) return null
@@ -123,8 +132,17 @@ function parseConnector(raw: unknown): StoredConnector | null {
     )
       return null
     if (o.network || o.workspace) return null
+    // a sign-in and a pasted token are two ways to the same door: never both
+    if (o.auth !== undefined && o.auth !== null) {
+      if (
+        o.token !== null ||
+        typeof o.auth !== 'string' ||
+        !/^[A-Za-z0-9+/=]{4,60000}$/.test(o.auth)
+      )
+        return null
+    }
   } else {
-    if (o.url !== null || o.token !== null) return null
+    if (o.url !== null || o.token !== null || (o.auth !== undefined && o.auth !== null)) return null
     if (!isText(o.program, 4, 260) || !/^[A-Za-z]:\\/.test(o.program)) return null
     if (!isText(o.folder, 3, 260) || !/^[A-Za-z]:\\/.test(o.folder)) return null
     // the grants are the box's: a program that runs as the person has every right already, and none is kept for it
@@ -155,6 +173,7 @@ function parseConnector(raw: unknown): StoredConnector | null {
     args: [...(o.args as string[])],
     url: o.url as string | null,
     token: o.token as string | null,
+    auth: (o.auth ?? null) as string | null,
     network: o.network,
     workspace: o.workspace,
     tools,
@@ -174,7 +193,7 @@ export function parseConnectors(content: string): StoredConnector[] | null {
   if (
     !isPlain(raw) ||
     !exactKeys(raw, ['version', 'connectors']) ||
-    raw.version !== CONNECTORS_VERSION
+    (raw.version !== CONNECTORS_VERSION && raw.version !== FIRST_VERSION)
   )
     return null
   if (!Array.isArray(raw.connectors) || raw.connectors.length > CONNECTOR_LIMITS.connectors)
@@ -184,7 +203,7 @@ export function parseConnectors(content: string): StoredConnector[] | null {
   const prefixes = new Set<string>()
   let on = 0
   for (const item of raw.connectors as unknown[]) {
-    const c = parseConnector(item)
+    const c = parseConnector(item, raw.version as number)
     if (c === null || ids.has(c.id) || prefixes.has(c.prefix)) return null
     ids.add(c.id)
     prefixes.add(c.prefix)
@@ -210,6 +229,7 @@ export function connectorsText(list: readonly StoredConnector[]): string {
       args: [...c.args],
       url: c.url,
       token: c.token,
+      auth: c.auth,
       network: c.network,
       workspace: c.workspace,
       tools: c.tools.map((t) => ({

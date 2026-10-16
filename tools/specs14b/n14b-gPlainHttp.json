@@ -1,0 +1,18 @@
+{
+  "label": "n14b-gPlainHttp",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthHttp.ts",
+      "from": "    const onThisPc =\n      LOOPBACK_NAMES.has(host) && LOOPBACK_NAMES.has(anchorUrl.hostname.toLowerCase())",
+      "to": "    const onThisPc = true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-1.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

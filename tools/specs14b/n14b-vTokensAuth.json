@@ -1,0 +1,18 @@
+{
+  "label": "n14b-vTokensAuth",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorService.ts",
+      "from": "      if (record !== null) out.push(...secretsOf(record))\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-5.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 400000
+}

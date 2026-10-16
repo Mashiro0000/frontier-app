@@ -191,6 +191,14 @@ export function connectorEventText(what: ConnectorEvent, connector: string): str
       return `You let the connector ${name} run NOT boxed, with every right you have.`
     case 'as-you-off':
       return `The connector ${name} runs in the box again.`
+    case 'signed-in':
+      return `You signed in to the connector ${name}. The app keeps a token for it, sealed on this PC, until you sign out.`
+    case 'signed-out':
+      return `You signed out of the connector ${name}; its token is gone from this PC.`
+    case 'sign-in-failed':
+      return `A sign-in to the connector ${name} did not come to an end.`
+    case 'sign-in-needed':
+      return `The connector ${name} wants you to sign in (or to sign in again).`
   }
 }
 

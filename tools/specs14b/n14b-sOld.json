@@ -1,0 +1,18 @@
+{
+  "label": "n14b-sOld",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorStore.ts",
+      "from": "    (raw.version !== CONNECTORS_VERSION && raw.version !== FIRST_VERSION)",
+      "to": "    raw.version !== CONNECTORS_VERSION"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-4.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

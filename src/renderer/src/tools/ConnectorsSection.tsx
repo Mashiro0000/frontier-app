@@ -36,15 +36,25 @@ const argsOf = (text: string): string[] =>
 function ConnectorCard({
   connector,
   disabled,
-  run
+  run,
+  signing,
+  signIn,
+  cancelSignIn
 }: {
   connector: ConnectorView
   disabled: boolean
   run: (send: () => Promise<ConnectorChangeResult>, asks: boolean, done?: string) => Promise<boolean>
+  /** This connector's sign-in is open in the browser. */
+  signing: boolean
+  signIn: (id: string, clientId: string, clientSecret: string) => Promise<boolean>
+  cancelSignIn: () => void
 }): React.JSX.Element {
   const c = connector
   const api = window.api.connectors
   const [typed, setTyped] = useState('')
+  const [own, setOwn] = useState(false)
+  const [clientId, setClientId] = useState('')
+  const [clientSecret, setClientSecret] = useState('')
   const boxed = c.place === 'box'
   return (
     <li className="connector-card" aria-label={`Connector ${c.name}`}>
@@ -92,6 +102,108 @@ function ConnectorCard({
           Remove...
         </button>
       </div>
+
+      {c.place === 'remote' && c.auth.state !== 'none' && (
+        <div className="connector-auth" role="group" aria-label={`Sign-in of ${c.name}`}>
+          <p className="tools-hint">
+            {c.auth.state === 'signed-in'
+              ? `Signed in at ${c.auth.provider ?? 'the provider'}${
+                  c.auth.scopes.length > 0 ? ` with: ${c.auth.scopes.join(', ')}` : ''
+                }.`
+              : c.auth.state === 'needed'
+                ? 'This connector wants you to sign in.'
+                : (c.auth.why ?? 'This connector wants you to sign in again.')}
+          </p>
+          {c.auth.state !== 'signed-in' && !c.auth.canSignIn && (
+            <p className="tools-hint">
+              This PC cannot keep a sign-in safely (no secure storage), so the app does not sign in.
+            </p>
+          )}
+          {signing && (
+            <p className="tools-hint" role="status">
+              Waiting for you to finish in your browser...
+            </p>
+          )}
+          <div className="history-actions">
+            {c.auth.state !== 'signed-in' && c.auth.canSignIn && !signing && (
+              <button
+                type="button"
+                className="history-button"
+                disabled={disabled}
+                onClick={() => {
+                  const id = own ? clientId.trim() : ''
+                  const secret = own ? clientSecret : ''
+                  setClientSecret('')
+                  void signIn(c.id, id, secret)
+                }}
+              >
+                Sign in...
+              </button>
+            )}
+            {signing && (
+              <button type="button" className="history-button" onClick={() => cancelSignIn()}>
+                Cancel the sign-in
+              </button>
+            )}
+            {c.auth.provider !== null && !signing && (
+              <button
+                type="button"
+                className="history-button"
+                disabled={disabled}
+                onClick={() => void run(() => api.signOut(c.id), false, 'You are signed out.')}
+              >
+                Sign out
+              </button>
+            )}
+          </div>
+          {c.auth.state !== 'signed-in' && c.auth.canSignIn && !signing && (
+            <>
+              <label className="tools-hint">
+                <input
+                  type="checkbox"
+                  checked={own}
+                  disabled={disabled}
+                  onChange={(e) => setOwn(e.target.checked)}
+                />{' '}
+                I registered the app at the provider myself and have a client id
+              </label>
+              {own && (
+                <div className="connector-form">
+                  <p className="tools-hint">
+                    Register the app at the provider with the return address
+                    http://127.0.0.1/callback, then type what it gave you. The secret is kept
+                    sealed on this PC and never shown again.
+                  </p>
+                  <label className="tools-hint">
+                    Client id
+                    <input
+                      type="text"
+                      className="settings-input"
+                      value={clientId}
+                      maxLength={256}
+                      autoComplete="off"
+                      spellCheck={false}
+                      onChange={(e) => setClientId(e.target.value)}
+                    />
+                  </label>
+                  <label className="tools-hint">
+                    Client secret (leave empty if there is none)
+                    <input
+                      type="password"
+                      className="settings-input"
+                      value={clientSecret}
+                      maxLength={1000}
+                      autoComplete="off"
+                      spellCheck={false}
+                      onChange={(e) => setClientSecret(e.target.value)}
+                    />
+                  </label>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {c.place !== 'remote' && (
         <ul className="tools-switches" aria-label={`Grants of ${c.name}`}>
@@ -247,6 +359,7 @@ function ConnectorsSection({ busy, working }: ConnectorsSectionProps): React.JSX
   const [args, setArgs] = useState('')
   const [url, setUrl] = useState('')
   const [token, setToken] = useState('')
+  const [signingId, setSigningId] = useState<string | null>(null)
 
   const reload = useCallback((): void => {
     if (!window.api) return // the preload did not load: the app says so elsewhere
@@ -281,13 +394,34 @@ function ConnectorsSection({ busy, working }: ConnectorsSectionProps): React.JSX
     setMine(false)
     if (result.ok) {
       setStatus(result.status)
-      setNotice(done === undefined ? null : { kind: 'ok', text: done })
+      setNotice(
+        result.notice !== undefined
+          ? { kind: 'ok', text: result.notice }
+          : done === undefined
+            ? null
+            : { kind: 'ok', text: done }
+      )
     } else {
       if (result.status !== undefined) setStatus(result.status)
       setNotice({ kind: result.cancelled ? 'ok' : 'error', text: result.error })
       reload()
     }
     return result.ok
+  }
+
+  async function signIn(id: string, clientId: string, clientSecret: string): Promise<boolean> {
+    setSigningId(id)
+    const done = await run(
+      () => window.api.connectors.signIn(id, clientId, clientSecret),
+      true,
+      'You are signed in.'
+    )
+    setSigningId(null)
+    return done
+  }
+
+  function cancelSignIn(): void {
+    void window.api.connectors.cancelSignIn()
   }
 
   async function add(): Promise<void> {
@@ -344,7 +478,15 @@ function ConnectorsSection({ busy, working }: ConnectorsSectionProps): React.JSX
       {status !== null && status.connectors.length > 0 && (
         <ul className="connector-list" aria-label="Connectors">
           {status.connectors.map((c) => (
-            <ConnectorCard key={c.id} connector={c} disabled={disabled} run={run} />
+            <ConnectorCard
+              key={c.id}
+              connector={c}
+              disabled={disabled}
+              run={run}
+              signing={signingId === c.id}
+              signIn={signIn}
+              cancelSignIn={cancelSignIn}
+            />
           ))}
         </ul>
       )}

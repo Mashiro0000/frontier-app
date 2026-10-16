@@ -1,0 +1,18 @@
+{
+  "label": "n14b-sBoth",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorStore.ts",
+      "from": "        o.token !== null ||\n        typeof o.auth !== 'string' ||",
+      "to": "        typeof o.auth !== 'string' ||"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-4.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

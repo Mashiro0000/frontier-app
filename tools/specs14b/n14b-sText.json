@@ -1,0 +1,18 @@
+{
+  "label": "n14b-sText",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorStore.ts",
+      "from": "      auth: c.auth,\n      network: c.network,",
+      "to": "      network: c.network,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-4.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

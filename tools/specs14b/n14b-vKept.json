@@ -1,0 +1,18 @@
+{
+  "label": "n14b-vKept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorService.ts",
+      "from": "        const kept = again !== undefined && (await writeAuth(id, result.auth))",
+      "to": "        const kept = true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

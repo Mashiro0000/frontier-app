@@ -1,0 +1,18 @@
+{
+  "label": "n14b-cDup",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthCallback.ts",
+      "from": "        if (values.length !== 1 || values[0].length > MAX_PARAM || key.length > 40) {",
+      "to": "        if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-3.mjs"
+  ],
+  "env": {
+    "ONLY": "F2"
+  },
+  "timeoutMs": 400000
+}

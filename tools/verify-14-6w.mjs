@@ -81,7 +81,7 @@ try {
   let v = await view()
   check('A: no connectors yet', v.cards.length === 0 && /No connectors yet/.test(await ev(`${SECTION}.textContent`)))
   const apiKeys = await ev(`Object.keys(window.api.connectors).sort().join()`)
-  check('A: the page can only read and ask: no way to name a program, start a call or answer a question', apiKeys === 'addLocal,addRemote,refresh,remove,setGrant,setPlace,setTool,status,stop', apiKeys)
+  check('A: the page can only read and ask: no way to name a program, start a call or answer a question', apiKeys === 'addLocal,addRemote,cancelSignIn,refresh,remove,setGrant,setPlace,setTool,signIn,signOut,status,stop', apiKeys)
   await Q.reset()
   const odd = await ev(`window.api.connectors.setTool('../../x', 'echo', true)`)
   check('A: what the page sends is checked (an id that is not one is not understood, nobody is asked)', odd.ok === false && /not understood/.test(odd.error) && (await Q.count()) === 0, show(odd))

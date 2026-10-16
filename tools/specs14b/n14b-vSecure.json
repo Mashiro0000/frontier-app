@@ -1,0 +1,18 @@
+{
+  "label": "n14b-vSecure",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorService.ts",
+      "from": "      if (!options.secrets.isAvailable()) {\n        return {\n          ok: false,\n          error: 'This PC has no secure place to keep a sign-in",
+      "to": "      if (false) {\n        return {\n          ok: false,\n          error: 'This PC has no secure place to keep a sign-in"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

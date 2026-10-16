@@ -2472,3 +2472,13 @@ body {
   gap: 8px;
   margin-top: 12px;
 }
+
+/* The sign-in of a web connector (D-046, 14b.5) */
+.connector-auth {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}

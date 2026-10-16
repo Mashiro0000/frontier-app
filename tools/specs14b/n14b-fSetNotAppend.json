@@ -1,0 +1,18 @@
+{
+  "label": "n14b-fSetNotAppend",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthFlow.ts",
+      "from": "  url.searchParams.set('state', input.state)",
+      "to": "  url.searchParams.append('state', input.state)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-3.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

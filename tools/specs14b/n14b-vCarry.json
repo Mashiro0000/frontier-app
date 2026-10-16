@@ -1,0 +1,18 @@
+{
+  "label": "n14b-vCarry",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorService.ts",
+      "from": "          list.map((x) => (auths.has(x.id) ? { ...x, auth: auths.get(x.id) ?? null } : x))",
+      "to": "          list"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 400000
+}

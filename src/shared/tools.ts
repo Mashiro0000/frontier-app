@@ -95,7 +95,12 @@ export const CONNECTOR_EVENTS = [
   'folder-on',
   'folder-off',
   'as-you-on',
-  'as-you-off'
+  'as-you-off',
+  // Stage 14b: the sign-in of a web connector (no word of the provider's is ever kept, only that it happened)
+  'signed-in',
+  'signed-out',
+  'sign-in-failed',
+  'sign-in-needed'
 ] as const
 export type ConnectorEvent = (typeof CONNECTOR_EVENTS)[number]
 

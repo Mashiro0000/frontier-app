@@ -1,0 +1,18 @@
+{
+  "label": "n14b-dBudget",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthDiscovery.ts",
+      "from": "    if (this.left <= 0) return false",
+      "to": "    if (false) return false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

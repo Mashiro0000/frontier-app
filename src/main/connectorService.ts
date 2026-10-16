@@ -7,6 +7,7 @@ import {
   placeWords,
   type ConnectorChangeResult,
   type ConnectorPlace,
+  type AuthView,
   type ConnectorsStatus,
   type ConnectorToolView,
   type ConnectorView
@@ -26,6 +27,11 @@ import {
   type Wire
 } from './mcpClient'
 import { checkRemoteUrl, createHttpWire } from './mcpHttp'
+import { discover, parseChallenge, type Discovery } from './oauthDiscovery'
+import { runSignIn, type AuthRecord, type ClientChoice } from './oauthFlow'
+import { createGuardedFetch, type GuardedFetch, type Resolver } from './oauthHttp'
+import { sealAuth, secretsOf, unsealAuth } from './oauthRecord'
+import { createTokenProvider, type TokenProvider } from './oauthTokens'
 import {
   argsWords,
   paramHeaders,
@@ -104,6 +110,12 @@ export interface ConnectorServiceOptions {
   idleMs?: number
   startMs?: number
   callMs?: number
+  /** Opens an address in the person's own browser (a sign-in). Throws when it will not. Absent: the app cannot sign in. */
+  openBrowser?: (url: string) => Promise<void>
+  /** For checks: how a name is resolved when a sign-in provider is asked for. */
+  resolve?: Resolver
+  /** For checks: how long a sign-in waits for the person (the app's limit by default). */
+  signInWaitMs?: number
 }
 
 export type { ConnectorTools } from './replyTools'
@@ -125,6 +137,12 @@ export interface ConnectorService {
   onIds(): Promise<string[]>
   /** The tokens the person pasted, unsealed: a call's arguments that hold one are refused, as for an API key. */
   tokens(): Promise<string[]>
+  /** Signs in to a web connector (Stage 14b): finds the provider, asks, opens the person's browser, waits for them to finish there. */
+  signIn(owner: unknown, input: unknown): Promise<ConnectorChangeResult>
+  /** Ends the sign-in that is open in the browser, if any. */
+  cancelSignIn(): Promise<ConnectorChangeResult>
+  /** Signs out: the provider is asked to revoke the token, and the app forgets it. */
+  signOut(input: unknown): Promise<ConnectorChangeResult>
   /** Ends every connector (the app is closing). Synchronous on purpose. */
   stopAll(): void
 }
@@ -149,6 +167,12 @@ interface Seen {
   version: string | null
   problem: string | null
   state: 'stopped' | 'starting' | 'running' | 'failed'
+  /** The connector answered that it wants a sign-in (401 or 403), and what it said (the challenge header, for the provider to be found). */
+  signIn: {
+    kind: 'needed' | 'expired' | 'more'
+    challenge: string | null
+    why: string | null
+  } | null
 }
 
 const isPlain = (value: unknown): value is Record<string, unknown> =>
@@ -278,7 +302,8 @@ export function createConnectorService(options: ConnectorServiceOptions): Connec
         listedAt: null,
         version: null,
         problem: null,
-        state: 'stopped'
+        state: 'stopped',
+        signIn: null
       }
       seen.set(id, s)
     }
@@ -333,6 +358,187 @@ export function createConnectorService(options: ConnectorServiceOptions): Connec
       return options.secrets.decrypt(Buffer.from(token, 'base64'))
     } catch {
       return null
+    }
+  }
+
+  // ---------------------------------------------------------------- the sign-in of a web connector (Stage 14b, D-046) ----------------------------------------------------------------
+
+  /** One token provider for each signed-in connector, in memory. */
+  const providers = new Map<string, TokenProvider>()
+  /** The sign-in that is open in the person's browser (one in the whole app), and the means to end it. */
+  let signing: { id: string; ctl: AbortController } | null = null
+  /** The writes of connectors.json go one after another (a renewal of a token can come at any moment). */
+  let lockTail: Promise<unknown> = Promise.resolve()
+  const withLock = <T>(task: () => Promise<T>): Promise<T> => {
+    const run = lockTail.then(task, task)
+    lockTail = run.catch(() => undefined)
+    return run
+  }
+
+  const guardedFor = (url: string): GuardedFetch =>
+    createGuardedFetch({
+      anchor: url,
+      ...(options.resolve === undefined ? {} : { resolve: options.resolve })
+    })
+
+  /** Keeps (or forgets, with null) the sign-in of one connector, sealed. False when it could not be kept. */
+  async function writeAuth(id: string, record: AuthRecord | null): Promise<boolean> {
+    try {
+      return await withLock(async () => {
+        const current = await store.read()
+        if (current.problem !== null) return false
+        if (!current.connectors.some((x) => x.id === id)) return false
+        const sealed = record === null ? null : sealAuth(options.secrets, record)
+        await store.write(current.connectors.map((x) => (x.id === id ? { ...x, auth: sealed } : x)))
+        return true
+      })
+    } catch (error) {
+      console.error('Keeping a sign-in failed:', reason(error))
+      return false
+    }
+  }
+
+  const SIGN_IN_WORDS = {
+    needed: 'It wants you to sign in. Press Sign in on the Tools page.',
+    expired: 'Your sign-in has ended. Press Sign in on the Tools page to sign in again.',
+    more: 'It wants more permissions than you gave. Press Sign in on the Tools page to sign in again.'
+  } as const
+
+  /** The connector answered that it wants a sign-in (401 or 403): remember it, once per change, for the page. */
+  function markSignIn(c: StoredConnector, error: McpError): void {
+    if (c.place !== 'remote' || c.token !== null) return
+    const s = seenOf(c.id)
+    const kind: 'needed' | 'expired' | 'more' =
+      error.denied?.status === 403 ? 'more' : c.auth === null ? 'needed' : 'expired'
+    const challenge = error.denied?.challenge ?? null
+    const changed = s.signIn === null || s.signIn.kind !== kind
+    s.signIn = { kind, challenge, why: SIGN_IN_WORDS[kind] }
+    s.problem = SIGN_IN_WORDS[kind]
+    if (changed) void note('sign-in-needed', c)
+  }
+
+  /** The token provider of a signed-in connector (made when first needed). */
+  function providerFor(c: StoredConnector): TokenProvider {
+    let p = providers.get(c.id)
+    if (p === undefined) {
+      const id = c.id
+      p = createTokenProvider({
+        holder: {
+          read: async () => {
+            const { connectors } = await store.read()
+            const x = connectors.find((y) => y.id === id)
+            return x === undefined || x.auth === null ? null : unsealAuth(options.secrets, x.auth)
+          },
+          write: (record) => writeAuth(id, record)
+        },
+        guarded: guardedFor(c.url ?? ''),
+        now,
+        onNeedsSignIn: (why) => {
+          const s = seenOf(id)
+          s.signIn = {
+            kind: 'expired',
+            challenge: s.signIn?.challenge ?? null,
+            why: SIGN_IN_WORDS.expired
+          }
+          s.problem = SIGN_IN_WORDS.expired
+          void why
+          void note('sign-in-needed', c)
+        }
+      })
+      providers.set(id, p)
+    }
+    return p
+  }
+
+  const hostOf = (address: string): string => {
+    try {
+      return new URL(address).host
+    } catch {
+      return 'unknown host'
+    }
+  }
+
+  function authViewOf(c: StoredConnector): AuthView {
+    const s = seenOf(c.id)
+    const canSignIn =
+      c.place === 'remote' &&
+      c.token === null &&
+      options.secrets.isAvailable() &&
+      options.openBrowser !== undefined
+    const base = {
+      provider: null,
+      scopes: [] as string[],
+      clientId: null,
+      clientKind: null,
+      busy: signing?.id === c.id,
+      canSignIn,
+      why: null as string | null
+    }
+    if (c.place !== 'remote' || c.token !== null) return { state: 'none', ...base }
+    if (c.auth === null) {
+      return s.signIn === null
+        ? { state: 'none', ...base }
+        : { state: s.signIn.kind === 'more' ? 'more' : 'needed', ...base, why: s.signIn.why }
+    }
+    const record = unsealAuth(options.secrets, c.auth)
+    if (record === null) {
+      return {
+        state: 'expired',
+        ...base,
+        why: 'The sign-in cannot be opened on this PC any more. Sign in again.'
+      }
+    }
+    const info = {
+      provider: hostOf(record.issuer),
+      scopes: record.scopes,
+      clientId: record.client.clientId,
+      clientKind: record.clientKind
+    }
+    if (s.signIn !== null) {
+      return {
+        state: s.signIn.kind === 'more' ? 'more' : 'expired',
+        ...base,
+        ...info,
+        why: s.signIn.why
+      }
+    }
+    return { state: 'signed-in', ...base, ...info }
+  }
+
+  function signInQuestion(
+    c: StoredConnector,
+    found: Discovery,
+    client: ClientChoice
+  ): SystemQuestion {
+    const hosts = [
+      ...new Set([found.issuer, found.authorizationEndpoint, found.tokenEndpoint].map(hostOf))
+    ]
+    const asked =
+      found.scopes.length === 0
+        ? 'No particular permissions are asked for.'
+        : `Permissions asked for: ${found.scopes.join(', ')}.${found.offlineAccess ? ' (offline_access means: stay signed in without asking you again.)' : ''}`
+    return {
+      title: 'Sign in to a connector',
+      message: `Sign in to the connector "${c.name}"?`,
+      detail: [
+        `Connector: ${c.url}`,
+        `Sign-in provider: ${found.issuer}`,
+        `Your browser opens at: ${hostOf(found.authorizationEndpoint)}`,
+        `The app will talk to: ${hosts.join(', ')}`,
+        asked,
+        client.kind === 'typed'
+          ? `The app signs in with the client id ${client.clientId}${client.clientSecret === null ? '' : ' and the secret you typed'}.`
+          : 'The app registers itself with the provider.',
+        '',
+        "You sign in on the provider's page, in your browser: the app never sees your password. The app keeps a token for this connector, sealed on this PC, until you sign out or remove the connector.",
+        `What the model sends to this connector's tools leaves this PC for whoever runs ${hostOf(c.url ?? '')}, and what it answers comes back to the model.`,
+        '',
+        WARNING,
+        '',
+        ASKED_HERE
+      ].join('\n'),
+      yes: 'Open my browser',
+      no: "Don't sign in"
     }
   }
 
@@ -397,6 +603,7 @@ export function createConnectorService(options: ConnectorServiceOptions): Connec
       network: c.network,
       folder: c.workspace ? 'the workspace folder' : null,
       hasToken: c.token !== null,
+      auth: authViewOf(c),
       state: live.has(c.id)
         ? 'running'
         : starting.has(c.id)
@@ -424,7 +631,14 @@ export function createConnectorService(options: ConnectorServiceOptions): Connec
 
   async function save(list: StoredConnector[]): Promise<ConnectorChangeResult | null> {
     try {
-      await store.write(list)
+      await withLock(async () => {
+        // a list read a moment ago may hold an older sign-in than the one on disk (a token is renewed at any time): the sign-in on disk is the one kept
+        const current = await store.read()
+        const auths = new Map(current.connectors.map((x) => [x.id, x.auth]))
+        await store.write(
+          list.map((x) => (auths.has(x.id) ? { ...x, auth: auths.get(x.id) ?? null } : x))
+        )
+      })
       return null
     } catch (error) {
       if (error instanceof KeptRefused) return { ok: false, error: error.message }
@@ -516,6 +730,7 @@ export function createConnectorService(options: ConnectorServiceOptions): Connec
       const wire = createHttpWire({
         href: url.href,
         token,
+        ...(c.auth === null ? {} : { auth: providerFor(c) }),
         ...(options.fetch === undefined ? {} : { fetch: options.fetch })
       })
       return { wire, end: () => wire.close() }
@@ -690,6 +905,7 @@ export function createConnectorService(options: ConnectorServiceOptions): Connec
           listedAt: now(),
           version: session.version,
           problem: null,
+          signIn: null,
           state: 'running'
         })
         void opened.wire.closed.then(() => {
@@ -712,6 +928,7 @@ export function createConnectorService(options: ConnectorServiceOptions): Connec
         const message =
           error instanceof McpError ? error.message : `It could not be started: ${reason(error)}.`
         s.problem = oneLine(message.replace(/\.\.$/, '.'), 300)
+        if (error instanceof McpError && error.fault === 'unauthorized') markSignIn(c, error)
         await note('failed', c)
         throw new Error(s.problem)
       }
@@ -777,7 +994,14 @@ export function createConnectorService(options: ConnectorServiceOptions): Connec
 
   async function tokens(): Promise<string[]> {
     const { connectors } = await store.read()
-    return connectors.map((c) => unseal(c.token)).filter((t): t is string => t !== null && t !== '')
+    const out: string[] = []
+    for (const c of connectors) {
+      const pasted = unseal(c.token)
+      if (pasted !== null && pasted !== '') out.push(pasted)
+      const record = c.auth === null ? null : unsealAuth(options.secrets, c.auth)
+      if (record !== null) out.push(...secretsOf(record))
+    }
+    return out
   }
 
   function executorFor(
@@ -858,6 +1082,12 @@ export function createConnectorService(options: ConnectorServiceOptions): Connec
         if (error instanceof McpError && signal.aborted) {
           return failedText(
             `the connector did not answer within ${Math.round(callMs / 1000)} seconds.`
+          )
+        }
+        if (error instanceof McpError && error.fault === 'unauthorized') {
+          markSignIn(c, error)
+          return failedText(
+            `the connector wants you to sign in (or to sign in again). Nothing was sent. Press Sign in on the Tools page.`
           )
         }
         stopLive(c.id)
@@ -996,6 +1226,7 @@ export function createConnectorService(options: ConnectorServiceOptions): Connec
           id: connectorId(),
           ...candidate,
           prefix: prefixFor(name, new Set(fresh.connectors.map((x) => x.prefix))),
+          auth: null,
           network: false,
           workspace: false,
           tools: [],
@@ -1072,6 +1303,7 @@ export function createConnectorService(options: ConnectorServiceOptions): Connec
           id: connectorId(),
           ...candidate,
           prefix: prefixFor(name, new Set(fresh.connectors.map((x) => x.prefix))),
+          auth: null,
           network: false,
           workspace: false,
           tools: [],
@@ -1096,6 +1328,9 @@ export function createConnectorService(options: ConnectorServiceOptions): Connec
           message: `Remove the connector "${c.name}"?`,
           detail: [
             'It is stopped, its tools are switched off and forgotten, and so is its token.',
+            c.auth === null
+              ? ''
+              : 'The provider is asked to revoke your sign-in (if it cannot be asked, the sign-in is forgotten here all the same).',
             c.place === 'remote'
               ? ''
               : 'Its folder in the box is deleted, with the data it kept there.',
@@ -1107,6 +1342,9 @@ export function createConnectorService(options: ConnectorServiceOptions): Connec
         })
         if (answer !== 'yes') return notYes(answer, 'The connector was not removed.')
         stopLive(id)
+        if (signing?.id === id) signing.ctl.abort()
+        if (c.auth !== null) await providerFor(c).signOut()
+        providers.delete(id)
         const fresh = await store.read()
         if (fresh.problem !== null) return { ok: false, error: UNREADABLE(fresh.problem) }
         const failed = await save(fresh.connectors.filter((x) => x.id !== id))
@@ -1397,10 +1635,185 @@ export function createConnectorService(options: ConnectorServiceOptions): Connec
       return problem !== null ? [] : translated(connectors).map((x) => x.t.def.id)
     },
 
+    signIn: async (owner, input) => {
+      if (!isPlain(input)) return { ok: false, error: NOT_UNDERSTOOD }
+      const id = idOf(input)
+      const typedId = typeof input.clientId === 'string' ? input.clientId.trim() : null
+      const typedSecret = typeof input.clientSecret === 'string' ? input.clientSecret.trim() : null
+      if (
+        id === null ||
+        typedId === null ||
+        typedSecret === null ||
+        (typedId !== '' && !/^[\x21-\x7e]{1,256}$/.test(typedId)) ||
+        (typedSecret !== '' && !/^[\x21-\x7e]{1,1000}$/.test(typedSecret)) ||
+        (typedSecret !== '' && typedId === '')
+      ) {
+        return { ok: false, error: NOT_UNDERSTOOD }
+      }
+      if (options.openBrowser === undefined)
+        return { ok: false, error: 'This version of the app cannot open your browser.' }
+      if (!options.secrets.isAvailable()) {
+        return {
+          ok: false,
+          error: 'This PC has no secure place to keep a sign-in, so the app does not sign in.'
+        }
+      }
+      if (signing !== null) {
+        return {
+          ok: false,
+          error: 'A sign-in is already open in your browser. Finish it there, or cancel it first.'
+        }
+      }
+      const { connectors, problem } = await store.read()
+      if (problem !== null) return { ok: false, error: UNREADABLE(problem) }
+      const c = connectors.find((x) => x.id === id)
+      if (c === undefined) return { ok: false, error: NOT_FOUND }
+      if (c.place !== 'remote') return { ok: false, error: 'Only a web connector signs in.' }
+      if (c.token !== null) {
+        return {
+          ok: false,
+          error:
+            'This connector uses a token you pasted. Remove it and add it again without a token to sign in instead.'
+        }
+      }
+      const address = checkRemoteUrl(c.url)
+      if (!address.ok) return { ok: false, error: address.why }
+      const ctl = new AbortController()
+      signing = { id, ctl }
+      const s = seenOf(id)
+      try {
+        const guarded = guardedFor(address.href)
+        const found = await discover({
+          mcpUrl: address.href,
+          challenge: parseChallenge(s.signIn?.challenge ?? null),
+          guarded,
+          signal: ctl.signal
+        })
+        if (!found.ok) {
+          if (found.stopped === true)
+            return { ok: false, error: 'The sign-in was cancelled.', cancelled: true }
+          await note('sign-in-failed', c)
+          return { ok: false, error: found.why }
+        }
+        const stored = c.auth === null ? null : unsealAuth(options.secrets, c.auth)
+        const client: ClientChoice =
+          typedId !== ''
+            ? {
+                kind: 'typed',
+                clientId: typedId,
+                clientSecret: typedSecret === '' ? null : typedSecret
+              }
+            : stored !== null && stored.clientKind === 'typed'
+              ? {
+                  kind: 'typed',
+                  clientId: stored.client.clientId,
+                  clientSecret: stored.client.clientSecret
+                }
+              : { kind: 'register' }
+        if (client.kind === 'register' && found.found.registrationEndpoint === null) {
+          await note('sign-in-failed', c)
+          return {
+            ok: false,
+            error:
+              'The provider does not register apps by itself. Register the app there (the return address is http://127.0.0.1/callback) and type the client id.'
+          }
+        }
+        const answer = await ask(owner, signInQuestion(c, found.found, client))
+        if (answer !== 'yes') return notYes(answer, 'You did not sign in.')
+        const result = await runSignIn({
+          mcpUrl: address.href,
+          found: found.found,
+          client,
+          guarded,
+          open: async (url) => {
+            try {
+              await options.openBrowser?.(url)
+              return true
+            } catch {
+              return false
+            }
+          },
+          now,
+          signal: ctl.signal,
+          ...(options.signInWaitMs === undefined ? {} : { waitMs: options.signInWaitMs })
+        })
+        if (!result.ok) {
+          if (result.stopped === true)
+            return { ok: false, error: 'The sign-in was cancelled.', cancelled: true }
+          await note('sign-in-failed', c)
+          return { ok: false, error: result.why }
+        }
+        const again = (await store.read()).connectors.find((x) => x.id === id)
+        const kept = again !== undefined && (await writeAuth(id, result.auth))
+        if (!kept) {
+          // the provider has issued tokens that cannot be kept: ask it to take them back
+          const tmp = createTokenProvider({
+            holder: { read: async () => result.auth, write: async () => true },
+            guarded,
+            now
+          })
+          await tmp.signOut()
+          await note('sign-in-failed', c)
+          return {
+            ok: false,
+            error: 'The sign-in worked, but it could not be kept on this PC, so it was given back.'
+          }
+        }
+        providerFor(c).adopt(result.auth)
+        s.signIn = null
+        s.problem = null
+        await note('signed-in', c)
+        stopLive(id)
+        const fresh = (await store.read()).connectors.find((x) => x.id === id)
+        if (fresh !== undefined)
+          await ensure(fresh, new AbortController().signal).catch(() => undefined)
+        return ok()
+      } finally {
+        signing = null
+      }
+    },
+
+    cancelSignIn: async () => {
+      signing?.ctl.abort()
+      return ok()
+    },
+
+    signOut: async (input) => {
+      const id = idOf(input)
+      if (id === null) return { ok: false, error: NOT_UNDERSTOOD }
+      const { connectors, problem } = await store.read()
+      if (problem !== null) return { ok: false, error: UNREADABLE(problem) }
+      const c = connectors.find((x) => x.id === id)
+      if (c === undefined) return { ok: false, error: NOT_FOUND }
+      if (c.auth === null) return ok()
+      if (signing?.id === id) signing.ctl.abort()
+      stopLive(id)
+      const said = await providerFor(c).signOut()
+      providers.delete(id)
+      const s = seenOf(id)
+      s.signIn = {
+        kind: 'needed',
+        challenge: s.signIn?.challenge ?? null,
+        why: SIGN_IN_WORDS.needed
+      }
+      s.problem = null
+      await note('signed-out', c)
+      const status0 = await status()
+      return said
+        ? { ok: true, status: status0 }
+        : {
+            ok: true,
+            status: status0,
+            notice:
+              'The provider could not be asked to revoke the token (or did not say yes). It is forgotten on this PC.'
+          }
+    },
+
     tokens,
 
     stopAll: () => {
       closing = true
+      signing?.ctl.abort()
       for (const id of [...live.keys()]) stopLive(id)
     }
   }

@@ -1,0 +1,18 @@
+{
+  "label": "n14b-rVisible",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthRecord.ts",
+      "from": "  if (!visible(tokens.accessToken, OAUTH_LIMITS.tokenChars)) return null\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-4.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 400000
+}

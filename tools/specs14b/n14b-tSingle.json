@@ -1,0 +1,18 @@
+{
+  "label": "n14b-tSingle",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthTokens.ts",
+      "from": "    inflight ??= (async (): Promise<AuthRecord | null> => {",
+      "to": "    inflight = (async (): Promise<AuthRecord | null> => {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-4.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

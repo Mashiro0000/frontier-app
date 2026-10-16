@@ -1,0 +1,18 @@
+{
+  "label": "n14b-rSeal",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthRecord.ts",
+      "from": "  if (!box.isAvailable()) throw new Error('This PC has no secure place to keep a sign-in.')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-4.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 400000
+}

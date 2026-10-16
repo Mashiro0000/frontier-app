@@ -1,0 +1,18 @@
+{
+  "label": "n14b-cClose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthCallback.ts",
+      "from": "          server.close()\n          for (const s of sockets) s.destroy()",
+      "to": "          void sockets"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-3.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 400000
+}

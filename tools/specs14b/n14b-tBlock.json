@@ -1,0 +1,18 @@
+{
+  "label": "n14b-tBlock",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthTokens.ts",
+      "from": "          if (result.error !== undefined && OVER.has(result.error)) {",
+      "to": "          if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-4.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

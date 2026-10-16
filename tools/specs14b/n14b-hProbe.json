@@ -1,0 +1,18 @@
+{
+  "label": "n14b-hProbe",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/mcpClient.ts",
+      "from": "      error.fault === 'too-big' ||\n      error.fault === 'unauthorized'\n    )",
+      "to": "      error.fault === 'too-big'\n    )"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 400000
+}

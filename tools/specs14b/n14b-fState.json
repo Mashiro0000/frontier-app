@@ -1,0 +1,18 @@
+{
+  "label": "n14b-fState",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthFlow.ts",
+      "from": "  if (typeof params.state !== 'string' || !same(params.state, expected.state)) {",
+      "to": "  if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-3.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

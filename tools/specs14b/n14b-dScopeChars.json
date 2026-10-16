@@ -1,0 +1,18 @@
+{
+  "label": "n14b-dScopeChars",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthDiscovery.ts",
+      "from": "if (parts.length > OAUTH_LIMITS.scopes || parts.some((s) => !SCOPE.test(s))) scopeBad = true",
+      "to": "if (parts.length > OAUTH_LIMITS.scopes) scopeBad = true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-2.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 400000
+}
