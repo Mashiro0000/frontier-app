@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",
-      "from": "  if (file.version === 6 && file.project !== undefined && !isProjectId(file.project)) {",
-      "to": "  if (false) {"
+      "from": "    (file.version === 6 || file.version === 7) &&\n    file.project !== undefined &&\n    !isProjectId(file.project)\n  ) {",
+      "to": "    false\n  ) {"
     }
   ],
   "argv": [

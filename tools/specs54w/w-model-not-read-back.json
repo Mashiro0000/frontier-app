@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/history/convert.ts",
-      "from": "...(error !== undefined ? { error } : {}),\n    ...(role === 'assistant' ? { provider: provider ?? null, model: model ?? null } : {})",
+      "from": "...(error !== undefined ? { error } : {}),\n      ...(role === 'assistant' ? { provider: provider ?? null, model: model ?? null } : {})",
       "to": "...(error !== undefined ? { error } : {})"
     }
   ],

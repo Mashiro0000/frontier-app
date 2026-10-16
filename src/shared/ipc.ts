@@ -32,6 +32,7 @@ import {
   type ImageQuality,
   type ImageShape,
   type ImageStatus,
+  type PictureNote,
   type PictureResult,
   type PictureSummary
 } from './images'
@@ -248,6 +249,8 @@ export interface SavedMessage {
   attachments?: AttachmentInfo[]
   /** The tool calls of a reply (D-041, 11.4): what was asked, what the person answered, the sources that came back. Only in a file of version 6; absent when there are none. */
   tools?: ReplyToolNote[]
+  /** (16.5, D-048) A request for pictures made from this chat: on a message of the person's whose text is the description. Only in a file of version 7. Never sent to the model. */
+  picture?: PictureNote
 }
 
 /** A message as the page hands it over to be saved. Main turns 'streaming' into 'stopped'. */
@@ -263,6 +266,8 @@ export interface MessageToSave {
   attachments?: AttachmentInfo[]
   /** The tool calls of a reply (11.4). Checked again by main, field by field; the file is then version 6. */
   tools?: ReplyToolNote[]
+  /** (16.5) A request for pictures made from this chat. Checked again by main, field by field; the file is then version 7. */
+  picture?: PictureNote
 }
 
 /**

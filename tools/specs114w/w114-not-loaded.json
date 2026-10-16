@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/history/convert.ts",
-      "from": "    ...(tools !== undefined ? { tools } : {})\n",
+      "from": "      ...(tools !== undefined ? { tools } : {}),\n",
       "to": ""
     }
   ],

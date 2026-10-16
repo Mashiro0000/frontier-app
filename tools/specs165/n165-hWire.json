@@ -1,0 +1,18 @@
+{
+  "label": "n165-hWire",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/history.ts",
+      "from": "    .filter((message) => message.picture === undefined)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

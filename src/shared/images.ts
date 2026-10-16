@@ -5,7 +5,7 @@
 // shows the most it can cost; main checks everything again, reserves that most against the spending limits, sends ONE request to OpenAI's Image API (Anthropic cannot make
 // pictures), checks the bytes that come back and keeps the pictures in the gallery. Nothing else starts a picture: the model has no tool for it.
 
-import { isConversationId, isModelId } from './validate'
+import { isConversationId, isModelId } from './ids'
 
 /** The limits of image generation. Constants, not settings: a higher one is a change that lets the app spend more, and this stage has no box for it. */
 export const IMAGE_LIMITS = Object.freeze({
@@ -350,6 +350,41 @@ export function checkImageAsk(
       chat
     })
   }
+}
+
+// ---- a made picture in a chat (16.5) -----------------------------------------------------------------------------------------
+
+const PICTURE_ID = /^[0-9a-f]{32}$/
+/** A picture's id in the gallery: 32 hex characters, made by main at random. */
+export const isPictureId = (value: unknown): value is string =>
+  typeof value === 'string' && PICTURE_ID.test(value)
+
+/**
+ * What a chat keeps of a request for pictures (the owner's pick: an id into the gallery, never the picture). It rides on a message of the person's whose text is the
+ * description; the message is shown, saved and backed up with the chat, and NEVER sent to the model (a picture is sent only when the person attaches it, "Use in chat").
+ */
+export interface PictureNote {
+  /** The pictures in the gallery, 1 to `maxCount`. A picture that was deleted since is said to be, never looked for anywhere else. */
+  readonly ids: readonly string[]
+  readonly model: string
+  readonly shape: ImageShape
+  readonly quality: ImageQuality
+  /** What the request cost (for all its pictures), and whether that is the app's figure. */
+  readonly costUsd: number
+  readonly estimate: boolean
+}
+
+/** A note as the page sends it or a file holds it: exactly these fields, checked; null otherwise. */
+export function checkPictureNote(raw: unknown): PictureNote | null {
+  if (!isPlain(raw) || !keysAre(raw, 'costUsd,estimate,ids,model,quality,shape')) return null
+  const { ids, model, shape, quality, costUsd, estimate } = raw
+  if (!Array.isArray(ids) || ids.length < 1 || ids.length > IMAGE_LIMITS.maxCount) return null
+  if (!ids.every(isPictureId) || new Set(ids).size !== ids.length) return null
+  if (!isModelId(model) || !isShape(shape) || !isQuality(quality)) return null
+  if (typeof costUsd !== 'number' || !Number.isFinite(costUsd) || costUsd < 0 || costUsd > 100)
+    return null
+  if (typeof estimate !== 'boolean') return null
+  return Object.freeze({ ids: Object.freeze([...ids]), model, shape, quality, costUsd, estimate })
 }
 
 // ---- what the page is told ------------------------------------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 import type { RequestEstimate } from '../../../shared/askFirst'
 import type { AttachedFile } from '../../../shared/attachments'
+import type { PictureNote } from '../../../shared/images'
 import type { ProviderId } from '../../../shared/registry'
 import type { ToolEvent } from '../../../shared/tools'
 import type { ReplyToolNote } from '../../../shared/toolNotes'
@@ -44,6 +45,11 @@ export interface ChatMessage {
    * Absent when the reply used no tool.
    */
   tools?: ReplyToolNote[]
+  /**
+   * (16.5, D-048) A request for pictures made from this chat: on a message of the person's whose text is the description. The pictures are in the gallery (main's);
+   * this holds their ids. Saved with the chat, NEVER sent to the model.
+   */
+  picture?: PictureNote
 }
 
 /** Which model is answering, as the main process reports it when a reply begins. */

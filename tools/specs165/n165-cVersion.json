@@ -1,0 +1,18 @@
+{
+  "label": "n165-cVersion",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "  conversation.messages.some((message) => message.picture !== undefined)\n    ? 7",
+      "to": "  conversation.messages.some((message) => message.picture !== undefined)\n    ? 6"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

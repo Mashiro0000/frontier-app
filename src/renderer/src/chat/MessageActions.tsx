@@ -48,7 +48,8 @@ function MessageActions({
   const arriving = message.status === 'streaming'
   const canCopy = message.content !== '' && !arriving
   const canRegenerate = message.role === 'assistant' && isLast && !arriving
-  const canEdit = message.role === 'user'
+  // A request for pictures (D-048) was not a message to the model: there is nothing to edit and send again.
+  const canEdit = message.role === 'user' && message.picture === undefined
   const canRemember = message.content !== '' && !arriving
   // "Read aloud" (D-047): a reply, once it has finished, when the person switched it on in Settings. Nothing is read without this click.
   const canRead =

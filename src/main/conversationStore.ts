@@ -156,21 +156,24 @@ export interface ConversationStore {
 
 /** The title shown in the list: the first message the person wrote, on one line, cut at 60 characters. */
 /**
- * The version a chat's file is written as: 6 when a reply of it carries tool calls (D-041, 11.4; it may belong to a project too), 5 when it belongs to a
- * project (D-039), 4 when a message of it carries files (D-037), else 3, so a chat in no project, without files and without tool calls is written exactly
- * as before.
+ * The version a chat's file is written as: 7 when a message of it carries a request for pictures (D-048, 16.5; it may have tool calls, files and a project too), 6 when
+ * a reply of it carries tool calls (D-041, 11.4; it may belong to a project too), 5 when it belongs to a project (D-039), 4 when a message of it carries files (D-037),
+ * else 3, so a chat in no project, without files, tool calls or pictures is written exactly as before. A build from before Stage 16 leaves a version 7 file alone
+ * ("made by another version").
  */
 export const fileVersion = (conversation: {
   messages: readonly SavedMessage[]
   project?: string
-}): 3 | 4 | 5 | 6 =>
-  conversation.messages.some((message) => message.tools !== undefined)
-    ? 6
-    : conversation.project !== undefined
-      ? 5
-      : conversation.messages.some((message) => message.attachments !== undefined)
-        ? 4
-        : 3
+}): 3 | 4 | 5 | 6 | 7 =>
+  conversation.messages.some((message) => message.picture !== undefined)
+    ? 7
+    : conversation.messages.some((message) => message.tools !== undefined)
+      ? 6
+      : conversation.project !== undefined
+        ? 5
+        : conversation.messages.some((message) => message.attachments !== undefined)
+          ? 4
+          : 3
 
 export function titleFor(messages: readonly SavedMessage[]): string {
   const firstMessage = messages.find((message) => message.role === 'user')
@@ -207,7 +210,8 @@ export function parseSavedFile(raw: unknown, id: string): SavedConversation | st
     file.version !== 3 &&
     file.version !== 4 &&
     file.version !== 5 &&
-    file.version !== 6
+    file.version !== 6 &&
+    file.version !== 7
   ) {
     return 'it was made by another version of the app'
   }
@@ -220,7 +224,13 @@ export function parseSavedFile(raw: unknown, id: string): SavedConversation | st
   // opened without the instructions it was saved with would quietly answer differently. An older file has none, and whatever such a file
   // says about them is not read (it was not made by a version that knew them).
   let instructions = ''
-  if (file.version === 3 || file.version === 4 || file.version === 5 || file.version === 6) {
+  if (
+    file.version === 3 ||
+    file.version === 4 ||
+    file.version === 5 ||
+    file.version === 6 ||
+    file.version === 7
+  ) {
     const checked =
       typeof file.instructions === 'string' ? checkInstructions(file.instructions) : null
     if (checked === null || !checked.ok) return 'its instructions are not usable'
@@ -230,8 +240,9 @@ export function parseSavedFile(raw: unknown, id: string): SavedConversation | st
   const messages = checkSavedMessages(
     file.messages,
     file.version === 1 ? 'file-v1' : 'file',
-    file.version === 4 || file.version === 5 || file.version === 6,
-    file.version === 6 // tool calls (D-041, 11.4) are read only from a version 6 file
+    file.version === 4 || file.version === 5 || file.version === 6 || file.version === 7,
+    file.version === 6 || file.version === 7, // tool calls (D-041, 11.4) are read only from a version 6 or 7 file
+    file.version === 7 // a request for pictures (D-048, 16.5) only from a version 7 file
   )
   if (!messages.ok) return messages.error
   if (
@@ -244,10 +255,18 @@ export function parseSavedFile(raw: unknown, id: string): SavedConversation | st
   if (file.version === 6 && !messages.messages.some((message) => message.tools !== undefined)) {
     return 'it says it holds tool calls and holds none'
   }
+  // A request for pictures is read only from a version 7 file, which must hold at least one.
+  if (file.version === 7 && !messages.messages.some((message) => message.picture !== undefined)) {
+    return 'it says it holds pictures and holds none'
+  }
   // A project (D-039, 10.5) is read only from a version 5 file, which must name one by an id that is one; an older file knew no projects. A version 6 file
   // may name one or not (a chat with tool calls may be in a project or in none).
   if (file.version === 5 && !isProjectId(file.project)) return 'its project is not usable'
-  if (file.version === 6 && file.project !== undefined && !isProjectId(file.project)) {
+  if (
+    (file.version === 6 || file.version === 7) &&
+    file.project !== undefined &&
+    !isProjectId(file.project)
+  ) {
     return 'its project is not usable'
   }
   return {
@@ -257,7 +276,8 @@ export function parseSavedFile(raw: unknown, id: string): SavedConversation | st
     updatedAt: file.updatedAt,
     instructions,
     messages: messages.messages,
-    ...(file.version === 5 || (file.version === 6 && file.project !== undefined)
+    ...(file.version === 5 ||
+    ((file.version === 6 || file.version === 7) && file.project !== undefined)
       ? { project: file.project as string }
       : {})
   }

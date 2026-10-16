@@ -1,0 +1,19 @@
+{
+  "label": "w165-wWire",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/history.ts",
+      "from": "    .filter((message) => message.picture === undefined)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run165.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "C"
+  },
+  "timeoutMs": 1200000
+}

@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/chat/rewrite.ts",
-      "from": "if (at === -1 || messages[at].role !== 'user') return null\n  return messages.length - 1 - at",
-      "to": "if (at === -1) return null\n  return messages.length - 1 - at"
+      "from": "  if (at === -1 || messages[at].role !== 'user' || messages[at].picture !== undefined) return null\n  return messages.length - 1 - at",
+      "to": "  if (at === -1) return null\n  return messages.length - 1 - at"
     }
   ],
   "argv": [

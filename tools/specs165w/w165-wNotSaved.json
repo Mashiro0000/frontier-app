@@ -1,0 +1,19 @@
+{
+  "label": "w165-wNotSaved",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/convert.ts",
+      "from": "      ...(role === 'user' && picture !== undefined ? { picture } : {})",
+      "to": "      ...{}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run165.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "C"
+  },
+  "timeoutMs": 1200000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n165-pmAttach",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/images/PictureMessage.tsx",
+      "from": "disabled={!canAttach}",
+      "to": "disabled={false}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-5.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 300000
+}

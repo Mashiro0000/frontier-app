@@ -21,7 +21,7 @@ export function withoutLastReply(messages: readonly ChatMessage[]): ChatMessage[
  */
 export function laterMessages(messages: readonly ChatMessage[], id: string): number | null {
   const at = messages.findIndex((message) => message.id === id)
-  if (at === -1 || messages[at].role !== 'user') return null
+  if (at === -1 || messages[at].role !== 'user' || messages[at].picture !== undefined) return null
   return messages.length - 1 - at
 }
 
@@ -37,7 +37,14 @@ export function withEditedMessage(
   if (typeof text !== 'string') return null
   const at = messages.findIndex((message) => message.id === id)
   const edited = text.trim()
-  if (at === -1 || messages[at].role !== 'user' || edited === '') return null
+  // A request for pictures (D-048) is not a message to the model, so it cannot be edited and sent.
+  if (
+    at === -1 ||
+    messages[at].role !== 'user' ||
+    messages[at].picture !== undefined ||
+    edited === ''
+  )
+    return null
   if (messages.at(-1)?.status === 'streaming') return null
   return [...messages.slice(0, at), { ...messages[at], content: edited }]
 }

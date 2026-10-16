@@ -1,5 +1,6 @@
 import { memo, useState } from 'react'
 import { piecesOf, sourcesOfNotes } from '../../../shared/toolNotes'
+import PictureMessage from '../images/PictureMessage'
 import Markdown from '../markdown/Markdown'
 import { replyUsageText, replyUsageTitle } from '../settings/format'
 import MessageActions from './MessageActions'
@@ -22,6 +23,11 @@ interface MessageBubbleProps {
   onRegenerate: () => void
   onResend: (id: string, text: string) => void
   onRemember: (text: string) => void
+  /** (16.5) What to call an image model, and whether the chat's model reads pictures, for a request for pictures in the chat. */
+  imageModelName: (modelId: string) => string
+  canAttachPictures: boolean
+  /** (16.5) "Use in chat" on a picture: it goes on the next message as an attachment. */
+  onUsePicture: (id: string) => void
 }
 
 /** A short line shown under a message when something other than "all went well" happened. */
@@ -40,7 +46,10 @@ function MessageBubble({
   later,
   onRegenerate,
   onResend,
-  onRemember
+  onRemember,
+  imageModelName,
+  canAttachPictures,
+  onUsePicture
 }: MessageBubbleProps): React.JSX.Element {
   // The tool calls of a reply (D-041, 11.4), each in the place of the text where the model asked for it, and the pages they brought back under the reply.
   const notes = message.role === 'assistant' ? (message.tools ?? []) : []
@@ -70,7 +79,18 @@ function MessageBubble({
       {message.files !== undefined && message.files.length > 0 && (
         <MessageFiles files={message.files} />
       )}
-      {editing ? (
+      {message.picture !== undefined ? (
+        // A request for pictures (D-048): the description, the pictures by their ids, the cost. Never sent to the model.
+        <div className="bubble bubble-picture">
+          <PictureMessage
+            description={message.content}
+            note={message.picture}
+            modelLabel={imageModelName(message.picture.model)}
+            canAttach={canAttachPictures}
+            onUse={onUsePicture}
+          />
+        </div>
+      ) : editing ? (
         <MessageEdit
           original={message.content}
           later={later}

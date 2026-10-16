@@ -1,5 +1,6 @@
 import {
   IMAGE_LIMITS,
+  isPictureId,
   isPrompt,
   isQuality,
   isShape,
@@ -20,12 +21,10 @@ import type { PictureType } from './imageCheck'
 export const IMAGE_INDEX_VERSION = 1
 /** The most the file may weigh: the largest gallery of the longest descriptions, with room. */
 const MAX_FILE_BYTES = 6 * 1024 * 1024
-const PICTURE_ID = /^[0-9a-f]{32}$/
 const SHA256 = /^[0-9a-f]{64}$/
 const TYPES: readonly string[] = ['image/png', 'image/jpeg', 'image/webp']
 
-export const isPictureId = (value: unknown): value is string =>
-  typeof value === 'string' && PICTURE_ID.test(value)
+export { isPictureId }
 
 /** One picture the gallery holds. */
 export interface PictureRecord {

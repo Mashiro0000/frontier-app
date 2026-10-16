@@ -2,7 +2,7 @@
   "label": "validate-id-prefix-only",
   "edits": [
     {
-      "file": "{{REPO}}/src/shared/validate.ts",
+      "file": "{{REPO}}/src/shared/ids.ts",
       "from": "const CONVERSATION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/",
       "to": "const CONVERSATION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/"
     }

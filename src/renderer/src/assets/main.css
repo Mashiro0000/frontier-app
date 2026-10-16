@@ -2556,3 +2556,73 @@ body {
   max-width: 100%;
   font: inherit;
 }
+
+/* ---------- A request for pictures in the chat (D-048, 16.5) ---------- */
+
+/* The person's request, shown on their side, but in the reply's colours: the pictures are OpenAI's, and the request was not sent to the model. */
+.message-user .bubble.bubble-picture {
+  color: var(--color-text);
+  background: var(--color-background-mute);
+  border: 1px solid var(--color-border);
+  white-space: normal;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.picture-message {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.picture-asked,
+.picture-facts,
+.picture-said {
+  margin: 0;
+}
+
+.picture-description {
+  white-space: pre-wrap; /* the description exactly as typed */
+}
+
+.picture-asked-label,
+.picture-facts {
+  color: var(--color-text-muted);
+  font-size: 0.9em;
+}
+
+.picture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
+  gap: 8px;
+}
+
+.picture-figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.picture-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.picture-missing {
+  padding: 16px 8px;
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  font-size: 0.9em;
+}
+
+.picture-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
