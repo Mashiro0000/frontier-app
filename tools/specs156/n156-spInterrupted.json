@@ -1,0 +1,18 @@
+{
+  "label": "n156-spInterrupted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/speaker.ts",
+      "from": "          if (event.error === 'interrupted' || event.error === 'canceled') return\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-6.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 400000
+}

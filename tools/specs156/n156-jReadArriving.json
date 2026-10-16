@@ -1,0 +1,18 @@
+{
+  "label": "n156-jReadArriving",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/MessageActions.tsx",
+      "from": "voice?.speak === true && message.role === 'assistant' && message.content !== '' && !arriving",
+      "to": "voice?.speak === true && message.role === 'assistant' && message.content !== ''"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-6.mjs"
+  ],
+  "env": {
+    "ONLY": "J"
+  },
+  "timeoutMs": 400000
+}

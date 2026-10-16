@@ -8,11 +8,12 @@
     }
   ],
   "argv": [
-    "{{TOOLS}}/run72.mjs",
+    "{{TOOLS}}/run156.mjs",
     "dev"
   ],
   "env": {
-    "NO_RETRY": "1"
+    "NO_RETRY": "1",
+    "STOP_AFTER": "A"
   },
   "timeoutMs": 600000
 }

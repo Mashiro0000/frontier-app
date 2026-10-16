@@ -1,4 +1,7 @@
 import { copyLabel, useCopy } from '../useCopy'
+import { speaker } from '../voice/speaker'
+import { useSpeaker } from '../voice/useSpeaker'
+import { useVoiceStatus } from '../voice/voiceStatus'
 import type { ChatMessage } from './types'
 
 interface MessageActionsProps {
@@ -40,12 +43,18 @@ function MessageActions({
   onRemember
 }: MessageActionsProps): React.JSX.Element | null {
   const { state, copy } = useCopy()
+  const voice = useVoiceStatus()
+  const reading = useSpeaker()
   const arriving = message.status === 'streaming'
   const canCopy = message.content !== '' && !arriving
   const canRegenerate = message.role === 'assistant' && isLast && !arriving
   const canEdit = message.role === 'user'
   const canRemember = message.content !== '' && !arriving
-  if (!canCopy && !canRegenerate && !canEdit && !canRemember) return null
+  // "Read aloud" (D-047): a reply, once it has finished, when the person switched it on in Settings. Nothing is read without this click.
+  const canRead =
+    voice?.speak === true && message.role === 'assistant' && message.content !== '' && !arriving
+  const readingThis = reading.speaking === message.id
+  if (!canCopy && !canRegenerate && !canEdit && !canRemember && !canRead) return null
 
   return (
     <div className="message-actions">
@@ -61,6 +70,28 @@ function MessageActions({
           onClick={() => copy(message.content)}
         >
           {copyLabel(state)}
+        </button>
+      )}
+      {canRead && (
+        <button
+          type="button"
+          className="message-action"
+          aria-pressed={readingThis}
+          title={
+            readingThis
+              ? 'Stop reading.'
+              : 'Read this reply aloud with a voice of this computer (a system voice). Nothing leaves the computer.'
+          }
+          onClick={() =>
+            readingThis
+              ? speaker.stop()
+              : speaker.speak(message.id, message.content, {
+                  voice: voice?.voice ?? null,
+                  rate: voice?.rate ?? 100
+                })
+          }
+        >
+          {readingThis ? 'Stop reading' : 'Read aloud'}
         </button>
       )}
       {canRegenerate && (

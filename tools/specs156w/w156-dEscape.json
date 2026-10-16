@@ -1,0 +1,19 @@
+{
+  "label": "w156-dEscape",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/MicButton.tsx",
+      "from": "        if (event.key === 'Escape') {\n          listen.cancel()",
+      "to": "        if (false) {\n          listen.cancel()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "D"
+  },
+  "timeoutMs": 900000
+}

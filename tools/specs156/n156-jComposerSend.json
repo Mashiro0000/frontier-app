@@ -1,0 +1,18 @@
+{
+  "label": "n156-jComposerSend",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/Composer.tsx",
+      "from": "    inputRef.current?.focus()\n  })",
+      "to": "    inputRef.current?.focus()\n    onSend(words)\n  })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-6.mjs"
+  ],
+  "env": {
+    "ONLY": "J"
+  },
+  "timeoutMs": 400000
+}

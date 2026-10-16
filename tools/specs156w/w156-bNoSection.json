@@ -1,0 +1,19 @@
+{
+  "label": "w156-bNoSection",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/SettingsDialog.tsx",
+      "from": "      <VoiceSection key={`voice:${session}`} open={open} />\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "B"
+  },
+  "timeoutMs": 900000
+}

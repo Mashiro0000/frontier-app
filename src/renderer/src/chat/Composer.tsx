@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import MicButton from '../voice/MicButton'
+import { useListen } from '../voice/useListen'
+import { useVoiceStatus } from '../voice/voiceStatus'
 
 interface ComposerProps {
   /** When this changes (a new conversation, or another one), the input box asks for the keyboard focus. */
@@ -31,6 +34,12 @@ function Composer({
 }: ComposerProps): React.JSX.Element {
   const [text, setText] = useState('')
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  // "Speak to type" (D-047): the words come back as text in the box, to be read and sent by the person; they are never sent from here.
+  const voice = useVoiceStatus()
+  const listen = useListen((words) => {
+    setText((now) => (now === '' ? words : `${now}${/\s$/.test(now) ? '' : ' '}${words}`))
+    inputRef.current?.focus()
+  })
 
   // Starting a new chat leaves the cursor in the input box. (Opening a saved chat from the History dialog does
   // not get here: a dialog that closes gives the focus back to the button that opened it.)
@@ -88,6 +97,7 @@ function Composer({
             }
           }}
         />
+        {voice?.listen === true && <MicButton listen={listen} />}
         {/* Two separate buttons (note the keys) rather than one that changes type: otherwise a
             click on Stop could turn into a form submit and send the half-typed next message. */}
         {isReplying ? (
@@ -119,6 +129,21 @@ function Composer({
           </button>
         )}
       </div>
+      {/* How a hold of the microphone is going (D-047). The window's title and the taskbar button say the same, and are main's; this is the page's own line. */}
+      {listen.phase !== 'idle' && (
+        <p className="composer-voice" role="status">
+          {listen.phase === 'sending'
+            ? 'Writing it down...'
+            : listen.phase === 'starting'
+              ? 'Opening the microphone...'
+              : `Recording ${listen.seconds} s. Let go to send it to OpenAI; Esc cancels.`}
+        </p>
+      )}
+      {listen.phase === 'idle' && listen.notice !== null && (
+        <p className="composer-voice composer-voice-notice" role="status">
+          {listen.notice}
+        </p>
+      )}
       {/* Why Send is off while files are in the way (D-037), said on screen and not only in the button's tooltip. */}
       {blocked !== null && (
         <p className="composer-blocked" role="status">

@@ -1,0 +1,19 @@
+{
+  "label": "w156-cCapture",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/MicButton.tsx",
+      "from": "        event.currentTarget.setPointerCapture(event.pointerId)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "C"
+  },
+  "timeoutMs": 900000
+}

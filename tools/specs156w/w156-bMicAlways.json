@@ -1,0 +1,19 @@
+{
+  "label": "w156-bMicAlways",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/Composer.tsx",
+      "from": "{voice?.listen === true && <MicButton listen={listen} />}",
+      "to": "<MicButton listen={listen} />"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "A"
+  },
+  "timeoutMs": 900000
+}

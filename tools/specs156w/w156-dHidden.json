@@ -1,0 +1,19 @@
+{
+  "label": "w156-dHidden",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/useListen.ts",
+      "from": "    document.addEventListener('visibilitychange', hidden)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "D"
+  },
+  "timeoutMs": 900000
+}

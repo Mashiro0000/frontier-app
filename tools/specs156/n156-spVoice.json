@@ -1,0 +1,18 @@
+{
+  "label": "n156-spVoice",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/speaker.ts",
+      "from": "        if (voice !== null) {\n          utterance.voice = voice\n          utterance.lang = voice.lang\n        }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-6.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 400000
+}

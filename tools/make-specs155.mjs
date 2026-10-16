@@ -79,7 +79,8 @@ const windowControls = {
   gDefaultSession: ['run155.mjs', INDEX, '    session.defaultSession,', "    session.fromPartition('somewhere-else'),"],
   gVideo: ['run155.mjs', PERM, '        ask.mediaTypes.length === 1 &&\n', ''],
   gBegin: ['run155.mjs', SVC, '      const armed = mic.arm()', '      const armed = { ok: true as const, maxMs: 60000 }'],
-  cCopyFallback: ['run72.mjs', COPY, "    return document.execCommand('copy')", '    return false']
+  // (the first version ran 7.2's suite, which clicks Copy with the async clipboard API working, so it never needed the old way: it passed with the fallback broken. 15.6's suite makes that API fail on purpose.)
+  cCopyFallback: ['run156.mjs', COPY, "    return document.execCommand('copy')", '    return false']
 }
 
 for (const name of Object.keys(controls)) if (name in windowControls) throw new Error(`a control is in both lists: ${name}`)
@@ -95,7 +96,7 @@ for (const [name, [suite, only, file, from, to]] of Object.entries(controls)) {
 mkdirSync(join(TOOLS, 'specs155w'), { recursive: true })
 for (const [name, [runner, file, from, to]] of Object.entries(windowControls)) {
   check(name, file, from, to)
-  const spec = { label: `w155-${name}`, edits: [{ file, from, to }], argv: [`{{TOOLS}}/${runner}`, 'dev'], env: { NO_RETRY: '1' }, timeoutMs: 600000 }
+  const spec = { label: `w155-${name}`, edits: [{ file, from, to }], argv: [`{{TOOLS}}/${runner}`, 'dev'], env: { NO_RETRY: '1', ...(runner === 'run156.mjs' ? { STOP_AFTER: 'A' } : {}) }, timeoutMs: 600000 }
   writeFileSync(join(TOOLS, 'specs155w', `w155-${name}.json`), JSON.stringify(spec, null, 2) + '\n')
 }
 console.log(`wrote ${Object.keys(controls).length} specs in specs155 and ${Object.keys(windowControls).length} in specs155w`)

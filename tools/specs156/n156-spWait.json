@@ -1,0 +1,18 @@
+{
+  "label": "n156-spWait",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/speaker.ts",
+      "from": "waited < 3000",
+      "to": "waited < 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-6.mjs"
+  ],
+  "env": {
+    "ONLY": "H"
+  },
+  "timeoutMs": 400000
+}

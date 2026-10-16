@@ -1,0 +1,18 @@
+{
+  "label": "n156-jOpenElsewhere",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/MicButton.tsx",
+      "from": "        listen.press()\n      }}\n      onPointerUp",
+      "to": "        void navigator.mediaDevices.getUserMedia({ audio: true })\n        listen.press()\n      }}\n      onPointerUp"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-6.mjs"
+  ],
+  "env": {
+    "ONLY": "J"
+  },
+  "timeoutMs": 400000
+}
