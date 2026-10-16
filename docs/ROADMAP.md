@@ -451,7 +451,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 - [x] (16.3, D-048) The adapter in main (56 checks, 19 negative controls, all caught): one try, exactly the fields the plan names, the key never in a sentence, the answer read strictly, the clock, Stop, the refusals told.
 - [x] (16.4, D-048) The store and the service (104 checks under Node, 36 in the window on the app and the built app; 27 negative controls, all caught): the switch that asks, generate (checks, reserve in the ledger, call, check the bytes, keep, finish the record), the gallery's operations, the messages across the bridge.
 - [x] (16.5, D-048) In the chat (39 checks under Node, 18 in the window on the app and the built app; 21 negative controls, all caught): a made picture as a message, "Use in chat", the chat file and the backup (the decision of question 4).
-- [ ] (16.6, D-048) The window: the "Make an image" dialog and its cost line, the gallery, the Settings section, the words for every refusal; at 420 and 280 px; keyboard.
+- [x] (16.6, D-048) The window (32 source checks, 45 in the window on the app and the built app; 28 negative controls, all caught): the "Make an image" dialog and its cost line, the gallery, the Settings section, the words for every refusal; at 420 and 280 px; keyboard.
 - [ ] (16.7, D-048) Encryption and backups (the index and the pictures sealed with the chats; what a backup carries), the scan that nothing stray is on the disk, cost in Settings > Usage.
 - [ ] (16.8, D-048) The stage's threat note, the full regression, the merge.
 

@@ -1,0 +1,18 @@
+{
+  "label": "n166-mdStale",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/images/MakeImageDialog.tsx",
+      "from": "answered !== null && answered.key === choiceKey ? answered.estimate : null",
+      "to": "answered !== null ? answered.estimate : null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-6.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

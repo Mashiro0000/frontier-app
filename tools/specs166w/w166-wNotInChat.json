@@ -1,0 +1,19 @@
+{
+  "label": "w166-wNotInChat",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/App.tsx",
+      "from": "onMade={chat.addPicture}",
+      "to": "onMade={() => undefined}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run166.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "C"
+  },
+  "timeoutMs": 1200000
+}

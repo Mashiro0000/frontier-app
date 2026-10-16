@@ -1,0 +1,18 @@
+{
+  "label": "n166-mdOpenOnly",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/images/MakeImageDialog.tsx",
+      "from": "      {open && (\n        <MakeImageForm",
+      "to": "      {(\n        <MakeImageForm"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-6.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

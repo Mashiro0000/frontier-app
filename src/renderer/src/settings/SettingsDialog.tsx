@@ -7,6 +7,7 @@ import LimitsSection from './LimitsSection'
 import ProviderKeySection from './ProviderKeySection'
 import UsageSection from './UsageSection'
 import VoiceSection from './VoiceSection'
+import ImagesSection from './ImagesSection'
 
 interface SettingsDialogProps {
   open: boolean
@@ -124,6 +125,9 @@ function SettingsDialog({
 
       {/* Voice (D-047): fresh each time Settings is closed, like the section below. */}
       <VoiceSection key={`voice:${session}`} open={open} />
+
+      {/* Images (D-048): fresh each time Settings is closed, like the sections around it. */}
+      <ImagesSection key={`images:${session}`} open={open} />
 
       {/* Fresh each time Settings is closed, so a notice about the last change is not still there the next time it opens. */}
       <ChatStorageSection

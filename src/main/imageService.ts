@@ -250,10 +250,10 @@ export function createImageService(options: ImageServiceOptions): ImageService {
         ? `Your image settings could not be read (${problem}).`
         : !registry.ok
           ? IMAGE_WORDS.noModels
-          : !chosen.on
-            ? IMAGE_WORDS.off
-            : key === null
-              ? IMAGE_WORDS.noKey
+          : key === null
+            ? IMAGE_WORDS.noKey // first: without a key it cannot be switched on either
+            : !chosen.on
+              ? IMAGE_WORDS.off
               : !limitsChosen
                 ? IMAGE_WORDS.noLimits
                 : null

@@ -1,0 +1,18 @@
+{
+  "label": "n166-isNoKey",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/ImagesSection.tsx",
+      "from": "disabled={busy || cannotTurnOn}",
+      "to": "disabled={busy}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-6.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

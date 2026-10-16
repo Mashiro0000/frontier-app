@@ -29,6 +29,9 @@ interface ChatBarProps {
   /** Main is working on files, or the message has as many as it may carry. */
   attachDisabled: boolean
   attachTitle: string
+  /** (16.6, D-048) "Make images" is on: the button that opens the "Make an image" dialog is shown. */
+  imagesOn: boolean
+  onMakeImage: () => void
 }
 
 const chars = (text: string): string => `${text.length.toLocaleString('en-US')} characters`
@@ -93,7 +96,9 @@ function ChatBar({
   onOpenInstructions,
   onAttach,
   attachDisabled,
-  attachTitle
+  attachTitle,
+  imagesOn,
+  onMakeImage
 }: ChatBarProps): React.JSX.Element {
   return (
     <div className="chat-bar" role="group" aria-label="This chat">
@@ -106,6 +111,22 @@ function ChatBar({
       >
         Attach...
       </button>
+      {/* (D-048) Only while "Make images" is on, as the microphone button is only while "Speak to type" is. */}
+      {imagesOn && (
+        <button
+          type="button"
+          className="chat-button chat-make-image"
+          disabled={isReplying}
+          title={
+            isReplying
+              ? 'A picture can be made when the reply has finished.'
+              : 'Describe a picture for OpenAI to make. You see the most it can cost first.'
+          }
+          onClick={onMakeImage}
+        >
+          Make an image...
+        </button>
+      )}
       <button
         type="button"
         className="chat-button"

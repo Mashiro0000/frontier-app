@@ -1,0 +1,19 @@
+{
+  "label": "w166-wGalleryEsc",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/images/GalleryDialog.tsx",
+      "from": "          event.preventDefault() // Escape goes back to the grid first\n          setLarge(null)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run166.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "F"
+  },
+  "timeoutMs": 1200000
+}

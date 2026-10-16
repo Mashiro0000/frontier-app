@@ -93,6 +93,8 @@ await guard('A', async () => {
   check('A: nothing in the status is a path, a key or an address', !/[A-Z]:\\|sk-|:\/\//.test(JSON.stringify(s)))
   r = await rig({ key: null })
   check('A: on but no OpenAI key: says so', (await r.service.status()).blocked === I.IMAGE_WORDS.noKey)
+  r = await rig({ key: null, on: false })
+  check('A: (16.6) off AND no OpenAI key: the key is said first (without one the switch cannot be turned on either)', (await r.service.status()).blocked === I.IMAGE_WORDS.noKey)
   r = await rig({ limits: null })
   check('A: no limits chosen: says so', (await r.service.status()).blocked === I.IMAGE_WORDS.noLimits)
   r = await rig({ on: false })

@@ -1,0 +1,18 @@
+{
+  "label": "n166-stFail",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/images/imageStatus.ts",
+      "from": "    () => undefined\n  )",
+      "to": "    () => publish(null)\n  )"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-6.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

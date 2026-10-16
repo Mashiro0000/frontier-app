@@ -1,0 +1,18 @@
+{
+  "label": "n166-gdAttach",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/images/GalleryDialog.tsx",
+      "from": "disabled={busy || large.src === null || !canAttach}",
+      "to": "disabled={busy || large.src === null}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-6.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 300000
+}

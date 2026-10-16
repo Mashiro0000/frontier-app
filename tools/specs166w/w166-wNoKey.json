@@ -1,0 +1,19 @@
+{
+  "label": "w166-wNoKey",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/ImagesSection.tsx",
+      "from": "disabled={busy || cannotTurnOn}",
+      "to": "disabled={busy}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run166.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "A"
+  },
+  "timeoutMs": 1200000
+}
