@@ -1,0 +1,18 @@
+{
+  "label": "n152-jVoice",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceSettings.ts",
+      "from": "  if (voice !== null && !isVoiceName(voice)) return null",
+      "to": "  if (false) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

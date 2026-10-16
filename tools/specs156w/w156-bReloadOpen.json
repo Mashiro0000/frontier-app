@@ -1,0 +1,19 @@
+{
+  "label": "w156-bReloadOpen",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/VoiceSection.tsx",
+      "from": "    if (!open) return\n    reloadVoiceStatus()\n",
+      "to": "    if (!open) return\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "B"
+  },
+  "timeoutMs": 1800000
+}

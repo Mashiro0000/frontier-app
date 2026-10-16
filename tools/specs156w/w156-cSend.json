@@ -1,0 +1,19 @@
+{
+  "label": "w156-cSend",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/Composer.tsx",
+      "from": "    inputRef.current?.focus()\n  })",
+      "to": "    inputRef.current?.focus()\n    onSend(words)\n  })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "C"
+  },
+  "timeoutMs": 1800000
+}

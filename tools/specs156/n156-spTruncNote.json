@@ -1,0 +1,18 @@
+{
+  "label": "n156-spTruncNote",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/speaker.ts",
+      "from": "        notice: reading.truncated\n          ? `Only the first ${VOICE_LIMITS.readMaxChars.toLocaleString('en-US')} characters of this reply are read aloud.`\n          : null\n",
+      "to": "        notice: null\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-6.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 400000
+}

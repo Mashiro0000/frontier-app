@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/usageLedger.ts",
-      "from": "          ...(outcome.search === undefined ? {} : { search: { ...outcome.search } })\n",
+      "from": "          ...(outcome.search === undefined ? {} : { search: { ...outcome.search } }),\n",
       "to": ""
     }
   ],

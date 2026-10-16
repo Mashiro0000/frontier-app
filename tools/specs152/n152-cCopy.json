@@ -1,0 +1,18 @@
+{
+  "label": "n152-cCopy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceClip.ts",
+      "from": "clip: Buffer.from(bytes), seconds",
+      "to": "clip: Buffer.from(bytes.buffer, bytes.byteOffset, bytes.length), seconds"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

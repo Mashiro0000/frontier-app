@@ -1,0 +1,18 @@
+{
+  "label": "n153-aScrub",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiAudio.ts",
+      "from": "describeFailure(normalized, credentials.apiKey)",
+      "to": "describeFailure(normalized, '')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-3.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

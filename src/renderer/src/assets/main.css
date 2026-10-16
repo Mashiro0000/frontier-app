@@ -2482,3 +2482,77 @@ body {
   border: 1px solid var(--color-border);
   border-radius: 8px;
 }
+
+/* ---------- voice (D-047) ---------- */
+
+.composer-mic {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: var(--color-text);
+  background: var(--ev-c-gray-2);
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  touch-action: none; /* a hold is a pointer held down: the page must not turn it into a scroll */
+}
+
+.composer-mic:hover:not(:disabled) {
+  background: var(--ev-c-gray-1);
+}
+
+.composer-mic:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.composer-mic:disabled {
+  color: var(--ev-c-text-3);
+  cursor: default;
+}
+
+/* While the microphone is on: red, and a ring, so that it is not only a colour. */
+.composer-mic-on {
+  color: #fff;
+  background: #c62828;
+  box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.35);
+}
+
+.composer-mic-on:hover:not(:disabled) {
+  background: #b71c1c;
+}
+
+.composer-voice {
+  max-width: var(--chat-width);
+  margin: 6px auto 0;
+  font-size: 0.9em;
+  color: var(--color-text-muted);
+}
+
+.composer-voice-notice {
+  color: inherit;
+}
+
+.voice-pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.voice-pick-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.voice-pick-field select {
+  max-width: 100%;
+  font: inherit;
+}

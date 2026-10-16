@@ -1,0 +1,19 @@
+{
+  "label": "w156-eGum",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/useListen.ts",
+      "from": "        void window.api.voice.cancel().catch(() => undefined)\n        setNotice(microphoneProblem(error))",
+      "to": "        setNotice(microphoneProblem(error))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "E"
+  },
+  "timeoutMs": 1800000
+}

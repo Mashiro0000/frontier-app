@@ -193,6 +193,7 @@ d = await dlg()
 check('the count is of the trimmed text, which is the text that is kept (spaces and line breaks at the ends do not count)', d.count === `${fmt(INSTR.length)} of 8,000 characters`, d.count)
 await footer('Save')
 await closed()
+await page.waitFor(`document.querySelector('.chat-bar .chat-instructions .chat-mark')?.textContent === 'on'`, { timeoutMs: 4000, label: 'the on mark' }).catch(() => undefined) // (the mark follows main's answer to the save, a moment after the dialog closes: it flaked in 2 of 4 runs of the 15.8 regression when it was read at once)
 hb = await hdr()
 check('Save closes the dialog and the button now says "on", with a tooltip that says the instructions are sent with every message and how long they are', hb.mark === 'on' && hb.text === 'Instructions on' && hb.title.includes(`${fmt(INSTR.length)} characters`) && /every message/.test(hb.title), JSON.stringify(hb))
 check('...the keyboard goes back to the button that opened the dialog', hb.focused)
@@ -236,6 +237,7 @@ check('...and the next request is the app\'s rules alone, byte for byte what Sta
 
 // ============ E. a new chat starts without ============
 await setInstructions(INSTR_C)
+await page.waitFor(`document.querySelector('.chat-bar .chat-instructions .chat-mark')?.textContent === 'on'`, { timeoutMs: 4000, label: 'the on mark' }).catch(() => undefined) // (the mark follows main's answer to the save, a moment after the dialog closes: it flaked in 2 of 4 runs of the 15.8 regression when it was read at once)
 check('(instructions set again on the chat that is open)', (await hdr()).mark === 'on')
 await newChat()
 check('New chat starts without instructions: no mark', (await hdr()).mark === null)

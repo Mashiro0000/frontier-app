@@ -1,0 +1,19 @@
+{
+  "label": "w156-cAppend",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/Composer.tsx",
+      "from": "    setText((now) => (now === '' ? words : `${now}${/\\s$/.test(now) ? '' : ' '}${words}`))",
+      "to": "    setText(words)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "C"
+  },
+  "timeoutMs": 1800000
+}

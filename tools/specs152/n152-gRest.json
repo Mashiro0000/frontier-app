@@ -1,0 +1,18 @@
+{
+  "label": "n152-gRest",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceGate.ts",
+      "from": "      if (at < restingUntil) return { ok: false, why: 'resting' }",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 400000
+}

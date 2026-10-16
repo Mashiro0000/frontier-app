@@ -69,6 +69,8 @@ search, files in one workspace folder (D-042), running a program in a locked box
 program on this PC (run in the same locked box by default) or a web address offers through MCP. You add a connector in Tools, read each of its tools
 and switch on the ones you want; nothing is installed or downloaded by the app. A web connector that wants a sign-in shows **Sign in** (Stage 14b, D-046): you sign in on the provider's page in your own browser, the app never sees your password, and it keeps a token sealed on this PC until you sign out.
 
+Voice (Stage 15, D-047) has two switches in **Settings > Voice**, both off at first. **Speak to type** puts a microphone button under the message box: hold it, say your message, let go, and the words appear in the box (nothing is sent until you press Send). Anthropic has no speech service, so your voice goes to OpenAI (`gpt-transcribe`, about $0.0045 a minute, counted in your spending limits) with your OpenAI key, even when you chat with Claude; it is turned on only after a yes in a Windows message box that says so. While the microphone is open the window's title says RECORDING and the taskbar button carries a red dot, and the app keeps no recording. **Read aloud** adds a button under each reply that reads it with a voice of this PC: nothing is sent anywhere, and a reply is never read without a click.
+
 ### Checks
 
 The app has no test framework (D-007). `tools/` holds the check scripts that drive the real window against a fake

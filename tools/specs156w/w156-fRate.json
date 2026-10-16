@@ -1,0 +1,19 @@
+{
+  "label": "w156-fRate",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/MessageActions.tsx",
+      "from": "                  rate: voice?.rate ?? 100",
+      "to": "                  rate: 100"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "F"
+  },
+  "timeoutMs": 1800000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n156-kFs",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceService.ts",
+      "from": "import { checkAgainstLimits, limitsAreSet, unsetLimits } from '../shared/limits'\n",
+      "to": "import { writeFileSync } from 'node:fs'\nimport { checkAgainstLimits, limitsAreSet, unsetLimits } from '../shared/limits'\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-7.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 400000
+}

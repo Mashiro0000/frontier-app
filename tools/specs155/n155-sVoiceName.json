@@ -1,0 +1,18 @@
+{
+  "label": "n155-sVoiceName",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceService.ts",
+      "from": "        if ((voice !== null && !isVoiceName(voice)) || !isRate(rate)) {",
+      "to": "        if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

@@ -1,0 +1,19 @@
+{
+  "label": "w156-bReadUser",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/MessageActions.tsx",
+      "from": "voice?.speak === true && message.role === 'assistant' && message.content !== '' && !arriving",
+      "to": "voice?.speak === true && message.content !== '' && !arriving"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "B"
+  },
+  "timeoutMs": 1800000
+}

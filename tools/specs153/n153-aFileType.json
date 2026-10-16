@@ -1,0 +1,18 @@
+{
+  "label": "n153-aFileType",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiAudio.ts",
+      "from": "{ type: 'audio/webm' }",
+      "to": "{ type: 'audio/ogg' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-3.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 400000
+}

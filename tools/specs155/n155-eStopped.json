@@ -1,0 +1,18 @@
+{
+  "label": "n155-eStopped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceService.ts",
+      "from": "          state: failed?.rejected ? 'rejected' : failed?.stopped ? 'stopped' : 'failed',",
+      "to": "          state: failed?.rejected ? 'rejected' : 'failed',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 400000
+}

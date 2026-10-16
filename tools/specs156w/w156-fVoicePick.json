@@ -1,0 +1,19 @@
+{
+  "label": "w156-fVoicePick",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/MessageActions.tsx",
+      "from": "                  voice: voice?.voice ?? null,",
+      "to": "                  voice: null,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "F"
+  },
+  "timeoutMs": 1800000
+}

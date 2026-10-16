@@ -1,0 +1,19 @@
+{
+  "label": "w156-dBlur",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/useListen.ts",
+      "from": "    window.addEventListener('blur', away)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "D"
+  },
+  "timeoutMs": 1800000
+}

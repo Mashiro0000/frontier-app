@@ -1,0 +1,18 @@
+{
+  "label": "n152-cShort",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceClip.ts",
+      "from": "  if (ms < VOICE_LIMITS.minClipMs) return",
+      "to": "  if (false) return"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

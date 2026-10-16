@@ -1,0 +1,18 @@
+{
+  "label": "n155-sKeyFirst",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceService.ts",
+      "from": "        if ((await options.key()) === null) return { ok: false, error: VOICE_WORDS.noKey }\n        const answer",
+      "to": "        const answer"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

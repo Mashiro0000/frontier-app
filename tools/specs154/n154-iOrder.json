@@ -1,0 +1,18 @@
+{
+  "label": "n154-iOrder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/index.ts",
+      "from": "  savesDone = registerIpc(appUrl)\n  createWindow()\n",
+      "to": "  createWindow()\n  savesDone = registerIpc(appUrl)\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 400000
+}

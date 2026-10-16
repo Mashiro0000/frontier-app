@@ -1,0 +1,19 @@
+{
+  "label": "w156-aCopyFallback",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/useCopy.ts",
+      "from": "    return document.execCommand('copy')",
+      "to": "    return false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "A"
+  },
+  "timeoutMs": 1800000
+}

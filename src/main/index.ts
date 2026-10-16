@@ -1,10 +1,12 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, session, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { pathToFileURL } from 'url'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { registerIpc } from './ipc'
 import { isAppUrl, isSafeExternalUrl } from './security'
+import { installPermissionHandlers } from './voicePermissions'
+import { microphoneGate, showMicrophoneState } from './voiceWindow'
 
 // The app's own page: the Vite dev server while developing, otherwise the built file. Kept at module
 // level because the message handlers are registered once, while a window can be created again.
@@ -17,12 +19,16 @@ let savesDone: () => Promise<void> = async () => undefined
 // Quitting does not wait longer than this for them, so a stuck disk can never keep the app from closing.
 const SAVE_GRACE_MS = 5000
 
+// The chat window's page, for the permission rules (15.4): only a request from THIS page can be answered yes.
+let chatWindow: BrowserWindow | null = null
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
+    title: 'Frontier App',
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -35,6 +41,13 @@ function createWindow(): void {
       nodeIntegration: false
     }
   })
+
+  chatWindow = mainWindow
+  mainWindow.on('closed', () => {
+    if (chatWindow === mainWindow) chatWindow = null
+  })
+  // The title says when the microphone is on, and the page cannot change it (15.4, D-047).
+  showMicrophoneState(mainWindow)
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -75,6 +88,13 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  // Until 15.4 the window had no permission handler, and Electron then says yes to every request the page makes: from here the answer is no unless a rule says yes.
+  installPermissionHandlers(
+    session.defaultSession,
+    appUrl,
+    microphoneGate,
+    () => chatWindow?.webContents ?? null
+  )
   savesDone = registerIpc(appUrl)
   createWindow()
 

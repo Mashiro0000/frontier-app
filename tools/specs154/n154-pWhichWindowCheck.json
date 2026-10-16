@@ -1,0 +1,18 @@
+{
+  "label": "n154-pWhichWindowCheck",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voicePermissions.ts",
+      "from": "      fromMainWindow: contents !== null && contents === chatContents()",
+      "to": "      fromMainWindow: true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-4.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

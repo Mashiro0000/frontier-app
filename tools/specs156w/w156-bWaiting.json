@@ -1,0 +1,19 @@
+{
+  "label": "w156-bWaiting",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/VoiceSection.tsx",
+      "from": "    setNotice(waits ? { kind: 'ok', text: WAITING } : null)",
+      "to": "    setNotice(null)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "B"
+  },
+  "timeoutMs": 1800000
+}

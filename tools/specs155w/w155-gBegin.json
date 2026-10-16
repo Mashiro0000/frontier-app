@@ -1,0 +1,18 @@
+{
+  "label": "w155-gBegin",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceService.ts",
+      "from": "      const armed = mic.arm()",
+      "to": "      const armed = { ok: true as const, maxMs: 60000 }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run155.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

@@ -12,6 +12,7 @@ import {
   type LedgerRecord,
   type LedgerState,
   type SearchFee,
+  type AudioFee,
   type TokenCounts,
   type UsageSummary
 } from '../shared/usage'
@@ -48,6 +49,8 @@ export interface BeginInput {
   inputTokens: number
   /** Money this request may cost beyond its tokens (11.6: the fee of a search), counted in the check against the limits. */
   reserveUsd?: number
+  /** (15.5) A clip of speech to text: the fee it is reserved at. It is kept in the record, so a request that never ends still counts for it. */
+  audio?: AudioFee
 }
 
 export interface FinishInput {
@@ -56,6 +59,8 @@ export interface FinishInput {
   estimate: boolean
   /** The searches the provider billed for (11.6); left out when there were none. */
   search?: SearchFee
+  /** (15.5) What the clip was charged at in the end; left out for a request that was not one. */
+  audio?: AudioFee
 }
 
 /** Thrown by `begin` when the check it was given refuses the request. Its message is the sentence for the person; nothing was written. */
@@ -221,7 +226,8 @@ export function createUsageLedger(path: string, options: LedgerOptions = {}): Us
           state: 'sent',
           estimate: true,
           tokens: { input: input.inputTokens, cacheRead: 0, cacheWrite: 0, output: 0 },
-          prices: { ...input.prices }
+          prices: { ...input.prices },
+          ...(input.audio === undefined ? {} : { audio: { ...input.audio } })
         }
         await append(record)
         records.set(record.id, record)
@@ -243,7 +249,8 @@ export function createUsageLedger(path: string, options: LedgerOptions = {}): Us
           state: outcome.state,
           estimate: outcome.estimate,
           tokens: { ...outcome.tokens },
-          ...(outcome.search === undefined ? {} : { search: { ...outcome.search } })
+          ...(outcome.search === undefined ? {} : { search: { ...outcome.search } }),
+          ...(outcome.audio === undefined ? {} : { audio: { ...outcome.audio } })
         }
         // In memory first: the sums must be right even if the disk refuses.
         records.set(id, record)

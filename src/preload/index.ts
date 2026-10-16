@@ -120,6 +120,16 @@ const api: FrontierApi = {
     undo: (id) => ipcRenderer.invoke(CHANNELS.changesUndo, { id }),
     clearHistory: () => ipcRenderer.invoke(CHANNELS.changesClearUndo)
   },
+  voice: {
+    status: () => ipcRenderer.invoke(CHANNELS.voiceStatus),
+    setListen: (on) => ipcRenderer.invoke(CHANNELS.voiceSetListen, { on }),
+    setSpeak: (on) => ipcRenderer.invoke(CHANNELS.voiceSetSpeak, { on }),
+    setVoice: (voice, rate) => ipcRenderer.invoke(CHANNELS.voiceSetVoice, { voice, rate }),
+    reset: () => ipcRenderer.invoke(CHANNELS.voiceReset),
+    begin: () => ipcRenderer.invoke(CHANNELS.voiceBegin),
+    end: (bytes, ms) => ipcRenderer.invoke(CHANNELS.voiceEnd, { bytes, ms }),
+    cancel: () => ipcRenderer.invoke(CHANNELS.voiceCancel)
+  },
   projects: {
     status: () => ipcRenderer.invoke(CHANNELS.projectsStatus),
     create: (name) => ipcRenderer.invoke(CHANNELS.projectsCreate, { name }),

@@ -1,0 +1,18 @@
+{
+  "label": "n152-jBoolean",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceSettings.ts",
+      "from": "  if (typeof listen !== 'boolean' || typeof speak !== 'boolean') return null",
+      "to": "  if (false) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

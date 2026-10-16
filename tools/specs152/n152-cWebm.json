@@ -1,0 +1,18 @@
+{
+  "label": "n152-cWebm",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceClip.ts",
+      "from": "  if (!looksLikeWebm(bytes)) return refused()",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

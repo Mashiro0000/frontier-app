@@ -1,0 +1,18 @@
+{
+  "label": "w155-gWindowTitle",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceWindow.ts",
+      "from": "  window.on('page-title-updated', (event) => event.preventDefault())",
+      "to": "  window.on('page-title-updated', () => {})"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run155.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

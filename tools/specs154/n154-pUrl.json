@@ -1,0 +1,18 @@
+{
+  "label": "n154-pUrl",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voicePermissions.ts",
+      "from": "  if (typeof ask.requestingUrl !== 'string' || !ctx.isApp(ask.requestingUrl)) return false",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-4.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 400000
+}

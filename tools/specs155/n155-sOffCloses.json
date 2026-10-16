@@ -1,0 +1,18 @@
+{
+  "label": "n155-sOffCloses",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceService.ts",
+      "from": "          mic.close()\n          inFlight?.abort()\n          return write({ ...now.settings, listen: false })",
+      "to": "          return write({ ...now.settings, listen: false })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

@@ -1,0 +1,19 @@
+{
+  "label": "w156-dTap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/useListen.ts",
+      "from": "      if (stopWanted.current) made.stop()\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "D"
+  },
+  "timeoutMs": 1800000
+}

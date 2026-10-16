@@ -1,0 +1,18 @@
+{
+  "label": "n152-jRate",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceSettings.ts",
+      "from": "  if (!isRate(rate)) return null",
+      "to": "  if (false) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n156-spErrorEnds",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/speaker.ts",
+      "from": "          token++\n          set({ speaking: null, notice: FAILED })",
+      "to": "          set({ speaking: null, notice: FAILED })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-6.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 400000
+}

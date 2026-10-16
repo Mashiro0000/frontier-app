@@ -1,0 +1,18 @@
+{
+  "label": "n155-sNoQuestion",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceService.ts",
+      "from": "        const answer = await gate.ask(owner, listenOnQuestion())",
+      "to": "        const answer = 'yes'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

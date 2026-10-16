@@ -1,0 +1,18 @@
+{
+  "label": "n154-pDevices",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voicePermissions.ts",
+      "from": "  ses.setDevicePermissionHandler(() => false)",
+      "to": "  ses.setDevicePermissionHandler(() => true)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-4.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "      toolSettings.file.whenIdle(),\n      workspaceStore.file.whenIdle()",
-      "to": "      toolSettings.file.whenIdle()"
+      "from": "      toolSettings.file.whenIdle(),\n      voiceSettings.file.whenIdle(),\n      workspaceStore.file.whenIdle()",
+      "to": "      toolSettings.file.whenIdle(),\n      voiceSettings.file.whenIdle()"
     }
   ],
   "argv": [

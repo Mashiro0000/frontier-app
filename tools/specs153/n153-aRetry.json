@@ -1,0 +1,18 @@
+{
+  "label": "n153-aRetry",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiAudio.ts",
+      "from": "timeout: timeoutMs, maxRetries: 0",
+      "to": "timeout: timeoutMs, maxRetries: 2"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-3.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

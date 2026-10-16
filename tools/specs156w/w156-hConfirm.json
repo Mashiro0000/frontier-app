@@ -1,0 +1,19 @@
+{
+  "label": "w156-hConfirm",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/VoiceSection.tsx",
+      "from": "              onClick={() => setStarting(true)}",
+      "to": "              onClick={() => void change(() => window.api.voice.reset(), false, 'The voice settings start again.')}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "H"
+  },
+  "timeoutMs": 1800000
+}

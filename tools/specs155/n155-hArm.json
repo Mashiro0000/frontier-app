@@ -1,0 +1,18 @@
+{
+  "label": "n155-hArm",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceService.ts",
+      "from": "      if (!armed.ok) {\n        return { ok: false, error: armed.why === 'busy' ? VOICE_WORDS.busy : VOICE_WORDS.resting }\n      }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-5.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n155-eProviderSeconds",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceService.ts",
+      "from": "          heard.providerSeconds !== null\n            ? Math.max(1, Math.ceil(heard.providerSeconds))\n            : clip.seconds",
+      "to": "          clip.seconds"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 400000
+}

@@ -21,14 +21,18 @@ const summary = join(OUT, `regress-${tag}.txt`)
 writeFileSync(summary, `# regression ${tag} started ${new Date().toISOString()}\n`)
 const results = []
 const note = (ok, line) => { results.push(ok); console.log(line); appendFileSync(summary, line + '\n') }
-const rec = (r, label, scripts) => note(r.ok, `${r.ok ? 'OK  ' : 'BAD '} ${label.padEnd(26)} ${String(scripts).padEnd(58)} ${r.detail ?? (r.passed !== undefined ? r.passed + '/' + r.total : '')}`)
+const rec = (r, label, scripts) => r === null || r === undefined ? undefined : note(r.ok, `${r.ok ? 'OK  ' : 'BAD '} ${label.padEnd(26)} ${String(scripts).padEnd(58)} ${r.detail ?? (r.passed !== undefined ? r.passed + '/' + r.total : '')}`)
 const P = scratch('s5reg')
 const MOCK = '8790'
 const pfx = (x) => `${tag}-${x}`
+// REGRESS_ONLY=w53,w74,prev-w82 runs only the window and seeded runs with these labels (for a short re-run of the suites put right after a full regression); stage4 is a label too
+const ONLY = process.env.REGRESS_ONLY ? new Set(process.env.REGRESS_ONLY.split(',')) : null
+const picked = (label) => ONLY === null || ONLY.has(label)
 
-const seeded = (label, mode, scripts, env) => runApp({ label: pfx(label), mode, scripts, env })
+const seeded = (label, mode, scripts, env) => (picked(label) ? runApp({ label: pfx(label), mode, scripts, env }) : null)
 // launchers that seed their own profile (run54.mjs, run55.mjs): their exit code decides, and the totals line they print is shown
 const launcher = (script, mode, label, what) => {
+  if (!picked(label)) return
   const r = spawnSync(process.execPath, [join(here, script), mode], { encoding: 'utf8', timeout: 900000, env: { ...process.env, NODE_NO_WARNINGS: '1' } })
   const out = (r.stdout ?? '') + (r.stderr ?? '')
   const total = out.match(/(\d+\/\d+|CRASHED[^\n]*?)\s+\(exit/)?.[1] ?? 'no summary'
@@ -50,7 +54,8 @@ function nodeSuite(label, script) {
 }
 
 if (parts.includes('node')) {
-  for (const [label, script] of [['provider', process.env.PROVIDER_TEST ?? 'provider-node-test-5.mjs'], ['registry', process.env.REGISTRY_TEST ?? 'verify-5-2.mjs'], ['store', 'verify-4-1.mjs'], ['adapter', 'provider-adapter-test-5.mjs'], ['credstore', 'verify-5-3-store.mjs'], ['store54', 'verify-5-4-store.mjs'], ['openai', 'provider-openai-test-5.mjs'], ['rankings', 'verify-6-1.mjs'], ['effort', 'verify-7-1.mjs'], ['markdown', 'verify-7-2.mjs'], ['rewrite', 'verify-7-3.mjs'], ['instructions', 'verify-7-4.mjs'], ['usage', 'verify-8-1.mjs'], ['limits', 'verify-8-2.mjs'], ['askfirst', 'verify-8-3.mjs'], ['backupfile', 'verify-8b-1.mjs'], ['restore', 'verify-8b-2.mjs'], ['encrypt', 'verify-8b-3.mjs'], ['wording', 'verify-8b-wording.mjs'], ['attach91', 'verify-9-1.mjs'], ['images91', 'run91.mjs'], ['attach92', 'verify-9-2.mjs'], ['attach93', 'verify-9-3.mjs'], ['cost94', 'verify-9-4.mjs'], ['backup95', 'verify-9-5.mjs'], ['question101', 'verify-10-1.mjs'], ['instructions102', 'verify-10-2.mjs'], ['memory103', 'verify-10-3.mjs'], ['notes104', 'verify-10-4.mjs'], ['projects105', 'verify-10-5.mjs'], ['projreq106', 'verify-10-6.mjs'], ['backup107', 'verify-10-7.mjs'], ['tools111', 'verify-11-1.mjs'], ['folder111', 'verify-11-1-folder.mjs'], ['tools112', 'verify-11-2.mjs'], ['tools113', 'verify-11-3.mjs'], ['tools114', 'verify-11-4.mjs'], ['tools115', 'verify-11-5.mjs'], ['tools116', 'verify-11-6.mjs'], ['tools117', 'verify-11-7.mjs'], ['workspace121', 'verify-12-1.mjs'], ['workspace122', 'verify-12-2.mjs'], ['workspace123', 'verify-12-3.mjs'], ['proposals124', 'verify-12-4.mjs'], ['review125', 'verify-12-5.mjs'], ['apply126', 'verify-12-6.mjs'], ['cost127', 'verify-12-7.mjs'], ['launcher132', 'verify-13-2.mjs'], ['fsguard', 'verify-fsguard.mjs'], ['scratch133', 'verify-13-3.mjs'], ['programs134', 'verify-13-4.mjs'], ['programs135', 'verify-13-5.mjs'], ['costs136', 'verify-13-6.mjs'], ['connectors142', 'verify-14-2.mjs'], ['connectors143', 'verify-14-3.mjs'], ['costs147', 'verify-14-7.mjs'], ['oauth14b1', 'verify-14b-1.mjs'], ['oauth14b2', 'verify-14b-2.mjs'], ['oauth14b3', 'verify-14b-3.mjs'], ['oauth14b4', 'verify-14b-4.mjs'], ['oauth14b5', 'verify-14b-5.mjs'],...(process.env.EXTRA_NODE_TESTS ? process.env.EXTRA_NODE_TESTS.split(',').map((t, i) => ['extra' + i, t]) : [])]) {
+  for (const [label, script] of [['provider', process.env.PROVIDER_TEST ?? 'provider-node-test-5.mjs'], ['registry', process.env.REGISTRY_TEST ?? 'verify-5-2.mjs'], ['store', 'verify-4-1.mjs'], ['adapter', 'provider-adapter-test-5.mjs'], ['credstore', 'verify-5-3-store.mjs'], ['store54', 'verify-5-4-store.mjs'], ['openai', 'provider-openai-test-5.mjs'], ['rankings', 'verify-6-1.mjs'], ['effort', 'verify-7-1.mjs'], ['markdown', 'verify-7-2.mjs'], ['rewrite', 'verify-7-3.mjs'], ['instructions', 'verify-7-4.mjs'], ['usage', 'verify-8-1.mjs'], ['limits', 'verify-8-2.mjs'], ['askfirst', 'verify-8-3.mjs'], ['backupfile', 'verify-8b-1.mjs'], ['restore', 'verify-8b-2.mjs'], ['encrypt', 'verify-8b-3.mjs'], ['wording', 'verify-8b-wording.mjs'], ['attach91', 'verify-9-1.mjs'], ['images91', 'run91.mjs'], ['attach92', 'verify-9-2.mjs'], ['attach93', 'verify-9-3.mjs'], ['cost94', 'verify-9-4.mjs'], ['backup95', 'verify-9-5.mjs'], ['question101', 'verify-10-1.mjs'], ['instructions102', 'verify-10-2.mjs'], ['memory103', 'verify-10-3.mjs'], ['notes104', 'verify-10-4.mjs'], ['projects105', 'verify-10-5.mjs'], ['projreq106', 'verify-10-6.mjs'], ['backup107', 'verify-10-7.mjs'], ['tools111', 'verify-11-1.mjs'], ['folder111', 'verify-11-1-folder.mjs'], ['tools112', 'verify-11-2.mjs'], ['tools113', 'verify-11-3.mjs'], ['tools114', 'verify-11-4.mjs'], ['tools115', 'verify-11-5.mjs'], ['tools116', 'verify-11-6.mjs'], ['tools117', 'verify-11-7.mjs'], ['workspace121', 'verify-12-1.mjs'], ['workspace122', 'verify-12-2.mjs'], ['workspace123', 'verify-12-3.mjs'], ['proposals124', 'verify-12-4.mjs'], ['review125', 'verify-12-5.mjs'], ['apply126', 'verify-12-6.mjs'], ['cost127', 'verify-12-7.mjs'], ['launcher132', 'verify-13-2.mjs'], ['fsguard', 'verify-fsguard.mjs'], ['scratch133', 'verify-13-3.mjs'], ['programs134', 'verify-13-4.mjs'], ['programs135', 'verify-13-5.mjs'], ['costs136', 'verify-13-6.mjs'], ['connectors142', 'verify-14-2.mjs'], ['connectors143', 'verify-14-3.mjs'], ['costs147', 'verify-14-7.mjs'], ['oauth14b1', 'verify-14b-1.mjs'], ['oauth14b2', 'verify-14b-2.mjs'], ['oauth14b3', 'verify-14b-3.mjs'], ['oauth14b4', 'verify-14b-4.mjs'], ['oauth14b5', 'verify-14b-5.mjs'], ['voice152', 'verify-15-2.mjs'], ['voice153', 'verify-15-3.mjs'], ['voice154', 'verify-15-4.mjs'], ['voice155', 'verify-15-5.mjs'], ['voice156', 'verify-15-6.mjs'], ['voice157', 'verify-15-7.mjs'],...(process.env.EXTRA_NODE_TESTS ? process.env.EXTRA_NODE_TESTS.split(',').map((t, i) => ['extra' + i, t]) : [])]) {
+    if (!picked(label)) continue
     const r = nodeSuite(label, script)
     note(r.ok, `${r.ok ? 'OK  ' : 'BAD '} ${pfx(label).padEnd(26)} ${script}`)
   }
@@ -98,9 +103,11 @@ if (parts.includes('window')) {
   launcher('run135.mjs', 'dev', 'w135', 'verify-13-5 (running programs: the real box, the self-test, a run on a copy, Stop everything, the switch off)')
   launcher('run146.mjs', 'dev', 'w146', 'verify-14-6 (connectors: adding a program, its tools in the box, a tool on, a call asked and run, an address with a token, removing)')
   launcher('run14b6.mjs', 'dev', 'w14b6', 'verify-14b-6 (sign-in to a web connector: Sign in asks, the browser, the sealed record, a call with the token and its silent renewal, sign out, cancel, a client id typed)')
+  launcher('run155.mjs', 'dev', 'w155', 'verify-15-5 (voice: the gate shut, switching on through the box of the system, a hold with a fake microphone, the words, the ledger)')
+  launcher('run156.mjs', 'dev', 'w156', 'verify-15-6 (voice: the Voice section, the microphone button held, Read aloud, Copy, 420 and 280 px, a damaged voice.json)')
   launcher('run93.mjs', 'dev', 'w93', 'verify-9-3 (sending and saving files: both providers, History, delete, encryption, the sweep, a model that cannot read them)')
   rec(seeded('w76', 'dev', 'setup-key.mjs,verify-7-6w.mjs', { USER_DATA_DIR: scratch('s76'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('w76'), 'verify-7-6 (header one row, chat bar under the box)')
-  const mtime = statSync(join(P, 'preferences.json')).mtimeMs
+  const mtime = picked('34b') ? statSync(join(P, 'preferences.json')).mtimeMs : 0 // (the profile of an earlier run of this regression; a re-run of a few labels need not have one)
   rec(seeded('34b', 'dev', 'verify-3-4b.mjs', { USER_DATA_DIR: P, MOCK_PORT: MOCK, EXPECT_MODEL: 'claude-fable-5-1', PREFS_MTIME_MS: String(mtime) }), pfx('34b'), 'verify-3-4b (restart)')
 }
 
@@ -125,6 +132,7 @@ if (parts.includes('scenarios')) {
 }
 
 function stage4(mode) {
+  if (!picked('stage4-' + mode)) return
   const p = mode === 'preview' ? 'p' : 'd'
   const r = spawnSync(process.execPath, [join(here, 'final-new.mjs'), mode], { encoding: 'utf8', timeout: 3600000, env: { ...process.env, NODE_NO_WARNINGS: '1' }, maxBuffer: 64 * 1024 * 1024 })
   const out = (r.stdout ?? '') + (r.stderr ?? '')
@@ -177,6 +185,8 @@ if (parts.includes('preview')) {
   launcher('run135.mjs', 'preview', 'prev-w135', 'built: verify-13-5 (running programs)')
   launcher('run146.mjs', 'preview', 'prev-w146', 'built: verify-14-6 (connectors)')
   launcher('run14b6.mjs', 'preview', 'prev-w14b6', 'built: verify-14b-6 (sign-in to a web connector)')
+  launcher('run155.mjs', 'preview', 'prev-w155', 'built: verify-15-5 (voice: the gate, a hold, the words)')
+  launcher('run156.mjs', 'preview', 'prev-w156', 'built: verify-15-6 (voice: the page)')
   launcher('run93.mjs', 'preview', 'prev-w93', 'built: verify-9-3 (sending and saving files)')
   rec(seeded('prev-w76', 'preview', 'setup-key.mjs,verify-7-6w.mjs', { USER_DATA_DIR: scratch('s76p'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('prev-w76'), 'built: verify-7-6 (header one row, chat bar)')
   stage4('preview')

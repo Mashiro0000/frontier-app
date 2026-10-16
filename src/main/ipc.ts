@@ -33,6 +33,12 @@ import type { ProgramsChangeResult, ProgramsStatus } from '../shared/programs'
 import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from '../shared/memory'
 import type { ProjectChangeResult, ProjectsStatus } from '../shared/projects'
 import type { UsageSummary } from '../shared/usage'
+import type {
+  VoiceBeginResult,
+  VoiceChangeResult,
+  VoiceEndResult,
+  VoiceStatus
+} from '../shared/voice'
 import { effortStatusOf } from '../shared/effort'
 import { unsetLimits } from '../shared/limits'
 import { suggestionsFor, TASKS } from '../shared/rankings'
@@ -112,6 +118,9 @@ import type { ConnectorChangeResult, ConnectorsStatus } from '../shared/connecto
 import type { ToolSettings } from '../shared/tools'
 import { sweepSelfTest } from './selfTest'
 import { createToolSettings } from './toolSettings'
+import { createVoiceService } from './voiceService'
+import { createVoiceSettings } from './voiceSettings'
+import { microphoneGate } from './voiceWindow'
 import { createToolSettingsService } from './toolSettingsService'
 import { createUsageLedger } from './usageLedger'
 
@@ -450,6 +459,12 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     box: secureStorage,
     writeMode: protection.writeMode
   })
+  // What the person chose for voice (D-047), in voice.json, kept the same way: both switches are off with no file or a file that cannot be read.
+  const voiceSettings = createVoiceSettings({
+    pathOf: () => join(app.getPath('userData'), 'voice.json'),
+    box: secureStorage,
+    writeMode: protection.writeMode
+  })
   // The one registry of the build: the Tools page lists its tools, and the loop of a reply offers and runs them.
   const toolRegistry = createToolRegistry([
     ...BUILT_IN_TOOLS,
@@ -645,8 +660,9 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       toolSettings.file,
       workspaceStore.file,
       undoJournal.document,
-      connectorStore.file
-    ]) // rewritten with the chats (D-039, D-041, D-045)
+      connectorStore.file,
+      voiceSettings.file
+    ]) // rewritten with the chats (D-039, D-041, D-045, D-047)
   })
 
   ipcMain.handle(
@@ -1249,6 +1265,80 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
+  // Voice (D-047, 15.5). The page reads the status and asks; "Speak to type" is switched on only after the person's yes in the system's message box for the window that
+  // asked. `begin` and `end` are the hold of the button: the microphone's gate is opened by `begin` after every check and closed by `end`, `cancel`, the clock or the window.
+  const voice = createVoiceService({
+    store: voiceSettings,
+    gate: questions,
+    mic: microphoneGate,
+    key: () => readApiKey('openai'),
+    baseUrl: () => baseUrlOverride('openai'),
+    limits: limitsStore,
+    ledger
+  })
+  ipcMain.handle(
+    CHANNELS.voiceStatus,
+    guarded(async (): Promise<VoiceStatus> => {
+      try {
+        return await voice.status()
+      } catch (error) {
+        console.error('Reading the voice settings failed:', reason(error))
+        throw new Error('Your voice settings could not be read.')
+      }
+    })
+  )
+  const voiceChange =
+    (work: (window: BrowserWindow | null, input: unknown) => Promise<VoiceChangeResult>) =>
+    async (window: BrowserWindow | null, input: unknown): Promise<VoiceChangeResult> => {
+      try {
+        return await work(window, input)
+      } catch (error) {
+        console.error('Changing the voice settings failed:', reason(error))
+        return { ok: false, error: 'The voice settings could not be changed.' }
+      }
+    }
+  ipcMain.handle(
+    CHANNELS.voiceSetListen,
+    guardedForWindow(voiceChange((window, input) => voice.setListen(window, input)))
+  )
+  ipcMain.handle(
+    CHANNELS.voiceSetSpeak,
+    guardedForWindow(voiceChange((_window, input) => voice.setSpeak(input)))
+  )
+  ipcMain.handle(
+    CHANNELS.voiceSetVoice,
+    guardedForWindow(voiceChange((_window, input) => voice.setVoice(input)))
+  )
+  ipcMain.handle(CHANNELS.voiceReset, guardedForWindow(voiceChange(() => voice.reset())))
+  ipcMain.handle(
+    CHANNELS.voiceBegin,
+    guarded(async (): Promise<VoiceBeginResult> => {
+      try {
+        return await voice.begin()
+      } catch (error) {
+        console.error('Starting a recording failed:', reason(error))
+        return { ok: false, error: 'The recording could not be started.' }
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.voiceEnd,
+    guarded(async (input: unknown): Promise<VoiceEndResult> => {
+      try {
+        return await voice.end(input)
+      } catch (error) {
+        console.error('Handling a recording failed:', reason(error))
+        return { ok: false, kind: 'failed', error: 'The recording could not be used.' }
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.voiceCancel,
+    guarded(async (): Promise<void> => {
+      voice.cancel()
+    })
+  )
+
   // At start, the copies left by messages that were never sent (D-037): deleted when no chat and no project uses them (D-039), they are over an hour
   // old, and every chat and projects.json could be read (otherwise what uses them is not known, and nothing is deleted). It runs in the stores' own turns, after the folder has been read.
   void usedFiles()
@@ -1322,6 +1412,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   // The lock the encryption flows run in is the backup service's, so waiting for it waits for them too. The app is closing when this is asked: a program that is still
   // running in the box is ended first (13.5), and what its copy left is swept at the next start.
   return () => {
+    voice.cancel() // a recording or a clip on its way ends with the app
     connectorService.stopAll()
     connectorBox.stopAll()
     programBox.stopAll()
@@ -1335,6 +1426,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       projects.file.whenIdle(),
       auditLog.whenIdle(),
       toolSettings.file.whenIdle(),
+      voiceSettings.file.whenIdle(),
       workspaceStore.file.whenIdle(),
       undoJournal.whenIdle(),
       connectorStore.file.whenIdle()

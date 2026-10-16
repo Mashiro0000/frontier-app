@@ -1,0 +1,19 @@
+{
+  "label": "w156-hProblem",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/VoiceSection.tsx",
+      "from": "              disabled={busy || status.problem !== null}",
+      "to": "              disabled={busy}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "H"
+  },
+  "timeoutMs": 1800000
+}

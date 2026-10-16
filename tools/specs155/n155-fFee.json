@@ -1,0 +1,18 @@
+{
+  "label": "n155-fFee",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "  (Math.max(1, Math.ceil(fee.seconds)) / 60) * fee.usdPerMinute",
+      "to": "  (fee.seconds / 60) * fee.usdPerMinute"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-5.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 400000
+}

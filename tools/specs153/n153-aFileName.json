@@ -1,0 +1,18 @@
+{
+  "label": "n153-aFileName",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiAudio.ts",
+      "from": "toFile(clip, 'clip.webm', { type: 'audio/webm' })",
+      "to": "toFile(clip, 'clip.wav', { type: 'audio/webm' })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-3.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 400000
+}

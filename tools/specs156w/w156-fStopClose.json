@@ -1,0 +1,19 @@
+{
+  "label": "w156-fStopClose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/VoiceSection.tsx",
+      "from": "      speaker.stop() // a \"Try the voice\" does not go on after Settings is closed\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run156.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "F"
+  },
+  "timeoutMs": 1800000
+}

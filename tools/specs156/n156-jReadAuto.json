@@ -1,0 +1,18 @@
+{
+  "label": "n156-jReadAuto",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/Composer.tsx",
+      "from": "    inputRef.current?.focus()\n  })",
+      "to": "    inputRef.current?.focus()\n    speaker.speak('dictated', words, { voice: null, rate: 100 })\n  })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-6.mjs"
+  ],
+  "env": {
+    "ONLY": "J"
+  },
+  "timeoutMs": 400000
+}

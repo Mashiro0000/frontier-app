@@ -1,0 +1,18 @@
+{
+  "label": "n156-spRate",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/speaker.ts",
+      "from": "      const rate = Math.min(2, Math.max(0.5, options.rate / 100))",
+      "to": "      const rate = options.rate / 100"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-6.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 400000
+}

@@ -6,6 +6,7 @@ import { formatPrice, formatTokens, providerName } from './format'
 import LimitsSection from './LimitsSection'
 import ProviderKeySection from './ProviderKeySection'
 import UsageSection from './UsageSection'
+import VoiceSection from './VoiceSection'
 
 interface SettingsDialogProps {
   open: boolean
@@ -120,6 +121,9 @@ function SettingsDialog({
         status={status}
         onStatusChange={onStatusChange}
       />
+
+      {/* Voice (D-047): fresh each time Settings is closed, like the section below. */}
+      <VoiceSection key={`voice:${session}`} open={open} />
 
       {/* Fresh each time Settings is closed, so a notice about the last change is not still there the next time it opens. */}
       <ChatStorageSection

@@ -1,0 +1,18 @@
+{
+  "label": "n156-jStorage",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/useListen.ts",
+      "from": "      if (result.ok) onTextRef.current(result.text)",
+      "to": "      if (result.ok) {\n        localStorage.setItem('words', result.text)\n        onTextRef.current(result.text)\n      }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-6.mjs"
+  ],
+  "env": {
+    "ONLY": "J"
+  },
+  "timeoutMs": 400000
+}
