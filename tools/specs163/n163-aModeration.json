@@ -1,0 +1,18 @@
+{
+  "label": "n163-aModeration",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiImages.ts",
+      "from": "{ model, prompt, n: count, size, quality, output_format: 'png' }",
+      "to": "{ model, prompt, n: count, size, quality, output_format: 'png', moderation: 'low' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-3.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

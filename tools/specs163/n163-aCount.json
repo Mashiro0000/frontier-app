@@ -1,0 +1,18 @@
+{
+  "label": "n163-aCount",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiImages.ts",
+      "from": "{ model, prompt, n: count, size, quality, output_format: 'png' }",
+      "to": "{ model, prompt, n: 1, size, quality, output_format: 'png' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-3.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

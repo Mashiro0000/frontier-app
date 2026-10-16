@@ -1,0 +1,18 @@
+{
+  "label": "n163-bCountFromAnswer",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiImages.ts",
+      "from": "const checked = checkAnswerPictures(answer.data, count)",
+      "to": "const checked = checkAnswerPictures(answer.data, Array.isArray(answer.data) ? answer.data.length : count)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-3.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

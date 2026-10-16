@@ -1,0 +1,18 @@
+{
+  "label": "n163-aScrub",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiImages.ts",
+      "from": "describeFailure(normalized, credentials.apiKey)",
+      "to": "describeFailure(normalized, '')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-3.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 300000
+}

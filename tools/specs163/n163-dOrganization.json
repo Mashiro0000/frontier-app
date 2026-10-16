@@ -1,0 +1,18 @@
+{
+  "label": "n163-dOrganization",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openai.ts",
+      "from": "        organization: null,",
+      "to": "        organization: process.env.OPENAI_ORG_ID ?? null,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-3.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

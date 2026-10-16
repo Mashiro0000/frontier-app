@@ -1,0 +1,18 @@
+{
+  "label": "n163-aNotFoundWords",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiImages.ts",
+      "from": "normalized.kind === 'not-found'",
+      "to": "normalized.kind === ('none' as string)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-3.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 300000
+}
