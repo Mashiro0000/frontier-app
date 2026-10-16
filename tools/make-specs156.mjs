@@ -84,6 +84,7 @@ const windowControls = {
   dEscape: ['D', MIC, "        if (event.key === 'Escape') {\n          listen.cancel()", '        if (false) {\n          listen.cancel()'],
   dTap: ['D', LISTEN, '      if (stopWanted.current) made.stop()\n', ''],
   eGum: ['E', LISTEN, '        void window.api.voice.cancel().catch(() => undefined)\n        setNotice(microphoneProblem(error))', '        setNotice(microphoneProblem(error))'],
+  fReadArriving: ['F', ACTIONS, `voice?.speak === true && ${READ_USER}`, "voice?.speak === true && message.role === 'assistant' && message.content !== ''"],
   fStopClose: ['F', SECTION, '      speaker.stop() // a "Try the voice" does not go on after Settings is closed\n', ''],
   fVoicePick: ['F', ACTIONS, '                  voice: voice?.voice ?? null,', '                  voice: null,'],
   fRate: ['F', ACTIONS, '                  rate: voice?.rate ?? 100', '                  rate: 100'],

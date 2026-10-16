@@ -15,5 +15,5 @@
     "NO_RETRY": "1",
     "STOP_AFTER": "A"
   },
-  "timeoutMs": 900000
+  "timeoutMs": 1800000
 }
