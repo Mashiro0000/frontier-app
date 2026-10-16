@@ -2683,3 +2683,23 @@ The plan is in ROADMAP (Stage 14b), written on 16 October 2026 and approved by t
 **Left (the owner's rule: nothing deleted):** small folders of my checks in the default temp folder (`frontier-14b1-*`, `frontier-14b5-*`) and in `C:\frontier-tmp` (the copies of the regression runs and their profiles), as in earlier stages; and one slip of mine on the way: I ran `rm -f` on a scratch file of my own (`dbg-tmp.mjs`) in the project folder, against the rule that I delete nothing; it was one debugging file I had made, nothing else was touched, and I will not do it again.
 
 Status: DONE (2026-10-16): 14b.1 to 14b.7, merged into main.
+
+## D-047 - Stage 15: voice in and out. 15.1: the investigation of the providers' speech APIs, and the probe (can a sandboxed window record, can the installed SDK send the clip, can the window speak?)
+
+The plan is in ROADMAP (Stage 15), written on 16 October 2026 on the owner's "start working on your picks". The roadmap asked for an investigation of the providers' voice APIs first; it changed the plan in one place.
+
+**What the investigation found** (the providers' own pages, read on 16 October 2026; WebFetch answers through a small summarising model, so the dates below were also confirmed by a second search that quoted developer forums and the providers' deprecation page):
+- **Anthropic has no speech API.** The Messages API takes text, images and PDFs; the compatibility page says audio input is ignored. So all speech goes to OpenAI, whichever model answers the chat.
+- **Speech to text is stable.** `gpt-transcribe` ($0.0045 a minute) on `/v1/audio/transcriptions`, in the installed SDK (7.25.0, `AudioModel`). The older `whisper-1`, `gpt-4o-transcribe` and `gpt-4o-mini-transcribe` end on 26 February 2027 and name it as their replacement. The endpoint is eligible for zero data retention; API data is not used for training by default.
+- **Text to speech ends in twelve weeks.** `tts-1`, `tts-1-hd` and both snapshots of `gpt-4o-mini-tts` are shut down on 6 January 2027 (the deprecations page, entry of 1 October 2026). The named replacement is `gpt-realtime-2.1-mini`, a Realtime-API model that is reported not to be served on `/v1/audio/speech`. So a spoken reply built on the speech endpoint would have a life of twelve weeks, and one built on the Realtime API is a socket with turns and interruptions: another stage, and not "read this aloud".
+
+**The decision (mine, to be confirmed by the owner): spoken replies use the voices of this PC** (the window's `speechSynthesis`), on a click, per reply. They cost nothing, need no key, send nothing anywhere and cannot be shut down. A provider's voice goes behind the same button when a stable endpoint exists (IDEAS). This departs from the letter of the roadmap ("through the providers' speech APIs") and is said so to the owner.
+
+**15.1, the probe** (`tools/probe-15-1.mjs`, launched by `tools/run151.mjs` through `guarded-window-copy.mjs`): the real window, Chromium's fake microphone (a file with a 440 Hz tone, played in a loop; no real microphone is opened), the SDK installed in the repo against a stand-in server in the probe itself. **21 of 21 checks; the gate holds.**
+- The sandboxed window records: `audio/webm;codecs=opus`, 1.5 s = 24,375 bytes, starts with the EBML mark `1A 45 DF A3`, decodes back to 1.50 s with a signal (rms 0.097) at 440 Hz and not at 220, 880 or 1000. A real Opus clip is about 16 KB a second here, so a 60 second clip is about 1 MB.
+- The installed SDK sends it: `POST /v1/audio/transcriptions`, `multipart/form-data`, exactly the fields `file` (named `clip.webm`), `model` (`gpt-transcribe`), `response_format`; the key in `Authorization`; the bytes unchanged; the answer an object with `text` (and, for the stand-in, a `usage` of the kind `duration`).
+- The window lists five voices of this PC (David and Mark, Zira, Ravi and Heera), all local (offline). A word spoken at volume 0 starts at 539 ms and ends; `cancel()` in the middle of a sentence ends it in 26 ms with `interrupted` and nothing left speaking. Volume 0 is honoured, so the checks that speak can be silent.
+- **What the window can do today, before 15.4** (these are the baseline the stage closes): the window has no permission handler at all, so **the page opens the microphone, and the camera, by itself with no question** (the fake devices answered); and **the page can change the window's title** (`document.title`), so a title cannot be what tells the person "Recording" until main locks it.
+- The page's content security policy needed no change: recording and the speech synthesis use no address.
+
+**Stop rule:** not triggered. Next: 15.2.
