@@ -378,7 +378,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 - **Not in this stage:** Client ID Metadata Documents, client-credentials and device flows, token binding (DPoP), more than one account per connector, a sign-in for a local boxed program, resources and prompts, a sign-in that starts without the person.
 - **Not proven:** a real provider (no account, no real browser sign-in), the Windows firewall staying silent for a `127.0.0.1` listener, the default browser as a person sees it (played by the checks).
 
-## Stage 15 - Voice in and out (plan written and started 16 October 2026 on the owner's "start working on your picks"; every choice marked _mine_ may still be changed)
+## Stage 15 - Voice in and out (plan written and started 16 October 2026 on the owner's "start working on your picks"; every choice marked _mine_ may still be changed; DONE 16 October 2026)
 
 - Push-to-talk speech input and spoken replies.
 - Safety: the microphone is used only while the button is held, with an always-visible indicator; no audio is stored unless the owner
@@ -413,7 +413,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 - [x] (15.5, D-047) The ledger's audio fee, the limits, the service and the messages (`window.api.voice`: status, switches that ask, begin, end, cancel), `voice.json` kept and sealed.
 - [x] (15.6, D-047) The window (55 checks under Node, 92 in the real window; 21 negative controls under Node caught): the microphone button in the message box (held), the indicator, the text put into the box, "Read aloud" and "Stop reading" on a reply, the Voice section in Settings, the words for every refusal; at 420 and 280 px; keyboard.
 - [x] (15.7, D-047) Encryption and backups (50 checks, 11 negative controls caught) (`voice.json` sealed with the chats; a backup carries nothing of it), the scan that no audio is on the disk, cost in Settings > Usage.
-- [ ] (15.8, D-047) The stage's threat note, the full regression, the merge.
+- [x] (15.8, D-047) The stage's threat note, the full regression (196 runs, 176 clean the first time; the rest put right or explained), the merge.
 
 **Questions for the owner** (each changes the plan; the picks above stand until you say otherwise): (1) Speech out with the system's voices now, and a provider's voice later (my pick, because every OpenAI text-to-speech model ends on 6 January 2027), or build it on the Realtime API now? (2) A held button, nothing hands-free (my pick)? (3) The text goes into the message box and you press Send (my pick), or send it at once? (4) Nothing stored, no option to keep recordings (my pick)? (5) "Read aloud" on a click (my pick), or also a switch that reads every reply?
 
