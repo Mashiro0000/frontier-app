@@ -1,0 +1,18 @@
+{
+  "label": "n161-mResponseFormat",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-images.mjs",
+      "from": "    if (b.response_format !== undefined) problems.push",
+      "to": "    if (false) problems.push"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

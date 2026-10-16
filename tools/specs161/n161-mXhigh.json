@@ -1,0 +1,18 @@
+{
+  "label": "n161-mXhigh",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-images.mjs",
+      "from": "? ['low', 'medium', 'high', 'xhigh', 'max', 'auto'] : ['low', 'medium', 'high', 'auto']",
+      "to": "? ['low', 'medium', 'high', 'xhigh', 'max', 'auto'] : ['low', 'medium', 'high', 'xhigh', 'auto']"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

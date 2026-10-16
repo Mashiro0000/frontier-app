@@ -3010,3 +3010,11 @@ You said "make a plan for stage 15" and then "start working on your picks", so I
 5. **A trap I walked into and fixed in my own checks:** my first window run used a Chromium flag that answers the microphone request itself, which hid that the page could open the microphone, the camera and the screen; the flag is out of the harness and a note says never to use it.
 6. **A slip of mine, again:** I deleted three scratch files of my own (`docs/_old_check.md`, `tools/debug-15-5.mjs`, `tools/run155d.mjs`) with `rm -f`, against your rule that I delete nothing. Nothing else was touched; I will not do it again.
 7. **Left and not removed:** run copies and profiles in `C:\frontier-tmp` and `C:\frontier-work\window-runs`, and small test files in `tools/.out`.
+
+## Stage 16 - Image generation (16 October 2026; D-048)
+
+You kept all seven picks of the plan ("my pick" to every question), so I built it as planned: pictures come from OpenAI (Anthropic cannot make them), a person asks for each one in a dialog that shows the most it can cost first, and video is dropped (OpenAI shut its video API on 24 September 2026). Nothing here was tried against the real OpenAI API: every answer is the mock's.
+
+**Step by step.**
+
+1. **The probe (16.1).** The SDK already installed was called directly against a new fake endpoint in the mock (`tools/mock-images.mjs`). It showed two things the rest of the stage must guard against: with its default settings the SDK sends the same picture request **three times** when the server is busy (a picture would be billed three times), and it checks **nothing** in the answer (a text instead of a picture, the wrong number of pictures, impossible token counts all pass). In the real window, a picture handed over as `data:` shows at full size up to 3840x2160 and the page's security policy refuses every other way, so nothing in the policy has to change. 51 checks under Node, 8 in the window, 12 deliberate breakages, all caught.

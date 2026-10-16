@@ -417,7 +417,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 
 **Questions for the owner** (each changes the plan; the picks above stand until you say otherwise): (1) Speech out with the system's voices now, and a provider's voice later (my pick, because every OpenAI text-to-speech model ends on 6 January 2027), or build it on the Realtime API now? (2) A held button, nothing hands-free (my pick)? (3) The text goes into the message box and you press Send (my pick), or send it at once? (4) Nothing stored, no option to keep recordings (my pick)? (5) "Read aloud" on a click (my pick), or also a switch that reads every reply?
 
-## Stage 16 - Image generation (video dropped) (plan written 16 October 2026, waiting for the owner's answers; every choice marked _mine_ may still be changed)
+## Stage 16 - Image generation (video dropped) (plan written 16 October 2026; approved the same day: the owner kept all seven picks, "my pick" to every question)
 
 - Generate images from a written description and keep them in the chat and in a gallery. Video only if a provider offers a stable API at a price that makes sense; otherwise it is dropped and said so (it is: see below).
 - Safety: the cost is shown before each generation and counted in Stage 8's limits; generated files are saved as plain files; nothing is opened by itself.
@@ -446,7 +446,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 
 **Slices** (each with its own Node and window suites, negative controls, a decision entry (D-048), STEP-LOG and ROADMAP, as before):
 
-- [ ] (16.1, D-048) The investigation made executable, and the probe: a stand-in endpoint for `/v1/images/generations` (the real SDK against it: the exact request, the answer, `usage` present and absent, a refusal, a block, a hang); the page's policy and a `data:` picture measured in the real window; the baseline.
+- [x] (16.1, D-048) The investigation made executable, and the probe (51 checks under Node, 8 in the window, 12 negative controls caught; the SDK's own retries would send a picture request three times, and it checks nothing in the answer): a stand-in endpoint for `/v1/images/generations` (the real SDK against it: the exact request, the answer, `usage` present and absent, a refusal, a block, a hang); the page's policy and a `data:` picture measured in the real window; the baseline.
 - [ ] (16.2, D-048) The rules, in plain functions: the images file (strict shape, retirement dates), the cost table and the ceilings, the maximum for a request, the `image` fee on a ledger record and its strict reading, the picture checker (header, size, count), the index file.
 - [ ] (16.3, D-048) The adapter in main: one try, exactly the fields the plan names, the key never in a sentence, the answer read strictly, the clock, Stop, the refusals told.
 - [ ] (16.4, D-048) The store and the service: the switch that asks, generate (checks, reserve in the ledger, call, check the bytes, keep, finish the record), the gallery's operations, the messages across the bridge.

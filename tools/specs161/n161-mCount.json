@@ -1,0 +1,18 @@
+{
+  "label": "n161-mCount",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-images.mjs",
+      "from": "const count = mode === 'fewer' ? n - 1",
+      "to": "const count = mode === 'fewer' ? n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-1.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n161-mBlockedCode",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-images.mjs",
+      "from": "'image_generation_user_error', 'moderation_blocked')",
+      "to": "'image_generation_user_error', null)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-1.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 300000
+}

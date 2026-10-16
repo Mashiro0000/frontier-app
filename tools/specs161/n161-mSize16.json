@@ -1,0 +1,18 @@
+{
+  "label": "n161-mSize16",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-images.mjs",
+      "from": "if (w % 16 !== 0 || h % 16 !== 0)",
+      "to": "if (false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}
