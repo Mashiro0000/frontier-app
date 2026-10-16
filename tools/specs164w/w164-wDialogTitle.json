@@ -1,0 +1,19 @@
+{
+  "label": "w164-wDialogTitle",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupDialogs.ts",
+      "from": "title: 'Save a copy of the picture',",
+      "to": "title: 'Save as',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run164.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "E"
+  },
+  "timeoutMs": 1200000
+}

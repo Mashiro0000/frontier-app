@@ -55,7 +55,7 @@ const controls = {
   vTyped: ['14-3', null, SVC, '          if (input.typed !== c.name)', '          if (false)'],
   vStopOnAbort: ['14-3', null, SVC, "          if (c.place !== 'remote') {\n            stopLive(c.id)\n            void note('stopped', c)\n          }\n          throw error", '          throw error'],
   // ---- encryption (14.7) ----
-  eKept: ['14-7', null, IPC, '      undoJournal.document,\n      connectorStore.file\n', '      undoJournal.document\n']
+  eKept: ['14-7', null, IPC, '      undoJournal.document,\n      connectorStore.file,\n      voiceSettings.file,\n      imageSettings.file,\n      imageIndex\n', '      undoJournal.document\n']
 }
 
 mkdirSync(join(TOOLS, 'specs14'), { recursive: true })

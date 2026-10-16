@@ -130,6 +130,21 @@ const api: FrontierApi = {
     end: (bytes, ms) => ipcRenderer.invoke(CHANNELS.voiceEnd, { bytes, ms }),
     cancel: () => ipcRenderer.invoke(CHANNELS.voiceCancel)
   },
+  images: {
+    status: () => ipcRenderer.invoke(CHANNELS.imagesStatus),
+    setOn: (on) => ipcRenderer.invoke(CHANNELS.imagesSetOn, { on }),
+    reset: () => ipcRenderer.invoke(CHANNELS.imagesReset),
+    estimate: ({ model, shape, quality, count }) =>
+      ipcRenderer.invoke(CHANNELS.imagesEstimate, { model, shape, quality, count }),
+    generate: ({ prompt, model, shape, quality, count, chat }) =>
+      ipcRenderer.invoke(CHANNELS.imagesGenerate, { prompt, model, shape, quality, count, chat }),
+    stop: () => ipcRenderer.invoke(CHANNELS.imagesStop),
+    list: () => ipcRenderer.invoke(CHANNELS.imagesList),
+    picture: (id) => ipcRenderer.invoke(CHANNELS.imagesPicture, { id }),
+    saveCopy: (id) => ipcRenderer.invoke(CHANNELS.imagesSaveCopy, { id }),
+    remove: (id) => ipcRenderer.invoke(CHANNELS.imagesRemove, { id }),
+    useInChat: (id) => ipcRenderer.invoke(CHANNELS.imagesUseInChat, { id })
+  },
   projects: {
     status: () => ipcRenderer.invoke(CHANNELS.projectsStatus),
     create: (name) => ipcRenderer.invoke(CHANNELS.projectsCreate, { name }),

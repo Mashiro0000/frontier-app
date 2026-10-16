@@ -1,0 +1,18 @@
+{
+  "label": "n164-sKeyFirst",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "        if ((await options.key()) === null) return { ok: false, error: IMAGE_WORDS.noKey }\n        const answer",
+      "to": "        const answer"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

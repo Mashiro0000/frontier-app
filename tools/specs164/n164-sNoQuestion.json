@@ -1,0 +1,18 @@
+{
+  "label": "n164-sNoQuestion",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "        if (answer !== 'yes') return { ok: false, error: NOT_ON }",
+      "to": "        if (false) return { ok: false, error: NOT_ON }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

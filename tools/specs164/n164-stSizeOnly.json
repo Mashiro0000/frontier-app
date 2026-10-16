@@ -1,0 +1,18 @@
+{
+  "label": "n164-stSizeOnly",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageStore.ts",
+      "from": "    if (data.length === record.bytes && sha256(data) === record.sha256) {",
+      "to": "    if (data.length === record.bytes) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 300000
+}

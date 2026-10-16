@@ -79,8 +79,8 @@ const node = {
   // ----- the wiring -----
   iStrip: [IPC, '        const withFiles = withWorkspace((await toolSettings.read()).settings, folder !== null)', '        void folder\n        const withFiles = (await toolSettings.read()).settings'],
   iRefresh: [IPC, '        const folder = await workspaceService.refresh()', '        const folder: string | null = null'],
-  iKept: [IPC, '      toolSettings.file,\n      workspaceStore.file,\n      undoJournal.document\n    ])', '      toolSettings.file\n    ])'],
-  iIdle: [IPC, '      toolSettings.file.whenIdle(),\n      workspaceStore.file.whenIdle()', '      toolSettings.file.whenIdle()'],
+  iKept: [IPC, '      toolSettings.file,\n      workspaceStore.file,\n      undoJournal.document,\n      connectorStore.file,\n      voiceSettings.file,\n      imageSettings.file,\n      imageIndex\n    ])', '      toolSettings.file\n    ])'],
+  iIdle: [IPC, '      toolSettings.file.whenIdle(),\n      voiceSettings.file.whenIdle(),\n      imageSettings.file.whenIdle(),\n      imageStore.whenIdle(),\n      imageIndex.whenIdle(),\n      workspaceStore.file.whenIdle()', '      toolSettings.file.whenIdle(),\n      voiceSettings.file.whenIdle(),\n      imageSettings.file.whenIdle(),\n      imageStore.whenIdle(),\n      imageIndex.whenIdle()'],
   iChooseGuard: [IPC, '    CHANNELS.workspaceChoose,\n    guardedForWindow(', '    CHANNELS.workspaceChoose,\n    guarded('],
   iSetOnGuard: [IPC, '    CHANNELS.workspaceSetOn,\n    guardedForWindow(', '    CHANNELS.workspaceSetOn,\n    guarded('],
   iRegistry: [IPC, '  const toolRegistry = createToolRegistry([\n    ...BUILT_IN_TOOLS,\n    ...WORKSPACE_READ_TOOLS,\n    ...WORKSPACE_PROPOSE_TOOLS,\n    RUN_PROGRAM\n  ])', '  const toolRegistry = createToolRegistry(BUILT_IN_TOOLS)'],

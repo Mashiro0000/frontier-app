@@ -1,0 +1,18 @@
+{
+  "label": "n164-sTwoAtOnce",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "      if (making) return { ok: false, kind: 'refused', error: IMAGE_WORDS.busy }",
+      "to": "      if (false) return { ok: false, kind: 'refused', error: IMAGE_WORDS.busy }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

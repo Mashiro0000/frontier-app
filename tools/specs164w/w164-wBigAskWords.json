@@ -1,0 +1,19 @@
+{
+  "label": "w164-wBigAskWords",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "    yes: 'Make them',",
+      "to": "    yes: 'OK',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run164.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "D"
+  },
+  "timeoutMs": 1200000
+}

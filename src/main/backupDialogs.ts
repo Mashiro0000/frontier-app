@@ -182,3 +182,28 @@ export const pickAttachmentPaths: PickPaths = async (owner) => {
     : await dialog.showOpenDialog(options)
   return result.canceled || result.filePaths.length === 0 ? null : result.filePaths
 }
+
+const PICTURE_FILTERS: Readonly<Record<string, { name: string; extensions: string[] }>> = {
+  'image/png': { name: 'PNG picture', extensions: ['png'] },
+  'image/jpeg': { name: 'JPEG picture', extensions: ['jpg', 'jpeg'] },
+  'image/webp': { name: 'WebP picture', extensions: ['webp'] }
+}
+
+/** The system's save dialog for "Save a copy..." in the gallery (D-048): the person places a plain copy of a picture; null if they close it. */
+export const pickPictureCopyPath = async (
+  owner: unknown,
+  suggestedName: string,
+  type: string
+): Promise<string | null> => {
+  const options = {
+    title: 'Save a copy of the picture',
+    defaultPath: join(app.getPath('pictures'), suggestedName),
+    filters: [PICTURE_FILTERS[type] ?? PICTURE_FILTERS['image/png']],
+    properties: ['showOverwriteConfirmation' as const]
+  }
+  const window = windowOf(owner)
+  const result = window
+    ? await dialog.showSaveDialog(window, options)
+    : await dialog.showSaveDialog(options)
+  return result.canceled || !result.filePath ? null : result.filePath
+}

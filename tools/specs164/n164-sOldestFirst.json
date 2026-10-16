@@ -1,0 +1,18 @@
+{
+  "label": "n164-sOldestFirst",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "      for (const record of [...listed.pictures].reverse()) pictures.push(await summaryOf(record))",
+      "to": "      for (const record of [...listed.pictures]) pictures.push(await summaryOf(record))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 300000
+}

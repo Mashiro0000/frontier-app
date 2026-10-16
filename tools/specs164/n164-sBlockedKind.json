@@ -1,0 +1,18 @@
+{
+  "label": "n164-sBlockedKind",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "            kind: failed?.kind === 'blocked' ? 'blocked' : 'failed',",
+      "to": "            kind: 'failed',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

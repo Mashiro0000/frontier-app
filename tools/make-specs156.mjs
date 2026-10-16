@@ -54,7 +54,7 @@ const controls = {
   kBox: ['15-7', 'A', STORE, '    box: options.box,', '    box: undefined,'],
   kKeys: ['15-7', 'B', STORE, "  if (keys !== 'listen,rate,speak,version,voice' || raw.version !== VOICE_SETTINGS_VERSION) {", '  if (raw.version !== VOICE_SETTINGS_VERSION) {'],
   kBytes: ['15-7', 'B', STORE, 'const MAX_FILE_BYTES = 4 * 1024', 'const MAX_FILE_BYTES = 1024 * 1024'],
-  kList: ['15-7', 'E', IPC, '      connectorStore.file,\n      voiceSettings.file\n    ])', '      connectorStore.file\n    ])'],
+  kList: ['15-7', 'E', IPC, '      connectorStore.file,\n      voiceSettings.file,\n      imageSettings.file,\n      imageIndex\n    ])', '      connectorStore.file\n    ])'],
   kIdle: ['15-7', 'E', IPC, '      voiceSettings.file.whenIdle(),\n', ''],
   kBackupNames: ['15-7', 'C', BACKUP, "import { randomUUID } from 'crypto'\n", "import { randomUUID } from 'crypto'\nconst voiceSettingsName = 'voice.json'\nvoid voiceSettingsName\n"],
   kLogs: ['15-7', 'D', SVC, "        console.error('Counting a recording failed:', reason(error))", "        console.error('Counting a recording failed:', reason(error), clip)"],

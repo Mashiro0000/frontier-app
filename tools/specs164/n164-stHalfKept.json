@@ -1,0 +1,18 @@
+{
+  "label": "n164-stHalfKept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageStore.ts",
+      "from": "          for (const record of records) await removeFile(record.id)",
+      "to": "          void records"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 300000
+}

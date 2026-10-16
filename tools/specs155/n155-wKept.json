@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "      connectorStore.file,\n      voiceSettings.file\n    ])",
+      "from": "      connectorStore.file,\n      voiceSettings.file,\n      imageSettings.file,\n      imageIndex\n    ])",
       "to": "      connectorStore.file\n    ])"
     }
   ],

@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "      undoJournal.document,\n      connectorStore.file,\n      voiceSettings.file\n",
+      "from": "      undoJournal.document,\n      connectorStore.file,\n      voiceSettings.file,\n      imageSettings.file,\n      imageIndex\n",
       "to": "      undoJournal.document\n"
     }
   ],

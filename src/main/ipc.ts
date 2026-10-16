@@ -39,6 +39,13 @@ import type {
   VoiceEndResult,
   VoiceStatus
 } from '../shared/voice'
+import type {
+  ImageChangeResult,
+  ImageEstimate,
+  ImageGenerateResult,
+  ImageStatus,
+  PictureResult
+} from '../shared/images'
 import { effortStatusOf } from '../shared/effort'
 import { unsetLimits } from '../shared/limits'
 import { suggestionsFor, TASKS } from '../shared/rankings'
@@ -70,6 +77,7 @@ import {
   pickConnectorProgram,
   pickWorkspaceFolder,
   pickNotesExportPath,
+  pickPictureCopyPath,
   systemAskers,
   systemPickers
 } from './backupDialogs'
@@ -119,6 +127,11 @@ import type { ToolSettings } from '../shared/tools'
 import { sweepSelfTest } from './selfTest'
 import { createToolSettings } from './toolSettings'
 import { createVoiceService } from './voiceService'
+import { createImageIndexFile } from './imageIndex'
+import { getImagesRegistry, reportImagesRegistry } from './imageRegistry'
+import { createImageService } from './imageService'
+import { createImageSettings } from './imageSettings'
+import { createImageStore, writePlainCopy } from './imageStore'
 import { createVoiceSettings } from './voiceSettings'
 import { microphoneGate } from './voiceWindow'
 import { createToolSettingsService } from './toolSettingsService'
@@ -186,6 +199,7 @@ async function currentStatus(): Promise<SettingsStatus> {
 export function registerIpc(appUrl: string): () => Promise<void> {
   reportRegistryProblems() // at startup, once: whatever is wrong with registry/models.json goes in the log
   reportRankingsProblems() // ...and with registry/rankings.json, which only costs the suggestions
+  reportImagesRegistry() // ...and with registry/images.json (D-048), and the image models that retire within 30 days
 
   // A thrown error rejects the promise the page is waiting on.
   const guarded =
@@ -465,6 +479,25 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     box: secureStorage,
     writeMode: protection.writeMode
   })
+  // Pictures (D-048): whether "Make images" is on (image-settings.json: off with no file or a file that cannot be read), the gallery's index (images.json) and the
+  // pictures themselves (images/, one file each, named by a random id), all kept and sealed like the chats.
+  const imageSettings = createImageSettings({
+    pathOf: () => join(app.getPath('userData'), 'image-settings.json'),
+    box: secureStorage,
+    writeMode: protection.writeMode
+  })
+  const imageIndex = createImageIndexFile({
+    pathOf: () => join(app.getPath('userData'), 'images.json'),
+    box: secureStorage,
+    writeMode: protection.writeMode
+  })
+  const imageStore = createImageStore({
+    dir: join(app.getPath('userData'), 'images'),
+    index: imageIndex,
+    images: electronImageTools,
+    box: secureStorage,
+    writeMode: protection.writeMode
+  })
   // The one registry of the build: the Tools page lists its tools, and the loop of a reply offers and runs them.
   const toolRegistry = createToolRegistry([
     ...BUILT_IN_TOOLS,
@@ -661,8 +694,10 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       workspaceStore.file,
       undoJournal.document,
       connectorStore.file,
-      voiceSettings.file
-    ]) // rewritten with the chats (D-039, D-041, D-045, D-047)
+      voiceSettings.file,
+      imageSettings.file,
+      imageIndex
+    ]) // rewritten with the chats (D-039, D-041, D-045, D-047, D-048)
   })
 
   ipcMain.handle(
@@ -1339,6 +1374,150 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     })
   )
 
+  // Pictures (D-048, 16.4). The page reads the status and asks; "Make images" is switched on only after the person's yes in the system's message box, and a request whose
+  // most is above $0.50 asks there again; deleting a picture asks there too. A request is made only by `generate`, which the page sends when the person presses Make.
+  const images = createImageService({
+    settings: imageSettings,
+    store: imageStore,
+    gate: questions,
+    key: () => readApiKey('openai'),
+    baseUrl: () => baseUrlOverride('openai'),
+    limits: limitsStore,
+    ledger,
+    registry: getImagesRegistry,
+    savePath: pickPictureCopyPath,
+    writeCopy: writePlainCopy,
+    attach: async (bytes, name) => {
+      const added = await attachments.add({ bytes, name })
+      return added.ok ? { ok: true, file: added.file } : added
+    }
+  })
+  /** `{ id }` from the page: the id, or null for anything else. */
+  const pictureId = (input: unknown): unknown =>
+    typeof input === 'object' &&
+    input !== null &&
+    !Array.isArray(input) &&
+    Object.keys(input).join() === 'id'
+      ? (input as { id: unknown }).id
+      : null
+  const imageCall =
+    <R>(
+      what: string,
+      fallback: R,
+      work: (window: BrowserWindow | null, input: unknown) => Promise<R>
+    ) =>
+    async (window: BrowserWindow | null, input: unknown): Promise<R> => {
+      try {
+        return await work(window, input)
+      } catch (error) {
+        console.error(`${what} failed:`, reason(error))
+        return fallback
+      }
+    }
+  ipcMain.handle(
+    CHANNELS.imagesStatus,
+    guarded(async (): Promise<ImageStatus> => {
+      try {
+        return await images.status()
+      } catch (error) {
+        console.error('Reading the image settings failed:', reason(error))
+        throw new Error('Your image settings could not be read.')
+      }
+    })
+  )
+  const changeFailed: ImageChangeResult = {
+    ok: false,
+    error: 'The image settings could not be changed.'
+  }
+  ipcMain.handle(
+    CHANNELS.imagesSetOn,
+    guardedForWindow(
+      imageCall('Changing the image settings', changeFailed, (w, input) => images.setOn(w, input))
+    )
+  )
+  ipcMain.handle(
+    CHANNELS.imagesReset,
+    guardedForWindow(
+      imageCall('Starting the image settings again', changeFailed, () => images.reset())
+    )
+  )
+  ipcMain.handle(
+    CHANNELS.imagesEstimate,
+    guardedForWindow(
+      imageCall<ImageEstimate>(
+        'Working out what pictures cost',
+        { ok: false, error: 'The cost could not be worked out.' },
+        (_w, input) => images.estimate(input)
+      )
+    )
+  )
+  ipcMain.handle(
+    CHANNELS.imagesGenerate,
+    guardedForWindow(
+      imageCall<ImageGenerateResult>(
+        'Making pictures',
+        { ok: false, kind: 'failed', error: 'The picture could not be made.' },
+        (w, input) => images.generate(w, input)
+      )
+    )
+  )
+  ipcMain.handle(
+    CHANNELS.imagesStop,
+    guarded(async (): Promise<void> => {
+      images.stop()
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.imagesList,
+    guardedForWindow(
+      imageCall(
+        'Listing the pictures',
+        { pictures: [], problem: 'the list could not be read' },
+        () => images.list()
+      )
+    )
+  )
+  ipcMain.handle(
+    CHANNELS.imagesPicture,
+    guardedForWindow(
+      imageCall<PictureResult>(
+        'Reading a picture',
+        { ok: false, error: 'The picture could not be read.' },
+        (_w, input) => images.picture(pictureId(input))
+      )
+    )
+  )
+  ipcMain.handle(
+    CHANNELS.imagesSaveCopy,
+    guardedForWindow(
+      imageCall(
+        'Saving a copy of a picture',
+        { ok: false as const, error: 'The copy could not be saved.' },
+        (w, input) => images.saveCopy(w, pictureId(input))
+      )
+    )
+  )
+  ipcMain.handle(
+    CHANNELS.imagesRemove,
+    guardedForWindow(
+      imageCall(
+        'Deleting a picture',
+        { ok: false as const, error: 'The picture could not be deleted.' },
+        (w, input) => images.remove(w, pictureId(input))
+      )
+    )
+  )
+  ipcMain.handle(
+    CHANNELS.imagesUseInChat,
+    guardedForWindow(
+      imageCall<AttachBytesResult>(
+        'Attaching a picture',
+        { ok: false, error: 'The picture could not be attached.' },
+        (_w, input) => images.useInChat(pictureId(input))
+      )
+    )
+  )
+
   // At start, the copies left by messages that were never sent (D-037): deleted when no chat and no project uses them (D-039), they are over an hour
   // old, and every chat and projects.json could be read (otherwise what uses them is not known, and nothing is deleted). It runs in the stores' own turns, after the folder has been read.
   void usedFiles()
@@ -1413,6 +1592,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   // running in the box is ended first (13.5), and what its copy left is swept at the next start.
   return () => {
     voice.cancel() // a recording or a clip on its way ends with the app
+    images.stop() // ...and a request for pictures on its way (it may still be billed; its record says so)
     connectorService.stopAll()
     connectorBox.stopAll()
     programBox.stopAll()
@@ -1427,6 +1607,9 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       auditLog.whenIdle(),
       toolSettings.file.whenIdle(),
       voiceSettings.file.whenIdle(),
+      imageSettings.file.whenIdle(),
+      imageStore.whenIdle(),
+      imageIndex.whenIdle(),
       workspaceStore.file.whenIdle(),
       undoJournal.whenIdle(),
       connectorStore.file.whenIdle()

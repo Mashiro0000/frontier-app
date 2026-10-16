@@ -1,0 +1,19 @@
+{
+  "label": "w164-wPreloadPassesAll",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/preload/index.ts",
+      "from": "generate: ({ prompt, model, shape, quality, count, chat }) =>\n      ipcRenderer.invoke(CHANNELS.imagesGenerate, { prompt, model, shape, quality, count, chat }),",
+      "to": "generate: (ask) => ipcRenderer.invoke(CHANNELS.imagesGenerate, ask),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run164.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "F"
+  },
+  "timeoutMs": 1200000
+}
