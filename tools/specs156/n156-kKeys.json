@@ -1,0 +1,18 @@
+{
+  "label": "n156-kKeys",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceSettings.ts",
+      "from": "  if (keys !== 'listen,rate,speak,version,voice' || raw.version !== VOICE_SETTINGS_VERSION) {",
+      "to": "  if (raw.version !== VOICE_SETTINGS_VERSION) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-7.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

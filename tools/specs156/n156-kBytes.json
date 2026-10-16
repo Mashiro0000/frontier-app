@@ -1,0 +1,18 @@
+{
+  "label": "n156-kBytes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceSettings.ts",
+      "from": "const MAX_FILE_BYTES = 4 * 1024",
+      "to": "const MAX_FILE_BYTES = 1024 * 1024"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-7.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

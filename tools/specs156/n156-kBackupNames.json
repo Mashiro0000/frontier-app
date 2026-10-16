@@ -1,0 +1,18 @@
+{
+  "label": "n156-kBackupNames",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "import { randomUUID } from 'crypto'\n",
+      "to": "import { randomUUID } from 'crypto'\nconst voiceSettingsName = 'voice.json'\nvoid voiceSettingsName\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-7.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

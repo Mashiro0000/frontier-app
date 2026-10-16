@@ -1,0 +1,18 @@
+{
+  "label": "n156-kList",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      connectorStore.file,\n      voiceSettings.file\n    ])",
+      "to": "      connectorStore.file\n    ])"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-7.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 400000
+}
