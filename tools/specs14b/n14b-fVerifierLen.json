@@ -1,0 +1,18 @@
+{
+  "label": "n14b-fVerifierLen",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthFlow.ts",
+      "from": "  return randomBytes(48).toString('base64url')\n}\n/** BASE64URL",
+      "to": "  return randomBytes(8).toString('base64url')\n}\n/** BASE64URL"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-3.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 400000
+}

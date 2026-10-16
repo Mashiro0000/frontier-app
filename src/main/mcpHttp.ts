@@ -150,10 +150,20 @@ async function readEvents(response: Response, id: number, max: number): Promise<
   }
 }
 
+/** Where a connector's sign-in token comes from (Stage 14b): the wire asks for it before every request and again, once, when the address refuses the one it sent. */
+export interface TokenSource {
+  /** The access token to send now (renewed first when it is about to end), or null for none. */
+  current(): Promise<string | null>
+  /** The address refused `sent` with a 401: a token to try once more (renewed), or null when there is none. */
+  rejected(sent: string | null): Promise<string | null>
+}
+
 export interface HttpWireOptions {
   href: string
-  /** The person's token, or null: sent as `Authorization: Bearer` to this address only. */
+  /** The person's pasted token, or null: sent as `Authorization: Bearer` to this address only. */
   token: string | null
+  /** A signed-in token instead (the two never go together): same header, same address. */
+  auth?: TokenSource
   fetch?: Fetch
   maxBytes?: number
 }
@@ -175,6 +185,7 @@ export function createHttpWire(options: HttpWireOptions): Wire {
   const headersFor = (
     method: string,
     params: Record<string, unknown> | undefined,
+    bearer: string | null,
     extra?: Readonly<Record<string, string>>
   ): Record<string, string> => {
     const h: Record<string, string> = {
@@ -189,7 +200,7 @@ export function createHttpWire(options: HttpWireOptions): Wire {
       h['mcp-name'] = headerValue(params.name)
     }
     if (session !== null) h['mcp-session-id'] = session
-    if (options.token !== null) h['authorization'] = `Bearer ${options.token}`
+    if (bearer !== null) h['authorization'] = `Bearer ${bearer}`
     for (const [name, value] of Object.entries(extra ?? {})) h[name.toLowerCase()] = value
     return h
   }
@@ -198,6 +209,7 @@ export function createHttpWire(options: HttpWireOptions): Wire {
     method: string,
     body: Record<string, unknown>,
     signal: AbortSignal,
+    bearer: string | null,
     extra?: Readonly<Record<string, string>>
   ): Promise<Response> => {
     if (ended !== null) throw new McpError('closed', ended)
@@ -205,7 +217,12 @@ export function createHttpWire(options: HttpWireOptions): Wire {
     try {
       response = await send(options.href, {
         method: 'POST',
-        headers: headersFor(method, body.params as Record<string, unknown> | undefined, extra),
+        headers: headersFor(
+          method,
+          body.params as Record<string, unknown> | undefined,
+          bearer,
+          extra
+        ),
         body: JSON.stringify(body),
         redirect: 'manual',
         signal: AbortSignal.any([signal, live.signal])
@@ -241,72 +258,113 @@ export function createHttpWire(options: HttpWireOptions): Wire {
       const response = await post(
         method,
         { jsonrpc: '2.0', method, ...(params === undefined ? {} : { params }) },
-        signal
+        signal,
+        options.auth === undefined ? options.token : await options.auth.current()
       )
       await readCapped(response, 64 * 1024).catch(() => '')
     },
     request: async (method, params, { signal, headers }) => {
-      const id = nextId++
-      const response = await post(method, { jsonrpc: '2.0', id, method, params }, signal, headers)
-      if (method === 'initialize') {
-        const minted = response.headers.get('mcp-session-id')
-        if (minted !== null && /^[\x21-\x7e]{1,200}$/.test(minted)) session = minted
-      }
-      const type = (response.headers.get('content-type') ?? '').toLowerCase()
-      if (response.status === 200 || response.status === 201) {
-        let message: unknown
-        if (type.startsWith('text/event-stream')) {
-          message = await readEvents(response, id, max)
-        } else {
-          const text = await readCapped(response, max)
-          try {
-            message = JSON.parse(text)
-          } catch {
-            throw new McpError(
-              'not-mcp',
-              'The address answered with something that is not the protocol.'
-            )
+      const sent = options.auth === undefined ? options.token : await options.auth.current()
+      try {
+        return await requestOnce(method, params, signal, headers, sent)
+      } catch (error) {
+        // a 401 for a token the app signed in with: renew it (once) and ask again; any other refusal goes on as it is
+        if (
+          error instanceof McpError &&
+          error.fault === 'unauthorized' &&
+          error.denied?.status === 401 &&
+          options.auth !== undefined
+        ) {
+          const fresh = await options.auth.rejected(sent)
+          if (fresh !== null && fresh !== sent) {
+            return await requestOnce(method, params, signal, headers, fresh)
           }
         }
-        if (
-          typeof message !== 'object' ||
-          message === null ||
-          (message as { id?: unknown }).id !== id
-        ) {
-          throw new McpError('not-mcp', 'The address answered something other than the question.')
-        }
-        const m = message as Record<string, unknown>
-        if (Object.prototype.hasOwnProperty.call(m, 'error')) {
-          const error = errorOf(m.error)
-          if (error === null)
-            throw new McpError('not-mcp', 'The address sent an error that is not one.')
-          return { ok: false, ...error }
-        }
-        if (!Object.prototype.hasOwnProperty.call(m, 'result')) {
-          throw new McpError('not-mcp', 'The address sent an answer with no result.')
-        }
-        return { ok: true, result: m.result } satisfies RpcAnswer
+        throw error
       }
-      // not an answer: an error status. A JSON-RPC error in the body is handed back with the status (the era probe reads it); without one it is the status alone.
-      const text = await readCapped(response, 64 * 1024).catch(() => '')
-      let parsed: unknown = null
-      try {
-        parsed = JSON.parse(text)
-      } catch {
-        parsed = null
-      }
-      const error =
-        typeof parsed === 'object' && parsed !== null
-          ? errorOf((parsed as { error?: unknown }).error)
-          : null
-      if (response.status === 401 || response.status === 403) {
-        throw new McpError(
-          'http',
-          `The address refused the app (status ${response.status}): it needs a sign-in or a token, or the token is wrong.`
-        )
-      }
-      if (error !== null) return { ok: false, ...error, http: response.status }
-      throw new McpError('http', `The address answered with status ${response.status}.`)
     }
+  }
+
+  async function requestOnce(
+    method: string,
+    params: Record<string, unknown>,
+    signal: AbortSignal,
+    headers: Readonly<Record<string, string>> | undefined,
+    bearer: string | null
+  ): Promise<RpcAnswer> {
+    const id = nextId++
+    const response = await post(
+      method,
+      { jsonrpc: '2.0', id, method, params },
+      signal,
+      bearer,
+      headers
+    )
+    if (method === 'initialize') {
+      const minted = response.headers.get('mcp-session-id')
+      if (minted !== null && /^[\x21-\x7e]{1,200}$/.test(minted)) session = minted
+    }
+    const type = (response.headers.get('content-type') ?? '').toLowerCase()
+    if (response.status === 200 || response.status === 201) {
+      let message: unknown
+      if (type.startsWith('text/event-stream')) {
+        message = await readEvents(response, id, max)
+      } else {
+        const text = await readCapped(response, max)
+        try {
+          message = JSON.parse(text)
+        } catch {
+          throw new McpError(
+            'not-mcp',
+            'The address answered with something that is not the protocol.'
+          )
+        }
+      }
+      if (
+        typeof message !== 'object' ||
+        message === null ||
+        (message as { id?: unknown }).id !== id
+      ) {
+        throw new McpError('not-mcp', 'The address answered something other than the question.')
+      }
+      const m = message as Record<string, unknown>
+      if (Object.prototype.hasOwnProperty.call(m, 'error')) {
+        const error = errorOf(m.error)
+        if (error === null)
+          throw new McpError('not-mcp', 'The address sent an error that is not one.')
+        return { ok: false, ...error }
+      }
+      if (!Object.prototype.hasOwnProperty.call(m, 'result')) {
+        throw new McpError('not-mcp', 'The address sent an answer with no result.')
+      }
+      return { ok: true, result: m.result } satisfies RpcAnswer
+    }
+    // not an answer: an error status. A JSON-RPC error in the body is handed back with the status (the era probe reads it); without one it is the status alone.
+    const text = await readCapped(response, 64 * 1024).catch(() => '')
+    let parsed: unknown = null
+    try {
+      parsed = JSON.parse(text)
+    } catch {
+      parsed = null
+    }
+    const error =
+      typeof parsed === 'object' && parsed !== null
+        ? errorOf((parsed as { error?: unknown }).error)
+        : null
+    if (response.status === 401 || response.status === 403) {
+      const challenge = response.headers.get('www-authenticate')
+      throw new McpError(
+        'unauthorized',
+        bearer === null
+          ? `The address refused the app (status ${response.status}): it needs a sign-in or a token.`
+          : `The address refused the app (status ${response.status}): the token it was given is not accepted.`,
+        {
+          status: response.status,
+          challenge: challenge === null ? null : challenge.slice(0, 8000)
+        }
+      )
+    }
+    if (error !== null) return { ok: false, ...error, http: response.status }
+    throw new McpError('http', `The address answered with status ${response.status}.`)
   }
 }

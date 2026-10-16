@@ -1,0 +1,18 @@
+{
+  "label": "n14b-vPasted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorService.ts",
+      "from": "      if (c.token !== null) {\n        return {\n          ok: false,\n          error:\n            'This connector uses a token you pasted.",
+      "to": "      if (false) {\n        return {\n          ok: false,\n          error:\n            'This connector uses a token you pasted."
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

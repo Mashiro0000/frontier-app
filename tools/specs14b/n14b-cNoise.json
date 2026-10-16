@@ -1,0 +1,18 @@
+{
+  "label": "n14b-cNoise",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthCallback.ts",
+      "from": "        if (++noise > MAX_NOISE) settle(",
+      "to": "        if (false) settle("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-3.mjs"
+  ],
+  "env": {
+    "ONLY": "F2"
+  },
+  "timeoutMs": 400000
+}

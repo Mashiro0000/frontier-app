@@ -1,0 +1,18 @@
+{
+  "label": "n14b-tOldWhileLives",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthTokens.ts",
+      "from": "      return blocked === null && record.tokens.expiresAt > options.now()\n        ? record.tokens.accessToken\n        : null",
+      "to": "      return record.tokens.accessToken"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-4.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

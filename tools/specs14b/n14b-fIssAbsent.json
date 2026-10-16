@@ -1,0 +1,18 @@
+{
+  "label": "n14b-fIssAbsent",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthFlow.ts",
+      "from": "  } else if (expected.issResponse) {",
+      "to": "  } else if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-3.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

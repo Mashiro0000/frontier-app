@@ -1,0 +1,18 @@
+{
+  "label": "n14b-fLifeClamp",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthFlow.ts",
+      "from": "    seconds = Math.min(\n      Math.max(body.expires_in, OAUTH_LIMITS.minLifeSeconds),\n      OAUTH_LIMITS.maxLifeSeconds\n    )",
+      "to": "    seconds = body.expires_in"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-3.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 400000
+}

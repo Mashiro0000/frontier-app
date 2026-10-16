@@ -1,0 +1,18 @@
+{
+  "label": "n14b-hOnly401",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/mcpHttp.ts",
+      "from": "          error.denied?.status === 401 &&\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-4.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

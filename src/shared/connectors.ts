@@ -65,6 +65,30 @@ export interface ConnectorToolView {
   readOnlyClaim: boolean
 }
 
+/**
+ * Where a web connector's sign-in (Stage 14b) stands. `none`: it has no sign-in (a pasted token, or none needed). `signed-in`: the app holds a token. `needed`: the connector
+ * answered that it wants a sign-in. `expired`: the sign-in ended (the provider refused to renew it, or the record cannot be opened on this PC). `more`: the connector wants more
+ * permissions than the sign-in gave.
+ */
+export type AuthKind = 'none' | 'signed-in' | 'needed' | 'expired' | 'more'
+
+export interface AuthView {
+  state: AuthKind
+  /** The sign-in provider's host once signed in (or while expired), else null. */
+  provider: string | null
+  /** The permissions kept at the last sign-in. */
+  scopes: string[]
+  /** The client id kept at the last sign-in (typed or registered), for the page to offer again; never the secret. */
+  clientId: string | null
+  clientKind: 'typed' | 'registered' | null
+  /** A sign-in to this connector is open in the browser now. */
+  busy: boolean
+  /** The page may offer Sign in: a web connector with no pasted token, and a secure place on this PC to keep the result. */
+  canSignIn: boolean
+  /** Why it is `expired` or `more`, in the app's words. */
+  why: string | null
+}
+
 export interface ConnectorView {
   id: string
   name: string
@@ -77,6 +101,7 @@ export interface ConnectorView {
   /** The folder of the workspace a copy of which it sees (relative), or null. */
   folder: string | null
   hasToken: boolean
+  auth: AuthView
   state: ConnectorState
   /** Why it failed last, in a plain sentence, or null. */
   problem: string | null
@@ -101,13 +126,19 @@ export interface ConnectorsStatus {
 }
 
 export type ConnectorChangeResult =
-  | { ok: true; status: ConnectorsStatus }
+  | { ok: true; status: ConnectorsStatus; notice?: string }
   | { ok: false; error: string; cancelled?: true; status?: ConnectorsStatus }
 
 /** What the page sends to add a remote connector. A local one is chosen in the system's own file dialog (main opens it); the page sends only its name and arguments. */
 export interface AddLocalInput {
   name: string
   args: string[]
+}
+/** What the page sends to sign in to a web connector. A client id the person registered by hand at the provider, or '' to let the app register itself. The secret is never sent back. */
+export interface SignInInput {
+  id: string
+  clientId: string
+  clientSecret: string
 }
 export interface AddRemoteInput {
   name: string

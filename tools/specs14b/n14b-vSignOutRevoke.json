@@ -1,0 +1,18 @@
+{
+  "label": "n14b-vSignOutRevoke",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorService.ts",
+      "from": "      const said = await providerFor(c).signOut()",
+      "to": "      const said = true; providers.delete(id)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 400000
+}

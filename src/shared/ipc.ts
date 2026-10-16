@@ -659,6 +659,16 @@ export interface FrontierApi {
     ): Promise<ConnectorChangeResult>
     /** `typed`: the connector's name as the person typed it, to confirm "as you". */
     setPlace(id: string, place: 'box' | 'as-you', typed: string): Promise<ConnectorChangeResult>
+    /**
+     * Sign in to a web connector (Stage 14b, D-046). Main finds the provider, asks in the system's own box, opens the person's browser and waits for them to finish there
+     * (the call returns when they have, or when it fails or is cancelled). `clientId` and `clientSecret` are '' unless the person registered the app at the provider by hand;
+     * the secret goes in and never comes back. The page never sees a token, an address of the provider or a password.
+     */
+    signIn(id: string, clientId: string, clientSecret: string): Promise<ConnectorChangeResult>
+    /** Ends the sign-in that is open in the browser, if any. */
+    cancelSignIn(): Promise<ConnectorChangeResult>
+    /** Signs out: the provider is asked to revoke the token, and the app forgets it. */
+    signOut(id: string): Promise<ConnectorChangeResult>
   }
   /**
    * The changes the model has proposed and the person has not decided on (Stage 12.5, D-042): a summary of each (the path, the counts, the warnings: never a line
@@ -758,6 +768,9 @@ export const CHANNELS = {
   connectorsSetTool: 'connectors:set-tool',
   connectorsSetGrant: 'connectors:set-grant',
   connectorsSetPlace: 'connectors:set-place',
+  connectorsSignIn: 'connectors:sign-in',
+  connectorsCancelSignIn: 'connectors:cancel-sign-in',
+  connectorsSignOut: 'connectors:sign-out',
   changesList: 'changes:list',
   changesReview: 'changes:review',
   changesApplied: 'changes:applied',

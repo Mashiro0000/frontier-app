@@ -1,0 +1,18 @@
+{
+  "label": "n14b-gMappedRange",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthHttp.ts",
+      "from": "  ['IPv4 inside IPv6', '::ffff:0:0', 96, 'ipv6'],\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-1.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 400000
+}

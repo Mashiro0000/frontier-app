@@ -1,0 +1,18 @@
+{
+  "label": "n14b-tSaveFirst",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthTokens.ts",
+      "from": "        unsaved = !(await options.holder.write(next))\n        return next",
+      "to": "        void options.holder.write(next)\n        unsaved = false\n        return next"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-4.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

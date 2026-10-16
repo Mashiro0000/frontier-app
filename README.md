@@ -67,7 +67,7 @@ instructions (D-027; a chat saved by this version cannot be read by one from bef
 Tools are off until you switch them on in **Tools**, and every call the model asks for is asked about in a Windows message box first (D-041): a web
 search, files in one workspace folder (D-042), running a program in a locked box (D-043), and **connectors** (Stage 14, D-045): tools that another
 program on this PC (run in the same locked box by default) or a web address offers through MCP. You add a connector in Tools, read each of its tools
-and switch on the ones you want; nothing is installed or downloaded by the app.
+and switch on the ones you want; nothing is installed or downloaded by the app. A web connector that wants a sign-in shows **Sign in** (Stage 14b, D-046): you sign in on the provider's page in your own browser, the app never sees your password, and it keeps a token sealed on this PC until you sign out.
 
 ### Checks
 

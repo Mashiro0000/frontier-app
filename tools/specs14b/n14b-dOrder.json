@@ -1,0 +1,18 @@
+{
+  "label": "n14b-dOrder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthDiscovery.ts",
+      "from": "  return path === ''\n    ? [oauth, openid]",
+      "to": "  return path === ''\n    ? [openid, oauth]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

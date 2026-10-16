@@ -107,7 +107,11 @@ const api: FrontierApi = {
     setTool: (id, name, on) => ipcRenderer.invoke(CHANNELS.connectorsSetTool, { id, name, on }),
     setGrant: (id, grant, on) => ipcRenderer.invoke(CHANNELS.connectorsSetGrant, { id, grant, on }),
     setPlace: (id, place, typed) =>
-      ipcRenderer.invoke(CHANNELS.connectorsSetPlace, { id, place, typed })
+      ipcRenderer.invoke(CHANNELS.connectorsSetPlace, { id, place, typed }),
+    signIn: (id, clientId, clientSecret) =>
+      ipcRenderer.invoke(CHANNELS.connectorsSignIn, { id, clientId, clientSecret }),
+    cancelSignIn: () => ipcRenderer.invoke(CHANNELS.connectorsCancelSignIn),
+    signOut: (id) => ipcRenderer.invoke(CHANNELS.connectorsSignOut, { id })
   },
   changes: {
     list: () => ipcRenderer.invoke(CHANNELS.changesList),

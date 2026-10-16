@@ -1,0 +1,18 @@
+{
+  "label": "n14b-vStopAll",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorService.ts",
+      "from": "      closing = true\n      signing?.ctl.abort()\n",
+      "to": "      closing = true\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

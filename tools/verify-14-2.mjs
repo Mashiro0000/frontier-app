@@ -207,7 +207,7 @@ await guard('B', async () => {
   const locked = await start('--era', 'modern', '--token', 'tok-12345678')
   check('B: with the right token, a server that wants one answers', textOf(await (await viaHttp(locked, 'tok-12345678')).mcp.callTool('echo', { text: 't' }, never())) === 't')
   const wrong = await faultOf(viaHttp(locked, 'wrong-token'))
-  check('B: with a wrong token or none, the start fails with a sentence ("http"), and nothing hangs', wrong === 'http' && (await faultOf(viaHttp(locked, null))) === 'http', wrong)
+  check('B: with a wrong token or none, the start fails with a sentence ("unauthorized", since Stage 14b), and nothing hangs', wrong === 'unauthorized' && (await faultOf(viaHttp(locked, null))) === 'unauthorized', wrong)
   locked.child.kill()
   const redirect = await start('--redirect')
   const r = await faultOf(viaHttp(redirect, 'tok-12345678'))
@@ -342,7 +342,7 @@ await guard('D', async () => {
 // ============================ E. connectors.json ============================
 await guard('E', async () => {
   const tool = toolsMod.readServerTool({ name: 'echo', description: 'Says back.', inputSchema: { type: 'object', properties: { text: { type: 'string', maxLength: 50 } } } })
-  const c = { id: 'abcdef123456', name: 'Notes', prefix: 'notes', place: 'box', program: 'C:\\servers\\notes\\index.mjs', folder: 'C:\\servers\\notes', args: ['--x'], url: null, token: null, network: false, workspace: true, tools: [tool], changed: ['old'], added: 1_700_000_000_000 }
+  const c = { id: 'abcdef123456', name: 'Notes', prefix: 'notes', place: 'box', program: 'C:\\servers\\notes\\index.mjs', folder: 'C:\\servers\\notes', args: ['--x'], url: null, token: null, auth: null, network: false, workspace: true, tools: [tool], changed: ['old'], added: 1_700_000_000_000 }
   const text = storeMod.connectorsText([c])
   check('E: the list reads back as itself', JSON.stringify(storeMod.parseConnectors(text)) === JSON.stringify([c]))
   const mutate = (f) => {
@@ -353,7 +353,7 @@ await guard('E', async () => {
   const bad = {
     'an extra field': (o) => (o.connectors[0].extra = 1),
     'a field missing': (o) => delete o.connectors[0].prefix,
-    'another version': (o) => (o.version = 2),
+    'another version': (o) => (o.version = 3),
     'an id that is not one': (o) => (o.connectors[0].id = '../x'),
     'a token on a program': (o) => (o.connectors[0].token = 'AAAA'),
     'a web address on a program': (o) => (o.connectors[0].url = 'https://x.com'),

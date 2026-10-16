@@ -1,0 +1,18 @@
+{
+  "label": "n14b-tNewer",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthTokens.ts",
+      "from": "      if (sent !== null && record.tokens.accessToken !== sent) return record.tokens.accessToken",
+      "to": "      void sent"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-4.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

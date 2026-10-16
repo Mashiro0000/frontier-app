@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, type IpcMainInvokeEvent } from 'electron'
+import { app, BrowserWindow, ipcMain, shell, type IpcMainInvokeEvent } from 'electron'
 import { join } from 'path'
 import {
   CHANNELS,
@@ -88,7 +88,7 @@ import { getRankings, reportRankingsProblems } from './rankings'
 import { getRegistry, reportRegistryProblems } from './registry'
 import { createToolRuntime } from './replyTools'
 import { heldKey, type SavedKey } from './secrets'
-import { isTrustedSender } from './security'
+import { isSafeExternalUrl, isTrustedSender } from './security'
 import { createQuestionGate } from './systemQuestion'
 import { BUILT_IN_TOOLS, createToolRegistry } from './toolRegistry'
 import { createWorkspaceStore, type AvoidPlaces } from './workspace'
@@ -612,6 +612,22 @@ export function registerIpc(appUrl: string): () => Promise<void> {
         (isInside(systemRoot, path) || systemRoot.toLowerCase() === real)
       )
     },
+    // the person's own browser, for a sign-in: an https address, or an address on this PC itself (the guard of oauthHttp.ts has already judged it)
+    openBrowser: async (url) => {
+      let local = false
+      try {
+        const u = new URL(url)
+        local =
+          u.protocol === 'http:' &&
+          ['127.0.0.1', 'localhost', '[::1]'].includes(u.hostname) &&
+          u.username === '' &&
+          u.password === ''
+      } catch {
+        local = false
+      }
+      if (!isSafeExternalUrl(url) && !local) throw new Error('not an address the app opens')
+      await shell.openExternal(url)
+    },
     savedKeys,
     record: (event) => auditLog.append(event)
   })
@@ -1052,6 +1068,18 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   ipcMain.handle(
     CHANNELS.connectorsSetPlace,
     guardedForWindow(connectorChange((w, i) => connectorService.setPlace(w, i)))
+  )
+  ipcMain.handle(
+    CHANNELS.connectorsSignIn,
+    guardedForWindow(connectorChange((w, i) => connectorService.signIn(w, i)))
+  )
+  ipcMain.handle(
+    CHANNELS.connectorsCancelSignIn,
+    guardedForWindow(connectorChange(() => connectorService.cancelSignIn()))
+  )
+  ipcMain.handle(
+    CHANNELS.connectorsSignOut,
+    guardedForWindow(connectorChange((_w, i) => connectorService.signOut(i)))
   )
   // The changes the model proposed (D-042, 12.5). The page reads a summary of each and asks main to open the Review window for one; it can do nothing else with them.
   ipcMain.handle(

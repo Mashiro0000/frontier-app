@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/connectorStore.ts",
-      "from": "  if (!isPlain(raw) || !exactKeys(raw, CONNECTOR_KEYS)) return null",
-      "to": "  if (!isPlain(raw)) return null"
+      "from": "    !exactKeys(raw, version === FIRST_VERSION ? CONNECTOR_KEYS_V1 : CONNECTOR_KEYS)\n",
+      "to": "    false\n"
     }
   ],
   "argv": [

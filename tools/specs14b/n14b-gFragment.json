@@ -1,0 +1,18 @@
+{
+  "label": "n14b-gFragment",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthHttp.ts",
+      "from": "  if (url.hash !== '') {",
+      "to": "  if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-1.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

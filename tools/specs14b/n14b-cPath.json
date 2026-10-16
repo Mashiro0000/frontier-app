@@ -1,0 +1,18 @@
+{
+  "label": "n14b-cPath",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthCallback.ts",
+      "from": "      if (url.pathname !== PATH) return notTheAnswer()",
+      "to": "      if (false) return notTheAnswer()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-3.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 400000
+}

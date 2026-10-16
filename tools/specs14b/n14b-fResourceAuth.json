@@ -1,0 +1,18 @@
+{
+  "label": "n14b-fResourceAuth",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthFlow.ts",
+      "from": "  url.searchParams.set('resource', input.resource)",
+      "to": "  void input.resource"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-3.mjs"
+  ],
+  "env": {
+    "ONLY": "B,G"
+  },
+  "timeoutMs": 400000
+}

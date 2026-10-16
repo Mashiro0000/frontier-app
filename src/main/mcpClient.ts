@@ -40,13 +40,22 @@ export type McpFault =
   | 'needs-input' // the server wants an ability the app does not give (sampling, questions, folders)
   | 'http' // an HTTP status that is not an answer (a refusal, a redirect, a server error)
   | 'refused' // the request was refused before it was sent (an address the app does not use)
+  | 'unauthorized' // the address wants a sign-in or a better one (401, 403): `denied` says which (Stage 14b)
+
+/** What an address said when it refused a request for want of a sign-in: the status and the `WWW-Authenticate` header as sent (read by oauthDiscovery.ts, never shown). */
+export interface McpDenied {
+  status: 401 | 403
+  challenge: string | null
+}
 
 /** A failure of the connection or of the protocol. `message` is the app's own sentence; nothing of the server's words is in it unless quoted and cleaned. */
 export class McpError extends Error {
   readonly fault: McpFault
-  constructor(fault: McpFault, message: string) {
+  readonly denied: McpDenied | null
+  constructor(fault: McpFault, message: string, denied: McpDenied | null = null) {
     super(message)
     this.fault = fault
+    this.denied = denied
   }
 }
 
@@ -401,7 +410,12 @@ export async function connectMcp(
     }
   } catch (error) {
     if (!(error instanceof McpError)) throw error
-    if (error.fault === 'version' || error.fault === 'closed' || error.fault === 'too-big')
+    if (
+      error.fault === 'version' ||
+      error.fault === 'closed' ||
+      error.fault === 'too-big' ||
+      error.fault === 'unauthorized'
+    )
       throw error
     if (signal.aborted) throw abortFault(signal)
     // no answer in time, an HTTP refusal of the modern request, something that is not the protocol: an older server (it is asked to shake hands below)

@@ -1,0 +1,18 @@
+{
+  "label": "n14b-dStopped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthDiscovery.ts",
+      "from": "      return error.code === 'stopped'\n        ? { ok: false, why: error.message, stopped: true }\n        : { ok: false, why: error.message }",
+      "to": "      return { ok: false, why: error.message }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

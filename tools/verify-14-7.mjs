@@ -31,8 +31,8 @@ const URL_ = 'https://mcp.secret-host.example/mcp'
 
 const echo = toolsMod.readServerTool({ name: 'search', description: 'Searches the notes.', inputSchema: { type: 'object', properties: { query: { type: 'string', maxLength: 100 } }, required: ['query'] } })
 const list = (box) => [
-  { id: 'abcdef123456', name: 'Private notes', prefix: 'notes', place: 'box', program: PROGRAM, folder: 'C:\\servers\\private-notes', args: ['--vault', 'personal'], url: null, token: null, network: false, workspace: false, tools: [echo], changed: [], added: NOW },
-  { id: 'abcdef654321', name: 'Web notes', prefix: 'web', place: 'remote', program: null, folder: null, args: [], url: URL_, token: box.encrypt('tok-SECRET-123456').toString('base64'), network: false, workspace: false, tools: [], changed: [], added: NOW }
+  { id: 'abcdef123456', name: 'Private notes', prefix: 'notes', place: 'box', program: PROGRAM, folder: 'C:\\servers\\private-notes', args: ['--vault', 'personal'], url: null, token: null, auth: null, network: false, workspace: false, tools: [echo], changed: [], added: NOW },
+  { id: 'abcdef654321', name: 'Web notes', prefix: 'web', place: 'remote', program: null, folder: null, args: [], url: URL_, token: box.encrypt('tok-SECRET-123456').toString('base64'), auth: null, network: false, workspace: false, tools: [], changed: [], added: NOW }
 ]
 
 // ============ A. encryption ============

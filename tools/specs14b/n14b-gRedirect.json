@@ -1,0 +1,18 @@
+{
+  "label": "n14b-gRedirect",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthHttp.ts",
+      "from": "          if (status >= 300 && status < 400) {",
+      "to": "          if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-1.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

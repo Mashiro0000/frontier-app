@@ -1,0 +1,18 @@
+{
+  "label": "n14b-fRegRedirect",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthFlow.ts",
+      "from": "      if (!Array.isArray(uris) || uris.length !== 1 || uris[0] !== input.redirectUri) {",
+      "to": "      if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-3.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 400000
+}

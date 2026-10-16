@@ -39,7 +39,7 @@ const controls = {
   rKey: ['14-2', 'D', TR, '  if (options.holdsKey(body)) {', '  if (false) {'],
   rClean: ['14-2', 'D', TR, "      .replace(/[\\p{Cf}\\p{Co}\\p{Cn}\\p{Cs}]/gu, '')\n", ''],
   // ---- connectors.json ----
-  sStrict: ['14-2', 'E', STORE, '  if (!isPlain(raw) || !exactKeys(raw, CONNECTOR_KEYS)) return null', '  if (!isPlain(raw)) return null'],
+  sStrict: ['14-2', 'E', STORE, '    !exactKeys(raw, version === FIRST_VERSION ? CONNECTOR_KEYS_V1 : CONNECTOR_KEYS)\n', '    false\n'],
   // ---- the audit log ----
   aWhat: ['14-2', 'F', LOG, "      if (typeof what !== 'string' || !(CONNECTOR_EVENTS as readonly string[]).includes(what)) {", "      if (typeof what !== 'string') {"],
   // ---- the core ----
@@ -51,7 +51,7 @@ const controls = {
   vAskAdd: ['14-3', null, SVC, '        const answer = await ask(owner, addQuestion(candidate, null))', "        const answer: GateAnswer = 'yes'"],
   vFingerprint: ['14-3', null, SVC, '    const gone = c.tools.filter((t) => byName.get(t.name)?.fingerprint !== t.fingerprint)', '    const gone: ServerTool[] = []'],
   vNetwork: ['14-3', null, SVC, '      network: c.network\n', '      network: true\n'],
-  vTokens: ['14-3', null, SVC, "    return connectors.map((c) => unseal(c.token)).filter((t): t is string => t !== null && t !== '')", '    return []'],
+  vTokens: ['14-3', null, SVC, '    return out\n  }\n\n  function executorFor(', '    return []\n  }\n\n  function executorFor('],
   vTyped: ['14-3', null, SVC, '          if (input.typed !== c.name)', '          if (false)'],
   vStopOnAbort: ['14-3', null, SVC, "          if (c.place !== 'remote') {\n            stopLive(c.id)\n            void note('stopped', c)\n          }\n          throw error", '          throw error'],
   // ---- encryption (14.7) ----

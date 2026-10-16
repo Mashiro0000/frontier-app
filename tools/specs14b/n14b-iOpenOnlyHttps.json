@@ -1,0 +1,18 @@
+{
+  "label": "n14b-iOpenOnlyHttps",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      if (!isSafeExternalUrl(url) && !local) throw new Error",
+      "to": "      if (false) throw new Error"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-5.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 400000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n14b-sLocalAuth",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/connectorStore.ts",
+      "from": "    if (o.url !== null || o.token !== null || (o.auth !== undefined && o.auth !== null)) return null",
+      "to": "    if (o.url !== null || o.token !== null) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-4.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

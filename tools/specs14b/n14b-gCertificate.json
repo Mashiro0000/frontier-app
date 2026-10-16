@@ -1,0 +1,18 @@
+{
+  "label": "n14b-gCertificate",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthHttp.ts",
+      "from": "          agent: false,",
+      "to": "          agent: false,\n          rejectUnauthorized: false,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-1.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 400000
+}

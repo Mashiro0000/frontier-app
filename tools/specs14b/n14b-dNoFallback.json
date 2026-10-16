@@ -1,0 +1,18 @@
+{
+  "label": "n14b-dNoFallback",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/oauthDiscovery.ts",
+      "from": "    challenge.resourceMetadata !== null\n      ? [challenge.resourceMetadata]\n      : resourceMetadataCandidates(mcpUrl)",
+      "to": "    [...(challenge.resourceMetadata !== null ? [challenge.resourceMetadata] : []), ...resourceMetadataCandidates(mcpUrl)]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-14b-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}
