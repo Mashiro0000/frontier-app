@@ -417,7 +417,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 
 **Questions for the owner** (each changes the plan; the picks above stand until you say otherwise): (1) Speech out with the system's voices now, and a provider's voice later (my pick, because every OpenAI text-to-speech model ends on 6 January 2027), or build it on the Realtime API now? (2) A held button, nothing hands-free (my pick)? (3) The text goes into the message box and you press Send (my pick), or send it at once? (4) Nothing stored, no option to keep recordings (my pick)? (5) "Read aloud" on a click (my pick), or also a switch that reads every reply?
 
-## Stage 16 - Image generation (video dropped) (plan written 16 October 2026; approved the same day: the owner kept all seven picks, "my pick" to every question)
+## Stage 16 - Image generation (video dropped) (plan written 16 October 2026; approved the same day: the owner kept all seven picks, "my pick" to every question; DONE 17 October 2026)
 
 - Generate images from a written description and keep them in the chat and in a gallery. Video only if a provider offers a stable API at a price that makes sense; otherwise it is dropped and said so (it is: see below).
 - Safety: the cost is shown before each generation and counted in Stage 8's limits; generated files are saved as plain files; nothing is opened by itself.
@@ -453,7 +453,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 - [x] (16.5, D-048) In the chat (39 checks under Node, 18 in the window on the app and the built app; 21 negative controls, all caught): a made picture as a message, "Use in chat", the chat file and the backup (the decision of question 4).
 - [x] (16.6, D-048) The window (32 source checks, 45 in the window on the app and the built app; 28 negative controls, all caught): the "Make an image" dialog and its cost line, the gallery, the Settings section, the words for every refusal; at 420 and 280 px; keyboard.
 - [x] (16.7, D-048) Encryption and backups (43 checks under Node, 19 in the window on the app and the built app; 20 negative controls, all caught) (the index and the pictures sealed with the chats; what a backup carries), the scan that nothing stray is on the disk, cost in Settings > Usage; the most a request can cost made a true ceiling (found by the scan).
-- [ ] (16.8, D-048) The stage's threat note, the full regression, the merge.
+- [x] (16.8, D-048) The stage's threat note, the full regression (212 runs; two faults of mine in the page and the stale checks put right, every one run again clean), the merge.
 
 **Questions for the owner** (each changes the plan; the picks above stand until you say otherwise): (1) Only a person asks for a picture (my pick), or also a tool the model may call (it asks in the box each time)? (2) `gpt-image-2` as the default, with its published prices and no retirement date (my pick), or the newest `gpt-image-2.5-flare` (prices not published, so the ceiling is a guess)? (3) The system's box only for the switch and for a request above $0.50 (my pick), or for every picture? (4) A made picture in the chat holds an id into the gallery, and a backup of chats does not carry pictures in this stage (my pick), or backups carry them too (bigger, slower)? (5) Pictures sealed with the chats when encryption is on, plus "Save a copy..." for a plain file wherever you choose (my pick), or plain files always? (6) Editing a picture with another picture now, or later (my pick: later)? (7) Video dropped for now (my pick)?
 

@@ -53,7 +53,7 @@ try {
     check('A: one new group, images, and nothing that takes a path, a size, a key or an address', groups === 'attachments,audit,changes,chat,connectors,history,images,instructions,memory,programs,projects,settings,tools,usage,voice,workspace', groups)
     check('A: the page has no ipcRenderer of its own', await ev(`typeof window.require === 'undefined' && typeof window.ipcRenderer === 'undefined'`))
     const status = await ev(`window.api.images.status()`)
-    check('A: off at first; the three models; gpt-image-2 the default; an empty gallery', status.on === false && status.models.length === 3 && status.defaultModelId === 'gpt-image-2' && status.pictures === 0 && status.blocked === 'Making images is off. Switch it on in Settings, under Images.', show(status))
+    check('A: off at first; the three models; gpt-image-2 the default; an empty gallery; with no OpenAI key yet, the key is what it says first (16.6)', status.on === false && status.models.length === 3 && status.defaultModelId === 'gpt-image-2' && status.pictures === 0 && status.blocked === 'Making images needs an OpenAI key. Save one in Settings.', show(status))
     const out = await ev(`window.api.images.generate(${JSON.stringify(ASK)})`)
     check('A: a request while it is off is refused and nothing is sent', out.ok === false && out.kind === 'refused' && (await mockRequests()).length === 0 && ledgerLines().length === 0, show(out))
   })
@@ -83,8 +83,8 @@ try {
   // ============ C. a request ============
   await part('C', async () => {
     await control({})
-    const est = await ev(`window.api.images.estimate({ model: 'gpt-image-2', shape: 'square', quality: 'medium', count: 1 })`)
-    check('C: the estimate: at most $0.053, no question, nothing refused (no limits in this profile)', est.ok && est.maxUsd === 0.053 && !est.asks && est.refusal === null && est.leftTodayUsd === null, show(est))
+    const est = await ev(`window.api.images.estimate({ model: 'gpt-image-2', shape: 'square', quality: 'medium', count: 1, promptBytes: 0 })`)
+    check('C: the estimate: at most $0.0535 (the table and its rounding, 16.7), no question, nothing refused (no limits in this profile)', est.ok && Math.abs(est.maxUsd - 0.0535) < 1e-12 && !est.asks && est.refusal === null && est.leftTodayUsd === null, show(est))
     const out = await ev(`window.api.images.generate(${JSON.stringify(ASK)})`)
     const seen = await mockRequests()
     check('C: ONE request reached the endpoint: the six fields, the description as typed, the saved OpenAI key, nothing refused', seen.length === 1 && seen[0].fields.join() === 'model,n,output_format,prompt,quality,size' && seen[0].body.prompt === ASK.prompt && seen[0].headers.authorization === `Bearer ${KEY}` && seen[0].problems.length === 0 && seen[0].retryCount === 0, show(seen[0]?.body))
@@ -99,7 +99,7 @@ try {
     const index = JSON.parse(readFileSync(join(userData, 'images.json'), 'utf8'))
     check('C: images.json names it, with the description and the model, and no key', index.version === 1 && index.pictures.length === 1 && index.pictures[0].id === p.id && index.pictures[0].prompt === ASK.prompt && !JSON.stringify(index).includes(KEY))
     const lines = ledgerLines()
-    check('C: the ledger: sent (the most) then done (the cost from the tokens), OpenAI, gpt-image-2, an image fee', lines.length === 2 && lines[0].state === 'sent' && lines[0].image.usd === 0.053 && lines[1].state === 'done' && lines[1].provider === 'openai' && lines[1].model === 'gpt-image-2' && lines[1].image.kind === 'generate', show(lines.map((l) => [l.state, l.image])))
+    check('C: the ledger: sent (the most) then done (the cost from the tokens), OpenAI, gpt-image-2, an image fee', lines.length === 2 && lines[0].state === 'sent' && Math.abs(lines[0].image.usd - (0.0535 + Buffer.byteLength(ASK.prompt, 'utf8') * 5e-6)) < 1e-12 && lines[1].image.usd <= lines[0].image.usd && lines[1].state === 'done' && lines[1].provider === 'openai' && lines[1].model === 'gpt-image-2' && lines[1].image.kind === 'generate', show(lines.map((l) => [l.state, l.image])))
     const summary = await ev(`window.api.usage.summary(null)`)
     check('C: the sums of Settings include it', summary.today.requests === 1 && Math.abs(summary.today.costUsd - out.costUsd) < 1e-9, show(summary.today))
     const list = await ev(`window.api.images.list()`)
@@ -114,7 +114,7 @@ try {
     const big = { ...ASK, model: 'gpt-image-2.5-flare', quality: 'high', count: 2 }
     const no = await ev(`window.api.images.generate(${JSON.stringify(big)})`)
     const q = (await Q.asked()).at(-1)
-    check('D: above $0.50 the box asks first, for this window, with the most and the description', q.withWindow === true && /Spend up to about \$0\.84 on 2 pictures\?/.test(q.options.message) && /lighthouse at dusk/.test(q.options.detail) && q.options.buttons?.[0] === 'Make them', show(q.options.message))
+    check('D: above $0.50 the box asks first, for this window, with the most and the description', q.withWindow === true && /Spend up to about \$0\.85 on 2 pictures\?/.test(q.options.message) && /lighthouse at dusk/.test(q.options.detail) && q.options.buttons?.[0] === 'Make them', show(q.options.message))
     check('D: a no: nothing sent, nothing in the ledger', no.ok === false && no.kind === 'refused' && (await mockRequests()).length === before && ledgerLines().length === 2, show(no))
     await sleep(3300)
     await Q.queue('yes')
@@ -166,7 +166,7 @@ try {
       r.push(await window.api.images.picture('A'.repeat(32)))
       r.push(await window.api.images.saveCopy('C:\\\\Windows\\\\win.ini'))
       r.push(await window.api.images.generate({ prompt: 'x', model: 'gpt-image-1', shape: 'square', quality: 'medium', count: 1, chat: null }))
-      r.push(await window.api.images.estimate({ model: 'gpt-image-2', shape: 'square', quality: 'max', count: 1 }))
+      r.push(await window.api.images.estimate({ model: 'gpt-image-2', shape: 'square', quality: 'max', count: 1, promptBytes: 0 }))
       return r
     })()`)
     check('F: an id that is a path, a model not in the file, a quality not offered: each refused, nothing sent', odd.every((x) => x.ok === false) && (await mockRequests()).filter((r) => r.body.prompt === 'x').length === 0, show(odd))

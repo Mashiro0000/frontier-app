@@ -198,7 +198,7 @@ await guard('section F', async () => {
     check(`a version 3 file whose instructions are ${name} is refused, with its own reason`, parsed(3, { instructions: value }) === 'its instructions are not usable', String(parsed(3, { instructions: value })))
   }
   // version 4 is a chat with files since 9.3 (D-037); version 5 a chat in a project since 10.5 (D-039); version 6 is a chat with tool calls since 11.4 (D-041); version 7 is a later build's
-  for (const version of [0, 7, 9, '1', '2', '3', '4', '5', null, undefined, 3.5, [3]]) {
+  for (const version of [0, 8, 9, '1', '2', '3', '4', '5', null, undefined, 3.5, [3]]) {
     check(`version ${JSON.stringify(version)} was made by another version and is refused`, parsed(version, { instructions: 'x' }) === 'it was made by another version of the app')
   }
   check('a version 3 file is still checked for everything else: the id, the title, the dates, the messages', parseSavedFile({ ...file(3, { instructions: '' }), id: randomUUID() }, id) === 'the id inside does not match the file name' && parsed(3, { instructions: '', title: 5 }) === 'its title is not usable' && parsed(3, { instructions: '', createdAt: -1 }) === 'its dates are not usable' && typeof parsed(3, { instructions: '', messages: [] }) === 'string')

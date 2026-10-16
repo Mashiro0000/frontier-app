@@ -259,8 +259,9 @@ try {
       await page.press('Escape')
       await sleep(250)
       await openSettingsAt('settings-images-heading')
-      const s = await ev(`(() => { const s = document.querySelector('.images-section'); return { sideways: s.scrollWidth - s.clientWidth } })()`)
-      check(`G: at ${width} px the Images section of Settings fits`, s.sideways <= 0, show(s))
+      // measured element by element against the dialog's inner edge (a wrapper that scrolls would hide a table that sticks out; found by the regression of Stage 16)
+      const s = await ev(`(() => { const sec = document.querySelector('.images-section'); const d = document.querySelector('dialog.settings'); const inner = d.getBoundingClientRect().left + d.clientLeft + d.clientWidth; const past = [sec, ...sec.querySelectorAll('*')].filter((e) => e.getBoundingClientRect().right > inner + 0.5).slice(0, 6).map((e) => e.tagName + '.' + e.className + ' ' + Math.round(e.getBoundingClientRect().right)); const wrap = sec.querySelector('.images-prices'); return { sideways: sec.scrollWidth - sec.clientWidth, wrapScrolls: wrap ? wrap.scrollWidth - wrap.clientWidth : 0, past } })()`)
+      check(`G: at ${width} px the Images section of Settings fits: nothing in it past the dialog's edge, and the price table does not scroll`, s.sideways <= 0 && s.wrapScrolls <= 0 && s.past.length === 0, show(s))
       await closeSettings()
     }
     await page.send('Emulation.clearDeviceMetricsOverride')

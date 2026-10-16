@@ -70,6 +70,7 @@ await guard('D', async () => {
   check('D: Settings shows the Images section', /<ImagesSection key=\{`images:\$\{session\}`\} open=\{open\} \/>/.test(SD))
   check('D: the chat bar shows "Make an image..." only while making images is on', /\{imagesOn && \(/.test(CB) && /imagesOn=\{imageStatus\?\.on === true\}/.test(AP))
   check('D: it cannot be pressed while a reply is coming', /className="chat-button chat-make-image"\s*disabled=\{isReplying\}/.test(CB))
+  check('D: the price table has its own class, not the Usage table\'s (.settings-usage is how the Usage rows are found; found by the regression of Stage 16)', /<table className="images-table">/.test(IS) && !/settings-usage/.test(IS))
   check("D: the page's policy is unchanged (img-src 'self' data:)", /img-src 'self' data:"/.test(source('src/renderer/index.html')))
 })
 

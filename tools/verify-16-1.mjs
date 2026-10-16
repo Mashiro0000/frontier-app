@@ -164,8 +164,11 @@ await guard('E', async () => {
   const files = []
   const walk = (dir) => { for (const name of readdirSync(dir)) { const p = join(dir, name); if (statSync(p).isDirectory()) walk(p); else if (/\.(ts|tsx)$/.test(name)) files.push(p) } }
   walk(join(REPO, 'src'))
-  const users = files.filter((f) => /images\.generate|images\/generations|b64_json/.test(readFileSync(f, 'utf8')))
-  check('E: nothing in the app makes a picture yet (no images.generate, no endpoint, no b64_json)', users.length === 0, show(users))
+  // (written for 16.1, when nothing made a picture; since 16.3 the adapter does) only the adapter calls the SDK's images API and only the checker reads its answer
+  const rel = (f) => f.slice(REPO.length + 1).replaceAll('\\', '/')
+  const callers = files.filter((f) => /\.images\.generate\(\s*\{|images\/generations/.test(readFileSync(f, 'utf8')) && !/window\.api\.images/.test(readFileSync(f, 'utf8'))).map(rel)
+  const readers = files.filter((f) => /b64_json/.test(readFileSync(f, 'utf8'))).map(rel)
+  check('E: only the adapter (providers/openaiImages.ts) calls the images API, and only the checker (imageCheck.ts) reads b64_json', JSON.stringify(callers) === JSON.stringify(['src/main/providers/openaiImages.ts']) && JSON.stringify(readers) === JSON.stringify(['src/main/imageCheck.ts']), show([callers, readers]))
   const html = source('src/renderer/index.html')
   check("E: the page's policy allows pictures only from the app and data: (img-src 'self' data:), so a picture must be handed over as data:", /img-src 'self' data:"/.test(html) && !/blob:/.test(html))
   const record = { version: 1, id: '00000000-0000-4000-8000-000000000001', at: 1, chat: null, provider: 'openai', model: 'gpt-image-2.5-flare', effort: null, state: 'done', estimate: true, tokens: { input: 0, cacheRead: 0, cacheWrite: 0, output: 0 }, prices: { inputPerMTok: 0, cacheReadPerMTok: 0, cacheWritePerMTok: 0, outputPerMTok: 0 } }

@@ -34,7 +34,8 @@ const load = (src) => ev(`new Promise((resolve) => {
 
 try {
   const groups = await ev(`Object.keys(window.api).sort().join()`)
-  check('baseline: the bridge has no images part yet', !/(^|,)images(,|$)/.test(groups), groups)
+  // (16.1 took the baseline before the bridge had an images part; since 16.4 it has one, the eleven messages verify-16-4w checks)
+  check('baseline: the bridge has an images part (since 16.4), beside the groups it had', /(^|,)images(,|$)/.test(groups) && /(^|,)voice(,|$)/.test(groups) && /(^|,)chat(,|$)/.test(groups), groups)
   const policy = await ev(`document.querySelector('meta[http-equiv="Content-Security-Policy"]').content`)
   check("baseline: the page's policy is the one in index.html (img-src 'self' data:)", /img-src 'self' data:$/.test(policy), policy)
 

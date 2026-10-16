@@ -2781,6 +2781,36 @@ body {
   overflow-x: auto;
 }
 
+/* Its own class, not the Usage table's: suites and the page find the Usage table by .settings-usage (found by the regression of Stage 16). */
+/* Fixed layout: the table is never wider than Settings, even at 280 px (it stuck out by 2 px there; found by the regression of Stage 16). */
+.images-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.images-table th,
+.images-table td {
+  padding: 4px 4px 4px 0;
+  text-align: left;
+  vertical-align: baseline;
+  overflow-wrap: anywhere;
+}
+
+.images-table th {
+  font-weight: 500;
+}
+
+.images-table thead th:first-child,
+.images-table tbody th {
+  width: 30%;
+}
+
+.images-table td {
+  color: var(--color-text-muted);
+}
+
 .images-table caption {
   text-align: left;
 }

@@ -50,6 +50,8 @@ const windowControls = {
   wNotInChat: [AP, 'onMade={chat.addPicture}', 'onMade={() => undefined}', 'C'],
   wRefused: [MD, '    estimate !== null &&\n    !refused\n', '    estimate !== null\n', 'E'],
   wEscBusy: [MD, 'if (busy.current) event.preventDefault()', 'if (false) event.preventDefault()', 'E'],
+  // (16.8) the price table wider than Settings at 280 px: the element-by-element measure must catch it (the section's own scroll width did not)
+  wTableWide: ['{{REPO}}/src/renderer/src/assets/main.css', '  table-layout: fixed;\n', '  min-width: 300px;\n', 'G'],
   wGalleryEsc: [GD, '          event.preventDefault() // Escape goes back to the grid first\n          setLarge(null)\n', '', 'F']
 }
 

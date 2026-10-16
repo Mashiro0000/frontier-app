@@ -168,7 +168,7 @@ function ImagesSection({ open }: { open: boolean }): React.JSX.Element {
 
       {main !== null && (
         <div className="images-prices">
-          <table className="settings-usage images-table">
+          <table className="images-table">
             <caption className="settings-hint">
               What one picture of {main.label} costs at most
               {main.published ? " (OpenAI's own table)" : ''}
