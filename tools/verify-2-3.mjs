@@ -75,11 +75,12 @@ check('focus returns to the Settings button', await page.evaluate(`document.acti
 // 3b. The modal traps keyboard focus: tabbing around never reaches the chat behind it
 await openSettings()
 const tabStops = []
-for (let i = 0; i < 9; i++) {
+for (let i = 0; i < 16; i++) {
+  // (16 since 15.6: the Voice section adds the Read aloud switch, the voice, the speed and "Try the voice" before the Close button; 9 before)
   await page.press('Tab')
   tabStops.push(await page.evaluate(`document.activeElement.closest('dialog.settings') ? (document.activeElement.id || document.activeElement.innerText || document.activeElement.tagName) : 'OUTSIDE:' + (document.activeElement.className || document.activeElement.tagName)`))
 }
-check('Tab stays inside the dialog (9 presses, never reaches the chat)', tabStops.every((s) => !String(s).startsWith('OUTSIDE')), JSON.stringify(tabStops))
+check('Tab stays inside the dialog (16 presses, never reaches the chat)', tabStops.every((s) => !String(s).startsWith('OUTSIDE')), JSON.stringify(tabStops))
 check('Tab visits the field and the Close button', tabStops.includes('api-key-anthropic') && tabStops.includes('Close'), JSON.stringify(tabStops))
 await page.press('Escape')
 await sleep(200)
@@ -119,7 +120,7 @@ check('the stored bytes do not contain the key either', !blob.includes(Buffer.fr
 check('the stored bytes are longer than the key (nonce + tag + wrapping)', blob.length > fakeKey.length, `${blob.length} vs ${fakeKey.length}`)
 check('no temporary file was left behind', !existsSync(credFile + '.tmp'))
 const apiShape = await page.evaluate(`JSON.stringify({ top: Object.keys(window.api), settings: Object.keys(window.api.settings) })`)
-check('window.api.settings has exactly getStatus / setApiKey / clearApiKey / testApiKey / setModel / setEffort / setLimits / setAskFirst (setLimits since Stage 8.2, setAskFirst since 8.3; and window.api also has chat, since Stage 4 history, since 8.1 usage, since 9.2 attachments, since 10.2 instructions, since 10.4 memory and since 10.5 projects)', apiShape === '{"top":["settings","chat","usage","history","attachments","instructions","memory","audit","tools","workspace","programs","connectors","changes","projects"],"settings":["getStatus","setApiKey","clearApiKey","testApiKey","setModel","setEffort","setLimits","setAskFirst"]}', apiShape)
+check('window.api.settings has exactly getStatus / setApiKey / clearApiKey / testApiKey / setModel / setEffort / setLimits / setAskFirst (setLimits since Stage 8.2, setAskFirst since 8.3; and window.api also has chat, since Stage 4 history, since 8.1 usage, since 9.2 attachments, since 10.2 instructions, since 10.4 memory and since 10.5 projects)', apiShape === '{"top":["settings","chat","usage","history","attachments","instructions","memory","audit","tools","workspace","programs","connectors","changes","voice","projects"],"settings":["getStatus","setApiKey","clearApiKey","testApiKey","setModel","setEffort","setLimits","setAskFirst"]}', apiShape)
 const pageStatus = await page.evaluate(`window.api.settings.getStatus().then((s) => JSON.stringify(s))`)
 check('getStatus returns exactly { providers, canStoreKey, models, selectedModelId, modelsError, modelsCheckedOn, tasks, suggestions, effort, limits, askFirst }', Object.keys(JSON.parse(pageStatus)).join() === 'providers,canStoreKey,models,selectedModelId,modelsError,modelsCheckedOn,tasks,suggestions,effort,limits,askFirst' && JSON.parse(pageStatus).providers[0].hasKey === true && JSON.parse(pageStatus).canStoreKey === true, pageStatus.slice(0, 200))
 check('the key appears nowhere in the page (DOM, status, storage)', !(await page.evaluate(`(document.documentElement.outerHTML + JSON.stringify(localStorage) + JSON.stringify(sessionStorage)).includes(${JSON.stringify(fakeKey)})`)))
