@@ -1,0 +1,18 @@
+{
+  "label": "n162-xGalleryMax",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageIndex.ts",
+      "from": "file.pictures.length > IMAGE_LIMITS.galleryMax) return null",
+      "to": "file.pictures.length > 100000) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 300000
+}

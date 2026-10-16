@@ -1,0 +1,18 @@
+{
+  "label": "n162-iRetiredAsk",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/images.ts",
+      "from": "  if (retirement(entry, now) === 'retired') {",
+      "to": "  if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

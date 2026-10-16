@@ -1,0 +1,18 @@
+{
+  "label": "n162-uImageMax",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "(image.usd as number) > 100",
+      "to": "(image.usd as number) > 1e9"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

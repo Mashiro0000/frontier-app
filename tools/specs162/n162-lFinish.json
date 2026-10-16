@@ -1,0 +1,18 @@
+{
+  "label": "n162-lFinish",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/usageLedger.ts",
+      "from": "...(outcome.image === undefined ? {} : { image: { ...outcome.image } })",
+      "to": "...{}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

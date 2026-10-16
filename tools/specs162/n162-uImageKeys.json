@@ -1,0 +1,18 @@
+{
+  "label": "n162-uImageKeys",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "      Object.keys(image).sort().join() !== 'count,kind,usd' ||\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n162-xIdTwice",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageIndex.ts",
+      "from": "    if (record === null || ids.has(record.id)) return null",
+      "to": "    if (record === null) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 300000
+}

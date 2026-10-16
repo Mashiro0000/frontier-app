@@ -1,0 +1,18 @@
+{
+  "label": "n162-kEdge",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageCheck.ts",
+      "from": "if (header.width > IMAGE_LIMITS.maxEdge || header.height > IMAGE_LIMITS.maxEdge) {",
+      "to": "if (header.width > 8000 || header.height > 8000) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 300000
+}

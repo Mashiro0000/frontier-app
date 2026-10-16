@@ -1,0 +1,18 @@
+{
+  "label": "n162-xChat",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageIndex.ts",
+      "from": "  if (r.chat !== null && !isConversationId(r.chat)) return null\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 300000
+}

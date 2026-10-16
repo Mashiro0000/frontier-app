@@ -1,0 +1,18 @@
+{
+  "label": "n162-kAnimated",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageCheck.ts",
+      "from": "  if (header.animated) return { ok: false, why: 'it is animated' }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 300000
+}

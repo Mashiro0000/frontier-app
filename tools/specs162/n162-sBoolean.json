@@ -1,0 +1,18 @@
+{
+  "label": "n162-sBoolean",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageSettings.ts",
+      "from": "  if (typeof fields.on !== 'boolean') return null\n  return Object.freeze({ on: fields.on })",
+      "to": "  return Object.freeze({ on: fields.on === true || fields.on === \"yes\" })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 300000
+}

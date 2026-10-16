@@ -1,0 +1,18 @@
+{
+  "label": "n162-iWarnDays",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/images.ts",
+      "from": "return left <= IMAGE_LIMITS.retireWarnDays ? 'retiring' : 'ok'",
+      "to": "return left < IMAGE_LIMITS.retireWarnDays ? 'retiring' : 'ok'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

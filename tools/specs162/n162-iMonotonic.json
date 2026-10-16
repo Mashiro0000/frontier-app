@@ -1,0 +1,18 @@
+{
+  "label": "n162-iMonotonic",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/images.ts",
+      "from": "      (row.medium as number) <= (row.high as number)",
+      "to": "      true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

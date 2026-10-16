@@ -71,6 +71,17 @@ export interface AudioFee {
 export const audioFeeUsd = (fee: AudioFee): number =>
   (Math.max(1, Math.ceil(fee.seconds)) / 60) * fee.usdPerMinute
 
+/**
+ * What a request for pictures cost (Stage 16.2, D-048): how many pictures were asked for and the US dollars counted for them. When it is begun, the most the request can
+ * cost (reserved against the limits); when it ends, the cost from the tokens the answer reported, or the table figure marked as a guess. A record that carries one has
+ * no priced tokens: the money is this.
+ */
+export interface ImageFee {
+  kind: 'generate'
+  count: number
+  usd: number
+}
+
 /** One line of the ledger: one request to a provider, with the prices it was counted at (they may change in the registry later). */
 export interface LedgerRecord {
   version: 1
@@ -94,6 +105,8 @@ export interface LedgerRecord {
   search?: SearchFee
   /** (15.5) A clip of speech to text: absent for every other request. */
   audio?: AudioFee
+  /** (16.2) A request for pictures: absent for every other request. */
+  image?: ImageFee
 }
 
 /** What a reply used and cost, as the page is told when the reply ends (and the ledger has the same). */
@@ -143,7 +156,8 @@ export function costOf(tokens: TokenCounts, prices: ModelPricing): number {
 export const costOfRecord = (record: LedgerRecord): number =>
   costOf(record.tokens, record.prices) +
   (record.search === undefined ? 0 : record.search.count * record.search.usdEach) +
-  (record.audio === undefined ? 0 : audioFeeUsd(record.audio))
+  (record.audio === undefined ? 0 : audioFeeUsd(record.audio)) +
+  (record.image === undefined ? 0 : record.image.usd)
 
 export const tokensAreEmpty = (tokens: TokenCounts): boolean =>
   tokens.input === 0 && tokens.cacheRead === 0 && tokens.cacheWrite === 0 && tokens.output === 0
@@ -241,8 +255,21 @@ const isFields = (value: unknown): value is Record<string, unknown> =>
  */
 export function parseLedgerRecord(raw: unknown): LedgerRecord | null {
   if (!isFields(raw) || raw.version !== 1) return null
-  const { id, at, chat, provider, model, effort, state, estimate, tokens, prices, search, audio } =
-    raw
+  const {
+    id,
+    at,
+    chat,
+    provider,
+    model,
+    effort,
+    state,
+    estimate,
+    tokens,
+    prices,
+    search,
+    audio,
+    image
+  } = raw
   if (!isConversationId(id)) return null // the one spelling of a uuid the app makes (the same shape as a conversation id)
   if (typeof at !== 'number' || !Number.isSafeInteger(at) || at < 0) return null
   if (chat !== null && !isConversationId(chat)) return null
@@ -305,6 +332,23 @@ export function parseLedgerRecord(raw: unknown): LedgerRecord | null {
       usdPerMinute: audio.usdPerMinute as number
     }
   }
+  // The pictures (16.2): absent, or exactly their kind, a whole count from 1 to 10 and the dollars, from 0 to 100; anything else makes the line unusable.
+  let pictureFee: ImageFee | undefined
+  if (image !== undefined) {
+    if (
+      !isFields(image) ||
+      Object.keys(image).sort().join() !== 'count,kind,usd' ||
+      image.kind !== 'generate' ||
+      !Number.isSafeInteger(image.count) ||
+      (image.count as number) < 1 ||
+      (image.count as number) > 10 ||
+      !isPrice(image.usd) ||
+      (image.usd as number) > 100
+    ) {
+      return null
+    }
+    pictureFee = { kind: 'generate', count: image.count as number, usd: image.usd as number }
+  }
   return {
     version: 1,
     id,
@@ -328,7 +372,8 @@ export function parseLedgerRecord(raw: unknown): LedgerRecord | null {
       outputPerMTok: prices.outputPerMTok
     },
     ...(fee === undefined ? {} : { search: fee }),
-    ...(clipFee === undefined ? {} : { audio: clipFee })
+    ...(clipFee === undefined ? {} : { audio: clipFee }),
+    ...(pictureFee === undefined ? {} : { image: pictureFee })
   }
 }
 
