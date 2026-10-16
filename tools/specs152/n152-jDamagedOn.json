@@ -1,0 +1,18 @@
+{
+  "label": "n152-jDamagedOn",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceSettings.ts",
+      "from": "          return { settings: DEFAULT_VOICE_SETTINGS, problem: current.why }",
+      "to": "          return { settings: { ...DEFAULT_VOICE_SETTINGS, listen: true }, problem: current.why }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

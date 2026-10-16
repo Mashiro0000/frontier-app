@@ -1,0 +1,18 @@
+{
+  "label": "n152-cCap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceClip.ts",
+      "from": "  if (out.length > VOICE_LIMITS.maxTranscriptChars) {",
+      "to": "  if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

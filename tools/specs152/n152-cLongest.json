@@ -1,0 +1,18 @@
+{
+  "label": "n152-cLongest",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceClip.ts",
+      "from": "|| ms < 0 || ms > longest) return refused()",
+      "to": "|| ms < 0) return refused()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

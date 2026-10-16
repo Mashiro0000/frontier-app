@@ -1,0 +1,18 @@
+{
+  "label": "n152-cMagic",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceClip.ts",
+      "from": "  if (bytes.length < 16 || !hasAt(bytes, 0, EBML)) return false",
+      "to": "  if (bytes.length < 16) return false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

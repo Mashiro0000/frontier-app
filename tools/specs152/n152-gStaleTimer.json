@@ -1,0 +1,18 @@
+{
+  "label": "n152-gStaleTimer",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceGate.ts",
+      "from": "    if (timer !== null) timers.clear(timer)\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 400000
+}

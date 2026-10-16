@@ -1,0 +1,18 @@
+{
+  "label": "n152-cLie",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceClip.ts",
+      "from": "Math.ceil(ms / 1000), Math.ceil(bytes.length / MAX_BYTES_PER_SECOND))",
+      "to": "Math.ceil(ms / 1000))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

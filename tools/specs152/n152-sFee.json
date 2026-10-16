@@ -1,0 +1,18 @@
+{
+  "label": "n152-sFee",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/voice.ts",
+      "from": "(Math.max(1, Math.ceil(seconds)) / 60) * TRANSCRIBE_USD_PER_MINUTE",
+      "to": "(seconds / 60) * TRANSCRIBE_USD_PER_MINUTE"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 400000
+}

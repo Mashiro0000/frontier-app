@@ -1,0 +1,18 @@
+{
+  "label": "n152-eCode",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/voice/speechText.ts",
+      "from": "      out.push('Code block.')",
+      "to": "      out.push(block.text)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-2.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 400000
+}
