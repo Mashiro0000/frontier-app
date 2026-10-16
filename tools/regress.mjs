@@ -107,7 +107,7 @@ if (parts.includes('window')) {
   launcher('run156.mjs', 'dev', 'w156', 'verify-15-6 (voice: the Voice section, the microphone button held, Read aloud, Copy, 420 and 280 px, a damaged voice.json)')
   launcher('run93.mjs', 'dev', 'w93', 'verify-9-3 (sending and saving files: both providers, History, delete, encryption, the sweep, a model that cannot read them)')
   rec(seeded('w76', 'dev', 'setup-key.mjs,verify-7-6w.mjs', { USER_DATA_DIR: scratch('s76'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('w76'), 'verify-7-6 (header one row, chat bar under the box)')
-  const mtime = statSync(join(P, 'preferences.json')).mtimeMs
+  const mtime = picked('34b') ? statSync(join(P, 'preferences.json')).mtimeMs : 0 // (the profile of an earlier run of this regression; a re-run of a few labels need not have one)
   rec(seeded('34b', 'dev', 'verify-3-4b.mjs', { USER_DATA_DIR: P, MOCK_PORT: MOCK, EXPECT_MODEL: 'claude-fable-5-1', PREFS_MTIME_MS: String(mtime) }), pfx('34b'), 'verify-3-4b (restart)')
 }
 
