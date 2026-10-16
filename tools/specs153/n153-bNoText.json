@@ -1,0 +1,18 @@
+{
+  "label": "n153-bNoText",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiAudio.ts",
+      "from": "if (!isRecord(answer) || typeof answer.text !== 'string') {",
+      "to": "if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-3.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n153-aModel",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiAudio.ts",
+      "from": "model: TRANSCRIBE_MODEL, response_format: 'json' }",
+      "to": "model: 'whisper-1', response_format: 'json' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-3.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 400000
+}

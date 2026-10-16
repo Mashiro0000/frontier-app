@@ -39,7 +39,7 @@ function withoutEnvironment<T>(names: readonly string[], run: () => T): T {
   }
 }
 
-function newClient({ apiKey, baseURL }: Credentials): OpenAI {
+export function newClient({ apiKey, baseURL }: Credentials): OpenAI {
   // Left alone, the SDK fills in whatever it is not given from the environment: OPENAI_API_KEY, OPENAI_ADMIN_KEY,
   // OPENAI_ORG_ID, OPENAI_PROJECT_ID, OPENAI_WEBHOOK_SECRET, OPENAI_BASE_URL (which could send this key to another server),
   // OPENAI_LOG (at "debug" it would print the messages) and OPENAI_CUSTOM_HEADERS (which could add an Authorization header
