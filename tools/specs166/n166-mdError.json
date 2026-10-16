@@ -1,0 +1,18 @@
+{
+  "label": "n166-mdError",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/images/MakeImageDialog.tsx",
+      "from": "      setError(result.error)\n      return\n",
+      "to": "      setError(result.error)\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-6.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

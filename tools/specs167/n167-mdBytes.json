@@ -1,0 +1,18 @@
+{
+  "label": "n167-mdBytes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/images/MakeImageDialog.tsx",
+      "from": "promptBytes: bytes })",
+      "to": "promptBytes: 0 })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-7.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 300000
+}

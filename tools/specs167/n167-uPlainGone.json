@@ -1,0 +1,18 @@
+{
+  "label": "n167-uPlainGone",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/useChatStorage.ts",
+      "from": "        `Rewrote ${gallery(report.pictures.changed)} as ${report.pictures.changed === 1 ? 'a plain file' : 'plain files'} too.`",
+      "to": "        ''"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-7.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

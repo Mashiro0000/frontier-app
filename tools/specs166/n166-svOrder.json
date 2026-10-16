@@ -1,0 +1,18 @@
+{
+  "label": "n166-svOrder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "          : key === null\n            ? IMAGE_WORDS.noKey // first: without a key it cannot be switched on either\n            : !chosen.on\n              ? IMAGE_WORDS.off\n",
+      "to": "          : !chosen.on\n            ? IMAGE_WORDS.off\n            : key === null\n              ? IMAGE_WORDS.noKey\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

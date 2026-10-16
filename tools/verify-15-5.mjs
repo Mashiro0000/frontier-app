@@ -418,8 +418,8 @@ await guard('G', async () => {
   const preload = source('src/preload/index.ts')
   check('G: the bridge has the eight functions and sends exactly what the service reads', /voice: \{/.test(preload) && /voiceSetListen, \{ on \}/.test(preload) && /voiceSetVoice, \{ voice, rate \}/.test(preload) && /voiceEnd, \{ bytes, ms \}/.test(preload) && (preload.match(/CHANNELS\.voice\w+/g) ?? []).length === 8)
   check('G: the channels of the bridge are the shared names', (() => { const c = source('src/shared/ipc.ts'); return Object.keys(V.VOICE_CHANNELS).every((k) => c.includes(`VOICE_CHANNELS.${k}`)) })())
-  check('G: voice.json joins the encryption flow and is waited for at quit', /voiceSettings\.file,?\n\s*\]\)/.test(ipc) && /voiceSettings\.file\.whenIdle\(\)/.test(ipc) && /return \(\) => \{\s*voice\.cancel\(\)/.test(ipc))
-  check('G: the OpenAI key is read for this service and goes no further than the adapter', /key: \(\) => readApiKey\('openai'\)/.test(ipc))
+  check('G: voice.json joins the encryption flow and is waited for at quit', /voiceSettings\.file,?\n(\s*[\w.]+,?\n)*\s*\]\)/.test(ipc) && /voiceSettings\.file\.whenIdle\(\)/.test(ipc) && /return \(\) => \{\s*voice\.cancel\(\)/.test(ipc))
+  check('G: the OpenAI key is read for this service and goes no further than the adapter', /mic: microphoneGate,\n\s+key: \(\) => readApiKey\('openai'\)/.test(ipc))
   check('G: nothing in the app writes a recording or its words to a file (the service has no file write)', !/writeFile|appendFile|createWriteStream/.test(svc) && !/writeFile|appendFile/.test(source('src/main/providers/openaiAudio.ts')))
 })
 

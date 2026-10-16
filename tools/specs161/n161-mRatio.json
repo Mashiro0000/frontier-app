@@ -1,0 +1,18 @@
+{
+  "label": "n161-mRatio",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-images.mjs",
+      "from": "if (Math.max(w, h) / Math.min(w, h) > 3)",
+      "to": "if (false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

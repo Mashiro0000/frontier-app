@@ -1,0 +1,18 @@
+{
+  "label": "n165-cOldReadsNote",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "    file.version === 7 // a request for pictures (D-048, 16.5) only from a version 7 file",
+      "to": "    true // a request for pictures (D-048, 16.5) only from a version 7 file"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

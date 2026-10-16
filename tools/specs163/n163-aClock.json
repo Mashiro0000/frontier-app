@@ -1,0 +1,18 @@
+{
+  "label": "n163-aClock",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiImages.ts",
+      "from": "timeout: timeoutMs, maxRetries: 0",
+      "to": "timeout: timeoutMs * 5, maxRetries: 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-3.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 300000
+}

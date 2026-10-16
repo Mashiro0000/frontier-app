@@ -1,0 +1,18 @@
+{
+  "label": "n164-sSaveNoCancel",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "      if (path === null) return { ok: false, cancelled: true, error: 'Cancelled.' }",
+      "to": "      if (path === null) return { ok: false, error: 'Cancelled.' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 300000
+}

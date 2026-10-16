@@ -1,0 +1,18 @@
+{
+  "label": "n164-sRoomLater",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "        if (full !== null) return { ok: false, kind: 'refused', error: full }",
+      "to": "        if (false) return { ok: false, kind: 'refused', error: full }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

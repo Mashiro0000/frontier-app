@@ -1,0 +1,19 @@
+{
+  "label": "w166-wTableWide",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/assets/main.css",
+      "from": "  table-layout: fixed;\n",
+      "to": "  min-width: 300px;\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run166.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "G"
+  },
+  "timeoutMs": 1200000
+}

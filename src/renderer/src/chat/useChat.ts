@@ -3,6 +3,7 @@ import { notesOf, settleNotes } from '../../../shared/toolNotes'
 import type { ToolEvent } from '../../../shared/tools'
 import { withEditedMessage, withoutLastReply } from './rewrite'
 import type { AttachedFile } from '../../../shared/attachments'
+import type { PictureNote } from '../../../shared/images'
 import type { ChatMessage, LargeRequest, ReplyFn } from './types'
 
 export interface UseChat {
@@ -43,6 +44,11 @@ export interface UseChat {
    * changing do not draw again while a reply streams in.
    */
   resend: (id: string, text: string) => void
+  /**
+   * (16.5, D-048) Puts a request for pictures into the chat: the description as the person typed it and the gallery's ids. It asks the model nothing and is never
+   * sent to it. Does nothing while a reply is arriving.
+   */
+  addPicture: (description: string, note: PictureNote) => void
 }
 
 /**
@@ -215,6 +221,14 @@ export function useChat(reply: ReplyFn): UseChat {
     activeReply.current?.abort()
   }
 
+  const addPicture = useCallback((description: string, note: PictureNote): void => {
+    if (activeReply.current) return
+    setMessages((previous) => [
+      ...previous,
+      { id: crypto.randomUUID(), role: 'user', content: description, status: 'done', picture: note }
+    ])
+  }, [])
+
   // Fixed while a reply is arriving, like the model and the effort (D-015, D-024): the buttons that call this are off then; belt and braces.
   const setInstructions = useCallback((text: string): void => {
     if (activeReply.current) return
@@ -253,6 +267,7 @@ export function useChat(reply: ReplyFn): UseChat {
     load,
     setConversationId,
     regenerate,
-    resend
+    resend,
+    addPicture
   }
 }

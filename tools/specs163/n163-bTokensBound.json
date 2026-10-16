@@ -1,0 +1,18 @@
+{
+  "label": "n163-bTokensBound",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiImages.ts",
+      "from": "!isTokens(output, MAX_OUTPUT_TOKENS_EACH * count)",
+      "to": "!isTokens(output, Number.MAX_SAFE_INTEGER)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-3.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n167-uOne",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/useChatStorage.ts",
+      "from": "  `${count} ${count === 1 ? 'picture' : 'pictures'} in the gallery`",
+      "to": "  `${count} pictures in the gallery`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-7.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

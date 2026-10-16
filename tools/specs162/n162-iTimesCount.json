@@ -1,0 +1,18 @@
+{
+  "label": "n162-iTimesCount",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/images.ts",
+      "from": "      (model.perPicture[shape][quality] + IMAGE_LIMITS.tableRoundingUsd) * count +",
+      "to": "      (model.perPicture[shape][quality] + IMAGE_LIMITS.tableRoundingUsd) +"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 300000
+}

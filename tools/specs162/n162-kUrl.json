@@ -1,0 +1,18 @@
+{
+  "label": "n162-kUrl",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageCheck.ts",
+      "from": " || item.url !== undefined) {",
+      "to": ") {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 300000
+}

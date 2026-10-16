@@ -1,0 +1,18 @@
+{
+  "label": "n162-kCount",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageCheck.ts",
+      "from": "  if (data.length !== count) {",
+      "to": "  if (data.length < count) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 300000
+}

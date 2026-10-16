@@ -1,0 +1,18 @@
+{
+  "label": "n166-sdGone",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/SettingsDialog.tsx",
+      "from": "      <ImagesSection key={`images:${session}`} open={open} />\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-6.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

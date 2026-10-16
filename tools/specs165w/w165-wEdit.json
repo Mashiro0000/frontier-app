@@ -1,0 +1,19 @@
+{
+  "label": "w165-wEdit",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/MessageActions.tsx",
+      "from": "  const canEdit = message.role === 'user' && message.picture === undefined",
+      "to": "  const canEdit = message.role === 'user'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run165.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "B"
+  },
+  "timeoutMs": 1200000
+}

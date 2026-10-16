@@ -1,0 +1,18 @@
+{
+  "label": "n166-mdLive",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/images/MakeImageDialog.tsx",
+      "from": "        if (live) setAnswered({ key",
+      "to": "        setAnswered({ key"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-6.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

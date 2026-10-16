@@ -17,6 +17,8 @@ import {
   type WireAttachment,
   type WireMessage
 } from './ipc'
+import { isConversationId, isModelId } from './ids'
+import { checkPictureNote, isPrompt } from './images'
 import { isProjectId } from './projects'
 import { SUPPORTED_PROVIDERS, type Effort, type ProviderId } from './registry'
 import { checkToolNotes } from './toolNotes'
@@ -368,14 +370,9 @@ export function checkChatRequest(input: unknown): ChatCheck {
   }
 }
 
-// A conversation's id becomes part of a file name, so it is checked against the one spelling the app itself
-// makes (crypto.randomUUID(): lower-case hexadecimal groups). Upper case is refused because Windows treats
-// upper and lower case as one file: two spellings of one id would be one conversation.
-const CONVERSATION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
-
-export function isConversationId(value: unknown): value is string {
-  return typeof value === 'string' && CONVERSATION_ID.test(value)
-}
+// A conversation's id (the one spelling crypto.randomUUID() makes) and a model's id are checked in ids.ts (16.5: their own file, so that no shared module needs a loop
+// of imports to use them); they are exported from here as before.
+export { isConversationId, isModelId }
 
 /**
  * The chat a usage summary is asked for (D-030): a conversation id, or null for none. Anything else is read as none (the summary then has
@@ -425,14 +422,6 @@ export function checkConversationId(input: unknown): ConversationIdCheck {
   return isConversationId(input)
     ? { ok: true, id: input }
     : { ok: false, error: 'The conversation was not understood.' }
-}
-
-// A model's id as the providers spell them: lower case letters, digits, dots and hyphens, starting with a letter or digit
-// (claude-opus-5-5, gpt-6.1-sol). Looser than the registry's list on purpose: a retired model must stay readable (D-021).
-const MODEL_ID = /^[a-z0-9][a-z0-9._-]{0,63}$/
-
-export function isModelId(value: unknown): value is string {
-  return typeof value === 'string' && MODEL_ID.test(value)
 }
 
 /**
@@ -485,7 +474,9 @@ export function checkSavedMessages(
   /** Files are read on the person's messages (D-037): from the page, and from a file of version 4. An older file's messages are read without them. */
   filesAllowed: boolean = source === 'page',
   /** Tool calls are read on a reply (D-041, 11.4): from the page, and from a file of version 6. An older file's messages are read without them. */
-  toolsAllowed: boolean = source === 'page'
+  toolsAllowed: boolean = source === 'page',
+  /** A picture note is read on a message of the person's (D-048, 16.5): from the page, and from a file of version 7. An older file's messages are read without one. */
+  picturesAllowed: boolean = source === 'page'
 ): MessagesCheck {
   const refuse = (error: string): MessagesCheck => ({ ok: false, error })
   if (!Array.isArray(input) || input.length === 0) return refuse('There is nothing to save.')
@@ -501,7 +492,10 @@ export function checkSavedMessages(
   for (const item of input) {
     if (typeof item !== 'object' || item === null)
       return refuse('The conversation was not understood.')
-    const { role, content, status, error, attachments, tools } = item as Record<string, unknown>
+    const { role, content, status, error, attachments, tools, picture } = item as Record<
+      string,
+      unknown
+    >
     // The files of a message of the person's (D-037): each described in full and named once; at most `perMessage`. A message may have files and no text.
     let files: AttachmentInfo[] | null = null
     if (attachments !== undefined && filesAllowed) {
@@ -554,6 +548,20 @@ export function checkSavedMessages(
       message.model = answerer.model
     }
     if (files !== null) message.attachments = files
+    // A request for pictures (D-048, 16.5): only on a message of the person's that is done, whose text is the description as typed, and that carries no files.
+    if (picture !== undefined && picturesAllowed) {
+      const note = checkPictureNote(picture)
+      if (
+        note === null ||
+        role !== 'user' ||
+        status !== 'done' ||
+        files !== null ||
+        !isPrompt(content)
+      ) {
+        return refuse('The conversation was not understood.')
+      }
+      message.picture = note
+    }
     // The tool calls of a reply (D-041, 11.4): each checked field by field, standing within the reply's own text; on a message that is not a reply they are an error.
     if (tools !== undefined && toolsAllowed) {
       const notes = role === 'assistant' ? checkToolNotes(tools, content.length) : null

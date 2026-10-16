@@ -7,33 +7,40 @@ import type { ChatMessage } from '../chat/types'
  * a reply that is cut off by closing the window never finishes. A reply says which model answered (D-021).
  */
 export function toMessagesToSave(messages: ChatMessage[]): MessageToSave[] {
-  return messages.map(({ role, content, status, error, provider, model, files, tools }) => ({
-    role,
-    content,
-    status,
-    ...(status === 'error' && error !== undefined ? { error } : {}),
-    ...(role === 'assistant' ? { provider: provider ?? null, model: model ?? null } : {}),
-    // The files' descriptions (D-037), on the person's messages; the small pictures are not saved (main makes them again from its copies).
-    ...(role === 'user' && files !== undefined && files.length > 0
-      ? { attachments: files.map((file) => file.info) }
-      : {}),
-    // The tool calls of a reply (D-041, 11.4), as they stood when it ended; a reply that used no tool has none.
-    ...(role === 'assistant' && tools !== undefined && tools.length > 0 ? { tools } : {})
-  }))
+  return messages.map(
+    ({ role, content, status, error, provider, model, files, tools, picture }) => ({
+      role,
+      content,
+      status,
+      ...(status === 'error' && error !== undefined ? { error } : {}),
+      ...(role === 'assistant' ? { provider: provider ?? null, model: model ?? null } : {}),
+      // The files' descriptions (D-037), on the person's messages; the small pictures are not saved (main makes them again from its copies).
+      ...(role === 'user' && files !== undefined && files.length > 0
+        ? { attachments: files.map((file) => file.info) }
+        : {}),
+      // The tool calls of a reply (D-041, 11.4), as they stood when it ended; a reply that used no tool has none.
+      ...(role === 'assistant' && tools !== undefined && tools.length > 0 ? { tools } : {}),
+      // A request for pictures (D-048): its ids into the gallery, on the person's message that holds the description.
+      ...(role === 'user' && picture !== undefined ? { picture } : {})
+    })
+  )
 }
 
 /** A saved conversation back into messages the chat can show and continue, each with a fresh id. */
 export function fromSavedMessages(messages: SavedMessage[]): ChatMessage[] {
-  return messages.map(({ role, content, status, error, provider, model, attachments, tools }) => ({
-    id: crypto.randomUUID(),
-    role,
-    content,
-    status,
-    ...(error !== undefined ? { error } : {}),
-    ...(role === 'assistant' ? { provider: provider ?? null, model: model ?? null } : {}),
-    ...(attachments !== undefined
-      ? { files: attachments.map((info) => ({ info, thumbnail: null, firstLines: null })) }
-      : {}),
-    ...(tools !== undefined ? { tools } : {})
-  }))
+  return messages.map(
+    ({ role, content, status, error, provider, model, attachments, tools, picture }) => ({
+      id: crypto.randomUUID(),
+      role,
+      content,
+      status,
+      ...(error !== undefined ? { error } : {}),
+      ...(role === 'assistant' ? { provider: provider ?? null, model: model ?? null } : {}),
+      ...(attachments !== undefined
+        ? { files: attachments.map((info) => ({ info, thumbnail: null, firstLines: null })) }
+        : {}),
+      ...(tools !== undefined ? { tools } : {}),
+      ...(picture !== undefined ? { picture } : {})
+    })
+  )
 }

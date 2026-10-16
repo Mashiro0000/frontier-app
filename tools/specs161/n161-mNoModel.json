@@ -1,0 +1,18 @@
+{
+  "label": "n161-mNoModel",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-images.mjs",
+      "from": "if (model === null) problems.push('no model was named",
+      "to": "if (false) problems.push('no model was named"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

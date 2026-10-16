@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/chat/rewrite.ts",
-      "from": "messages[at].role !== 'user' || edited",
-      "to": "edited"
+      "from": "    messages[at].role !== 'user' ||\n    messages[at].picture !== undefined ||\n    edited === ''",
+      "to": "    edited === ''"
     }
   ],
   "argv": [

@@ -1,0 +1,18 @@
+{
+  "label": "n167-ipWire",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    pictures: imageStore, // the gallery's pictures (D-048), sealed with the chats; images.json is among the documents below\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-7.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 300000
+}

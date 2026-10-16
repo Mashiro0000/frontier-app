@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "1",
+  "updatedAt": "2026-10-16",
+  "source": "OpenAI's image-generation guide, deprecations page, pricing page and model pages, read on 2026-10-16. gpt-image-2: OpenAI's own table (US dollars a picture). The two gpt-image-2.5 models: OpenAI publishes no token counts for them, so their table is the app's ceiling, twice the gpt-image-2 high figure for each shape, shown as about.",
+  "defaultModelId": "gpt-image-2",
+  "models": [
+    {
+      "id": "gpt-image-2",
+      "label": "GPT Image 2",
+      "description": "OpenAI's image model with published prices and no retirement date. The default.",
+      "retires": null,
+      "published": true,
+      "prices": { "textInPerMTok": 5, "imageOutPerMTok": 30 },
+      "perPicture": {
+        "square": { "low": 0.006, "medium": 0.053, "high": 0.211 },
+        "portrait": { "low": 0.005, "medium": 0.041, "high": 0.165 },
+        "landscape": { "low": 0.005, "medium": 0.041, "high": 0.165 }
+      }
+    },
+    {
+      "id": "gpt-image-2.5-flare",
+      "label": "GPT Image 2.5 Flare",
+      "description": "OpenAI's newest fast model for everyday pictures. Its prices per picture are not published, so the cost shown is a ceiling.",
+      "retires": null,
+      "published": false,
+      "prices": { "textInPerMTok": 5, "imageOutPerMTok": 30 },
+      "perPicture": {
+        "square": { "low": 0.422, "medium": 0.422, "high": 0.422 },
+        "portrait": { "low": 0.33, "medium": 0.33, "high": 0.33 },
+        "landscape": { "low": 0.33, "medium": 0.33, "high": 0.33 }
+      }
+    },
+    {
+      "id": "gpt-image-2.5-sunburst",
+      "label": "GPT Image 2.5 Sunburst",
+      "description": "OpenAI's newest model for precise detail. Its prices per picture are not published, so the cost shown is a ceiling.",
+      "retires": null,
+      "published": false,
+      "prices": { "textInPerMTok": 5, "imageOutPerMTok": 30 },
+      "perPicture": {
+        "square": { "low": 0.422, "medium": 0.422, "high": 0.422 },
+        "portrait": { "low": 0.33, "medium": 0.33, "high": 0.33 },
+        "landscape": { "low": 0.33, "medium": 0.33, "high": 0.33 }
+      }
+    }
+  ]
+}

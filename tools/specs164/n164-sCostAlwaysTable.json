@@ -1,0 +1,18 @@
+{
+  "label": "n164-sCostAlwaysTable",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "        const costUsd = answer.tokens !== null ? costFromTokens(ask.model, answer.tokens) : most.usd",
+      "to": "        const costUsd = most.usd"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

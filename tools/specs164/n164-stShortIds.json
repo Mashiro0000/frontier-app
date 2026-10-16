@@ -1,0 +1,18 @@
+{
+  "label": "n164-stShortIds",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageStore.ts",
+      "from": "randomBytes(16).toString",
+      "to": "randomBytes(8).toString"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

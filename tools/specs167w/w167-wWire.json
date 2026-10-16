@@ -1,0 +1,19 @@
+{
+  "label": "w167-wWire",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    pictures: imageStore, // the gallery's pictures (D-048), sealed with the chats; images.json is among the documents below\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run167.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "D"
+  },
+  "timeoutMs": 1200000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n164-sSaveNameFromPrompt",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "      const name = `picture-${day}-${read.record.id.slice(0, 8)}",
+      "to": "      const name = `${read.record.prompt.slice(0, 12)}-${day}-${read.record.id.slice(0, 8)}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 300000
+}

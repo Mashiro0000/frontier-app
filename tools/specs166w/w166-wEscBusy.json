@@ -1,0 +1,19 @@
+{
+  "label": "w166-wEscBusy",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/images/MakeImageDialog.tsx",
+      "from": "if (busy.current) event.preventDefault()",
+      "to": "if (false) event.preventDefault()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run166.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "E"
+  },
+  "timeoutMs": 1200000
+}

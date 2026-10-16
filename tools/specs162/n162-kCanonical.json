@@ -1,0 +1,18 @@
+{
+  "label": "n162-kCanonical",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageCheck.ts",
+      "from": "    if (bytes.toString('base64') !== text) return { ok: false, why: 'a picture is not base64' }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 300000
+}

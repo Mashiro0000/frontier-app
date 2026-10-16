@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "    key: () => readApiKey('openai'),",
-      "to": "    key: () => readApiKey('anthropic'),"
+      "from": "    mic: microphoneGate,\n    key: () => readApiKey('openai'),",
+      "to": "    mic: microphoneGate,\n    key: () => readApiKey('anthropic'),"
     }
   ],
   "argv": [

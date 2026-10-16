@@ -64,11 +64,11 @@ const controls = {
   fLedgerBegin: ['15-5', 'D', LEDGER, '          ...(input.audio === undefined ? {} : { audio: { ...input.audio } })', ''],
   fLedgerFinish: ['15-5', 'D', LEDGER, '          ...(outcome.audio === undefined ? {} : { audio: { ...outcome.audio } })', ''],
   // ---- the wiring ----
-  wKept: ['15-5', 'G', IPC, '      connectorStore.file,\n      voiceSettings.file\n    ])', '      connectorStore.file\n    ])'],
+  wKept: ['15-5', 'G', IPC, '      connectorStore.file,\n      voiceSettings.file,\n      imageSettings.file,\n      imageIndex\n    ])', '      connectorStore.file\n    ])'],
   wIdle: ['15-5', 'G', IPC, '      voiceSettings.file.whenIdle(),\n', ''],
   wQuit: ['15-5', 'G', IPC, '    voice.cancel() // a recording or a clip on its way ends with the app\n', ''],
   wGuard: ['15-5', 'G', IPC, '    CHANNELS.voiceBegin,\n    guarded(', '    CHANNELS.voiceBegin,\n    ('],
-  wKey: ['15-5', 'G', IPC, "    key: () => readApiKey('openai'),", "    key: () => readApiKey('anthropic'),"]
+  wKey: ['15-5', 'G', IPC, "    mic: microphoneGate,\n    key: () => readApiKey('openai'),", "    mic: microphoneGate,\n    key: () => readApiKey('anthropic'),"]
 }
 
 // the window controls: they change a copy of the tree (tools/guarded-window-copy.mjs tools/nc-all.mjs specs155w ...); [runner, file, from, to]

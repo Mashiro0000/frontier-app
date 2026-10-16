@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",
-      "from": "  conversation.messages.some((message) => message.tools !== undefined)\n    ?",
-      "to": "  false\n    ?"
+      "from": "    : conversation.messages.some((message) => message.tools !== undefined)\n      ?",
+      "to": "    : false\n      ?"
     }
   ],
   "argv": [

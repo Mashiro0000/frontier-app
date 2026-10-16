@@ -24,6 +24,18 @@ import {
   type VoiceEndResult,
   type VoiceStatus
 } from './voice'
+import {
+  IMAGE_CHANNELS,
+  type ImageChangeResult,
+  type ImageEstimate,
+  type ImageGenerateResult,
+  type ImageQuality,
+  type ImageShape,
+  type ImageStatus,
+  type PictureNote,
+  type PictureResult,
+  type PictureSummary
+} from './images'
 
 /**
  * A model the person can choose, as the page sees it: what to show about it, and nothing about how
@@ -237,6 +249,8 @@ export interface SavedMessage {
   attachments?: AttachmentInfo[]
   /** The tool calls of a reply (D-041, 11.4): what was asked, what the person answered, the sources that came back. Only in a file of version 6; absent when there are none. */
   tools?: ReplyToolNote[]
+  /** (16.5, D-048) A request for pictures made from this chat: on a message of the person's whose text is the description. Only in a file of version 7. Never sent to the model. */
+  picture?: PictureNote
 }
 
 /** A message as the page hands it over to be saved. Main turns 'streaming' into 'stopped'. */
@@ -252,6 +266,8 @@ export interface MessageToSave {
   attachments?: AttachmentInfo[]
   /** The tool calls of a reply (11.4). Checked again by main, field by field; the file is then version 6. */
   tools?: ReplyToolNote[]
+  /** (16.5) A request for pictures made from this chat. Checked again by main, field by field; the file is then version 7. */
+  picture?: PictureNote
 }
 
 /**
@@ -340,6 +356,8 @@ export interface ChatStorageReport {
   files?: { changed: number; failed: number }
   /** The person's instructions for every chat and their notes (D-039), rewritten in the same form too; absent when there are none. */
   documents?: { changed: number; failed: number }
+  /** The gallery's pictures (D-048), rewritten in the same form too; absent when there are none. */
+  pictures?: { changed: number; failed: number }
 }
 
 /** `cancelled`: the person closed the system's dialog, which is not a failure and is not shown as one. */
@@ -714,6 +732,49 @@ export interface FrontierApi {
     /** Gives up: the hold, or the clip on its way. Sends nothing. */
     cancel(): Promise<void>
   }
+  /**
+   * Pictures (Stage 16, D-048). The person writes a description in the "Make an image" dialog; main checks it, works out the most it can cost from registry/images.json,
+   * reserves that against the limits, asks in the system's own box when it is above $0.50, sends ONE request to OpenAI and keeps the checked pictures in the gallery. The
+   * page cannot name a size (only one of the three shapes), an address, a key or a price, cannot answer a question, and cannot pick a path (the system's save dialog does).
+   * Pictures come back as `data:` (the page's policy is not widened). The model has no way to start one.
+   */
+  images: {
+    status(): Promise<ImageStatus>
+    /** ON asks in the system's box; OFF does not, and stops a request on its way. */
+    setOn(on: boolean): Promise<ImageChangeResult>
+    /** When image-settings.json could not be read: off, the file kept as a copy beside it. */
+    reset(): Promise<ImageChangeResult>
+    /** The most a request would cost, as main works it out, and whether it would be refused or asked about. */
+    estimate(choice: {
+      model: string
+      shape: ImageShape
+      quality: ImageQuality
+      count: number
+      /** The description's length in UTF-8 bytes (its words in are part of the most). */
+      promptBytes: number
+    }): Promise<ImageEstimate>
+    /** Makes the pictures. Resolves when they are kept, or with why not. */
+    generate(ask: {
+      prompt: string
+      model: string
+      shape: ImageShape
+      quality: ImageQuality
+      count: number
+      chat: string | null
+    }): Promise<ImageGenerateResult>
+    /** Stops the request on its way (it may still be billed). */
+    stop(): Promise<void>
+    /** The gallery, newest first, with small pictures. */
+    list(): Promise<{ pictures: PictureSummary[]; problem: string | null }>
+    /** One picture, large, as data:. */
+    picture(id: string): Promise<PictureResult>
+    /** A plain copy of a picture wherever the person chooses in the system's save dialog. */
+    saveCopy(id: string): Promise<{ ok: true } | { ok: false; error: string; cancelled?: true }>
+    /** Deletes the app's own copy (main asks in the system's box first). */
+    remove(id: string): Promise<{ ok: true } | { ok: false; error: string; cancelled?: true }>
+    /** Hands a picture to the attachments of the next message, as a pasted file. */
+    useInChat(id: string): Promise<AttachBytesResult>
+  }
   projects: {
     status(): Promise<ProjectsStatus>
     create(name: string): Promise<ProjectChangeResult>
@@ -812,7 +873,18 @@ export const CHANNELS = {
   voiceReset: VOICE_CHANNELS.reset,
   voiceBegin: VOICE_CHANNELS.begin,
   voiceEnd: VOICE_CHANNELS.end,
-  voiceCancel: VOICE_CHANNELS.cancel
+  voiceCancel: VOICE_CHANNELS.cancel,
+  imagesStatus: IMAGE_CHANNELS.status,
+  imagesSetOn: IMAGE_CHANNELS.setOn,
+  imagesReset: IMAGE_CHANNELS.reset,
+  imagesEstimate: IMAGE_CHANNELS.estimate,
+  imagesGenerate: IMAGE_CHANNELS.generate,
+  imagesStop: IMAGE_CHANNELS.stop,
+  imagesList: IMAGE_CHANNELS.list,
+  imagesPicture: IMAGE_CHANNELS.picture,
+  imagesSaveCopy: IMAGE_CHANNELS.saveCopy,
+  imagesRemove: IMAGE_CHANNELS.remove,
+  imagesUseInChat: IMAGE_CHANNELS.useInChat
 } as const
 
 /**

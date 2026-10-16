@@ -1,0 +1,19 @@
+{
+  "label": "w167-wNotInSums",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "  (record.image === undefined ? 0 : record.image.usd)",
+      "to": "  0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run167.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "B"
+  },
+  "timeoutMs": 1200000
+}

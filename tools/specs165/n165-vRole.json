@@ -1,0 +1,18 @@
+{
+  "label": "n165-vRole",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "        note === null ||\n        role !== 'user' ||\n",
+      "to": "        note === null ||\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-5.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

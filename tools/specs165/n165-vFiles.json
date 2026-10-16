@@ -1,0 +1,18 @@
+{
+  "label": "n165-vFiles",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "        files !== null ||\n        !isPrompt(content)",
+      "to": "        !isPrompt(content)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-5.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

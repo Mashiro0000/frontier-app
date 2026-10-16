@@ -1,0 +1,18 @@
+{
+  "label": "n162-iPromptMax",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/images.ts",
+      "from": "if (value.trim() === '' || value.length > IMAGE_LIMITS.maxPromptChars) return false",
+      "to": "if (value.trim() === '') return false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 300000
+}

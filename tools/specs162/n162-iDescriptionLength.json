@@ -1,0 +1,18 @@
+{
+  "label": "n162-iDescriptionLength",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/images.ts",
+      "from": "if (!isLine(description, 300))",
+      "to": "if (!isLine(description, 3000))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

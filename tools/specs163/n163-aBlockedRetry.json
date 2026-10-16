@@ -1,0 +1,18 @@
+{
+  "label": "n163-aBlockedRetry",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiImages.ts",
+      "from": "    if (error instanceof OpenAI.APIError && error.code === 'moderation_blocked') {\n",
+      "to": "    if (error instanceof OpenAI.APIError && error.code === 'moderation_blocked') {\n      await newClient(credentials).images.generate({ model, prompt, n: count, size, quality, output_format: 'png', moderation: 'low' }, { signal, timeout: timeoutMs, maxRetries: 0 }).catch(() => undefined)\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-3.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 300000
+}

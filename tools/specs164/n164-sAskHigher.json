@@ -1,0 +1,18 @@
+{
+  "label": "n164-sAskHigher",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "        if (most.usd > IMAGE_LIMITS.askAboveUsd) {",
+      "to": "        if (most.usd > 5) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

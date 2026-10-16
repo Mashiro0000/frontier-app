@@ -20,6 +20,10 @@ export interface UseAttachments {
   remove: (id: string) => void
   /** The message went: the next one starts with no files (they are kept by main for the chat). */
   clear: () => void
+  /** (16.5, D-048) A picture from the gallery ("Use in chat"): main has made it an attachment like a pasted file; it goes on the message like one. */
+  adopt: (file: AttachedFile) => void
+  /** (16.5) Says one sentence under the message box (a picture that could not be attached). */
+  say: (notice: string) => void
 }
 
 const MB = 1024 * 1024
@@ -146,5 +150,16 @@ export function useAttachments(): UseAttachments {
     setNotices([])
   }, [keep])
 
-  return { files, notices, busy: working > 0, pick, addFiles, remove, clear }
+  const adopt = useCallback(
+    (file: AttachedFile): void => {
+      const said: string[] = []
+      take([file], said)
+      setNotices(said)
+    },
+    [take]
+  )
+
+  const say = useCallback((notice: string): void => setNotices([notice]), [])
+
+  return { files, notices, busy: working > 0, pick, addFiles, remove, clear, adopt, say }
 }

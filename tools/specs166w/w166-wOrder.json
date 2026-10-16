@@ -1,0 +1,19 @@
+{
+  "label": "w166-wOrder",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "          : key === null\n            ? IMAGE_WORDS.noKey // first: without a key it cannot be switched on either\n            : !chosen.on\n              ? IMAGE_WORDS.off\n",
+      "to": "          : !chosen.on\n            ? IMAGE_WORDS.off\n            : key === null\n              ? IMAGE_WORDS.noKey\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run166.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "A"
+  },
+  "timeoutMs": 1200000
+}

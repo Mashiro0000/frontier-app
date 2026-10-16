@@ -18,6 +18,10 @@ interface MessageListProps {
   onResend: (id: string, text: string) => void
   /** "Remember..." on a message (D-039): opens the Memory page with this text in the box. */
   onRemember: (text: string) => void
+  /** (16.5) For a request for pictures in the chat: what to call an image model, whether the chat's model reads pictures, and "Use in chat". */
+  imageModelName: (modelId: string) => string
+  canAttachPictures: boolean
+  onUsePicture: (id: string) => void
 }
 
 /**
@@ -45,7 +49,10 @@ function MessageList({
   modelName,
   onRegenerate,
   onResend,
-  onRemember
+  onRemember,
+  imageModelName,
+  canAttachPictures,
+  onUsePicture
 }: MessageListProps): React.JSX.Element {
   const listRef = useRef<HTMLDivElement>(null)
   // True while the user is reading the newest message; false once they scroll up to read older ones.
@@ -96,6 +103,9 @@ function MessageList({
               onRegenerate={onRegenerate}
               onResend={onResend}
               onRemember={onRemember}
+              imageModelName={imageModelName}
+              canAttachPictures={canAttachPictures}
+              onUsePicture={onUsePicture}
             />
           ))}
         </div>

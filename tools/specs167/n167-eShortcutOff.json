@@ -1,0 +1,18 @@
+{
+  "label": "n167-eShortcutOff",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatEncryptionService.ts",
+      "from": "      sealedDocuments === 0 &&\n      sealedPictures === 0\n",
+      "to": "      sealedDocuments === 0\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-7.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

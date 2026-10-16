@@ -1,0 +1,18 @@
+{
+  "label": "n165-cvLoad",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/history/convert.ts",
+      "from": "      ...(picture !== undefined ? { picture } : {})",
+      "to": "      ...{}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

@@ -1,0 +1,19 @@
+{
+  "label": "w166-wAlways",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ChatBar.tsx",
+      "from": "{imagesOn && (",
+      "to": "{true && ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run166.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "A"
+  },
+  "timeoutMs": 1200000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n164-sDeleteNoQuestion",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "      if (answer !== 'yes') return { ok: false, cancelled: true, error: 'The picture was kept.' }",
+      "to": "      if (false) return { ok: false, cancelled: true, error: 'The picture was kept.' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 300000
+}

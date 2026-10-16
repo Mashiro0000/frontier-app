@@ -1,0 +1,18 @@
+{
+  "label": "w161-wPolicyHttp",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/index.html",
+      "from": "img-src 'self' data:\"",
+      "to": "img-src 'self' data: http://127.0.0.1:*\""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run161.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

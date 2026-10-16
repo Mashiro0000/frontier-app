@@ -102,6 +102,14 @@ export interface ChatEncryptionOptions {
     conform(): Promise<{ changed: number; failed: number }>
     counts(): Promise<{ plain: number; encrypted: number }>
   }
+  /**
+   * The gallery's pictures (D-048, 16.7): sealed and opened with the chats, the way the attached files are, and rewritten after them every time. Their index is
+   * one of the kept documents. Optional.
+   */
+  pictures?: {
+    conform(): Promise<{ changed: number; already: number; failed: number }>
+    counts(): Promise<{ plain: number; encrypted: number }>
+  }
 }
 
 const BUSY =
@@ -112,7 +120,7 @@ export const NO_SECURE_STORAGE =
 const reason = (error: unknown): unknown => (error instanceof Error ? error.message : error)
 
 export function createChatEncryptionService(options: ChatEncryptionOptions): ChatEncryptionService {
-  const { store, protection, backups, asks, files, documents } = options
+  const { store, protection, backups, asks, files, documents, pictures } = options
 
   /** The attachments rewritten in the form the choice now says; null when there are none at all (the report then says nothing about them). */
   async function conformFiles(): Promise<{ changed: number; failed: number } | null> {
@@ -135,6 +143,17 @@ export function createChatEncryptionService(options: ChatEncryptionOptions): Cha
     if (before.plain + before.encrypted === 0) return {}
     return { documents: await documents.conform() }
   }
+  /** The same for the gallery's pictures (D-048). */
+  async function conformPictures(): Promise<{ pictures?: { changed: number; failed: number } }> {
+    if (pictures === undefined) return {}
+    const before = await pictures.counts()
+    if (before.plain + before.encrypted === 0) return {}
+    const done = await pictures.conform()
+    return { pictures: { changed: done.changed, failed: done.failed } }
+  }
+  /** How many pictures are in one form now (0 without any). */
+  const picturesIn = async (form: 'plain' | 'encrypted'): Promise<number> =>
+    pictures === undefined ? 0 : (await pictures.counts())[form]
   /** How many kept documents are in one form now (0 without any). */
   const documentsIn = async (form: 'plain' | 'encrypted'): Promise<number> =>
     documents === undefined ? 0 : (await documents.counts())[form]
@@ -163,7 +182,14 @@ export function createChatEncryptionService(options: ChatEncryptionOptions): Cha
     const counts = await store.counts()
     const plainFiles = files === undefined ? 0 : (await files.counts()).plain
     const plainDocuments = await documentsIn('plain')
-    if (before.choice === 'on' && counts.plain === 0 && plainFiles === 0 && plainDocuments === 0) {
+    const plainPictures = await picturesIn('plain')
+    if (
+      before.choice === 'on' &&
+      counts.plain === 0 &&
+      plainFiles === 0 &&
+      plainDocuments === 0 &&
+      plainPictures === 0
+    ) {
       // Nothing to do, and nothing to protect with a backup: say so instead of asking for one.
       return {
         ok: true,
@@ -197,10 +223,11 @@ export function createChatEncryptionService(options: ChatEncryptionOptions): Cha
     const done = await store.conform()
     const filesDone = await conformFiles()
     const documentsDone = await conformDocuments()
+    const picturesDone = await conformPictures()
     return {
       ok: true,
       status: await status(),
-      report: { ...done, backup, ...withFiles(filesDone), ...documentsDone }
+      report: { ...done, backup, ...withFiles(filesDone), ...documentsDone, ...picturesDone }
     }
   }
 
@@ -209,11 +236,13 @@ export function createChatEncryptionService(options: ChatEncryptionOptions): Cha
     const counts = await store.counts()
     const sealedFiles = files === undefined ? 0 : (await files.counts()).encrypted
     const sealedDocuments = await documentsIn('encrypted')
+    const sealedPictures = await picturesIn('encrypted')
     if (
       before.choice === 'off' &&
       counts.encrypted === 0 &&
       sealedFiles === 0 &&
-      sealedDocuments === 0
+      sealedDocuments === 0 &&
+      sealedPictures === 0
     ) {
       // Plain already, and no encrypted chat to turn back: nothing is weakened, so nothing is asked.
       return {
@@ -240,10 +269,17 @@ export function createChatEncryptionService(options: ChatEncryptionOptions): Cha
     const done = await store.conform()
     const filesDone = await conformFiles()
     const documentsDone = await conformDocuments()
+    const picturesDone = await conformPictures()
     return {
       ok: true,
       status: await status(),
-      report: { ...done, backup: null, ...withFiles(filesDone), ...documentsDone }
+      report: {
+        ...done,
+        backup: null,
+        ...withFiles(filesDone),
+        ...documentsDone,
+        ...picturesDone
+      }
     }
   }
 

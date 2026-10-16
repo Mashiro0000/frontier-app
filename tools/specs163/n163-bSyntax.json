@@ -1,0 +1,18 @@
+{
+  "label": "n163-bSyntax",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiImages.ts",
+      "from": "    if (error instanceof SyntaxError) {",
+      "to": "    if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-3.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

@@ -8,6 +8,9 @@ import { ipcReply } from './chat/ipcReply'
 import { chatFiles } from './chat/attachmentText'
 import { useAttachments } from './chat/useAttachments'
 import { useChat } from './chat/useChat'
+import GalleryDialog from './images/GalleryDialog'
+import { useImageStatus } from './images/imageStatus'
+import MakeImageDialog from './images/MakeImageDialog'
 import HistoryDialog from './history/HistoryDialog'
 import { useHistory } from './history/useHistory'
 import InstructionsDialog from './instructions/InstructionsDialog'
@@ -76,6 +79,23 @@ function App(): React.JSX.Element {
   // Which tools are on and the caps (D-041, 11.4): kept by main, which reads them at every reply; the Tools page changes them, and the Stop button reads them.
   const toolSettings = useToolSettings()
   const { reload: reloadToolSettings } = toolSettings
+  // Pictures (D-048): the switch, the "Make an image" dialog and the gallery. A picture made is put into the chat as a request of the person's (never sent to the model).
+  const imageStatus = useImageStatus()
+  const [makeOpen, setMakeOpen] = useState(false)
+  const [galleryOpen, setGalleryOpen] = useState(false)
+  // Each opening of the gallery is a fresh one (its list is read again; nothing of the last visit lingers).
+  const [galleryVisit, setGalleryVisit] = useState(0)
+  const { adopt, say } = attachments
+  const usePicture = useCallback(
+    (id: string): void => {
+      void window.api.images
+        .useInChat(id)
+        .then((result) => (result.ok ? adopt(result.file) : say(result.error)))
+        .catch(() => say('The picture could not be attached.'))
+    },
+    [adopt, say]
+  )
+  const chosenModel = status?.models.find((model) => model.id === status.selectedModelId)
   // A message carries at most ten files, and a chat (whose files are sent again with every message) at most fifty.
   const attachFull =
     attachments.files.length >= ATTACHMENT_LIMITS.perMessage ||
@@ -159,6 +179,8 @@ function App(): React.JSX.Element {
           setInstructionsOpen(true)
         }}
         onAttach={attachments.pick}
+        imagesOn={imageStatus?.on === true}
+        onMakeImage={() => setMakeOpen(true)}
         attachDisabled={attachments.busy || attachFull}
         attachTitle={
           attachments.busy
@@ -169,6 +191,28 @@ function App(): React.JSX.Element {
                 : `A chat can hold at most ${ATTACHMENT_LIMITS.perChat} files. Start a new chat for more.`
               : 'Attach images, PDFs or text files to your message. You choose them in a Windows dialog; the app keeps a copy and sends it to the model.'
         }
+      />
+      <MakeImageDialog
+        open={makeOpen}
+        chatId={history.activeId}
+        onMade={chat.addPicture}
+        onOpenGallery={() => {
+          setMakeOpen(false)
+          setGalleryVisit((n) => n + 1)
+          setGalleryOpen(true)
+        }}
+        onOpenSettings={() => {
+          setMakeOpen(false)
+          setSettingsOpen(true)
+        }}
+        onClose={() => setMakeOpen(false)}
+      />
+      <GalleryDialog
+        key={galleryVisit}
+        open={galleryOpen}
+        canAttach={chosenModel?.imageInput === true}
+        onUse={usePicture}
+        onClose={() => setGalleryOpen(false)}
       />
       <HistoryDialog
         open={historyOpen}

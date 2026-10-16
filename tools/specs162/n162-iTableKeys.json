@@ -1,0 +1,18 @@
+{
+  "label": "n162-iTableKeys",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/images.ts",
+      "from": "if (!isPlain(row) || !keysAre(row, 'high,low,medium')) return null",
+      "to": "if (!isPlain(row)) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

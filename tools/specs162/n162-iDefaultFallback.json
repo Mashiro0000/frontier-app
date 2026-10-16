@@ -1,0 +1,18 @@
+{
+  "label": "n162-iDefaultFallback",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/images.ts",
+      "from": "const fallback = models.find((model) => model.retires === null) ?? models[0]",
+      "to": "const fallback = models[models.length - 1]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

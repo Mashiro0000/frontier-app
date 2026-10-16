@@ -1,0 +1,18 @@
+{
+  "label": "n162-iRetiredDay",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/images.ts",
+      "from": "  if (left <= 0) return 'retired'",
+      "to": "  if (left < 0) return 'retired'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

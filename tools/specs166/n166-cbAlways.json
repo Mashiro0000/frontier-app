@@ -1,0 +1,18 @@
+{
+  "label": "n166-cbAlways",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ChatBar.tsx",
+      "from": "{imagesOn && (",
+      "to": "{true && ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-6.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

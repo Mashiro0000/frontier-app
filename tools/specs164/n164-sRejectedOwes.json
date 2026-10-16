@@ -1,0 +1,18 @@
+{
+  "label": "n164-sRejectedOwes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "            state: failed?.rejected ? 'rejected' : failed?.stopped ? 'stopped' : 'failed',",
+      "to": "            state: failed?.stopped ? 'stopped' : 'failed',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

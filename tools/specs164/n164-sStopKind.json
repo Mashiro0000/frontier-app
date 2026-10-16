@@ -1,0 +1,18 @@
+{
+  "label": "n164-sStopKind",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "          if (failed?.stopped) return { ok: false, kind: 'stopped', error: IMAGE_WORDS.stopped }",
+      "to": "          if (failed?.stopped) return { ok: false, kind: 'failed', error: IMAGE_WORDS.failed }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

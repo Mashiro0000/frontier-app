@@ -12,6 +12,7 @@
 import { anthropicBlockProblems, anthropicManyImages, describeAnthropic } from './mock-files.mjs'
 import { createOpenAIMock } from './mock-openai.mjs'
 import { createAudioMock } from './mock-audio.mjs'
+import { createImagesMock } from './mock-images.mjs'
 import http from 'node:http'
 
 // Stage 3: what each model accepts, from Anthropic's documentation (models overview, effort page), read on
@@ -318,10 +319,12 @@ export function startMock(port = 8787) {
   const openai = createOpenAIMock({ json, readBody, requests, expectedKey: () => expectKeyOpenAI, modelsControl: () => modelsControl })
   // 15.3: speech to text (POST /v1/audio/transcriptions), in mock-audio.mjs; controlled with POST /__audio
   const audio = createAudioMock({ json, requests, expectedKey: () => expectKeyOpenAI })
+  // 16.1: image generation (POST /v1/images/generations), in mock-images.mjs; controlled with POST /__images
+  const images = createImagesMock({ json, readBody, requests, expectedKey: () => expectKeyOpenAI })
 
   const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && req.url === '/__requests') return json(res, 200, requests)
-    if (req.method === 'POST' && req.url === '/__reset') { requests.length = 0; expectKey = null; expectKeyOpenAI = null; modelsControl = { pageSize: null, fail: null }; toolsControl = {}; issued.clear(); openai.reset?.(); audio.reset(); return json(res, 200, { ok: true }) }
+    if (req.method === 'POST' && req.url === '/__reset') { requests.length = 0; expectKey = null; expectKeyOpenAI = null; modelsControl = { pageSize: null, fail: null }; toolsControl = {}; issued.clear(); openai.reset?.(); audio.reset(); images.reset(); return json(res, 200, { ok: true }) }
     if (req.method === 'POST' && req.url === '/__tools') { toolsControl = JSON.parse(await readBody(req)); openai.setTools?.(toolsControl); return json(res, 200, { ok: true }) }
     if (req.method === 'POST' && req.url === '/__models') { modelsControl = { pageSize: null, fail: null, ...JSON.parse(await readBody(req)) }; return json(res, 200, { ok: true }) }
     // Both providers list their models at GET /v1/models; they are told apart by how the key is sent (x-api-key, or Authorization: Bearer)
@@ -329,6 +332,8 @@ export function startMock(port = 8787) {
     if (req.method === 'POST' && req.url.split('?')[0] === '/v1/responses') return openai.handleResponses(req, res)
     if (req.method === 'POST' && req.url.split('?')[0] === '/v1/audio/transcriptions') return audio.handle(req, res)
     if (req.method === 'POST' && req.url === '/__audio') { audio.setControl(JSON.parse(await readBody(req))); return json(res, 200, { ok: true }) }
+    if (req.method === 'POST' && req.url.split('?')[0] === '/v1/images/generations') return images.handle(req, res)
+    if (req.method === 'POST' && req.url === '/__images') { images.setControl(JSON.parse(await readBody(req))); return json(res, 200, { ok: true }) }
     if (req.method === 'POST' && req.url === '/__expect-key') {
       const { key, provider } = JSON.parse(await readBody(req))
       if (provider === 'openai') expectKeyOpenAI = key

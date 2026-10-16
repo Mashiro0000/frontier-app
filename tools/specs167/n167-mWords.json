@@ -1,0 +1,18 @@
+{
+  "label": "n167-mWords",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/images.ts",
+      "from": "      (descriptionBytes * model.prices.textInPerMTok) / 1_000_000,",
+      "to": "      0,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 300000
+}

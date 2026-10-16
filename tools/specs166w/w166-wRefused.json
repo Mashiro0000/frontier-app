@@ -1,0 +1,19 @@
+{
+  "label": "w166-wRefused",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/images/MakeImageDialog.tsx",
+      "from": "    estimate !== null &&\n    !refused\n",
+      "to": "    estimate !== null\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run166.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "E"
+  },
+  "timeoutMs": 1200000
+}

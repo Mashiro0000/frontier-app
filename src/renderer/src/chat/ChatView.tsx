@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { AttachmentInfo } from '../../../shared/attachments'
 import type { SettingsStatus } from '../../../shared/ipc'
 import LinkConfirm from '../markdown/LinkConfirm'
@@ -108,6 +108,31 @@ function ChatView({
     },
     [send, attachments]
   )
+  // (16.5, D-048) A request for pictures in the chat: the image models' labels, and "Use in chat", which asks main to make the picture an attachment.
+  const [imageLabels, setImageLabels] = useState<Record<string, string>>({})
+  useEffect(() => {
+    let live = true
+    void window.api?.images
+      ?.status()
+      .then((images) => {
+        if (live) setImageLabels(Object.fromEntries(images.models.map((m) => [m.id, m.label])))
+      })
+      .catch(() => undefined)
+    return () => {
+      live = false
+    }
+  }, [])
+  const imageModelName = useCallback((id: string): string => imageLabels[id] ?? id, [imageLabels])
+  const { adopt, say } = attachments
+  const onUsePicture = useCallback(
+    (id: string): void => {
+      void window.api.images
+        .useInChat(id)
+        .then((result) => (result.ok ? adopt(result.file) : say(result.error)))
+        .catch(() => say('The picture could not be attached.'))
+    },
+    [adopt, say]
+  )
   const destination =
     chosen === undefined
       ? null
@@ -139,6 +164,9 @@ function ChatView({
             onRegenerate={onRegenerate}
             onResend={onResend}
             onRemember={onRemember}
+            imageModelName={imageModelName}
+            canAttachPictures={chosen?.imageInput === true}
+            onUsePicture={onUsePicture}
           />
         </LinkConfirm>
       </PreviewsContext.Provider>

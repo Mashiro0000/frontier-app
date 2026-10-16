@@ -13,6 +13,7 @@ import {
   type LedgerState,
   type SearchFee,
   type AudioFee,
+  type ImageFee,
   type TokenCounts,
   type UsageSummary
 } from '../shared/usage'
@@ -51,6 +52,8 @@ export interface BeginInput {
   reserveUsd?: number
   /** (15.5) A clip of speech to text: the fee it is reserved at. It is kept in the record, so a request that never ends still counts for it. */
   audio?: AudioFee
+  /** (16.2) A request for pictures: the most it can cost, reserved. It is kept in the record, so a request that never ends still counts for it. */
+  image?: ImageFee
 }
 
 export interface FinishInput {
@@ -61,6 +64,8 @@ export interface FinishInput {
   search?: SearchFee
   /** (15.5) What the clip was charged at in the end; left out for a request that was not one. */
   audio?: AudioFee
+  /** (16.2) What the pictures were charged at in the end; left out for a request that was not one. */
+  image?: ImageFee
 }
 
 /** Thrown by `begin` when the check it was given refuses the request. Its message is the sentence for the person; nothing was written. */
@@ -227,7 +232,8 @@ export function createUsageLedger(path: string, options: LedgerOptions = {}): Us
           estimate: true,
           tokens: { input: input.inputTokens, cacheRead: 0, cacheWrite: 0, output: 0 },
           prices: { ...input.prices },
-          ...(input.audio === undefined ? {} : { audio: { ...input.audio } })
+          ...(input.audio === undefined ? {} : { audio: { ...input.audio } }),
+          ...(input.image === undefined ? {} : { image: { ...input.image } })
         }
         await append(record)
         records.set(record.id, record)
@@ -250,7 +256,8 @@ export function createUsageLedger(path: string, options: LedgerOptions = {}): Us
           estimate: outcome.estimate,
           tokens: { ...outcome.tokens },
           ...(outcome.search === undefined ? {} : { search: { ...outcome.search } }),
-          ...(outcome.audio === undefined ? {} : { audio: { ...outcome.audio } })
+          ...(outcome.audio === undefined ? {} : { audio: { ...outcome.audio } }),
+          ...(outcome.image === undefined ? {} : { image: { ...outcome.image } })
         }
         // In memory first: the sums must be right even if the disk refuses.
         records.set(id, record)

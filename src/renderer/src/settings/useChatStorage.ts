@@ -7,6 +7,8 @@ const NO_ANSWER = 'the app did not answer'
 const chats = (count: number): string => `${count} ${count === 1 ? 'chat' : 'chats'}`
 const files = (count: number): string => `${count} saved ${count === 1 ? 'file' : 'files'}`
 const attached = (count: number): string => `${count} attached ${count === 1 ? 'file' : 'files'}`
+const gallery = (count: number): string =>
+  `${count} ${count === 1 ? 'picture' : 'pictures'} in the gallery`
 
 export type Notice = { kind: 'ok' | 'error'; text: string }
 
@@ -52,6 +54,16 @@ export function describeEncrypted(report: ChatStorageReport): string {
       )
     }
   }
+  // The gallery's pictures (D-048), said only when there are any.
+  if (report.pictures !== undefined) {
+    if (report.pictures.changed > 0)
+      parts.push(`Encrypted ${gallery(report.pictures.changed)} too.`)
+    if (report.pictures.failed > 0) {
+      parts.push(
+        `${gallery(report.pictures.failed)} could not be rewritten and ${report.pictures.failed === 1 ? 'is' : 'are'} as before.`
+      )
+    }
+  }
   parts.push('Chats you save from now on are encrypted too.')
   return parts.join(' ')
 }
@@ -88,6 +100,17 @@ export function describePlain(report: ChatStorageReport, status: ChatStorageStat
     if (report.documents.failed > 0) {
       parts.push(
         'Some of your instructions for every chat, notes, projects, tool settings or the audit log could not be rewritten and are still encrypted.'
+      )
+    }
+  }
+  if (report.pictures !== undefined) {
+    if (report.pictures.changed > 0)
+      parts.push(
+        `Rewrote ${gallery(report.pictures.changed)} as ${report.pictures.changed === 1 ? 'a plain file' : 'plain files'} too.`
+      )
+    if (report.pictures.failed > 0) {
+      parts.push(
+        `${gallery(report.pictures.failed)} could not be rewritten and ${report.pictures.failed === 1 ? 'is' : 'are'} still encrypted.`
       )
     }
   }

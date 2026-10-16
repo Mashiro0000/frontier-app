@@ -1,0 +1,18 @@
+{
+  "label": "n163-bTokensZero",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiImages.ts",
+      "from": "  if (output === 0) return null\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-3.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

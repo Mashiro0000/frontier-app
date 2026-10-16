@@ -1,0 +1,18 @@
+{
+  "label": "n161-mUnknownField",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-images.mjs",
+      "from": "if (!FIELDS.has(key)) problems.push",
+      "to": "if (false) problems.push"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

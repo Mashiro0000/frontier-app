@@ -1,0 +1,18 @@
+{
+  "label": "n164-sLimitsLater",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "          if (before.refusal !== null) return { ok: false, kind: 'refused', error: before.refusal }",
+      "to": "          if (false) return { ok: false, kind: 'refused', error: before.refusal }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n164-stRemoveAnything",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageStore.ts",
+      "from": "    if (!isPictureId(id)) return false\n    const file",
+      "to": "    const file"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 300000
+}

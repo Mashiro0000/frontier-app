@@ -1,0 +1,18 @@
+{
+  "label": "n164-sBigNoGoesOn",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/imageService.ts",
+      "from": "          if (answer !== 'yes') return { ok: false, kind: 'refused', error: IMAGE_WORDS.notAsked }",
+      "to": "          if (false) return { ok: false, kind: 'refused', error: IMAGE_WORDS.notAsked }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

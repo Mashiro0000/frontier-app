@@ -1,0 +1,18 @@
+{
+  "label": "n165-nIdsMax",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/images.ts",
+      "from": "ids.length > IMAGE_LIMITS.maxCount) return null",
+      "to": "ids.length > 10) return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-5.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

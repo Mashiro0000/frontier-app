@@ -1,0 +1,18 @@
+{
+  "label": "n163-aVerify",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/openaiImages.ts",
+      "from": "/must be verified/i.test(error.message)",
+      "to": "/never said by anyone/i.test(error.message)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-3.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 300000
+}

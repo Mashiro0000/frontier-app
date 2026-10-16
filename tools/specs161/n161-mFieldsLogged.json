@@ -1,0 +1,18 @@
+{
+  "label": "n161-mFieldsLogged",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-images.mjs",
+      "from": "fields: Object.keys(b).sort(),",
+      "to": "fields: Object.keys(b).sort().concat(['extra']),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-1.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

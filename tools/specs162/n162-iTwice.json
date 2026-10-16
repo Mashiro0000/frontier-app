@@ -1,0 +1,18 @@
+{
+  "label": "n162-iTwice",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/images.ts",
+      "from": "    if (models.some((there) => there.id === model.id))\n      return fail",
+      "to": "    if (false)\n      return fail"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-2.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

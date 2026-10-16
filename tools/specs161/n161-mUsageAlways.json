@@ -1,0 +1,18 @@
+{
+  "label": "n161-mUsageAlways",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-images.mjs",
+      "from": "const usage = control.usage ?? 'tokens'",
+      "to": "const usage = 'tokens'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-1.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}
