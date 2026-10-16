@@ -27,8 +27,10 @@ const controls = {
   iRetiredDay: ['B', I, "  if (left <= 0) return 'retired'", "  if (left < 0) return 'retired'"],
   iWarnDays: ['B', I, "return left <= IMAGE_LIMITS.retireWarnDays ? 'retiring' : 'ok'", "return left < IMAGE_LIMITS.retireWarnDays ? 'retiring' : 'ok'"],
   iRetiredAsk: ['B', I, "  if (retirement(entry, now) === 'retired') {", '  if (false) {'],
-  iAbout: ['C', I, 'about: !model.published }', 'about: false }'],
-  iTimesCount: ['C', I, 'usd: model.perPicture[shape][quality] * count,', 'usd: model.perPicture[shape][quality],'],
+  iAbout: ['C', I, '    about: !model.published
+', '    about: false
+'],
+  iTimesCount: ['C', I, '      (model.perPicture[shape][quality] + IMAGE_LIMITS.tableRoundingUsd) * count +', '      (model.perPicture[shape][quality] + IMAGE_LIMITS.tableRoundingUsd) +'],
   iTokenPrice: ['C', I, 'tokens.output * model.prices.imageOutPerMTok', 'tokens.output * model.prices.textInPerMTok'],
   iAskKeys: ['C', I, "!keysAre(input, 'chat,count,model,prompt,quality,shape')", 'false'],
   iPromptMax: ['C', I, "if (value.trim() === '' || value.length > IMAGE_LIMITS.maxPromptChars) return false", "if (value.trim() === '') return false"],

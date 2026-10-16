@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/shared/images.ts",
-      "from": "usd: model.perPicture[shape][quality] * count,",
-      "to": "usd: model.perPicture[shape][quality],"
+      "from": "      (model.perPicture[shape][quality] + IMAGE_LIMITS.tableRoundingUsd) * count +",
+      "to": "      (model.perPicture[shape][quality] + IMAGE_LIMITS.tableRoundingUsd) +"
     }
   ],
   "argv": [

@@ -50,6 +50,10 @@ const sha = (b) => createHash('sha256').update(b).digest('hex')
 const UUID = '0b8f0e2a-6c1d-4e8b-9a77-2f4d5c6b7a81'
 const ASK = { prompt: 'A red bicycle\nleaning on a blue wall', model: 'gpt-image-2', shape: 'square', quality: 'medium', count: 1, chat: UUID }
 const THUMB = 'data:image/png;base64,VEhVTUI='
+/** (16.7) The most a request can cost, as the shared rule works it out: the table and its rounding for each picture, and the description's bytes as words in. */
+const most = (model, shape, quality, count, prompt = '') => I.maximumCost(REGISTRY.registry.models.find((m) => m.id === model), shape, quality, count, Buffer.byteLength(prompt, 'utf8')).usd
+const ASK_MOST = most(ASK.model, ASK.shape, ASK.quality, ASK.count, ASK.prompt)
+const near = (a, b) => Math.abs(a - b) < 1e-12
 
 /** The whole rig: a fresh folder, the real stores, a played person. */
 async function rig({ key = KEY, limits = { daily: { kind: 'none' }, monthly: { kind: 'none' } }, on = true, answers = [], registry = REGISTRY, box = undefined, form = 'plain', generate = undefined } = {}) {
@@ -148,21 +152,24 @@ await guard('B', async () => {
 // ============ C. the estimate ============
 await guard('C', async () => {
   const r = await rig({ limits: { daily: { kind: 'usd', usd: 1 }, monthly: { kind: 'usd', usd: 20 } } })
-  let e = await r.service.estimate({ model: 'gpt-image-2', shape: 'square', quality: 'medium', count: 1 })
-  check('C: a standard square: at most $0.053, not about, $1 left today and $20 this month, no question, no refusal', e.ok && e.maxUsd === 0.053 && !e.about && e.leftTodayUsd === 1 && e.leftMonthUsd === 20 && !e.asks && e.refusal === null, show(e))
-  e = await r.service.estimate({ model: 'gpt-image-2.5-flare', shape: 'square', quality: 'high', count: 2 })
-  check('C: two high squares of Flare: about $0.844, it asks', e.ok && Math.abs(e.maxUsd - 0.844) < 1e-9 && e.about && e.asks && e.refusal === null, show(e))
-  e = await r.service.estimate({ model: 'gpt-image-2.5-flare', shape: 'square', quality: 'high', count: 3 })
-  check('C: three of them (about $1.266) would pass the day\'s $1: the refusal says so', e.ok && /daily limit of \$1\.00/.test(e.refusal ?? ''), show(e))
-  for (const bad of [{ model: 'gpt-image-9', shape: 'square', quality: 'low', count: 1 }, { model: 'gpt-image-2', shape: 'round', quality: 'low', count: 1 }, { model: 'gpt-image-2', shape: 'square', quality: 'xhigh', count: 1 }, { model: 'gpt-image-2', shape: 'square', quality: 'low', count: 5 }, { model: 'gpt-image-2', shape: 'square', quality: 'low', count: 1, size: '3840x2160' }, { model: 'gpt-image-2', shape: 'square', quality: 'low' }]) {
+  let e = await r.service.estimate({ model: 'gpt-image-2', shape: 'square', quality: 'medium', count: 1, promptBytes: 0 })
+  check('C: a standard square: at most $0.0535 (the table\'s $0.053 and its rounding), not about, $1 left today and $20 this month, no question, no refusal', e.ok && near(e.maxUsd, 0.0535) && !e.about && e.leftTodayUsd === 1 && e.leftMonthUsd === 20 && !e.asks && e.refusal === null, show(e))
+  e = await r.service.estimate({ model: 'gpt-image-2.5-flare', shape: 'square', quality: 'high', count: 2, promptBytes: 0 })
+  check('C: two high squares of Flare: about $0.845, it asks', e.ok && Math.abs(e.maxUsd - 0.845) < 1e-9 && e.about && e.asks && e.refusal === null, show(e))
+  e = await r.service.estimate({ model: 'gpt-image-2.5-flare', shape: 'square', quality: 'high', count: 3, promptBytes: 0 })
+  check('C: three of them (about $1.27) would pass the day\'s $1: the refusal says so', e.ok && /daily limit of \$1\.00/.test(e.refusal ?? ''), show(e))
+  e = await r.service.estimate({ model: 'gpt-image-2', shape: 'square', quality: 'medium', count: 1, promptBytes: 2000 })
+  check('C: (16.7) a description of 2,000 bytes adds its words in, counted as one token a byte: $0.0535 + $0.01', e.ok && near(e.maxUsd, 0.0635), show(e))
+  const base = { model: 'gpt-image-2', shape: 'square', quality: 'low', count: 1, promptBytes: 0 }
+  for (const bad of [{ ...base, model: 'gpt-image-9' }, { ...base, shape: 'round' }, { ...base, quality: 'xhigh' }, { ...base, count: 5 }, { ...base, size: '3840x2160' }, { model: 'gpt-image-2', shape: 'square', quality: 'low', promptBytes: 0 }, { model: 'gpt-image-2', shape: 'square', quality: 'low', count: 1 }, { ...base, promptBytes: 12001 }, { ...base, promptBytes: -1 }, { ...base, promptBytes: 1.5 }, { ...base, promptBytes: '10' }]) {
     const x = await r.service.estimate(bad)
     if (x.ok) check(`C: refused: ${show(bad)}`, false)
   }
-  check('C: an estimate of what the dialog does not offer is not understood (no size, no fifth picture)', true)
+  check('C: an estimate of what the dialog does not offer is not understood (no size, no fifth picture, a description\'s length missing, negative, broken or above 12,000 bytes)', true)
   const f = JSON.parse(source('registry/images.json'))
   f.models[1].retires = '2026-10-01'
   const r2 = await rig({ registry: I.parseImagesRegistry(f) })
-  e = await r2.service.estimate({ model: 'gpt-image-2.5-flare', shape: 'square', quality: 'low', count: 1 })
+  e = await r2.service.estimate({ model: 'gpt-image-2.5-flare', shape: 'square', quality: 'low', count: 1, promptBytes: 0 })
   check('C: a retired model: the refusal says when it retired', e.ok && /was retired by OpenAI on 2026-10-01/.test(e.refusal ?? ''), show(e))
   check('C: an estimate sends nothing and writes nothing', (await requests()).length === 0 && r.lines().length === 0)
 })
@@ -175,7 +182,8 @@ await guard('D', async () => {
   const sent = await requests()
   check('D: a standard square: one request, the six fields, the description as typed', out.ok && sent.length === 1 && sent[0].fields.join() === 'model,n,output_format,prompt,quality,size' && sent[0].body.prompt === ASK.prompt && sent[0].body.size === '1024x1024' && sent[0].headers.authorization === `Bearer ${KEY}`, show([out, sent.length]))
   let lines = r.lines()
-  check('D: the ledger has the record BEFORE the request (sent, the most reserved) and its end (done, the real cost from the tokens)', lines.length === 2 && lines[0].state === 'sent' && lines[0].image.usd === 0.053 && lines[0].image.count === 1 && lines[1].state === 'done' && lines[1].estimate === false && Math.abs(lines[1].image.usd - (Math.ceil(ASK.prompt.length / 4) * 5 + 1767 * 30) / 1e6) < 1e-12, show(lines.map((l) => [l.state, l.image])))
+  check('D: the ledger has the record BEFORE the request (sent, the most reserved) and its end (done, the real cost from the tokens)', lines.length === 2 && lines[0].state === 'sent' && near(lines[0].image.usd, ASK_MOST) && lines[0].image.count === 1 && lines[1].state === 'done' && lines[1].estimate === false && Math.abs(lines[1].image.usd - (Math.ceil(ASK.prompt.length / 4) * 5 + 1767 * 30) / 1e6) < 1e-12, show(lines.map((l) => [l.state, l.image])))
+  check('D: (16.7) the real cost is not above the most that was reserved and shown', lines[1].image.usd <= lines[0].image.usd, show([lines[0].image.usd, lines[1].image.usd]))
   check('D: the record names OpenAI, the image model, the chat, and has no priced tokens', lines[1].provider === 'openai' && lines[1].model === 'gpt-image-2' && lines[1].chat === UUID && lines[1].prices.outputPerMTok === 0 && lines[1].tokens.output === 1767)
   check('D: the answer: one picture, its cost, not a guess', out.ok && out.pictures.length === 1 && Math.abs(out.costUsd - lines[1].image.usd) < 1e-12 && out.estimate === false)
   const p = out.pictures[0]
@@ -189,14 +197,15 @@ await guard('D', async () => {
   await control({ usage: 'none' })
   out = await r.service.generate(null, { ...ASK, count: 4, shape: 'landscape', quality: 'low' })
   lines = r.lines()
-  check('D: no usage in the answer: the cost is the table\'s ($0.005 x 4), marked as a guess', out.ok && Math.abs(out.costUsd - 0.02) < 1e-12 && out.estimate === true && lines.at(-1).estimate === true && Math.abs(lines.at(-1).image.usd - 0.02) < 1e-12, show(out.ok ? [out.costUsd, out.estimate] : out))
-  check('D: four pictures kept, each with a quarter of the cost, newest first in the gallery', out.ok && out.pictures.length === 4 && r.files().length === 5 && out.pictures.every((x) => Math.abs(x.costUsd - 0.005) < 1e-12))
+  const fourMost = most('gpt-image-2', 'landscape', 'low', 4, ASK.prompt)
+  check('D: no usage in the answer: the cost is the most (the table\'s $0.005 and its rounding x 4, and the words), marked as a guess', out.ok && near(out.costUsd, fourMost) && out.estimate === true && lines.at(-1).estimate === true && near(lines.at(-1).image.usd, fourMost), show(out.ok ? [out.costUsd, out.estimate] : out))
+  check('D: four pictures kept, each with a quarter of the cost, newest first in the gallery', out.ok && out.pictures.length === 4 && r.files().length === 5 && out.pictures.every((x) => near(x.costUsd, fourMost / 4)))
   // the box above $0.50
   await resetMock()
   r = await rig({ answers: [false] })
   out = await r.service.generate(null, { ...ASK, model: 'gpt-image-2.5-flare', quality: 'high', count: 2 })
   const q = r.asked[0]
-  check('D: above $0.50 the system\'s box asks first, with the description, the model, the shape, the quality, the count and the most', r.asked.length === 1 && /Spend up to about \$0\.84 on 2 pictures\?/.test(q.message) && /Description: "A red bicycle/.test(q.detail) && /Model: GPT Image 2\.5 Flare/.test(q.detail) && /Shape: Square \(1024x1024\)/.test(q.detail) && /Quality: High/.test(q.detail) && /Pictures: 2/.test(q.detail) && /app's ceiling/.test(q.detail), show(q))
+  check('D: above $0.50 the system\'s box asks first, with the description, the model, the shape, the quality, the count and the most', r.asked.length === 1 && /Spend up to about \$0\.85 on 2 pictures\?/.test(q.message) && /Description: "A red bicycle/.test(q.detail) && /Model: GPT Image 2\.5 Flare/.test(q.detail) && /Shape: Square \(1024x1024\)/.test(q.detail) && /Quality: High/.test(q.detail) && /Pictures: 2/.test(q.detail) && /app's ceiling/.test(q.detail), show(q))
   check('D: a no: nothing sent, nothing in the ledger', !out.ok && out.kind === 'refused' && (await requests()).length === 0 && r.lines().length === 0, show(out))
   r = await rig({ answers: [true] })
   out = await r.service.generate(null, { ...ASK, model: 'gpt-image-2.5-flare', quality: 'high', count: 2 })
@@ -245,10 +254,10 @@ await guard('D', async () => {
     await control({ mode })
     out = await r.service.generate(null, ASK)
     lines = r.lines()
-    check(`D: ${mode}: ${kind}, the sentence, the record settled as ${state} (${state === 'rejected' ? 'nothing owed' : 'counted at the most'}), nothing kept, one request`, !out.ok && out.kind === kind && re.test(out.error) && lines.length === 2 && lines[1].state === state && lines[1].image.usd === 0.053 && r.files().length === 0 && (await requests()).length === 1, show([out, lines.map((l) => l.state)]))
+    check(`D: ${mode}: ${kind}, the sentence, the record settled as ${state} (${state === 'rejected' ? 'nothing owed' : 'counted at the most'}), nothing kept, one request`, !out.ok && out.kind === kind && re.test(out.error) && lines.length === 2 && lines[1].state === state && near(lines[1].image.usd, ASK_MOST) && r.files().length === 0 && (await requests()).length === 1, show([out, lines.map((l) => l.state)]))
   }
   let sum = await r.ledger.summary(null)
-  check('D: a failure that may have been billed counts its most in the sums', Math.abs(sum.today.costUsd - 0.053) < 1e-12 && sum.today.about)
+  check('D: a failure that may have been billed counts its most in the sums', near(sum.today.costUsd, ASK_MOST) && sum.today.about)
   await resetMock()
   r = await rig()
   await control({ mode: 'blocked' })
@@ -264,7 +273,7 @@ await guard('D', async () => {
   r.service.stop()
   out = await going
   lines = r.lines()
-  check('D: Stop: "stopped", the sentence says it may still be billed, the record "stopped" and counted at the most', !out.ok && out.kind === 'stopped' && /may still bill/.test(out.error) && lines.at(-1).state === 'stopped' && lines.at(-1).image.usd === 0.053 && r.files().length === 0, show([out, lines.map((l) => l.state)]))
+  check('D: Stop: "stopped", the sentence says it may still be billed, the record "stopped" and counted at the most', !out.ok && out.kind === 'stopped' && /may still bill/.test(out.error) && lines.at(-1).state === 'stopped' && near(lines.at(-1).image.usd, ASK_MOST) && r.files().length === 0, show([out, lines.map((l) => l.state)]))
   const going2 = r.service.generate(null, ASK)
   await wait(300)
   await r.service.setOn(null, { on: false })
@@ -418,7 +427,7 @@ await guard('G', async () => {
   }
   check('G: every images handler goes through the sender guard', ['imagesStatus', 'imagesSetOn', 'imagesReset', 'imagesEstimate', 'imagesGenerate', 'imagesStop', 'imagesList', 'imagesPicture', 'imagesSaveCopy', 'imagesRemove', 'imagesUseInChat'].every((name) => new RegExp(`ipcMain\\.handle\\(\\s*CHANNELS\\.${name},\\s*guarded`).test(ipc)))
   check('G: the ones that can ask or open a dialog are given the window the call came from', ['imagesSetOn', 'imagesGenerate', 'imagesSaveCopy', 'imagesRemove'].every((name) => new RegExp(`CHANNELS\\.${name},\\s*guardedForWindow`).test(ipc)))
-  check('G: the preload sends exact objects (no size, no path, no key)', /CHANNELS\.imagesGenerate, \{ prompt, model, shape, quality, count, chat \}/.test(preload) && /CHANNELS\.imagesEstimate, \{ model, shape, quality, count \}/.test(preload) && !/size|path|apiKey/.test(preload.slice(preload.indexOf('images: {'), preload.indexOf('images: {') + 1200)))
+  check('G: the preload sends exact objects (no size, no path, no key)', /CHANNELS\.imagesGenerate, \{ prompt, model, shape, quality, count, chat \}/.test(preload) && /CHANNELS\.imagesEstimate, \{ model, shape, quality, count, promptBytes \}/.test(preload) && !/size|path|apiKey/.test(preload.slice(preload.indexOf('images: {'), preload.indexOf('images: {') + 1200)))
   check('G: the bridge type has the eleven functions', /images: \{\n\s+status\(\)/.test(shared) && ['setOn', 'reset', 'estimate', 'generate', 'stop', 'list', 'picture', 'saveCopy', 'remove', 'useInChat'].every((f) => new RegExp(`\\n\\s+${f}\\(`).test(shared.slice(shared.indexOf('  images: {')))))
   check('G: the switch file and the index are rewritten with the chats (the kept documents)', /voiceSettings\.file,\n\s+imageSettings\.file,\n\s+imageIndex\n/.test(ipc))
   check('G: quitting stops a request on its way and waits for the files', /^ {4}images\.stop\(\)/m.test(ipc) && /imageStore\.whenIdle\(\)/.test(ipc) && /imageIndex\.whenIdle\(\)/.test(ipc) && /imageSettings\.file\.whenIdle\(\)/.test(ipc))

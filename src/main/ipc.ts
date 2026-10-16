@@ -685,6 +685,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     backups,
     asks: systemAskers,
     files: attachments,
+    pictures: imageStore, // the gallery's pictures (D-048), sealed with the chats; images.json is among the documents below
     documents: keptDocuments([
       everyChat.file,
       memory.file,

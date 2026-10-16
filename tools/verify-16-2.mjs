@@ -131,14 +131,18 @@ await guard('C', async () => {
   const table = { square: [0.006, 0.053, 0.211], portrait: [0.005, 0.041, 0.165], landscape: [0.005, 0.041, 0.165] }
   let all = true
   for (const shape of ['square', 'portrait', 'landscape']) for (const [qi, quality] of ['low', 'medium', 'high'].entries()) for (const count of [1, 2, 3, 4]) {
-    const m = I.maximumCost(g2, shape, quality, count)
-    if (Math.abs(m.usd - table[shape][qi] * count) > 1e-12 || m.about) { all = false; check(`C: ${shape} ${quality} x${count}`, false, show(m)) }
+    const m = I.maximumCost(g2, shape, quality, count, 0)
+    if (Math.abs(m.usd - (table[shape][qi] + 0.0005) * count) > 1e-12 || m.about) { all = false; check(`C: ${shape} ${quality} x${count}`, false, show(m)) }
   }
-  check('C: the most for gpt-image-2 is the table figure times the count, for all 36 choices, and not "about"', all)
-  const f4 = I.maximumCost(flare, 'square', 'high', 4)
-  check('C: four high squares of Flare are at most $1.688, "about" (above the $0.50 that asks)', Math.abs(f4.usd - 1.688) < 1e-9 && f4.about && f4.usd > I.IMAGE_LIMITS.askAboveUsd)
-  check('C: an ordinary standard square of gpt-image-2 ($0.053) does not ask', I.maximumCost(g2, 'square', 'medium', 1).usd < I.IMAGE_LIMITS.askAboveUsd)
-  check('C: four high squares of gpt-image-2 ($0.844) ask', I.maximumCost(g2, 'square', 'high', 4).usd > I.IMAGE_LIMITS.askAboveUsd)
+  check('C: the most for gpt-image-2 is the table figure and its rounding ($0.0005, 16.7) times the count, for all 36 choices, and not "about"', all)
+  const words = I.maximumCost(g2, 'square', 'medium', 1, 4000).usd - I.maximumCost(g2, 'square', 'medium', 1, 0).usd
+  check('C: (16.7) a description adds its bytes as words in at $5 a million, once a request: 4,000 bytes are $0.02, for one picture or four', Math.abs(words - 0.02) < 1e-12 && Math.abs(I.maximumCost(g2, 'square', 'medium', 4, 4000).usd - I.maximumCost(g2, 'square', 'medium', 4, 0).usd - 0.02) < 1e-12)
+  check('C: (16.7) the bytes, not the characters: "é" is two, a CJK character three, an emoji four', I.promptBytes('é') === 2 && I.promptBytes('猫') === 3 && I.promptBytes('😀') === 4 && I.promptBytes('abc') === 3)
+  check('C: (16.7) the most is never under what the usage of the probe would bill: 9 words in and 1,767 out ($0.053055) against one standard square with a 36-byte description', I.costFromTokens(g2, { input: 9, output: 1767 }) <= I.maximumCost(g2, 'square', 'medium', 1, 36).usd)
+  const f4 = I.maximumCost(flare, 'square', 'high', 4, 0)
+  check('C: four high squares of Flare are at most $1.69, "about" (above the $0.50 that asks)', Math.abs(f4.usd - 1.69) < 1e-9 && f4.about && f4.usd > I.IMAGE_LIMITS.askAboveUsd)
+  check('C: an ordinary standard square of gpt-image-2 ($0.053) does not ask', I.maximumCost(g2, 'square', 'medium', 1, 0).usd < I.IMAGE_LIMITS.askAboveUsd)
+  check('C: four high squares of gpt-image-2 ($0.846) ask', I.maximumCost(g2, 'square', 'high', 4, 0).usd > I.IMAGE_LIMITS.askAboveUsd)
   check('C: the cost from tokens: 9 words in and 1,767 out is $0.053055', Math.abs(I.costFromTokens(g2, { input: 9, output: 1767 }) - (9 * 5 + 1767 * 30) / 1e6) < 1e-12)
   const ok = { prompt: '  A red bicycle\nleaning on a wall  ', model: 'gpt-image-2', shape: 'portrait', quality: 'high', count: 2, chat: UUID }
   const got = I.checkImageAsk(ok, reg, NOW)
@@ -365,7 +369,9 @@ await guard('H', async () => {
   const walk = (dir) => { for (const name of readdirSync(dir, { withFileTypes: true })) { const p = join(dir, name.name); if (name.isDirectory()) walk(p); else if (/\.(ts|tsx)$/.test(name.name)) files.push(p) } }
   walk(join(REPO, 'src'))
   const importers = files.filter((f) => /from '\.\/image(Check|Index|Settings|Registry)'|shared\/images'/.test(readFileSync(f, 'utf8'))).map((f) => f.slice(REPO.length + 1).replaceAll('\\', '/'))
-  check('H: nothing in the app uses these modules yet but each other (so the built program is the program it was, but for the ledger\'s new field)', importers.every((f) => /src\/main\/image(Check|Index|Settings|Registry)\.ts$/.test(f)), show(importers))
+  // (written for 16.2, when nothing used them; since 16.4 the image service and the page do) the chat's reply path still uses none of them
+  const replyPath = ['src/main/chat.ts', 'src/main/providers/anthropic.ts', 'src/main/providers/openai.ts', 'src/main/providers/index.ts', 'src/main/usageLedger.ts']
+  check('H: the chat\'s reply path (chat.ts, the two chat adapters, the ledger) uses none of these modules', importers.length > 0 && replyPath.every((f) => !importers.includes(f)), show(importers))
   check('H: the ledger takes an image fee in begin and finish, as it takes an audio fee', /image\?: ImageFee/.test(source('src/main/usageLedger.ts')) && (source('src/main/usageLedger.ts').match(/input\.image|outcome\.image/g) ?? []).length === 4)
 })
 

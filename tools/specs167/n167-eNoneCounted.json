@@ -1,0 +1,18 @@
+{
+  "label": "n167-eNoneCounted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatEncryptionService.ts",
+      "from": "    if (before.plain + before.encrypted === 0) return {}\n    const done = await pictures.conform()",
+      "to": "    const done = await pictures.conform()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-7.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

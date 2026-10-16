@@ -1,0 +1,18 @@
+{
+  "label": "n167-uStill",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/useChatStorage.ts",
+      "from": "${report.pictures.failed === 1 ? 'is' : 'are'} still encrypted.`",
+      "to": "${report.pictures.failed === 1 ? 'is' : 'are'} as before.`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-7.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

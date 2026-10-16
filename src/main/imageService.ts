@@ -9,6 +9,7 @@ import {
   isQuality,
   isShape,
   maximumCost,
+  promptBytes,
   retirement,
   type ImageAsk,
   type ImageChangeResult,
@@ -334,7 +335,7 @@ export function createImageService(options: ImageServiceOptions): ImageService {
       }),
 
     estimate: async (input) => {
-      if (!exactly(input, 'count,model,quality,shape'))
+      if (!exactly(input, 'count,model,promptBytes,quality,shape'))
         return { ok: false, error: IMAGE_WORDS.notUnderstood }
       const registry = options.registry()
       if (!registry.ok) return { ok: false, error: IMAGE_WORDS.noModels }
@@ -346,11 +347,21 @@ export function createImageService(options: ImageServiceOptions): ImageService {
         !isQuality(input.quality) ||
         !Number.isInteger(count) ||
         (count as number) < 1 ||
-        (count as number) > IMAGE_LIMITS.maxCount
+        (count as number) > IMAGE_LIMITS.maxCount ||
+        !Number.isInteger(input.promptBytes) ||
+        (input.promptBytes as number) < 0 ||
+        (input.promptBytes as number) > IMAGE_LIMITS.maxPromptBytes
       ) {
         return { ok: false, error: IMAGE_WORDS.notUnderstood }
       }
-      const most = maximumCost(model, input.shape, input.quality, count as number)
+      // The page says how long the description is, for the figure it shows; the request itself is counted again from the description it sends.
+      const most = maximumCost(
+        model,
+        input.shape,
+        input.quality,
+        count as number,
+        input.promptBytes as number
+      )
       try {
         const now2 = await limitsNow(most.usd)
         return {
@@ -387,7 +398,13 @@ export function createImageService(options: ImageServiceOptions): ImageService {
         if (apiKey === null) return { ok: false, kind: 'refused', error: IMAGE_WORDS.noKey }
         const full = await store.room(ask.count)
         if (full !== null) return { ok: false, kind: 'refused', error: full }
-        const most = maximumCost(ask.model, ask.shape, ask.quality, ask.count)
+        const most = maximumCost(
+          ask.model,
+          ask.shape,
+          ask.quality,
+          ask.count,
+          promptBytes(ask.prompt)
+        )
         try {
           const before = await limitsNow(most.usd)
           if (before.refusal !== null) return { ok: false, kind: 'refused', error: before.refusal }

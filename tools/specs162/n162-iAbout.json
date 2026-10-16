@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/shared/images.ts",
-      "from": "about: !model.published }",
-      "to": "about: false }"
+      "from": "    about: !model.published\n",
+      "to": "    about: false\n"
     }
   ],
   "argv": [

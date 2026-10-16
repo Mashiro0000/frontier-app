@@ -9,7 +9,8 @@ import {
   type ImageGenerateResult,
   type ImageQuality,
   type ImageShape,
-  type PictureNote
+  type PictureNote,
+  promptBytes
 } from '../../../shared/images'
 import { formatMoney } from '../../../shared/limits'
 import { reloadImageStatus, useImageStatus } from './imageStatus'
@@ -77,14 +78,16 @@ function MakeImageForm({
     usable[0] ??
     null
 
-  // What main says the choice would cost at most, asked again whenever the choice changes.
+  // What main says the choice would cost at most, asked again whenever the choice or the description's length changes. A change of the description alone keeps the
+  // figure on screen until the new one comes (it moves by a fraction of a cent); a change of the choice shows "Working out the cost..." first.
   const modelId = chosenModel?.id ?? null
   const choiceKey = `${modelId}|${shape}|${quality}|${count}`
+  const bytes = Math.min(promptBytes(prompt), IMAGE_LIMITS.maxPromptBytes)
   useEffect(() => {
     if (modelId === null) return
     let live = true
     window.api.images
-      .estimate({ model: modelId, shape, quality, count })
+      .estimate({ model: modelId, shape, quality, count, promptBytes: bytes })
       .then((estimate) => {
         if (live) setAnswered({ key: `${modelId}|${shape}|${quality}|${count}`, estimate })
       })
@@ -98,7 +101,7 @@ function MakeImageForm({
     return () => {
       live = false
     }
-  }, [modelId, shape, quality, count])
+  }, [modelId, shape, quality, count, bytes])
   const estimate = answered !== null && answered.key === choiceKey ? answered.estimate : null
 
   const blocked = status?.blocked ?? null

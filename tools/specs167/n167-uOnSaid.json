@@ -1,0 +1,18 @@
+{
+  "label": "n167-uOnSaid",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/useChatStorage.ts",
+      "from": "      parts.push(`Encrypted ${gallery(report.pictures.changed)} too.`)",
+      "to": "      parts.push(`Encrypted ${gallery(report.pictures.changed)}.`)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-16-7.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

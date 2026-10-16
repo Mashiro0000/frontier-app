@@ -356,6 +356,8 @@ export interface ChatStorageReport {
   files?: { changed: number; failed: number }
   /** The person's instructions for every chat and their notes (D-039), rewritten in the same form too; absent when there are none. */
   documents?: { changed: number; failed: number }
+  /** The gallery's pictures (D-048), rewritten in the same form too; absent when there are none. */
+  pictures?: { changed: number; failed: number }
 }
 
 /** `cancelled`: the person closed the system's dialog, which is not a failure and is not shown as one. */
@@ -748,6 +750,8 @@ export interface FrontierApi {
       shape: ImageShape
       quality: ImageQuality
       count: number
+      /** The description's length in UTF-8 bytes (its words in are part of the most). */
+      promptBytes: number
     }): Promise<ImageEstimate>
     /** Makes the pictures. Resolves when they are kept, or with why not. */
     generate(ask: {

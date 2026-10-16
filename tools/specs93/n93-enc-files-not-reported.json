@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chatEncryptionService.ts",
-      "from": "      report: { ...done, backup, ...withFiles(filesDone), ...documentsDone }",
-      "to": "      report: { ...done, backup, ...documentsDone }"
+      "from": "      report: { ...done, backup, ...withFiles(filesDone), ...documentsDone, ...picturesDone }",
+      "to": "      report: { ...done, backup, ...documentsDone, ...picturesDone }"
     }
   ],
   "argv": [

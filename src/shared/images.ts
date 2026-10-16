@@ -28,7 +28,14 @@ export const IMAGE_LIMITS = Object.freeze({
   /** A model that retires within this many days is marked so; a retired one cannot be chosen. */
   retireWarnDays: 30,
   /** The longer edge of the small pictures in the gallery's grid, made in main. */
-  thumbnailEdge: 256
+  thumbnailEdge: 256,
+  /**
+   * (16.7) Added to each picture's figure in the most a request can cost: OpenAI's table is rounded to a tenth of a cent (1,767 tokens at $30 a million is $0.05301,
+   * the table says $0.053), so the table alone is not a ceiling.
+   */
+  tableRoundingUsd: 0.0005,
+  /** The most UTF-8 bytes a description of `maxPromptChars` can be (three a character): the bound on what the estimate is told. */
+  maxPromptBytes: 12_000
 })
 
 /** The three shapes the dialog offers, and the size each is asked as (OpenAI's three ordinary sizes). */
@@ -259,14 +266,27 @@ export function retirementWarnings(registry: ImagesRegistry, now: number): strin
 
 // ---- cost ------------------------------------------------------------------------------------------------------------------------
 
-/** The most a request can cost, in US dollars, from the model's table; `about` when the table is the app's ceiling and not OpenAI's. */
+/** How many UTF-8 bytes a description is. A token is at least one byte, so a description is never more tokens than this. */
+export const promptBytes = (prompt: string): number => new TextEncoder().encode(prompt).length
+
+/**
+ * The most a request can cost, in US dollars: each picture at the model's table (plus the table's rounding), and the description's words in, counted as if every byte
+ * were a token (16.7: what the usage says the words cost is added to the bill, and the table alone left it out). `about` when the table is the app's ceiling and not
+ * OpenAI's.
+ */
 export function maximumCost(
   model: ImageModelEntry,
   shape: ImageShape,
   quality: ImageQuality,
-  count: number
+  count: number,
+  descriptionBytes: number
 ): { usd: number; about: boolean } {
-  return { usd: model.perPicture[shape][quality] * count, about: !model.published }
+  return {
+    usd:
+      (model.perPicture[shape][quality] + IMAGE_LIMITS.tableRoundingUsd) * count +
+      (descriptionBytes * model.prices.textInPerMTok) / 1_000_000,
+    about: !model.published
+  }
 }
 
 /** What a request cost from the tokens the answer says it used: the words in at the text price, everything out at the image price. */

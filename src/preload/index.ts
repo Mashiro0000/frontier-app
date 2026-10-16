@@ -134,8 +134,8 @@ const api: FrontierApi = {
     status: () => ipcRenderer.invoke(CHANNELS.imagesStatus),
     setOn: (on) => ipcRenderer.invoke(CHANNELS.imagesSetOn, { on }),
     reset: () => ipcRenderer.invoke(CHANNELS.imagesReset),
-    estimate: ({ model, shape, quality, count }) =>
-      ipcRenderer.invoke(CHANNELS.imagesEstimate, { model, shape, quality, count }),
+    estimate: ({ model, shape, quality, count, promptBytes }) =>
+      ipcRenderer.invoke(CHANNELS.imagesEstimate, { model, shape, quality, count, promptBytes }),
     generate: ({ prompt, model, shape, quality, count, chat }) =>
       ipcRenderer.invoke(CHANNELS.imagesGenerate, { prompt, model, shape, quality, count, chat }),
     stop: () => ipcRenderer.invoke(CHANNELS.imagesStop),

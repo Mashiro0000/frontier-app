@@ -1,0 +1,19 @@
+{
+  "label": "w167-wOffSkipped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatEncryptionService.ts",
+      "from": "    const picturesDone = await conformPictures()\n    return {\n      ok: true,\n      status: await status(),\n      report: {\n        ...done,\n        backup: null,",
+      "to": "    const picturesDone = {}\n    return {\n      ok: true,\n      status: await status(),\n      report: {\n        ...done,\n        backup: null,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run167.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "E"
+  },
+  "timeoutMs": 1200000
+}
