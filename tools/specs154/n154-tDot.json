@@ -1,0 +1,18 @@
+{
+  "label": "n154-tDot",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voicePermissions.ts",
+      "from": "        buffer.set([0x1c, 0x1c, 0xd8, 0xff], at) // red (B, G, R, A)",
+      "to": "        buffer.set([0, 0, 0, 0], at)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-4.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}

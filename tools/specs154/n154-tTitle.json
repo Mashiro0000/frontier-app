@@ -1,0 +1,18 @@
+{
+  "label": "n154-tTitle",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voicePermissions.ts",
+      "from": "export const RECORDING_TITLE = 'Frontier App - RECORDING (the microphone is on)'",
+      "to": "export const RECORDING_TITLE = 'Frontier App'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-4.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 400000
+}
