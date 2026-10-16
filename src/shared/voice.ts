@@ -111,6 +111,7 @@ export const VOICE_CHANNELS = Object.freeze({
   setListen: 'voice:set-listen',
   setSpeak: 'voice:set-speak',
   setVoice: 'voice:set-voice',
+  reset: 'voice:reset',
   begin: 'voice:begin',
   end: 'voice:end',
   cancel: 'voice:cancel'

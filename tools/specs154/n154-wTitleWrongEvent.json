@@ -1,0 +1,18 @@
+{
+  "label": "n154-wTitleWrongEvent",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceWindow.ts",
+      "from": "  window.on('page-title-updated', (event) => event.preventDefault())",
+      "to": "  window.webContents.on('page-title-updated', (event) => event.preventDefault())"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 400000
+}

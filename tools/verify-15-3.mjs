@@ -166,7 +166,7 @@ await guard('E', async () => {
   check('E: the request has the three fields and no others (no prompt, language, keywords)', /\{ file, model: TRANSCRIBE_MODEL, response_format: 'json' \}/.test(text) && !/\bprompt\b\s*:|\blanguage\b\s*:|\bkeywords\b\s*:|\btemperature\b\s*:/.test(text))
   check('E: the environment is not read here', !/process\.env/.test(text))
   check('E: the client is the chat\'s own (nothing is read from the environment by it)', /newClient\(credentials\)/.test(text) && /export function newClient/.test(source('src/main/providers/openai.ts')))
-  check('E: nothing in the app imports the adapter yet (15.5 wires it)', !['src/main/ipc.ts', 'src/main/chat.ts', 'src/main/index.ts'].some((f) => /openaiAudio/.test(source(f))))
+  check('E: only the voice service imports the adapter (the reply path does not, and neither does ipc.ts)', !['src/main/ipc.ts', 'src/main/chat.ts', 'src/main/index.ts', 'src/main/replyTools.ts'].some((f) => /openaiAudio/.test(source(f))) && /openaiAudio/.test(source('src/main/voiceService.ts')))
 })
 
 await mock.close()

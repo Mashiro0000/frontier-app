@@ -1,0 +1,18 @@
+{
+  "label": "w155-gDefaultSession",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/index.ts",
+      "from": "    session.defaultSession,",
+      "to": "    session.fromPartition('somewhere-else'),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run155.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 600000
+}

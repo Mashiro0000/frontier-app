@@ -1,0 +1,18 @@
+{
+  "label": "n155-sSpeakShape",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceService.ts",
+      "from": "        if (!exactly(input, 'on') || typeof input.on !== 'boolean') {\n          return { ok: false, error: NOT_UNDERSTOOD }\n        }\n        const now = await current()\n        if (!now.ok) return now\n        return write({ ...now.settings, speak: input.on })",
+      "to": "        const now = await current()\n        if (!now.ok) return now\n        return write({ ...now.settings, speak: Boolean((input as { on?: boolean } | null)?.on) })"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

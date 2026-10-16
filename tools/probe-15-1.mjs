@@ -1,8 +1,8 @@
 // Stage 15.1 (D-047), the probe and the gate: can a sandboxed window of this app record a microphone, can the installed SDK send that clip as a transcription request,
 // and can the window speak with the voices of this PC? Run in the real window with Chromium's FAKE microphone (a file of a tone, tools/run151.mjs makes it), so no real
 // microphone is opened and nothing is heard, except that the speech check says one short word with the volume at 0.
-// It also measures what the window can do TODAY, before 15.4 closes it: the window has no permission handler, so the page can open the microphone (and the camera) by itself,
-// and the page can change the window's title.
+// It also reports what the window lets the page do (before 15.4 it let the page open the microphone and the camera by itself and change the window's title; D-047 has the
+// baseline measured without Chromium's fake-UI switch, which hides the permission handler). The probe keeps its 19 checks of what the stage needs; those three are notes.
 // Stop rule (the plan): if the window cannot record, or the SDK cannot send the clip, the stage stops and speech stays manual.
 // Needs: USER_DATA_DIR (scratch), INSPECT_PORT, FAKE_TONE_HZ (the tone the fake microphone plays, for the check that the clip is not silence).
 import './temp-on-a.mjs'
@@ -49,7 +49,8 @@ const base = `http://127.0.0.1:${server.address().port}`
 try {
   // ============ A. what the window can do today ============
   const hasApi = await ev(`typeof window.api === 'object' && typeof window.api.voice === 'undefined'`)
-  check('A: the bridge has no voice part yet (this is the baseline)', hasApi === true)
+  // (15.1 was run before the bridge had a voice part; since 15.5 it has one, so this is only noted)
+  console.log(`   (the bridge has a voice part: ${hasApi === true ? 'no' : 'yes'})`)
 
   const mic = await ev(`(async () => {
     try {
@@ -60,7 +61,8 @@ try {
       return out
     } catch (e) { return { ok: false, name: e.name, message: String(e.message).slice(0, 200) } }
   })()`)
-  check('A: today the page can open a microphone by itself, with no question and no handler in main', mic.ok === true, show(mic))
+  // (the probe's first run said yes here; since 15.4 the window refuses it unless main opened the gate. The baseline without a handler was measured again in 15.5 in a stand-alone Electron script: D-047)
+  console.log(`   (the page opens a microphone by itself: ${mic.ok === true ? 'YES' : 'no'}${mic.ok ? '' : ' - ' + mic.name})`)
 
   const cam = await ev(`(async () => {
     try { const s = await navigator.mediaDevices.getUserMedia({ video: true }); s.getTracks().forEach((x) => x.stop()); return { ok: true } }
@@ -73,7 +75,8 @@ try {
   await sleep(300)
   const titleAfter = await main.inMain(`process.mainModule.require('electron').BrowserWindow.getAllWindows()[0].getTitle()`)
   console.log(`   (window title before: ${show(titleBefore)}, after the page set document.title: ${show(titleAfter)})`)
-  check('A: the page can change the window title today (15.4 locks it so only main can say "Recording")', titleAfter === 'changed by the page', show({ titleBefore, titleAfter }))
+  // (the title: yes before 15.4; since then main cancels the page's title changes)
+  console.log(`   (the page can change the window title: ${titleAfter === 'changed by the page' ? 'YES' : 'no'})`)
   await ev(`document.title = 'Frontier App'`)
 
   // ============ B. record the fake microphone in the sandboxed window ============

@@ -17,6 +17,13 @@ import type { ToolCaps, ToolChangeResult, ToolEvent, ToolsStatus } from './tools
 import type { AppliedChange, ChangeActionResult, ChangeSummary } from './changes'
 import type { WorkspaceChangeResult, WorkspaceStatus } from './workspace'
 import type { ReplyUsage, UsageSummary } from './usage'
+import {
+  VOICE_CHANNELS,
+  type VoiceBeginResult,
+  type VoiceChangeResult,
+  type VoiceEndResult,
+  type VoiceStatus
+} from './voice'
 
 /**
  * A model the person can choose, as the page sees it: what to show about it, and nothing about how
@@ -685,6 +692,28 @@ export interface FrontierApi {
     /** Asks main to delete the undo history (main asks in the system's box; the files are not touched). */
     clearHistory(): Promise<ChangeActionResult>
   }
+  /**
+   * Voice (Stage 15, D-047). "Speak to type": the person HOLDS a button, the window records the microphone while it is held, main sends the clip to OpenAI's speech to text
+   * and the words come back as text for the message box. The page can read the status and ask: it cannot open the microphone by itself (the permission is main's, given
+   * only between `begin` and `end` and for no longer than a minute), cannot name a model, a price or a key, and cannot answer the question that switching on asks in the
+   * system's own message box. "Read aloud" is the window's own speech (the voices of this PC): nothing leaves the computer, so its switch asks nothing; this only keeps
+   * the choice. Nothing of a recording or of the words is kept by the app.
+   */
+  voice: {
+    status(): Promise<VoiceStatus>
+    setListen(on: boolean): Promise<VoiceChangeResult>
+    setSpeak(on: boolean): Promise<VoiceChangeResult>
+    /** `voice`: the name as the window lists the voices of this PC, or null for the system's own choice. `rate`: percent, 50 to 200. */
+    setVoice(voice: string | null, rate: number): Promise<VoiceChangeResult>
+    /** When voice.json could not be read: both switches off, the file kept as a copy beside it. */
+    reset(): Promise<VoiceChangeResult>
+    /** The button was pressed: asks main to open the microphone for one hold. */
+    begin(): Promise<VoiceBeginResult>
+    /** The button was released: the clip (WebM) and how long the hold lasted by the window's clock. Resolves with the words. */
+    end(bytes: Uint8Array, ms: number): Promise<VoiceEndResult>
+    /** Gives up: the hold, or the clip on its way. Sends nothing. */
+    cancel(): Promise<void>
+  }
   projects: {
     status(): Promise<ProjectsStatus>
     create(name: string): Promise<ProjectChangeResult>
@@ -775,7 +804,15 @@ export const CHANNELS = {
   changesReview: 'changes:review',
   changesApplied: 'changes:applied',
   changesUndo: 'changes:undo',
-  changesClearUndo: 'changes:clear-undo'
+  changesClearUndo: 'changes:clear-undo',
+  voiceStatus: VOICE_CHANNELS.status,
+  voiceSetListen: VOICE_CHANNELS.setListen,
+  voiceSetSpeak: VOICE_CHANNELS.setSpeak,
+  voiceSetVoice: VOICE_CHANNELS.setVoice,
+  voiceReset: VOICE_CHANNELS.reset,
+  voiceBegin: VOICE_CHANNELS.begin,
+  voiceEnd: VOICE_CHANNELS.end,
+  voiceCancel: VOICE_CHANNELS.cancel
 } as const
 
 /**

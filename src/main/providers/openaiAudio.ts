@@ -69,6 +69,10 @@ export async function transcribe(request: TranscribeRequest): Promise<Transcript
     if (signal?.aborted === true) {
       throw new TranscribeFailed('The recording was not sent.', 'unknown', false, true)
     }
+    // An answer that is not JSON (the SDK's parser throws a SyntaxError) is an answer the app cannot read, not a sentence to show.
+    if (error instanceof SyntaxError) {
+      throw new TranscribeFailed('OpenAI sent an answer the app could not read.', 'provider', false)
+    }
     const normalized = openaiAdapter.normalizeError(error, { modelId: TRANSCRIBE_MODEL })
     throw new TranscribeFailed(
       describeFailure(normalized, credentials.apiKey),

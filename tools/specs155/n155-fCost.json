@@ -1,0 +1,18 @@
+{
+  "label": "n155-fCost",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/usage.ts",
+      "from": "  (record.audio === undefined ? 0 : audioFeeUsd(record.audio))",
+      "to": "  0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 400000
+}

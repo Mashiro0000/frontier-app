@@ -1,0 +1,18 @@
+{
+  "label": "n155-eStillOn",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceService.ts",
+      "from": "      if (problem !== null || !settings.listen) {\n        return { ok: false, kind: 'refused', error: VOICE_WORDS.off }\n      }\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-5.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 400000
+}

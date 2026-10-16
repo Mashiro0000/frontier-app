@@ -14,7 +14,8 @@ export const microphoneGate = createVoiceGate()
  */
 export function showMicrophoneState(window: BrowserWindow): void {
   window.setTitle(titleFor(false))
-  window.webContents.on('page-title-updated', (event) => event.preventDefault())
+  // (the event of the WINDOW: calling preventDefault on it keeps the native title; the same event of the web contents does not)
+  window.on('page-title-updated', (event) => event.preventDefault())
   const dot = nativeImage.createFromBitmap(recordingDot(), { width: DOT_SIZE, height: DOT_SIZE })
   const stop = microphoneGate.onChange((recording) => {
     if (window.isDestroyed()) return

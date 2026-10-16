@@ -1,0 +1,18 @@
+{
+  "label": "n155-wKey",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    key: () => readApiKey('openai'),",
+      "to": "    key: () => readApiKey('anthropic'),"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-5.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 400000
+}

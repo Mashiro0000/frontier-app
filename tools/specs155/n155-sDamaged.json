@@ -1,0 +1,18 @@
+{
+  "label": "n155-sDamaged",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/voiceService.ts",
+      "from": "    return problem !== null ? { ok: false, error: changeRefused(problem) } : { ok: true, settings }",
+      "to": "    return { ok: true, settings }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-5.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 400000
+}

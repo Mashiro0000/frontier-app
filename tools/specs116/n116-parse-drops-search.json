@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/shared/usage.ts",
-      "from": "    ...(fee === undefined ? {} : { search: fee })\n",
+      "from": "    ...(fee === undefined ? {} : { search: fee }),\n",
       "to": ""
     }
   ],

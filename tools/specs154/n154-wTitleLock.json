@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/voiceWindow.ts",
-      "from": "  window.webContents.on('page-title-updated', (event) => event.preventDefault())\n",
+      "from": "  window.on('page-title-updated', (event) => event.preventDefault())\n",
       "to": ""
     }
   ],

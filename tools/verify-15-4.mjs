@@ -111,7 +111,7 @@ await guard('D', async () => {
   const win = source('src/main/voiceWindow.ts')
   const perm = source('src/main/voicePermissions.ts')
   const index = source('src/main/index.ts')
-  check('D: the page cannot rename the window: its title changes are cancelled in main', /page-title-updated', \(event\) => event\.preventDefault\(\)/.test(win))
+  check("D: the page cannot rename the window: its title changes are cancelled in main, on the WINDOW (the web contents' event of the same name does not stop the native title: found in 15.5)", /\n  window\.on\('page-title-updated', \(event\) => event\.preventDefault\(\)/.test(win) && !/webContents\.on\('page-title-updated'/.test(win))
   check('D: the taskbar dot is set and cleared with the gate, and the gate closes with the window', /setOverlayIcon\(recording \? dot : null/.test(win) && /on\('closed'[\s\S]*microphoneGate\.close\(\)/.test(win))
   check('D: the window is made with its title, and the rules are installed on the default session before the message handlers and the window', /title: 'Frontier App'/.test(index) && index.indexOf('installPermissionHandlers(') < index.indexOf('registerIpc(appUrl)') && index.indexOf('registerIpc(appUrl)') < index.indexOf('  createWindow()\n') && /session\.defaultSession/.test(index))
   check('D: the handlers are told which page is the chat window\'s, at every question (the window can be made again)', /chatWindow\?\.webContents \?\? null/.test(index))

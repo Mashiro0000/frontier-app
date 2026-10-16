@@ -1,0 +1,18 @@
+{
+  "label": "n155-wGuard",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "    CHANNELS.voiceBegin,\n    guarded(",
+      "to": "    CHANNELS.voiceBegin,\n    ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-15-5.mjs"
+  ],
+  "env": {
+    "ONLY": "G"
+  },
+  "timeoutMs": 400000
+}

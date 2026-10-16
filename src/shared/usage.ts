@@ -57,6 +57,20 @@ export interface SearchFee {
   usdEach: number
 }
 
+/**
+ * What a clip of speech to text cost (Stage 15.5, D-047): the whole seconds it was charged for and the price of a minute it was counted at. A record that carries
+ * one has no tokens: the money is this. The price lives with the record, as for the tokens, so a change of price later does not change what was spent.
+ */
+export interface AudioFee {
+  kind: 'transcribe'
+  seconds: number
+  usdPerMinute: number
+}
+
+/** What an audio fee comes to, in US dollars: the seconds rounded up (at least one) at the price of a minute. */
+export const audioFeeUsd = (fee: AudioFee): number =>
+  (Math.max(1, Math.ceil(fee.seconds)) / 60) * fee.usdPerMinute
+
 /** One line of the ledger: one request to a provider, with the prices it was counted at (they may change in the registry later). */
 export interface LedgerRecord {
   version: 1
@@ -78,6 +92,8 @@ export interface LedgerRecord {
   prices: ModelPricing
   /** The hosted searches the provider billed for this request (11.6); absent for a request that had none. */
   search?: SearchFee
+  /** (15.5) A clip of speech to text: absent for every other request. */
+  audio?: AudioFee
 }
 
 /** What a reply used and cost, as the page is told when the reply ends (and the ledger has the same). */
@@ -126,7 +142,8 @@ export function costOf(tokens: TokenCounts, prices: ModelPricing): number {
 
 export const costOfRecord = (record: LedgerRecord): number =>
   costOf(record.tokens, record.prices) +
-  (record.search === undefined ? 0 : record.search.count * record.search.usdEach)
+  (record.search === undefined ? 0 : record.search.count * record.search.usdEach) +
+  (record.audio === undefined ? 0 : audioFeeUsd(record.audio))
 
 export const tokensAreEmpty = (tokens: TokenCounts): boolean =>
   tokens.input === 0 && tokens.cacheRead === 0 && tokens.cacheWrite === 0 && tokens.output === 0
@@ -224,7 +241,8 @@ const isFields = (value: unknown): value is Record<string, unknown> =>
  */
 export function parseLedgerRecord(raw: unknown): LedgerRecord | null {
   if (!isFields(raw) || raw.version !== 1) return null
-  const { id, at, chat, provider, model, effort, state, estimate, tokens, prices, search } = raw
+  const { id, at, chat, provider, model, effort, state, estimate, tokens, prices, search, audio } =
+    raw
   if (!isConversationId(id)) return null // the one spelling of a uuid the app makes (the same shape as a conversation id)
   if (typeof at !== 'number' || !Number.isSafeInteger(at) || at < 0) return null
   if (chat !== null && !isConversationId(chat)) return null
@@ -266,6 +284,27 @@ export function parseLedgerRecord(raw: unknown): LedgerRecord | null {
     }
     fee = { count: search.count as number, usdEach: search.usdEach as number }
   }
+  // The clip of speech (15.5): absent, or exactly its kind, whole seconds from 1 to an hour, and a price of a minute; anything else makes the line unusable.
+  let clipFee: AudioFee | undefined
+  if (audio !== undefined) {
+    if (
+      !isFields(audio) ||
+      Object.keys(audio).sort().join() !== 'kind,seconds,usdPerMinute' ||
+      audio.kind !== 'transcribe' ||
+      !Number.isSafeInteger(audio.seconds) ||
+      (audio.seconds as number) < 1 ||
+      (audio.seconds as number) > 3600 ||
+      !isPrice(audio.usdPerMinute) ||
+      (audio.usdPerMinute as number) > 10
+    ) {
+      return null
+    }
+    clipFee = {
+      kind: 'transcribe',
+      seconds: audio.seconds as number,
+      usdPerMinute: audio.usdPerMinute as number
+    }
+  }
   return {
     version: 1,
     id,
@@ -288,7 +327,8 @@ export function parseLedgerRecord(raw: unknown): LedgerRecord | null {
       cacheWritePerMTok: prices.cacheWritePerMTok,
       outputPerMTok: prices.outputPerMTok
     },
-    ...(fee === undefined ? {} : { search: fee })
+    ...(fee === undefined ? {} : { search: fee }),
+    ...(clipFee === undefined ? {} : { audio: clipFee })
   }
 }
 

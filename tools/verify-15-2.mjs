@@ -39,7 +39,7 @@ await guard('A', async () => {
   const hostile = ['', 'x'.repeat(121), ' Zira', 'Zira ', 'Zi\nra', 'Zi\tra', 'Zi\u0000ra', 'Zira' + cp(0x202e), cp(0x200b) + 'Zira', 'Zi' + cp(0x2028) + 'ra', cp(0xfeff) + 'Zira', 'Zi' + cp(0x85) + 'ra', 'Zi' + cp(0x2066) + 'ra', 7, null, undefined, {}, ['Zira']]
   check('A: refused: empty, too long, spaces at the ends, a line break, a tab, a null, reversing and hiding characters, other kinds', hostile.every((v) => !V.isVoiceName(v)), show(hostile.filter(V.isVoiceName)))
   check('A: the speed is a whole number from 50 to 200', [50, 100, 200, 75].every(V.isRate) && [49, 201, 0, -100, 100.5, NaN, Infinity, '100', null, undefined].every((v) => !V.isRate(v)))
-  check('A: the channels are voice:* names and the bridge will need no others', Object.values(V.VOICE_CHANNELS).every((n) => /^voice:[a-z-]+$/.test(n)) && Object.keys(V.VOICE_CHANNELS).sort().join() === 'begin,cancel,end,setListen,setSpeak,setVoice,status', Object.keys(V.VOICE_CHANNELS).join())
+  check('A: the channels are voice:* names and the bridge will need no others', Object.values(V.VOICE_CHANNELS).every((n) => /^voice:[a-z-]+$/.test(n)) && Object.keys(V.VOICE_CHANNELS).sort().join() === 'begin,cancel,end,reset,setListen,setSpeak,setVoice,status', Object.keys(V.VOICE_CHANNELS).join())
 })
 
 // ============ B. voice.json ============
@@ -286,7 +286,7 @@ await guard('F', async () => {
   check('F: voiceClip.ts and voiceGate.ts import only the shared voice part', [...clip.matchAll(/from '([^']+)'/g)].every((m) => m[1] === '../shared/voice') && [...gate.matchAll(/from '([^']+)'/g)].every((m) => m[1] === '../shared/voice'), [...clip.matchAll(/from '([^']+)'/g)].map((m) => m[1]).join())
   const speech = source('src/renderer/src/voice/speechText.ts')
   check('F: speechText.ts imports only the Markdown reader and the shared voice part (no DOM, no React)', [...speech.matchAll(/from '([^']+)'/g)].map((m) => m[1]).sort().join() === '../../../shared/voice,../markdown/parse' && !/\bdocument\.|\bwindow\./.test(speech))
-  check('F: nothing in the app imports the voice modules yet (they are not wired until 15.5)', !['src/main/ipc.ts', 'src/main/chat.ts', 'src/preload/index.ts', 'src/main/index.ts'].some((f) => /voice/i.test(source(f))))
+  check('F: the reply path (chat.ts, replyTools.ts) imports nothing of voice, and the voice modules are wired in one place each (the service in ipc.ts, the gate in index.ts)', !/voice/i.test(source('src/main/chat.ts')) && !/voice/i.test(source('src/main/replyTools.ts')) && /createVoiceService/.test(source('src/main/ipc.ts')) && /installPermissionHandlers/.test(source('src/main/index.ts')))
 })
 
 rmSync(tempRoot, { recursive: true, force: true })
