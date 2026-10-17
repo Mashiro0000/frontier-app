@@ -1,0 +1,18 @@
+{
+  "label": "n171-keyInAddress",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-gemini.mjs",
+      "from": "    if (url.searchParams.has('key')) problems.push('THE KEY WAS PUT IN THE ADDRESS (?key=): this app must send it only in the x-goog-api-key header')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

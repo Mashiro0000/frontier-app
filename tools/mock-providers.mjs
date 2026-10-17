@@ -13,6 +13,7 @@ import { anthropicBlockProblems, anthropicManyImages, describeAnthropic } from '
 import { createOpenAIMock } from './mock-openai.mjs'
 import { createAudioMock } from './mock-audio.mjs'
 import { createImagesMock } from './mock-images.mjs'
+import { createGeminiMock } from './mock-gemini.mjs'
 import http from 'node:http'
 
 // Stage 3: what each model accepts, from Anthropic's documentation (models overview, effort page), read on
@@ -34,6 +35,7 @@ export function startMock(port = 8787) {
   const requests = []
   let expectKey = null // the key the Anthropic side accepts (null: any)
   let expectKeyOpenAI = null // the key the OpenAI side accepts (null: any); POST /__expect-key { key, provider: 'openai' }
+  let expectKeyGoogle = null // 17.1: the key the Gemini side accepts (null: any); POST /__expect-key { key, provider: 'google' }
   let modelsControl = { pageSize: null, fail: null }
   // 11.3: how the tool flows behave (POST /__tools { ... }; {} puts it back): `query` the words a model asks to search for, `many` a model that asks again after
   // every result, `emptyText` a model whose first block before the tool call is empty text, `search` how the hosted search request answers:
@@ -321,13 +323,16 @@ export function startMock(port = 8787) {
   const audio = createAudioMock({ json, requests, expectedKey: () => expectKeyOpenAI })
   // 16.1: image generation (POST /v1/images/generations), in mock-images.mjs; controlled with POST /__images
   const images = createImagesMock({ json, readBody, requests, expectedKey: () => expectKeyOpenAI })
+  // 17.1: Google's Gemini API (streamGenerateContent and the model list), in mock-gemini.mjs; it shares the request log, the model-list control and the tool control
+  const gemini = createGeminiMock({ json, readBody, requests, expectedKey: () => expectKeyGoogle, modelsControl: () => modelsControl })
 
   const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && req.url === '/__requests') return json(res, 200, requests)
-    if (req.method === 'POST' && req.url === '/__reset') { requests.length = 0; expectKey = null; expectKeyOpenAI = null; modelsControl = { pageSize: null, fail: null }; toolsControl = {}; issued.clear(); openai.reset?.(); audio.reset(); images.reset(); return json(res, 200, { ok: true }) }
-    if (req.method === 'POST' && req.url === '/__tools') { toolsControl = JSON.parse(await readBody(req)); openai.setTools?.(toolsControl); return json(res, 200, { ok: true }) }
+    if (req.method === 'POST' && req.url === '/__reset') { requests.length = 0; expectKey = null; expectKeyOpenAI = null; modelsControl = { pageSize: null, fail: null }; toolsControl = {}; issued.clear(); openai.reset?.(); audio.reset(); images.reset(); expectKeyGoogle = null; gemini.reset(); return json(res, 200, { ok: true }) }
+    if (req.method === 'POST' && req.url === '/__tools') { toolsControl = JSON.parse(await readBody(req)); openai.setTools?.(toolsControl); gemini.setTools(toolsControl); return json(res, 200, { ok: true }) }
     if (req.method === 'POST' && req.url === '/__models') { modelsControl = { pageSize: null, fail: null, ...JSON.parse(await readBody(req)) }; return json(res, 200, { ok: true }) }
     // Both providers list their models at GET /v1/models; they are told apart by how the key is sent (x-api-key, or Authorization: Bearer)
+    if (req.url.startsWith('/v1beta/') && gemini.route(req, res)) return
     if (req.method === 'GET' && req.url.split('?')[0] === '/v1/models') return !req.headers['x-api-key'] && req.headers['authorization'] ? openai.listModels(req, res) : listModels(req, res)
     if (req.method === 'POST' && req.url.split('?')[0] === '/v1/responses') return openai.handleResponses(req, res)
     if (req.method === 'POST' && req.url.split('?')[0] === '/v1/audio/transcriptions') return audio.handle(req, res)
@@ -336,7 +341,8 @@ export function startMock(port = 8787) {
     if (req.method === 'POST' && req.url === '/__images') { images.setControl(JSON.parse(await readBody(req))); return json(res, 200, { ok: true }) }
     if (req.method === 'POST' && req.url === '/__expect-key') {
       const { key, provider } = JSON.parse(await readBody(req))
-      if (provider === 'openai') expectKeyOpenAI = key
+      if (provider === 'google') expectKeyGoogle = key
+      else if (provider === 'openai') expectKeyOpenAI = key
       else expectKey = key
       return json(res, 200, { ok: true })
     }

@@ -3027,3 +3027,11 @@ You kept all seven picks of the plan ("my pick" to every question), so I built i
 8. **The threat note and the regression (16.8).** The threat note lists what could go wrong when the app pays a company to make pictures and keeps them, and what stops it (decision D-048, 16.8). The full regression of every earlier stage found two faults of mine in the page made in 16.6: the price table in Settings carried the Usage table's name, so older checks counted the wrong rows, and at the narrowest width the table stuck out by 2 pixels. Both are fixed, along with the older checks that described the app before pictures existed. Every run that was not clean was run again and is clean.
 
 **In all:** 172 deliberate breakages, each caught. Not tried: a real call to OpenAI; every picture came from the stand-in.
+
+## Stage 17 - Google's Gemini as a third provider (17 October 2026; D-049)
+
+You kept all seven picks of the plan ("my pick" to every question), so I am building it as planned: Gemini 4 Argon and Gemini 3.8 Flash, over Node's own `fetch` (no Google package), with dated prices, no Google Search, no thoughts shown, and a box that tells you what Google does with what you send on a free key. Nothing here is tried against the real Gemini API: every answer is the stand-in's.
+
+**Step by step.**
+
+1. **The probe (17.1).** Before writing anything, I recorded exactly what the app sends to Anthropic and OpenAI today (208 requests, every kind: files, tools, search, instructions, every effort), so the end of the stage can prove those requests did not change by one byte. Then a stand-in for Google's Gemini API, built from my reading of Google's pages, and a probe against it: what a request looks like (the key goes in one header, never in the address), what comes back, and the surprises the adapter must handle: a key Google refuses is a 400 and not a 401, a blocked question comes back as a success with no answer in it, "too many requests" and "no quota left" have the same code, the thinking is counted beside the answer and not inside it, and nothing ends a request that never answers except the app's own clock. 87 checks, 15 deliberate breakages of the stand-in, all caught.

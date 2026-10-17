@@ -457,7 +457,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 
 **Questions for the owner** (each changes the plan; the picks above stand until you say otherwise): (1) Only a person asks for a picture (my pick), or also a tool the model may call (it asks in the box each time)? (2) `gpt-image-2` as the default, with its published prices and no retirement date (my pick), or the newest `gpt-image-2.5-flare` (prices not published, so the ceiling is a guess)? (3) The system's box only for the switch and for a request above $0.50 (my pick), or for every picture? (4) A made picture in the chat holds an id into the gallery, and a backup of chats does not carry pictures in this stage (my pick), or backups carry them too (bigger, slower)? (5) Pictures sealed with the chats when encryption is on, plus "Save a copy..." for a plain file wherever you choose (my pick), or plain files always? (6) Editing a picture with another picture now, or later (my pick: later)? (7) Video dropped for now (my pick)?
 
-## Stage 17 - More models: Google's Gemini as a third provider (plan written 17 October 2026; NOT started: seven questions for the owner below)
+## Stage 17 - More models: Google's Gemini as a third provider (plan written 17 October 2026; approved the same day: the owner kept all seven picks, "my pick" to every question; in progress)
 
 - A third provider (Gemini) as a registry entry and an adapter, as D-018 prepared. Rankings with real scores (and one suggested model per task)
   once a source compares models on one scale (D-023).
@@ -482,7 +482,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 - **Not in this stage:** Google Search grounding, the Files API, Gemini's own image, speech, video or live models, the 2.5 models, a fourth provider.
 - **Not proven (and cannot be from here):** a real call (the mock stands in), the real inline size limit, whether usage always comes back, how a billed and a free key differ in their answers.
 
-- [ ] (17.1, D-049) The investigation made executable and the probe: a stand-in Gemini endpoint in the mock (the stream, usage present and absent, a blocked prompt, a blocked reply, a bad key, overloaded, a hang, a key leaked into an error); what a request looks like on the wire.
+- [x] (17.1, D-049) The investigation made executable and the probe (87 checks under Node, 15 negative controls, all caught; the golden record of the other two providers taken first, 208 requests): a stand-in Gemini endpoint in the mock (the stream, usage present and absent, a blocked prompt, a blocked reply, a bad key, overloaded, a hang, a key leaked into an error); what a request looks like on the wire. Found: a refused key is a 400, a blocked prompt is a 200 with no candidate, rate and quota share one code, thoughts are counted beside the answer, `fetch` has no clock.
 - [ ] (17.2, D-049) The rules: registry schema 0.6 (the Google provider, dated prices, thinking levels), read strictly; the Google key file; the ledger's prices by date.
 - [ ] (17.3, D-049) The adapter: the request (contents, roles, system instruction, thinking), the stream read strictly, usage, finish reasons, the key never in a URL or a sentence, Stop, one try.
 - [ ] (17.4, D-049) Tools: the app's tools as function declarations, a function call and its answer in the loop, the caps and the box as before.

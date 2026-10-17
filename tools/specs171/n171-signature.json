@@ -1,0 +1,18 @@
+{
+  "label": "n171-signature",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-gemini.mjs",
+      "from": "if (signed && k === 0 && p.thoughtSignature !== signed)",
+      "to": "if (signed && k === 0 && false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

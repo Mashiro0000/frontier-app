@@ -1,0 +1,18 @@
+{
+  "label": "n171-includeThoughts",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-gemini.mjs",
+      "from": "            if (t.includeThoughts === true) problems.push",
+      "to": "            if (false) problems.push"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}
