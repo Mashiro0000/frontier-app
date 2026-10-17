@@ -73,7 +73,8 @@ await guard('A', async () => {
     check(`A: ${name} is not in the package`, !packaged.has(`node_modules/${name}`))
   for (const name of Object.keys(repoPkg.dependencies)) check(`A: the dependency ${name} is in the package`, packaged.has(`node_modules/${name}`))
   const res = readdirSync(join(UNPACKED, 'resources'))
-  check('A: resources/ holds app.asar only (nothing unpacked beside it)', res.length === 1 && res[0] === 'app.asar', show(res))
+  // build:win (the installer) adds electron-builder's elevate.exe, its helper for an install that needs admin; build:unpack does not
+  check('A: resources/ holds app.asar and, after build:win, electron-builder\'s elevate.exe; nothing unpacked', res.includes('app.asar') && res.every((n) => n === 'app.asar' || n === 'elevate.exe'), show(res))
 })
 
 await guard('B', async () => {
