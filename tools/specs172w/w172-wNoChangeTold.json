@@ -1,0 +1,19 @@
+{
+  "label": "w172-wNoChangeTold",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/registry.ts",
+      "from": "    priceChange: nextPriceChange(entry, at),",
+      "to": "    priceChange: null,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run172.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "A"
+  },
+  "timeoutMs": 900000
+}

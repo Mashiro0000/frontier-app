@@ -51,8 +51,10 @@ export interface ModelOption {
   description: string
   /** Tokens: how much conversation it can read at once. */
   contextWindow: number
-  /** List prices in US dollars per million tokens (D-030). */
+  /** List prices in US dollars per million tokens (D-030), as they are today (17.2). */
   pricing: ModelPricing
+  /** (17.2, D-049) The next change of these prices the provider has announced (its first day and the new prices), or null when none is coming. */
+  priceChange: { from: string; pricing: ModelPricing } | null
   /** It reads images, and PDFs (D-037): the page says so before anything is sent; main checks again. */
   imageInput: boolean
   documentInput: boolean

@@ -5,5 +5,6 @@ import type { ProviderId } from '../../../shared/registry'
 // A provider is added here and in the registry's list together: the type of this table is what makes sure of it.
 export const KEY_HELP: Record<ProviderId, { uses: string; whereToCreate: string }> = {
   anthropic: { uses: "Anthropic's Claude", whereToCreate: 'your Anthropic Console account' },
-  openai: { uses: "OpenAI's GPT models", whereToCreate: 'your OpenAI platform account' }
+  openai: { uses: "OpenAI's GPT models", whereToCreate: 'your OpenAI platform account' },
+  google: { uses: "Google's Gemini models", whereToCreate: 'Google AI Studio' }
 }

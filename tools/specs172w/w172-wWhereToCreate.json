@@ -1,0 +1,19 @@
+{
+  "label": "w172-wWhereToCreate",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/providerCopy.ts",
+      "from": "whereToCreate: 'Google AI Studio'",
+      "to": "whereToCreate: 'your Google account'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run172.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "B"
+  },
+  "timeoutMs": 900000
+}

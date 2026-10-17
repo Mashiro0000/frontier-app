@@ -1,5 +1,6 @@
 import type { ProviderId } from '../../shared/registry'
 import { anthropicAdapter } from './anthropic'
+import { geminiAdapter } from './gemini'
 import { openaiAdapter } from './openai'
 import type { ProviderAdapter } from './types'
 
@@ -7,7 +8,8 @@ import type { ProviderAdapter } from './types'
 // that true: adding a provider to the list without writing its adapter does not compile.
 const adapters: Record<ProviderId, ProviderAdapter> = {
   anthropic: anthropicAdapter,
-  openai: openaiAdapter
+  openai: openaiAdapter,
+  google: geminiAdapter
 }
 
 export const adapterFor = (provider: ProviderId): ProviderAdapter => adapters[provider]

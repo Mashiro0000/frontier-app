@@ -1,0 +1,18 @@
+{
+  "label": "n172-manyChanges",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/registry.ts",
+      "from": "const MAX_PRICE_CHANGES = 10",
+      "to": "const MAX_PRICE_CHANGES = 100"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

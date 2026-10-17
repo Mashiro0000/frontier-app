@@ -48,7 +48,10 @@ export type LedgerState = (typeof LEDGER_STATES)[number]
  */
 export const SEARCH_FEE_USD: Readonly<Record<ProviderId, number>> = Object.freeze({
   anthropic: 0.01,
-  openai: 0.01
+  openai: 0.01,
+  // (17.2, D-049) Google bills grounding with Google Search at $14 per 1,000 after 5,000 free a month (its pricing page, 17 October 2026). The app does NOT offer
+  // it (Google keeps grounded prompts for 30 days); the figure is here because the table names every provider, and it is the higher one, never the free one.
+  google: 0.014
 })
 
 /** The searches a request was billed for, and the fee each was counted at. */

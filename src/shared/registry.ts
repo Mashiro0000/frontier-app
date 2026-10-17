@@ -10,17 +10,18 @@
 
 import type { ModelOption } from './ipc'
 
-/** The shape of registry/models.json that this version of the app reads. */
-export const REGISTRY_SCHEMA_VERSION = '0.5'
+/** The shape of registry/models.json that this version of the app reads. 0.6 (Stage 17.2, D-049): every entry has `priceChanges`, and Google is a provider. */
+export const REGISTRY_SCHEMA_VERSION = '0.6'
 
 /** The providers this version of the app can call. An entry for any other provider is left out. */
-export const SUPPORTED_PROVIDERS = ['anthropic', 'openai'] as const
+export const SUPPORTED_PROVIDERS = ['anthropic', 'openai', 'google'] as const
 export type ProviderId = (typeof SUPPORTED_PROVIDERS)[number]
 
 /** How each provider is named to the person. */
 export const PROVIDER_NAMES: Record<ProviderId, string> = {
   anthropic: 'Anthropic',
-  openai: 'OpenAI'
+  openai: 'OpenAI',
+  google: 'Google'
 }
 
 /**
@@ -34,7 +35,9 @@ export type Effort = (typeof EFFORT_LEVELS)[number]
 /** The effort words each provider's API knows. */
 export const PROVIDER_EFFORTS: Record<ProviderId, readonly Effort[]> = {
   anthropic: ['low', 'medium', 'high', 'xhigh', 'max'],
-  openai: ['none', 'low', 'medium', 'high', 'xhigh', 'max']
+  openai: ['none', 'low', 'medium', 'high', 'xhigh', 'max'],
+  // (17.2, D-049) Gemini's thinking levels; "minimal" is not a word of this app's, and Gemini 3.8 Flash refuses it.
+  google: ['low', 'medium', 'high']
 }
 
 /**
@@ -71,6 +74,16 @@ export interface ModelPricing {
   outputPerMTok: number
 }
 
+/**
+ * (17.2, D-049) A change of a model's list prices that the provider has announced for a set day: from that day (on this computer's calendar) the request is
+ * priced at `pricing`. Google's Gemini prices double on set days, and the app prices correctly after them by itself.
+ */
+export interface PriceChange {
+  /** The first day of the new prices, written like 2026-12-01. */
+  from: string
+  pricing: ModelPricing
+}
+
 /** One model as the main process uses it: facts about the model, and the one setting the app picks for it. */
 export interface ModelEntry {
   provider: ProviderId
@@ -83,8 +96,10 @@ export interface ModelEntry {
   contextWindow: number
   /** Tokens: the longest reply it can write. */
   maxOutputTokens: number
-  /** List prices in US dollars per million tokens. */
+  /** List prices in US dollars per million tokens, until the first of `priceChanges` (if any). Use `pricesOn` for the prices of a given moment. */
   pricing: ModelPricing
+  /** (17.2) Announced changes of price, oldest first, each on a later day than the one before. Empty for most models. */
+  priceChanges: PriceChange[]
   capabilities: ModelCapabilities
   /**
    * The effort level to ask for: one of `capabilities.effortLevels`, written out because the default differs
@@ -114,6 +129,8 @@ export type RegistryResult =
   | { ok: false; error: string; problems: string[] }
 
 const MAX_MODELS = 50
+/** (17.2) More announced changes than this for one model is a mistake in the file, not a price list. */
+const MAX_PRICE_CHANGES = 10
 export const MODEL_ID = /^[a-z0-9][a-z0-9._-]{0,63}$/
 const MAX_TOKEN_COUNT = 100_000_000
 const MAX_PRICE = 10_000
@@ -181,9 +198,11 @@ const ENTRY_FIELDS = [
   'contextWindow',
   'maxOutputTokens',
   'pricing',
+  'priceChanges',
   'capabilities',
   'effort'
 ] as const
+const PRICE_CHANGE_FIELDS = ['from', 'pricing'] as const
 const PRICING_FIELDS = [
   'inputPerMTok',
   'cacheReadPerMTok',
@@ -200,6 +219,99 @@ const CAPABILITY_FLAGS = [
 const CAPABILITY_FIELDS = [...CAPABILITY_FLAGS, 'effortLevels'] as const
 
 type EntryResult = { ok: true; entry: ModelEntry } | { ok: false; problem: string }
+type PricingResult = { ok: true; pricing: ModelPricing } | { ok: false; problem: string }
+type PriceChangesResult = { ok: true; changes: PriceChange[] } | { ok: false; problem: string }
+
+/** Checks four list prices (`where` names them in the problem) and returns a clean copy. */
+function parsePricing(pricing: unknown, where: string): PricingResult {
+  const bad = (problem: string): PricingResult => ({ ok: false, problem })
+  if (!isFields(pricing) || fieldProblem(pricing, PRICING_FIELDS) !== null) {
+    return bad(`${where} must have exactly ${quoted(PRICING_FIELDS)}`)
+  }
+  const { inputPerMTok, cacheReadPerMTok, cacheWritePerMTok, outputPerMTok } = pricing
+  if (
+    !isPrice(inputPerMTok) ||
+    !isPrice(cacheReadPerMTok) ||
+    !isPrice(cacheWritePerMTok) ||
+    !isPrice(outputPerMTok)
+  ) {
+    // (the words for the entry's own prices are those of before 17.2; a change's prices are named)
+    return bad(
+      `${where === 'pricing' ? '' : `${where}: `}the prices must be numbers from 0 to 10000 (US dollars per million tokens)`
+    )
+  }
+  // Reading a token back from the cache is never dearer than reading it fresh; a price that says so is a typo, and it would be
+  // counted into every reply's cost (D-030).
+  if (cacheReadPerMTok > inputPerMTok) {
+    return bad(`${where}.cacheReadPerMTok is more than ${where}.inputPerMTok`)
+  }
+  return { ok: true, pricing: { inputPerMTok, cacheReadPerMTok, cacheWritePerMTok, outputPerMTok } }
+}
+
+/** (17.2, D-049) Checks the announced changes of price of one entry: a list of `{ from, pricing }`, each a real day later than the one before. */
+function parsePriceChanges(value: unknown): PriceChangesResult {
+  const bad = (problem: string): PriceChangesResult => ({ ok: false, problem })
+  if (!Array.isArray(value) || value.length > MAX_PRICE_CHANGES) {
+    return bad(
+      `priceChanges must be a list of at most ${MAX_PRICE_CHANGES} changes (empty for none)`
+    )
+  }
+  const changes: PriceChange[] = []
+  for (const [index, item] of (value as unknown[]).entries()) {
+    const where = `priceChanges[${index}]`
+    if (!isFields(item) || fieldProblem(item, PRICE_CHANGE_FIELDS) !== null) {
+      return bad(`${where} must have exactly ${quoted(PRICE_CHANGE_FIELDS)}`)
+    }
+    if (!isCalendarDate(item['from']))
+      return bad(`${where}.from must be a date written like 2026-12-01`)
+    const from = item['from']
+    const last = changes.at(-1)
+    // In order and never twice for one day: the price of a day must be one price, and the file must read the way it is applied.
+    if (last !== undefined && from <= last.from) {
+      return bad(`${where}.from must be a later day than ${last.from}`)
+    }
+    const prices = parsePricing(item['pricing'], `${where}.pricing`)
+    if (!prices.ok) return bad(prices.problem)
+    changes.push({ from, pricing: prices.pricing })
+  }
+  return { ok: true, changes }
+}
+
+/** The calendar day of `at` (milliseconds since 1970) on this computer's clock, written like 2026-12-01: the day that decides a model's prices. */
+export function localDay(at: number): string {
+  const date = new Date(at)
+  const pad = (n: number): string => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
+/**
+ * (17.2, D-049) The list prices of a model at the moment `at`: those of the last announced change whose day has come (on this computer's calendar), else its
+ * own. A request is priced at the prices of the day it is sent; the ledger keeps them with its record, so a later change never alters what was spent.
+ */
+export function pricesOn(
+  entry: Pick<ModelEntry, 'pricing' | 'priceChanges'>,
+  at: number
+): ModelPricing {
+  const day = localDay(at)
+  let prices = entry.pricing
+  for (const change of entry.priceChanges) if (change.from <= day) prices = change.pricing
+  return { ...prices }
+}
+
+/** The next announced change of a model's prices after the day of `at`, or null when none is coming. */
+export function nextPriceChange(
+  entry: Pick<ModelEntry, 'priceChanges'>,
+  at: number
+): PriceChange | null {
+  const day = localDay(at)
+  const next = entry.priceChanges.find((change) => change.from > day)
+  return next === undefined ? null : { from: next.from, pricing: { ...next.pricing } }
+}
+
+/** The entry as it is priced at the moment `at` (`pricesOn`): what a request sent then is counted, limited and asked about with. */
+export function pricedOn(entry: ModelEntry, at: number): ModelEntry {
+  return { ...entry, pricing: pricesOn(entry, at) }
+}
 type CapabilitiesResult =
   { ok: true; capabilities: ModelCapabilities } | { ok: false; problem: string }
 
@@ -257,6 +369,7 @@ function parseEntry(item: unknown): EntryResult {
     contextWindow,
     maxOutputTokens,
     pricing,
+    priceChanges,
     capabilities,
     effort
   } = item
@@ -278,23 +391,10 @@ function parseEntry(item: unknown): EntryResult {
       'maxOutputTokens must be a whole number of tokens, greater than 0 and at most contextWindow'
     )
   }
-  if (!isFields(pricing) || fieldProblem(pricing, PRICING_FIELDS) !== null) {
-    return bad(`pricing must have exactly ${quoted(PRICING_FIELDS)}`)
-  }
-  const { inputPerMTok, cacheReadPerMTok, cacheWritePerMTok, outputPerMTok } = pricing
-  if (
-    !isPrice(inputPerMTok) ||
-    !isPrice(cacheReadPerMTok) ||
-    !isPrice(cacheWritePerMTok) ||
-    !isPrice(outputPerMTok)
-  ) {
-    return bad('the prices must be numbers from 0 to 10000 (US dollars per million tokens)')
-  }
-  // Reading a token back from the cache is never dearer than reading it fresh; a price that says so is a typo, and it would be
-  // counted into every reply's cost (D-030).
-  if (cacheReadPerMTok > inputPerMTok) {
-    return bad('pricing.cacheReadPerMTok is more than pricing.inputPerMTok')
-  }
+  const prices = parsePricing(pricing, 'pricing')
+  if (!prices.ok) return bad(prices.problem)
+  const changes = parsePriceChanges(priceChanges)
+  if (!changes.ok) return bad(changes.problem)
   const parsed = parseCapabilities(capabilities, provider)
   if (!parsed.ok) return bad(parsed.problem)
   const { effortLevels } = parsed.capabilities
@@ -330,7 +430,8 @@ function parseEntry(item: unknown): EntryResult {
       description,
       contextWindow,
       maxOutputTokens,
-      pricing: { inputPerMTok, cacheReadPerMTok, cacheWritePerMTok, outputPerMTok },
+      pricing: prices.pricing,
+      priceChanges: changes.changes,
       capabilities: parsed.capabilities,
       effort
     }
@@ -391,15 +492,19 @@ export function parseRegistry(input: unknown): RegistryResult {
   return { ok: true, registry: { updatedAt, source, defaultModel, models: entries }, problems }
 }
 
-/** What the page is told about a model: what to show, never how it is called (no effort, no limits). */
-export function toModelOption(entry: ModelEntry): ModelOption {
+/**
+ * What the page is told about a model: what to show, never how it is called (no effort, no limits). The prices are today's (17.2), with the next announced
+ * change, if one is coming, so that Settings can say it ("from 1 December 2026: ...").
+ */
+export function toModelOption(entry: ModelEntry, at: number = Date.now()): ModelOption {
   return {
     id: entry.id,
     label: entry.label,
     provider: entry.provider,
     description: entry.description,
     contextWindow: entry.contextWindow,
-    pricing: { ...entry.pricing },
+    pricing: pricesOn(entry, at),
+    priceChange: nextPriceChange(entry, at),
     imageInput: entry.capabilities.imageInput,
     documentInput: entry.capabilities.documentInput
   }

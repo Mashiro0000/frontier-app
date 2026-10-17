@@ -1,0 +1,18 @@
+{
+  "label": "n172-argonDateWrong",
+  "edits": [
+    {
+      "file": "{{REPO}}/registry/models.json",
+      "from": "\"from\": \"2026-12-01\"",
+      "to": "\"from\": \"2026-11-30\""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-2.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

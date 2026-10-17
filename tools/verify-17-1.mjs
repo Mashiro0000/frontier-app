@@ -30,7 +30,7 @@ const source = (rel) => readFileSync(join(REPO, rel), 'utf8')
 const PORT = Number(process.env.GEMINI_TEST_PORT ?? 8899)
 await startMock(PORT)
 const origin = `http://127.0.0.1:${PORT}`
-const KEY = 'AIza' + randomBytes(18).toString('base64url').slice(0, 35)
+const KEY = 'AIza' + randomBytes(27).toString('base64url').slice(0, 35) // the shape of a Google key: 39 characters
 const reset = () => fetch(`${origin}/__reset`, { method: 'POST' })
 const requests = async () => (await (await fetch(`${origin}/__requests`)).json()).filter((r) => r.provider === 'google')
 const tools = (body) => fetch(`${origin}/__tools`, { method: 'POST', body: JSON.stringify(body) })

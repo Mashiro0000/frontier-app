@@ -163,6 +163,7 @@ async function currentStatus(): Promise<SettingsStatus> {
   const registry = getRegistry()
   const rankings = getRankings()
   const choice = await currentModel()
+  const now = Date.now()
   const providers = await Promise.all(
     SUPPORTED_PROVIDERS.map(async (id) => ({
       id,
@@ -175,7 +176,8 @@ async function currentStatus(): Promise<SettingsStatus> {
   return {
     providers,
     canStoreKey: canStoreKey(),
-    models: registry.ok ? registry.registry.models.map(toModelOption) : [],
+    // today's prices, and the next announced change (17.2); one moment for every model of the list
+    models: registry.ok ? registry.registry.models.map((entry) => toModelOption(entry, now)) : [],
     selectedModelId: choice.ok ? choice.entry.id : null,
     modelsError: registry.ok ? null : registry.error,
     modelsCheckedOn: registry.ok ? registry.registry.updatedAt : null,
