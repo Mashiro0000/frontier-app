@@ -248,7 +248,7 @@ try {
   await page.press('Escape')
   await sleep(300)
   const api = await ev(`({ top: Object.keys(window.api).sort(), projects: Object.keys(window.api.projects).sort() })`)
-  check('G: window.api has projects (since 10.5) with exactly addFiles, create, remove, removeAll, removeFile, rename, setInstructions and status', show(api) === show({ top: ['attachments', 'audit', 'changes', 'chat', 'connectors', 'history', 'images', 'instructions', 'memory', 'programs', 'projects', 'settings', 'tools', 'usage', 'voice', 'workspace'], projects: ['addFiles', 'create', 'remove', 'removeAll', 'removeFile', 'rename', 'setInstructions', 'status'] }), show(api))
+  check('G: window.api has projects (since 10.5) with exactly addFiles, create, remove, removeAll, removeFile, rename, setInstructions and status', show(api) === show({ top: ['attachments', 'audit', 'changes', 'chat', 'connectors', 'history', 'images', 'instructions', 'memory', 'programs', 'projects', 'settings', 'tools', 'updates', 'usage', 'voice', 'workspace'], projects: ['addFiles', 'create', 'remove', 'removeAll', 'removeFile', 'rename', 'setInstructions', 'status'] }), show(api))
   const bad = await ev(`Promise.all([window.api.projects.create(5), window.api.projects.rename('x', 'y'), window.api.projects.setInstructions('x', 'y'), window.api.projects.removeFile('x', 'y'), window.api.projects.remove(null)])`)
   check('G: input that is not what main takes is refused, and changes nothing', bad.every((x) => x.ok === false) && (await ev(`window.api.projects.status()`)).projects.length === 1, show(bad))
   const saveBad = await ev(`window.api.history.save({ id: crypto.randomUUID(), messages: [{ role: 'user', content: 'x', status: 'done' }], project: 'not-an-id' })`)

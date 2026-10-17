@@ -728,7 +728,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     documents: keptDocuments([
       everyChat.file,
       memory.file,
-      updateSettings.file, // (D-050) here, where no older check reads two lines side by side
+      updateSettings.file,
       projects.file,
       auditLog.document,
       toolSettings.file,
@@ -738,7 +738,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       voiceSettings.file,
       imageSettings.file,
       imageIndex
-    ]) // rewritten with the chats (D-039, D-041, D-045, D-047, D-048, D-050)
+    ]) // rewritten with the chats (D-039, D-041, D-045, D-047, D-048, D-050: updates.json sits after memory.json, where no older check reads two lines side by side)
   })
 
   ipcMain.handle(

@@ -108,7 +108,10 @@ await guard('D', async () => {
 await guard('E', async () => {
   // the SHA-256 of main's files of before the stage (b8ee65a), as git gave them: the regression runs from a copy with no .git
   const hash = (rel) => createHash('sha256').update(readFileSync(join(REPO, rel)).toString('utf8').replace(/\r\n/g, '\n')).digest('hex')
-  check('E: no new package: package.json and package-lock.json are byte for byte main\'s of before the stage (rule 10)', hash('package.json') === '7d971fabb05583de24eb38abeae3b2ec7c2f7303b50892fdb3e66323eb715d4f' && hash('package-lock.json') === '47ae1caaa4d8628a0500f046d038a00d95110708b15a1f3a34adb8e4eda7a906')
+  // (18.1) package.json's scripts changed (build:mac and build:linux went): the rule is about packages, so its dependencies are compared, and the lock file byte for byte.
+  const pkg = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8'))
+  const deps = createHash('sha256').update(JSON.stringify({ d: pkg.dependencies, dd: pkg.devDependencies })).digest('hex')
+  check('E: no new package: package.json\'s dependencies and package-lock.json are main\'s of before the stage (rule 10)', deps === '4310cf6266fc5398ef3153573104034496f93918c5dee13d71f8c835a70aac5c' && hash('package-lock.json') === '47ae1caaa4d8628a0500f046d038a00d95110708b15a1f3a34adb8e4eda7a906')
   check('E: the window\'s policy (index.html) is unchanged (rule 7)', hash('src/renderer/index.html') === 'f80ed67d49883c8105c73f0b5b502537829b5d35f59145c10418d71133a29a90')
   const gemini = source('src/main/providers/gemini.ts')
   check('E: the adapter logs nothing at all (no console), so it can log no key (rule 5)', !/console\./.test(gemini))

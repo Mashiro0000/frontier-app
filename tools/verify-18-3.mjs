@@ -143,8 +143,10 @@ await guard('F', async () => {
   const config = source('src/main/releaseConfig.ts')
   check('F: this build\'s release key is empty until the owner makes one (release.mjs keygen)', /export const RELEASE_PUBLIC_KEY = ''/.test(config))
   check('F: the releases repository is named', /export const RELEASES_REPO = '[A-Za-z0-9-]+\/[A-Za-z0-9._-]+'/.test(config))
-  const others = ['src/main/ipc.ts', 'src/main/chat.ts', 'src/main/index.ts'].filter((f) => /RELEASE_PUBLIC_KEY/.test(source(f)))
-  check('F: no other file of the reply path reads the key', others.length === 0, show(others))
+  // ipc.ts is where the key is handed to the update service (and, from source only, a test key instead); nothing of the reply path reads it.
+  const others = ['src/main/chat.ts', 'src/main/index.ts', 'src/main/replyTools.ts', 'src/preload/index.ts'].filter((f) => /RELEASE_PUBLIC_KEY/.test(source(f)))
+  check('F: no file of the reply path or the preload reads the key', others.length === 0, show(others))
+  check('F: ipc.ts hands the build\'s key to the update service, a test key only from source', /publicKey: !app\.isPackaged\s*\?\s*\(process\.env\['FRONTIER_UPDATE_KEY'\] \?\? RELEASE_PUBLIC_KEY\)\s*:\s*RELEASE_PUBLIC_KEY/.test(source('src/main/ipc.ts')))
 })
 
 process.exit(check.summary() ? 0 : 1)
