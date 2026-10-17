@@ -14,7 +14,9 @@ export const MAX_REPLY_TOKENS = 16000
 /** What the assistant is called in the system prompt: a model that is told it is someone else answers oddly. */
 const ASSISTANT_NAME: Record<ProviderId, string> = {
   anthropic: 'Claude',
-  openai: 'an AI assistant'
+  openai: 'an AI assistant',
+  // (17.3, D-049) as for OpenAI: the app does not know what Google's models call themselves
+  google: 'an AI assistant'
 }
 
 // The chat window renders Markdown (D-025; until Stage 7 it showed plain text and this said so, D-009). It draws a closed set of

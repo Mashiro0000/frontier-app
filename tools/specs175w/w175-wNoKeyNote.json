@@ -1,0 +1,18 @@
+{
+  "label": "w175-wNoKeyNote",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/ProviderKeySection.tsx",
+      "from": "      {help.note !== undefined && <p className=\"settings-hint settings-key-note\">{help.note}</p>}\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run175.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 1200000
+}

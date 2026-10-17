@@ -1,0 +1,18 @@
+{
+  "label": "n171-altSse",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-gemini.mjs",
+      "from": "    if (url.searchParams.get('alt') !== 'sse') problems.push",
+      "to": "    if (false) problems.push"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n171-blockedHasCandidate",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-gemini.mjs",
+      "from": "emit({ promptFeedback: { blockReason:",
+      "to": "emit({ candidates: [{ content: { parts: [{ text: '' }], role: 'model' }, index: 0 }], promptFeedback: { blockReason:"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-1.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

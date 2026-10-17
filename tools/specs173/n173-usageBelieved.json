@@ -1,0 +1,18 @@
+{
+  "label": "n173-usageBelieved",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "    value <= MAX_TOKEN_COUNT\n    ? value",
+      "to": "    true\n    ? value"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-3.mjs"
+  ],
+  "env": {
+    "ONLY": "F"
+  },
+  "timeoutMs": 300000
+}

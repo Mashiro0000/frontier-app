@@ -1,0 +1,18 @@
+{
+  "label": "n171-authorization",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-gemini.mjs",
+      "from": "    if (req.headers['authorization']) problems.push('an Authorization header was sent: this app sends the key in x-goog-api-key only')\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

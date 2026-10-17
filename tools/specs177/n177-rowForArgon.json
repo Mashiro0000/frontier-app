@@ -1,0 +1,16 @@
+{
+  "label": "n177-rowForArgon",
+  "edits": [
+    {
+      "file": "{{REPO}}/registry/rankings.json",
+      "from": "      \"modelId\": \"gemini-3.8-flash\",",
+      "to": "      \"modelId\": \"gemini-4-argon\","
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

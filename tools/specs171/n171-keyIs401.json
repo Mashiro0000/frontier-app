@@ -1,0 +1,18 @@
+{
+  "label": "n171-keyIs401",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-gemini.mjs",
+      "from": "const invalidKey = err(400, 'INVALID_ARGUMENT', 'API key not valid.",
+      "to": "const invalidKey = err(401, 'UNAUTHENTICATED', 'API key not valid."
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-1.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 300000
+}

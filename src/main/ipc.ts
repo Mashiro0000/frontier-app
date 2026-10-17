@@ -103,7 +103,13 @@ import { getRegistry, reportRegistryProblems } from './registry'
 import { createToolRuntime } from './replyTools'
 import { heldKey, type SavedKey } from './secrets'
 import { isSafeExternalUrl, isTrustedSender } from './security'
-import { createQuestionGate } from './systemQuestion'
+import {
+  createQuestionGate,
+  QUESTION_BUSY,
+  QUESTION_FAILED,
+  QUESTION_RESTING
+} from './systemQuestion'
+import { GOOGLE_KEY_NOT_SAVED, googleKeyQuestion } from './googleKey'
 import { BUILT_IN_TOOLS, createToolRegistry } from './toolRegistry'
 import { createWorkspaceStore, type AvoidPlaces } from './workspace'
 import { createWorkspaceGuard } from './workspaceGuard'
@@ -163,6 +169,7 @@ async function currentStatus(): Promise<SettingsStatus> {
   const registry = getRegistry()
   const rankings = getRankings()
   const choice = await currentModel()
+  const now = Date.now()
   const providers = await Promise.all(
     SUPPORTED_PROVIDERS.map(async (id) => ({
       id,
@@ -175,7 +182,8 @@ async function currentStatus(): Promise<SettingsStatus> {
   return {
     providers,
     canStoreKey: canStoreKey(),
-    models: registry.ok ? registry.registry.models.map(toModelOption) : [],
+    // today's prices, and the next announced change (17.2); one moment for every model of the list
+    models: registry.ok ? registry.registry.models.map((entry) => toModelOption(entry, now)) : [],
     selectedModelId: choice.ok ? choice.entry.id : null,
     modelsError: registry.ok ? null : registry.error,
     modelsCheckedOn: registry.ok ? registry.registry.updatedAt : null,
@@ -224,9 +232,27 @@ export function registerIpc(appUrl: string): () => Promise<void> {
 
   ipcMain.handle(
     CHANNELS.settingsSetApiKey,
-    guarded(async (input: unknown): Promise<SetKeyResult> => {
+    guardedForWindow(async (window, input: unknown): Promise<SetKeyResult> => {
       const check = checkKeySubmission(input) // never trust what the page sends: which provider, and what key
       if (!check.ok) return check
+      // (17.5, D-049) A Google key is saved only after the person's yes in the system's own box, which says what Google does with what is sent on a free key
+      // (the app cannot tell which kind of key it is). Every time: a new key may be of the other kind. The page cannot answer the box.
+      if (check.provider === 'google') {
+        const answer = await questions.ask(window, googleKeyQuestion())
+        if (answer !== 'yes') {
+          return {
+            ok: false,
+            error:
+              answer === 'busy'
+                ? QUESTION_BUSY
+                : answer === 'resting'
+                  ? QUESTION_RESTING
+                  : answer === 'failed'
+                    ? QUESTION_FAILED
+                    : GOOGLE_KEY_NOT_SAVED
+          }
+        }
+      }
       try {
         await saveApiKey(check.provider, check.key)
       } catch (error) {

@@ -1,0 +1,18 @@
+{
+  "label": "n171-additionalProperties",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-gemini.mjs",
+      "from": "const SCHEMA_KEYS = ['type',",
+      "to": "const SCHEMA_KEYS = ['additionalProperties', 'type',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

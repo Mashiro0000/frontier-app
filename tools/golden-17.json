@@ -1,0 +1,3881 @@
+{
+ "requests": {
+  "claude-fable-5-1|one|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 729,
+    "sha256": "8b4ba15627a36e8dff8f78b63d8d944d9502c440182a9df9f135872807ce1849"
+   }
+  ],
+  "claude-fable-5-1|one|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 808,
+    "sha256": "ade283d1eb677e8b8924a181e8cc36e4d42df0434cb419805eeff6ef4e6c268b"
+   }
+  ],
+  "claude-fable-5-1|one|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1291,
+    "sha256": "99716647ca53648571333f8eeb21529a4f82badd024b476beede536e8b38460f"
+   }
+  ],
+  "claude-fable-5-1|turns|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 801,
+    "sha256": "0d2d7a40830167fc7dbb028338351565c87e850b88831a5c80c918dac06e8359"
+   }
+  ],
+  "claude-fable-5-1|turns|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 880,
+    "sha256": "1291238228fc456f51cb3e068756ccce7f8a3ce95ad0966ec3f3ac6768f472b3"
+   }
+  ],
+  "claude-fable-5-1|turns|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1363,
+    "sha256": "850e99c8a82889d79140bdc3b502191833db7ff48e1b5ef9245e8409b4de493a"
+   }
+  ],
+  "claude-fable-5-1|joined|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 724,
+    "sha256": "016c36d8e5a52b482fcf394032419af493289d963f2fa4be42f561ba06139378"
+   }
+  ],
+  "claude-fable-5-1|joined|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 803,
+    "sha256": "4e483f157ab9b8d68ccf84fc86c4d252dee4dd21040706a8f11d78161b3f0768"
+   }
+  ],
+  "claude-fable-5-1|joined|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1286,
+    "sha256": "fb790b5e37e00ff1eb877214714c822e7cd629ea6862d1e18929314f3d659344"
+   }
+  ],
+  "claude-fable-5-1|unicode|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 755,
+    "sha256": "73320927c6d9593c8d01d8fab39a157a9affb795329bad068e6abe28377eac7b"
+   }
+  ],
+  "claude-fable-5-1|unicode|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 834,
+    "sha256": "b8c743315ab3bee317e5cd7ddbfd1863fbaeb9cf3498ebe247a1662a1dca66e7"
+   }
+  ],
+  "claude-fable-5-1|unicode|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1317,
+    "sha256": "0045a397cc1613c572a150d07f8876fda4c6d878f62948bf733165d1226a20d6"
+   }
+  ],
+  "claude-fable-5-1|long|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 24718,
+    "sha256": "4de515424b3db8bad112c1fe9ee03c7700af5fcb27788633d75d20c94494d047"
+   }
+  ],
+  "claude-fable-5-1|long|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 24797,
+    "sha256": "e2693fa4bb8135252b2e788137b84266514b5cfbc7427bba62db460d8f7488e0"
+   }
+  ],
+  "claude-fable-5-1|long|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 25280,
+    "sha256": "3f49f6589d804d82ede3214d84e141b3bb128c31eebb64ee1d1c727e2b5b990c"
+   }
+  ],
+  "claude-fable-5-1|files|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33362,
+    "sha256": "07a96217115b93f5eb2c2abac625c7ccb405259a3d0d49f2358844c398184232"
+   }
+  ],
+  "claude-fable-5-1|files|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33441,
+    "sha256": "ffcd387d3f3713593ca1691f85fca5fa460e5f65ff84e0bd2782c5ed50d478cb"
+   }
+  ],
+  "claude-fable-5-1|files|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33924,
+    "sha256": "9e7b5e5f6c55b12a6ac62bb357ec4e97d3339336d9bc5e8a0b2af683b70aa958"
+   }
+  ],
+  "claude-fable-5-1|onlyfiles|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1028,
+    "sha256": "0c213321855c205d0926742d924aa64e4441c155c624bb7afa58b5e1c27114fe"
+   }
+  ],
+  "claude-fable-5-1|onlyfiles|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1107,
+    "sha256": "3a28fef0d34454f15723b9e648916a1b11e067aeaf57e8f11c8a992589c77839"
+   }
+  ],
+  "claude-fable-5-1|onlyfiles|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1590,
+    "sha256": "b43827aa00c24be5675b672ef24b50a2fa5f008d6a156118bb9411b660fa04ed"
+   }
+  ],
+  "claude-fable-5-1|effort-low": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 728,
+    "sha256": "12cb3212a05c1b64f4929e7faf604f7ad920f3e802d7313df99b28752fb533b0"
+   }
+  ],
+  "claude-fable-5-1|effort-medium": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 731,
+    "sha256": "cdf74b6e264f7f22252b0f36bb21ee3f7a69054a0fa68d3ffdfe5eaafd69b77b"
+   }
+  ],
+  "claude-fable-5-1|effort-high": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 729,
+    "sha256": "8b4ba15627a36e8dff8f78b63d8d944d9502c440182a9df9f135872807ce1849"
+   }
+  ],
+  "claude-fable-5-1|effort-xhigh": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 730,
+    "sha256": "cf37132ddfff1025a32a10dd8be03d6b6bd2ede00e89fbaec7cb351e5373f65f"
+   }
+  ],
+  "claude-fable-5-1|effort-max": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 728,
+    "sha256": "4563437891bbd5a3b3e38436b986bcdfc302e8f835d3e1691538ac63e3e65ac1"
+   }
+  ],
+  "claude-fable-5-1|effort-null": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 695,
+    "sha256": "d2c4d998b7cb361a91f91caf177b10618b34da0423722989206094bb747140e6"
+   }
+  ],
+  "claude-fable-5-1|tool-loop": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1610,
+    "sha256": "60e069c9c3268b162e80acc2736a91f9bdbed994d87b7c2b35a65ebeba7542d7"
+   },
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 2040,
+    "sha256": "9a41a453655c3dcd377404781f797ec1273746f89df48fdf60b9611bfee93be4"
+   }
+  ],
+  "claude-fable-5-1|tool-loop-asked": [
+   {
+    "calls": 1
+   }
+  ],
+  "claude-fable-5-1|search": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 814,
+    "sha256": "e49191360bf99b7ffc70aba8a7e9777039a7d86fc65cf596b977af90cc5f9c45"
+   }
+  ],
+  "claude-opus-5-5|one|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 730,
+    "sha256": "6613d5299e865a055402e931a5637807305a6b64ef8e4ef0003063bde826c2c0"
+   }
+  ],
+  "claude-opus-5-5|one|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 809,
+    "sha256": "18d0abafb238b772c5908d2049513dafa66b51f43224b708e2fe1371e9951579"
+   }
+  ],
+  "claude-opus-5-5|one|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1292,
+    "sha256": "285461f42bdb5418ae63e82c7c26247074cff891feb55f53d27e862fbfac01ff"
+   }
+  ],
+  "claude-opus-5-5|turns|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 802,
+    "sha256": "93cba26695a9e7ed147d2e3bcd879b1eb247eca495e5a08dfbc20cc79be20e2b"
+   }
+  ],
+  "claude-opus-5-5|turns|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 881,
+    "sha256": "184516e1fa682861649b3c008523b9ce5fd5b25d74f965a006995cadfb91618c"
+   }
+  ],
+  "claude-opus-5-5|turns|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1364,
+    "sha256": "3c8311186bd1007c275d0b4424485aafd8044ecaeaf32c380c05d3987fbea5b5"
+   }
+  ],
+  "claude-opus-5-5|joined|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 725,
+    "sha256": "2a70e8b4de6676bedf48c4ce2765475ee54cfb2fec91348baa074e72007f1b8a"
+   }
+  ],
+  "claude-opus-5-5|joined|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 804,
+    "sha256": "b1e8c135c81a262a47ac7727781f813d45eef81eaccf6780aef79ef778e1b9ae"
+   }
+  ],
+  "claude-opus-5-5|joined|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1287,
+    "sha256": "418220417ffdb2469cc9ae9760d7c8e11c1aef31e135d6476b07a139bca891b3"
+   }
+  ],
+  "claude-opus-5-5|unicode|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 756,
+    "sha256": "abf64db0b169851de3a1010e3d4786c5fbdc6ecbed745bb2e186f4cade6aa505"
+   }
+  ],
+  "claude-opus-5-5|unicode|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 835,
+    "sha256": "a73834396c36535333312fe65f95dab11e677d10b90e95c8cc59300b72e00daf"
+   }
+  ],
+  "claude-opus-5-5|unicode|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1318,
+    "sha256": "a7f9df925df73660c93415e23ced22de50997361bb351180c6dbd5a46b1c421f"
+   }
+  ],
+  "claude-opus-5-5|long|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 24719,
+    "sha256": "1fdcb6d61eb95bb15b7cf3703513d39ea2d3ee4a16229345885adb6f24194778"
+   }
+  ],
+  "claude-opus-5-5|long|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 24798,
+    "sha256": "a7bcd8b728334902e705c0bb79cef5b66de196477a183d5ff29d5c83ce8008d1"
+   }
+  ],
+  "claude-opus-5-5|long|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 25281,
+    "sha256": "4c484b39f8bd6307ac8762c1624af81b2cf421a5d33c330fc0af8d170e9a77bc"
+   }
+  ],
+  "claude-opus-5-5|files|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33363,
+    "sha256": "ffc1bc4984699e890f03e177c8abae56fb576e5a61c8dd48aac8222515f8bd8b"
+   }
+  ],
+  "claude-opus-5-5|files|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33442,
+    "sha256": "ea8c320c87e1eeb520abdc82260b96fbede3692b426327f11fea895ecccc96bf"
+   }
+  ],
+  "claude-opus-5-5|files|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33925,
+    "sha256": "75b5980c36892cd482dc29633816da97abaa05b82299edced9c824e473b24178"
+   }
+  ],
+  "claude-opus-5-5|onlyfiles|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1029,
+    "sha256": "a9d21cfd5a8e20659f9cff4f345c540908b80657dd8de38fba10c19cdb2fe1ba"
+   }
+  ],
+  "claude-opus-5-5|onlyfiles|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1108,
+    "sha256": "067c3925a240a8cc8dbcd8f9b97eaf1bfb63724c766b19a4e839141b897d09a4"
+   }
+  ],
+  "claude-opus-5-5|onlyfiles|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1591,
+    "sha256": "ca8318b275864f8d7117473b41bab4fbd2c4a608cfe0b8d7d5cdf5d01b7ec24b"
+   }
+  ],
+  "claude-opus-5-5|effort-low": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 727,
+    "sha256": "beaddffa0e73cad52b477fa7968dfe41a11e2d92a3d54c87e9fa5dc6981ebe13"
+   }
+  ],
+  "claude-opus-5-5|effort-medium": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 730,
+    "sha256": "6613d5299e865a055402e931a5637807305a6b64ef8e4ef0003063bde826c2c0"
+   }
+  ],
+  "claude-opus-5-5|effort-high": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 728,
+    "sha256": "84cd403bdd5a07f1c8cf3b59e07ce1e60fbf01f3c0fa6a18f809217925205814"
+   }
+  ],
+  "claude-opus-5-5|effort-xhigh": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 729,
+    "sha256": "8e405ae15cc667a87df368ba916a6146d0335c9d4e980c9fa1b8f0f1bc8b869d"
+   }
+  ],
+  "claude-opus-5-5|effort-max": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 727,
+    "sha256": "f977bbd68d65589c916fde65ece787b26d549d4b421e95460c8b27bb4e0c49a3"
+   }
+  ],
+  "claude-opus-5-5|effort-null": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 694,
+    "sha256": "1d6065ee4ea5fb0c4df31db1fbf2461cab3886a1d779f77fd3dd97f6099ae3db"
+   }
+  ],
+  "claude-opus-5-5|tool-loop": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1611,
+    "sha256": "7dffbd7a8f5e1242c16a2f4f370094594bd21d5e1c3079976fe9518d17ccc1f8"
+   },
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 2041,
+    "sha256": "b56df20decd57e0107a4c9479fffefbbaa05659d802d375c051dbeb2fb825da8"
+   }
+  ],
+  "claude-opus-5-5|tool-loop-asked": [
+   {
+    "calls": 1
+   }
+  ],
+  "claude-opus-5-5|search": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 815,
+    "sha256": "1542c131d4effc82fe1aed8797f4907bfc4ce71e799c3a3e7b7a59f5f722f29f"
+   }
+  ],
+  "claude-sonnet-5-5|one|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 732,
+    "sha256": "76a0bde02af1a42fe044ae748f28e42030de0c2eae68cb4db77dca7334ed16a6"
+   }
+  ],
+  "claude-sonnet-5-5|one|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 811,
+    "sha256": "cdb57fd195492b109e00ce2339090c44f578ff7f8b4cd9bf4f45ba0b205f6cd7"
+   }
+  ],
+  "claude-sonnet-5-5|one|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1294,
+    "sha256": "99f3b09260b63b744498a24d437f12f83e5886750789835e5e17f022fe724f7e"
+   }
+  ],
+  "claude-sonnet-5-5|turns|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 804,
+    "sha256": "c3b18a933dd3fb7a7ad91d5232c3138401492a2db1f754d9db70014191fba1a5"
+   }
+  ],
+  "claude-sonnet-5-5|turns|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 883,
+    "sha256": "8cef02c9897bf734a6a0a40f3ea286025b4c83b0b361e78f30df57993b5993b6"
+   }
+  ],
+  "claude-sonnet-5-5|turns|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1366,
+    "sha256": "598d7fdd516cb27a78eb6554e6c494930971501339f9878e7a908e2795dbf282"
+   }
+  ],
+  "claude-sonnet-5-5|joined|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 727,
+    "sha256": "8bd5f689855eec63b660d3d9490b46ed28cabc873a926e42f0402fc547acc938"
+   }
+  ],
+  "claude-sonnet-5-5|joined|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 806,
+    "sha256": "857f31e1236846effc10495c1f6d342dbe26a02d11485039ad11ed4bb67d0f00"
+   }
+  ],
+  "claude-sonnet-5-5|joined|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1289,
+    "sha256": "0f18e21a1e34045e85a770b95e5acb26237dc360558791edfa843db8922d7220"
+   }
+  ],
+  "claude-sonnet-5-5|unicode|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 758,
+    "sha256": "6763ab5f34fc2e0bbd05b6d19d86d03561fd7f4874f77db76f3e7bca2961f09b"
+   }
+  ],
+  "claude-sonnet-5-5|unicode|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 837,
+    "sha256": "59050d3461ae51f7002c65023e346b1a6a95b6f5af4106230f487889ff266c31"
+   }
+  ],
+  "claude-sonnet-5-5|unicode|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1320,
+    "sha256": "621682f14742325239f1904da3c765df282dbe13901f748b80286fe217dc361e"
+   }
+  ],
+  "claude-sonnet-5-5|long|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 24721,
+    "sha256": "2bb1c0325aea86d396c82b5ab699002ceb41722dc1f285762df4f915c4fda7f2"
+   }
+  ],
+  "claude-sonnet-5-5|long|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 24800,
+    "sha256": "cdff37838d21cb7b55ffef761bee0686ac20094c02329aac81639871b8fe60dc"
+   }
+  ],
+  "claude-sonnet-5-5|long|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 25283,
+    "sha256": "ecd360ea5760a86852a71904f0fdcde6240cb1dfb33a4d263fc826e0078316f1"
+   }
+  ],
+  "claude-sonnet-5-5|files|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33365,
+    "sha256": "14939abca6f72f32f8c67084f295b48e2c46c5e48fe078638342ccb5fc5b7e74"
+   }
+  ],
+  "claude-sonnet-5-5|files|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33444,
+    "sha256": "a09b12ed829ebbfbb5d50a6ab81f09ec250caa165a43f9228f00a3e312380590"
+   }
+  ],
+  "claude-sonnet-5-5|files|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33927,
+    "sha256": "dc74fcb9a1a566d8843017170d4c013a93fdec6bf6e214d80f52261c6b5a5c3f"
+   }
+  ],
+  "claude-sonnet-5-5|onlyfiles|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1031,
+    "sha256": "806a73e3553f54825e61ae7b635e55fda64d1bd9677b7db8009f23c98c99b26f"
+   }
+  ],
+  "claude-sonnet-5-5|onlyfiles|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1110,
+    "sha256": "30aaae489a5f1d146c6933e63acadac50e78fd65374fa6aa8942f102de39b553"
+   }
+  ],
+  "claude-sonnet-5-5|onlyfiles|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1593,
+    "sha256": "9b1921ed54ca3b717b2b5db1f9513a032ec0190431e5e09ca299a57bcd52e2aa"
+   }
+  ],
+  "claude-sonnet-5-5|effort-low": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 729,
+    "sha256": "1b8ea5850ed18c26ed1ec3556226d1a33c5317a64e3356882917a2f0d1008d9d"
+   }
+  ],
+  "claude-sonnet-5-5|effort-medium": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 732,
+    "sha256": "76a0bde02af1a42fe044ae748f28e42030de0c2eae68cb4db77dca7334ed16a6"
+   }
+  ],
+  "claude-sonnet-5-5|effort-high": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 730,
+    "sha256": "4239a69114326afca2a693879a0d9a3951995a229672c7627603d047cb40104a"
+   }
+  ],
+  "claude-sonnet-5-5|effort-xhigh": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 731,
+    "sha256": "d3f5e67030158e6dad04410270ed2cfd7c3137887e19a7d8adf15604026f138e"
+   }
+  ],
+  "claude-sonnet-5-5|effort-max": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 729,
+    "sha256": "cd0522f610ed785ee8a552727b8efe2711a2a6bee15a21bc45a420206018c695"
+   }
+  ],
+  "claude-sonnet-5-5|effort-null": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 696,
+    "sha256": "1981254ed414b3c5742a296c84c8c44caedca5f7dfad5767f13d5337247cfde6"
+   }
+  ],
+  "claude-sonnet-5-5|tool-loop": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1613,
+    "sha256": "86ee975030b0919fd0efe5dfe8e47e05205509d24e915ab2e9ee8c4c93736fd1"
+   },
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 2043,
+    "sha256": "1bd8dc39a09c3b95d611367ad4a7a5c5b45dee59aa8f2ad0411ce0c9cb1820c3"
+   }
+  ],
+  "claude-sonnet-5-5|tool-loop-asked": [
+   {
+    "calls": 1
+   }
+  ],
+  "claude-sonnet-5-5|search": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 817,
+    "sha256": "8da4b83a2153d07bd20e1a6a6ea2932acef03abd26782d0d4a1cb751f10a6463"
+   }
+  ],
+  "claude-haiku-4-5-20251001|one|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 704,
+    "sha256": "46ad1f9f24ed5b79ec127c3d7b8a44a56477865ef304039735f1dde952da5c33"
+   }
+  ],
+  "claude-haiku-4-5-20251001|one|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 783,
+    "sha256": "5dce6bb33e3f6eaa83f32f69f97b77cd8e77fb9442f6aba2955d751c8cf17841"
+   }
+  ],
+  "claude-haiku-4-5-20251001|one|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1266,
+    "sha256": "a9981bd704e8ea669075315276d9d82f0983c230c0cdfde3b12b529db1122ca2"
+   }
+  ],
+  "claude-haiku-4-5-20251001|turns|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 776,
+    "sha256": "2d39f32fadb352747cb9549522d8338a0fb8d7c9b1bad4d6faf37d7b1f881e46"
+   }
+  ],
+  "claude-haiku-4-5-20251001|turns|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 855,
+    "sha256": "85f7e619181ae42df347a09de570bf83c24446c9fc664b06797a897045a42a9c"
+   }
+  ],
+  "claude-haiku-4-5-20251001|turns|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1338,
+    "sha256": "52edce8bfb102543d1febd07c597b06fdc88f494ce129e93577b4262804e128f"
+   }
+  ],
+  "claude-haiku-4-5-20251001|joined|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 699,
+    "sha256": "05a2e76046fed534a5d71dabf97a595a062ecddddcdc057ffc9e1cc1f5d1df5d"
+   }
+  ],
+  "claude-haiku-4-5-20251001|joined|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 778,
+    "sha256": "2f807b3b8e6a7018901b46c0ff9bc4650cc212c80b5cd44a9f43786c8ccd8cd9"
+   }
+  ],
+  "claude-haiku-4-5-20251001|joined|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1261,
+    "sha256": "d8cf60498577b557da11f3bb0a2c2d55ef4cca6e2472358c96502e013f812a37"
+   }
+  ],
+  "claude-haiku-4-5-20251001|unicode|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 730,
+    "sha256": "e720f02ab8662fd13e924011b79a0b19837e2395f98dec1e94fadb6d5688d8e2"
+   }
+  ],
+  "claude-haiku-4-5-20251001|unicode|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 809,
+    "sha256": "7968e6b5e918a27e5b50a8aa2c70a8bcb1c135abba39f44fd17fc4f0e35b64f0"
+   }
+  ],
+  "claude-haiku-4-5-20251001|unicode|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1292,
+    "sha256": "ca95dc5d3f80c8186a98b82e79340c44a63c0120d38e9b8cd5f5d924088f09c4"
+   }
+  ],
+  "claude-haiku-4-5-20251001|long|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 24693,
+    "sha256": "ae7116fa824b4e4f48fd716f89911faaafba8bfb2e678761c6a0438a3c593eab"
+   }
+  ],
+  "claude-haiku-4-5-20251001|long|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 24772,
+    "sha256": "36c68bbd8a9d20cc4f49ec811174a20a9d2527002aa3066985893b0491772784"
+   }
+  ],
+  "claude-haiku-4-5-20251001|long|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 25255,
+    "sha256": "8d2c1b1e01ed3b21e9e43d5402bfa0550a70e268ff39b7bf08b41bf420c1d23e"
+   }
+  ],
+  "claude-haiku-4-5-20251001|files|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33337,
+    "sha256": "ef910e24775bc5cd69d1db43f86c3479889a0eecaa19fd3caccf6195c53134c5"
+   }
+  ],
+  "claude-haiku-4-5-20251001|files|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33416,
+    "sha256": "b800ecfdb3918d3d00756a4453275614a56bdec8c0f6417640129badb11e26a0"
+   }
+  ],
+  "claude-haiku-4-5-20251001|files|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33899,
+    "sha256": "9fa1b9931cf4dde614d4c524dcb4e6ef02bee6c281052f314420ebf82c9b4e18"
+   }
+  ],
+  "claude-haiku-4-5-20251001|onlyfiles|plain": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1003,
+    "sha256": "6917446aa9636bac486a05b820d76f5de56e660169a8a9a070f01b8e428b603e"
+   }
+  ],
+  "claude-haiku-4-5-20251001|onlyfiles|instr": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1082,
+    "sha256": "eda68453d480fbe2351ec693b5ac30e482402634293d2e4dc770764ff71215cb"
+   }
+  ],
+  "claude-haiku-4-5-20251001|onlyfiles|all": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1565,
+    "sha256": "e558ca899a79be02c5aa1d4fb2f3ee26af1558e9b05ca723927fc1e4958777bd"
+   }
+  ],
+  "claude-haiku-4-5-20251001|effort-null": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 704,
+    "sha256": "46ad1f9f24ed5b79ec127c3d7b8a44a56477865ef304039735f1dde952da5c33"
+   }
+  ],
+  "claude-haiku-4-5-20251001|tool-loop": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1585,
+    "sha256": "676c8b037fd019cd4fb7ae715f41bc276b884d56e848e70efb30070d13e4e7c7"
+   },
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1958,
+    "sha256": "acd48b677c3e4d6145cdd64556101921613b49887fc7df0e06f3007a0ed27e2a"
+   }
+  ],
+  "claude-haiku-4-5-20251001|tool-loop-asked": [
+   {
+    "calls": 1
+   }
+  ],
+  "claude-haiku-4-5-20251001|search": [
+   {
+    "url": "/v1/messages",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 789,
+    "sha256": "f7f70220d1aece7ee5817a1d2e1c1bff67216af79a80c58be92a42bd5081634c"
+   }
+  ],
+  "gpt-6-astra|one|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 718,
+    "sha256": "24c0c653cf90a2202253cddb8d8318ed6f87f345c267deb94d287acc622a62c8"
+   }
+  ],
+  "gpt-6-astra|one|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 797,
+    "sha256": "eea79d762e4f524ab7653aad3bd37c15a5247ae93743291f8b332df037236eab"
+   }
+  ],
+  "gpt-6-astra|one|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1280,
+    "sha256": "f6e6b964fb082f8e592037bd079cf68142188afd243a8c978ff7712d70be4700"
+   }
+  ],
+  "gpt-6-astra|turns|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 790,
+    "sha256": "89e0f0e71f043cc766049889d6a85aaecfc753772789db0f344baa36ea919af8"
+   }
+  ],
+  "gpt-6-astra|turns|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 869,
+    "sha256": "65dc46e90302c04f8d6499de0825c8a63bad563fc1cc23678b215947f07b4740"
+   }
+  ],
+  "gpt-6-astra|turns|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1352,
+    "sha256": "d22e7c219d01c540f673ec8d9a60e20ff307ce9441f0c63c7c2cfe4d90a02f60"
+   }
+  ],
+  "gpt-6-astra|joined|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 713,
+    "sha256": "3bc3fbde9a5c79f5806ff760348df235ac42580241f51aba82e973ab57b0f608"
+   }
+  ],
+  "gpt-6-astra|joined|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 792,
+    "sha256": "9c47eecc7e52c3911472f6c0ac61401c0c24d66294b3ab4508d6b75a6b3db7f8"
+   }
+  ],
+  "gpt-6-astra|joined|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1275,
+    "sha256": "4a569d34881ac32a4e89c41c4bfb959c58c82c3e131bf09c8d4a82dd2b555df0"
+   }
+  ],
+  "gpt-6-astra|unicode|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 744,
+    "sha256": "0907e1d73820f58d96945e471bfd2188f5bae85b1384650793384fd0d8cb84b7"
+   }
+  ],
+  "gpt-6-astra|unicode|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 823,
+    "sha256": "4e37c6b87a3a7976a051f01607653fd6e6753ad22c300f664612aa1451d004d2"
+   }
+  ],
+  "gpt-6-astra|unicode|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1306,
+    "sha256": "395b570f072795240d51b8f9bae1dc54ec431a61dbcb8a8ec91f05cd86373c63"
+   }
+  ],
+  "gpt-6-astra|long|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 24707,
+    "sha256": "e04194d16bcd5c5fcf20f0d3bc5fdd5688a7f90ffb8715f09d8549438dc6e0f0"
+   }
+  ],
+  "gpt-6-astra|long|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 24786,
+    "sha256": "71558a3a72b1305b40f3edfc080b2533676edacc4c6078a2729164e258fe8e12"
+   }
+  ],
+  "gpt-6-astra|long|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 25269,
+    "sha256": "69ef20c157f053393b78db38ea1bbb826e12062cb4745811481e28b36f257fb9"
+   }
+  ],
+  "gpt-6-astra|files|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33333,
+    "sha256": "2842778898ab781fb6f30ad9fdd1fa98edfa39a92efcf30fc2e279a4be4f8240"
+   }
+  ],
+  "gpt-6-astra|files|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33412,
+    "sha256": "3435fc495ca47a486484afe5dd193148fa28c5800adf1ae83fd1f13ae8cbed28"
+   }
+  ],
+  "gpt-6-astra|files|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33895,
+    "sha256": "c07b1526817c3fdc9c7cc6d12257b9c595e9c03a9458a9a93752aec19d77ab98"
+   }
+  ],
+  "gpt-6-astra|onlyfiles|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1014,
+    "sha256": "de23e4b4ae3329508f578a0b0ba7015eb017090ee7e60b9d13af60784cda877e"
+   }
+  ],
+  "gpt-6-astra|onlyfiles|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1093,
+    "sha256": "d4d556708b24fcf2c9882d46f55fe1d32c69d89076e67ffd8c5d19f37352637f"
+   }
+  ],
+  "gpt-6-astra|onlyfiles|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1576,
+    "sha256": "94dc52057eeef6da0f67b8d2fb4e50daba7757381554ebf015841d38171dbbb6"
+   }
+  ],
+  "gpt-6-astra|effort-low": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 715,
+    "sha256": "1aea35bb2d2f361f50907be110fd0568cd483a241d91b475c92af6fdcf1cfc8e"
+   }
+  ],
+  "gpt-6-astra|effort-medium": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 718,
+    "sha256": "24c0c653cf90a2202253cddb8d8318ed6f87f345c267deb94d287acc622a62c8"
+   }
+  ],
+  "gpt-6-astra|effort-high": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 716,
+    "sha256": "cffdf73ae6a66eb19f7733c425998c29cb3cd2139763d4d546c6e73c8bdd2b2e"
+   }
+  ],
+  "gpt-6-astra|effort-xhigh": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 717,
+    "sha256": "0927c0a179ceb47eb1d2ee1e876119c712544953f20341e13fb067adcf54892f"
+   }
+  ],
+  "gpt-6-astra|effort-max": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 715,
+    "sha256": "7a9768f2a486bb34cea8a7bd09c0b773ec01b062b2c700e1044160bd19b992bf"
+   }
+  ],
+  "gpt-6-astra|effort-null": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 686,
+    "sha256": "5c9f6f46314b131b13aa4697f12327f61e5453bd3f831f0dc33c0dbbfe4042f2"
+   }
+  ],
+  "gpt-6-astra|tool-loop": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1637,
+    "sha256": "cdcd2d042b4131deb7d200607f3c95b202dabc42fc07b3b62017cdd312cc57b4"
+   },
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 2209,
+    "sha256": "8cee467dd3c5efdda2a88dfec2479737fdf9021c59abb26299075d88f44c0e2c"
+   }
+  ],
+  "gpt-6-astra|tool-loop-asked": [
+   {
+    "calls": 1
+   }
+  ],
+  "gpt-6-astra|search": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 881,
+    "sha256": "ad3c3bfa5d9fb7d50e15eae815d0c708f4c9767265d4c563a5a052263104f03a"
+   }
+  ],
+  "gpt-6.1-sol|one|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 718,
+    "sha256": "1e7ce398d23967da109c38dbf02cda27e9b58808e9ae1959717e87eb37fcda85"
+   }
+  ],
+  "gpt-6.1-sol|one|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 797,
+    "sha256": "7f34cf3043b5570926b80cec6b51806621b0841b5b3bd4f097d84aa7ae301885"
+   }
+  ],
+  "gpt-6.1-sol|one|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1280,
+    "sha256": "d7f9f6c5ee9c988541dc02123f22c3e56edb67f16966ca8c647eb651aabf9263"
+   }
+  ],
+  "gpt-6.1-sol|turns|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 790,
+    "sha256": "56a24e2f33eb3ce79c4def6516889290ccb3e2bb1b6dadee0c0677ada23adf00"
+   }
+  ],
+  "gpt-6.1-sol|turns|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 869,
+    "sha256": "54b68eaf7512620ea92bfb69b6e7b63a078a65cd2747598160b5e7c06e41a334"
+   }
+  ],
+  "gpt-6.1-sol|turns|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1352,
+    "sha256": "91c20f026d99a0ea2b2c11d52ce0f4fa42b361a34aab63287f866172e8be4dbe"
+   }
+  ],
+  "gpt-6.1-sol|joined|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 713,
+    "sha256": "9ff1bbcf49bf3dd71dfc0e133331b869adf2d922d25ce3d331d81252461eef38"
+   }
+  ],
+  "gpt-6.1-sol|joined|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 792,
+    "sha256": "0e2885ae323370294721d05732240b7c32e72a3807038ed9b0887facd2604a5f"
+   }
+  ],
+  "gpt-6.1-sol|joined|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1275,
+    "sha256": "d0146fef749fc6eea613af444b8e7c6d7ed12ea12656d3df8f735fddac2dca25"
+   }
+  ],
+  "gpt-6.1-sol|unicode|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 744,
+    "sha256": "d25893ea683003378c46c74d1270be84139b2fec6ac841833ce68cbd6058ec30"
+   }
+  ],
+  "gpt-6.1-sol|unicode|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 823,
+    "sha256": "74523e35f9ed18bd6b2423aafa1e6fdc217c5fa058842343dc7b682037382482"
+   }
+  ],
+  "gpt-6.1-sol|unicode|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1306,
+    "sha256": "38f27c5329b2fe2fb18be2a1079a5eb612aa090fb26633c9f3f7eeabb1ab1d06"
+   }
+  ],
+  "gpt-6.1-sol|long|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 24707,
+    "sha256": "3553381533d03b2184b67726152fc65935945f90fa222177b3360cf5e44e17e9"
+   }
+  ],
+  "gpt-6.1-sol|long|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 24786,
+    "sha256": "95a27097018d75f5632bb15475b0853fe6061f4fa7262449f61dee84e1d58088"
+   }
+  ],
+  "gpt-6.1-sol|long|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 25269,
+    "sha256": "1b6c4cfff1fc1cc51e885516c1b05d362c7b5c3118ab3038c6c8d22f26f461ee"
+   }
+  ],
+  "gpt-6.1-sol|files|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33333,
+    "sha256": "db10018f474b1a8ed92d8be44d45d01e32e448f56bec36ade8aa31fa22ebbfa0"
+   }
+  ],
+  "gpt-6.1-sol|files|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33412,
+    "sha256": "94592d15813f8cf4cc44bdc7f7c5453a1aa862d7b33b10a5b334e14be6dcfe6c"
+   }
+  ],
+  "gpt-6.1-sol|files|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33895,
+    "sha256": "9bf334f030c1554b4d14b00a755baebe81121c143d09ab9050d8b04d33b9a7b5"
+   }
+  ],
+  "gpt-6.1-sol|onlyfiles|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1014,
+    "sha256": "1fe68825aaee6afa545570937832b6861a78b592d8db92a42c8ddc3de6d8d9d4"
+   }
+  ],
+  "gpt-6.1-sol|onlyfiles|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1093,
+    "sha256": "38b9c317d4681c8b2818c6e0376922d3665c919c76e37d9b81185a743467734f"
+   }
+  ],
+  "gpt-6.1-sol|onlyfiles|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1576,
+    "sha256": "0bde5fea352b25c47544f8fb847e77fe4257260c1528196db7524f0626f125c6"
+   }
+  ],
+  "gpt-6.1-sol|effort-low": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 715,
+    "sha256": "d1132aa06ec8d9512c34ae2de9ca6d9b630f592042adaa92955a9218a835f5a3"
+   }
+  ],
+  "gpt-6.1-sol|effort-medium": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 718,
+    "sha256": "1e7ce398d23967da109c38dbf02cda27e9b58808e9ae1959717e87eb37fcda85"
+   }
+  ],
+  "gpt-6.1-sol|effort-high": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 716,
+    "sha256": "cdd4475d15fd857eda374e4a43baf2b03335e44016880b29958d711b68336140"
+   }
+  ],
+  "gpt-6.1-sol|effort-xhigh": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 717,
+    "sha256": "c1ae11fb8c3b95790b88028bc81c6b36a84c6c3f8261fa9e7d551700b5e35588"
+   }
+  ],
+  "gpt-6.1-sol|effort-max": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 715,
+    "sha256": "113f9cf8d6a29e5089890dff8af1b4427bac0a8a43517526a80cacd91c2cb63a"
+   }
+  ],
+  "gpt-6.1-sol|effort-null": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 686,
+    "sha256": "c314a9fb381c5691f1899d7548ac9d9ac9353b599c895946af580db086e8356d"
+   }
+  ],
+  "gpt-6.1-sol|tool-loop": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1637,
+    "sha256": "5e4558658ae9985d3548f04e44b5bb4ae8cc7c646e819011ed8b714467c5b7d1"
+   },
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 2209,
+    "sha256": "1cc3eed94a08fda883f642acad8901980760949492f3be1a6000cfd44b22a587"
+   }
+  ],
+  "gpt-6.1-sol|tool-loop-asked": [
+   {
+    "calls": 1
+   }
+  ],
+  "gpt-6.1-sol|search": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 881,
+    "sha256": "2ac6fa4d6110fd0b86df3d33960010b055581dda309bb48aa87191a4b0d0a6fc"
+   }
+  ],
+  "gpt-6-luna|one|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 717,
+    "sha256": "04719c54316984b62ec14ccaa4e8740a3a2c1dec5bb46809631ac7593afd69f7"
+   }
+  ],
+  "gpt-6-luna|one|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 796,
+    "sha256": "b995df5a1c3be009f7b266902013fe36b17c3dcad292268d8c8b1941544f518d"
+   }
+  ],
+  "gpt-6-luna|one|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1279,
+    "sha256": "0104947e1db4501cc4b0cb8b6a760b23126c7021e414aa29830a11d6cf858443"
+   }
+  ],
+  "gpt-6-luna|turns|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 789,
+    "sha256": "4670ff4c25408674957d04a6a07d2c13b50da080dd6a0e74f27503db3c619aed"
+   }
+  ],
+  "gpt-6-luna|turns|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 868,
+    "sha256": "82c688c69dc3db0c88e1a4cac79963c9ad55745749225fef606779332103c639"
+   }
+  ],
+  "gpt-6-luna|turns|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1351,
+    "sha256": "539e4057707fbcff67d1a87c44cd94b239111d8f2009c79bdd275753202a51f2"
+   }
+  ],
+  "gpt-6-luna|joined|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 712,
+    "sha256": "8df77473a443908eae51016a4356c3bc3edcec53df6f264268f897e3f6e189e2"
+   }
+  ],
+  "gpt-6-luna|joined|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 791,
+    "sha256": "d1b37614721197078fdea6bc7dca31b2dfdb8f293056d5fb4f4749785b2cd1b2"
+   }
+  ],
+  "gpt-6-luna|joined|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1274,
+    "sha256": "2e3e493f0d600474665815edafdf5c861221c707bcc2c181582fa9d24ff4b2d8"
+   }
+  ],
+  "gpt-6-luna|unicode|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 743,
+    "sha256": "4f14970ed1d6e9a7d9d496cb7bf15c977e4447a916baab92ab1a720b29cc309e"
+   }
+  ],
+  "gpt-6-luna|unicode|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 822,
+    "sha256": "8b6b7e6ea2ab375a9f1e531497278be88786e0697034e47926491a32b170858b"
+   }
+  ],
+  "gpt-6-luna|unicode|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1305,
+    "sha256": "46e941d3aae116e9b172ce8cda76424bb05d9212e942bb6faacc98ab2ba55f5e"
+   }
+  ],
+  "gpt-6-luna|long|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 24706,
+    "sha256": "84e1e2cecd6ac0e65cd08145614606ac69ff461f5113ffa8f287473ee8205f6e"
+   }
+  ],
+  "gpt-6-luna|long|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 24785,
+    "sha256": "c13460816a570ec49c37f04a95e3af41573bac8256df592868dc3841b258d428"
+   }
+  ],
+  "gpt-6-luna|long|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 25268,
+    "sha256": "34184c0067ed3ca536a936f15af949d193716ce1af65ef4eb3034007d2ee466c"
+   }
+  ],
+  "gpt-6-luna|files|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33332,
+    "sha256": "71d5c5b23a94f9f4b505cac3eb349f0a72e849cc96c6bda2cda18222689eaa4b"
+   }
+  ],
+  "gpt-6-luna|files|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33411,
+    "sha256": "17f2a6696eef853d110ca727ae720c7ac9654eb4e392f4cdb5bc9babbfbb9777"
+   }
+  ],
+  "gpt-6-luna|files|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 33894,
+    "sha256": "925889a29f3c4a6d11a27d41611ed7e260ad5f994547d8c0a218171f25ab625b"
+   }
+  ],
+  "gpt-6-luna|onlyfiles|plain": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1013,
+    "sha256": "a514ab09fba5e690fc3a29e9a31c4c3c218a6c81b48f3b721f5cbc309d2677e1"
+   }
+  ],
+  "gpt-6-luna|onlyfiles|instr": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1092,
+    "sha256": "44bc4c361331c1bf12a08be2d6c63b7e4ebfe24eb4bd617ed9f3abc55155bcec"
+   }
+  ],
+  "gpt-6-luna|onlyfiles|all": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1575,
+    "sha256": "8e2c61e99238d2fd7128013fd20abf201bad77aac90525bb6a4f150c75a3554a"
+   }
+  ],
+  "gpt-6-luna|effort-none": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 715,
+    "sha256": "6bf0b06404e80921e291394926b1fa737704028c589fe012e83edacb9031578c"
+   }
+  ],
+  "gpt-6-luna|effort-low": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 714,
+    "sha256": "26dd1698eeb97bfdfe069967539735a9cb799eae051cf1e654985f5a6df093b7"
+   }
+  ],
+  "gpt-6-luna|effort-medium": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 717,
+    "sha256": "04719c54316984b62ec14ccaa4e8740a3a2c1dec5bb46809631ac7593afd69f7"
+   }
+  ],
+  "gpt-6-luna|effort-high": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 715,
+    "sha256": "63701a2c63035679cc9a8157f326ce6aefc32842617b407be44fda4e7b983cbb"
+   }
+  ],
+  "gpt-6-luna|effort-xhigh": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 716,
+    "sha256": "45576c8edcc6cea3f78809e485d9177dcd1602861c10cf7b0f7737e7264eb875"
+   }
+  ],
+  "gpt-6-luna|effort-max": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 714,
+    "sha256": "f3e4fcb7e8bee56ceafcfce2026d22647e70915db60dbc203056b658f9c7f9e7"
+   }
+  ],
+  "gpt-6-luna|effort-null": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 685,
+    "sha256": "8b3749cca6990341b6f598c90627f985b4080058d44b219d9ed021e71e5be49c"
+   }
+  ],
+  "gpt-6-luna|tool-loop": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 1636,
+    "sha256": "0cb2d215558155a63cf22281f46999d7062206636f20468e8f56c74350ddebe6"
+   },
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 2208,
+    "sha256": "c0347f6c3a2f79d6b8127a32f4c4fe0709fb7578b903e1eaa28cf6d1e4ad040f"
+   }
+  ],
+  "gpt-6-luna|tool-loop-asked": [
+   {
+    "calls": 1
+   }
+  ],
+  "gpt-6-luna|search": [
+   {
+    "url": "/v1/responses",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "content-type": "application/json",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0",
+     "x-stainless-helper-method": "stream"
+    },
+    "length": 880,
+    "sha256": "daf866a05761d154fce7397d2dcb91831fa02b668ce222da039c2bf9c3a3ef45"
+   }
+  ],
+  "anthropic|listing": [
+   {
+    "url": "/v1/models?limit=1000",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "anthropic-version": "2023-06-01",
+     "connection": "keep-alive",
+     "sec-fetch-mode": "cors",
+     "user-agent": "Anthropic/JS 0.130.0",
+     "x-api-key": "test-golden-17-key-0123456789abcdef0123456789"
+    },
+    "length": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+   }
+  ],
+  "openai|listing": [
+   {
+    "url": "/v1/models",
+    "headers": {
+     "accept": "application/json",
+     "accept-encoding": "gzip, deflate",
+     "accept-language": "*",
+     "authorization": "Bearer test-golden-17-key-0123456789abcdef0123456789",
+     "connection": "keep-alive",
+     "sec-fetch-mode": "cors",
+     "user-agent": "OpenAI/JS 7.25.0"
+    },
+    "length": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+   }
+  ]
+ }
+}

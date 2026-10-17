@@ -1,0 +1,16 @@
+{
+  "label": "n175-noFreeTierWords",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/googleKey.ts",
+      "from": "      'On a free (unbilled) key, Google uses what you send to improve its products, and people at Google may read it. On a billed key it does not (Google keeps it for a limited time, to look for abuse). The app cannot tell which kind of key this is, and sends nothing to find out.',\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n171-minimalLevel",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-gemini.mjs",
+      "from": "if ('thinkingLevel' in t && spec && !spec.levels.includes(t.thinkingLevel))",
+      "to": "if ('thinkingLevel' in t && spec && false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

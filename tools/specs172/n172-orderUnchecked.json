@@ -1,0 +1,18 @@
+{
+  "label": "n172-orderUnchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/registry.ts",
+      "from": "if (last !== undefined && from <= last.from) {",
+      "to": "if (last !== undefined && from < last.from) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

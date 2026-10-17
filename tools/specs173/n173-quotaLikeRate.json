@@ -1,0 +1,18 @@
+{
+  "label": "n173-quotaLikeRate",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "    details.some((d) => String(d['@type']).endsWith('google.rpc.QuotaFailure')) ||",
+      "to": "    false &&"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-3.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

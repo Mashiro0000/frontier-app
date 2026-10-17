@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/replyTools.ts",
-      "from": "const found = await input.search(String(args.query), context.signal)",
-      "to": "const found = await input.search(String(args.query), context.signal); void fetch('https://example.invalid/')"
+      "from": "const found = await search(String(args.query), context.signal)",
+      "to": "const found = await search(String(args.query), context.signal); void fetch('https://example.invalid/')"
     }
   ],
   "argv": [

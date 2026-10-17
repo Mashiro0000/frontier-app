@@ -60,9 +60,10 @@ export interface ReplyToolsInput {
   affordable?: () => Promise<boolean>
   /**
    * Runs ONE web search for the approved words and answers with what the provider found. It counts the request (the ledger, the limits) and throws
-   * when it cannot be made or fails; the core turns a throw into "the tool failed".
+   * when it cannot be made or fails; the core turns a throw into "the tool failed". (17.4, D-049) Absent for a provider whose hosted search the app does
+   * not use (Google): the web search is then switched off for this reply, so it is never offered, and a call of it is refused like any tool that is off.
    */
-  search: (query: string, signal: AbortSignal) => Promise<SearchResult>
+  search?: (query: string, signal: AbortSignal) => Promise<SearchResult>
   /** Told of every event of a call after it was recorded, in order (the window shows the activity from these). Its faults are not the call's. */
   onEvent?: (event: ToolEvent) => void
   /**
@@ -236,9 +237,15 @@ export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
           if (run !== undefined && def.id.includes('__')) connectorExecutors[def.id] = run
         }
       }
+      // (17.4, D-049) With no search to run (a provider whose hosted search the app does not use), the web search is off for this reply whatever the settings say.
+      const search = input.search
+      const forThisReply = (settings: ToolSettings): ToolSettings =>
+        search === undefined
+          ? { ...settings, enabled: { ...settings.enabled, web_search: false } }
+          : settings
       const core = createToolCore({
         tools,
-        settings: () => current,
+        settings: () => forThisReply(current),
         gate: options.gate,
         guard: options.guard,
         record: async (event) => {
@@ -257,7 +264,9 @@ export function createToolRuntime(options: ToolRuntimeOptions): ToolRuntime {
           ...fileExecutors,
           ...(program === undefined ? {} : { run_program: program.executor }),
           web_search: async (args, context) => {
-            const found = await input.search(String(args.query), context.signal)
+            // never reached without a search: the tool is off for this reply (above), and the core refuses a tool that is off before it runs anything
+            if (search === undefined) throw new Error('no web search for this provider')
+            const found = await search(String(args.query), context.signal)
             const note = found.end === 'done' ? '' : `\n\n${UNFINISHED[found.end]}`
             return {
               text: `${found.text}${note}`,

@@ -57,7 +57,7 @@ const win = {
   'w71-choosing-a-model-drops-the-efforts': { script: 'verify-7-1w.mjs', edits: [[MODELS, '  await writePreferences(modelId, savedEfforts)', '  await writePreferences(modelId, new Map())']] },
   'w71-choosing-an-effort-drops-the-model': { script: 'verify-7-1w.mjs', edits: [[MODELS, '  await writePreferences(savedModelId, next)', '  await writePreferences(null, next)']] },
   'w71-saved-effort-ignored': { script: 'verify-7-1w.mjs', edits: [[MODELS, 'const { effort, unusable } = resolveEffort(entry, savedEfforts)', 'const { effort, unusable } = resolveEffort(entry, new Map())']] },
-  'w71-chat-ignores-the-effort': { script: 'verify-7-1w.mjs', edits: [[CHAT, '    const { entry, effort } = model // fixed with the model, for this whole reply (D-024)', '    const { entry } = model\n    const effort = undefined']] },
+  'w71-chat-ignores-the-effort': { script: 'verify-7-1w.mjs', edits: [[CHAT, '    const { effort } = model // fixed with the model, for this whole reply (D-024)', '    const effort = undefined']] },
   'w71-status-says-the-default': { script: 'verify-7-1w.mjs', edits: [[IPC, 'effort: choice.ok ? effortStatusOf(choice.entry, choice.effort) : null', 'effort: choice.ok ? effortStatusOf(choice.entry, choice.entry.effort) : null']] },
   'w71-menu-not-disabled-while-replying': { script: 'verify-7-1w.mjs', edits: [[PICKER, '        disabled={disabled}', '        disabled={false}']] },
   'w71-menu-shown-for-a-model-with-none': { script: 'verify-7-1w.mjs', edits: [[E, 'entry.capabilities.effortLevels.length === 0 || entry.effort === null || effort === null', 'false']] },

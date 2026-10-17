@@ -1,0 +1,18 @@
+{
+  "label": "n172-dayEdgeStrict",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/registry.ts",
+      "from": "for (const change of entry.priceChanges) if (change.from <= day) prices = change.pricing",
+      "to": "for (const change of entry.priceChanges) if (change.from < day) prices = change.pricing"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-2.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 300000
+}

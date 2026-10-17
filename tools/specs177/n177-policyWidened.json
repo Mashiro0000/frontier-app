@@ -1,0 +1,16 @@
+{
+  "label": "n177-policyWidened",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/index.html",
+      "from": "img-src 'self' data:\"",
+      "to": "img-src 'self' data: https:\""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

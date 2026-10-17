@@ -1,0 +1,18 @@
+{
+  "label": "n173-crlfOnly",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "const end = /\\r?\\n\\r?\\n/.exec(buffer)",
+      "to": "const end = /\\r\\n\\r\\n/.exec(buffer)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-3.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

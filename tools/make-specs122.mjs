@@ -103,7 +103,8 @@ const s = {
   lEndChars: [RTL, "      outcome.code === 'chars-cap'\n      ? outcome.code", "      false\n      ? outcome.code"],
   lMessage: [CHT, "    case 'file-cap':\n      return `Stopped: this reply used all ${fileCaps.calls} of its file calls.`", "    case 'file-cap':\n      return `Stopped.`"],
   // ----- wired in before its time -----
-  xWired: [IPC, "import { createQuestionGate } from './systemQuestion'", "import { createQuestionGate } from './systemQuestion'\nimport { createWorkspaceGuard } from './workspaceGuard'\nvoid createWorkspaceGuard"]
+  // (17.4: ipc.ts has imported the guard on purpose since 12.3, so the control now puts the import into chat.ts, which must never have it)
+  xWired: ['{{REPO}}/src/main/chat.ts', "import { adapterFor, OFFERS_SEARCH } from './providers'", "import { adapterFor, OFFERS_SEARCH } from './providers'\nimport { createWorkspaceGuard } from './workspaceGuard'\nvoid createWorkspaceGuard"]
 }
 
 mkdirSync(join(TOOLS, 'specs122'), { recursive: true })

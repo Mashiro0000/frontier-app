@@ -23,16 +23,16 @@ let r = parseRegistry(fileJson)
 check('the real registry/models.json is accepted', r.ok, errOf(r))
 check('...with no problems at all', r.ok && r.problems.length === 0, r.ok ? probs(r) : '')
 const ids = r.ok ? r.registry.models.map((m) => m.id) : []
-check('...it lists the three Anthropic models and then the three OpenAI models, in this order (Claude Haiku 4.5 was removed on 2026-10-06, D-036)', JSON.stringify(ids) === JSON.stringify(['claude-fable-5-1', 'claude-opus-5-5', 'claude-sonnet-5-5', 'gpt-6-astra', 'gpt-6.1-sol', 'gpt-6-luna']), JSON.stringify(ids))
+check('...it lists the three Anthropic models, the three OpenAI models and (since 17.2) the two Gemini models, in this order (Claude Haiku 4.5 was removed on 2026-10-06, D-036)', JSON.stringify(ids) === JSON.stringify(['claude-fable-5-1', 'claude-opus-5-5', 'claude-sonnet-5-5', 'gpt-6-astra', 'gpt-6.1-sol', 'gpt-6-luna', 'gemini-4-argon', 'gemini-3.8-flash']), JSON.stringify(ids))
 check('...the default is Claude Opus 5.5, as in Stage 2 (billing does not change by itself)', r.ok && r.registry.defaultModel.id === 'claude-opus-5-5')
 check('...and the default is the same object as the list entry', r.ok && r.registry.models.includes(r.registry.defaultModel))
-check('...updatedAt is the day the facts were checked', r.ok && r.registry.updatedAt === '2026-10-01')
+check('...updatedAt is the day the facts were checked', r.ok && r.registry.updatedAt === '2026-10-17') /* (17.2: Google's pages were read on 2026-10-17) */
 const by = Object.fromEntries((r.ok ? r.registry.models : []).map((m) => [m.id, m]))
 check('effort per model: Fable high, Opus medium, Sonnet medium', by['claude-fable-5-1']?.effort === 'high' && by['claude-opus-5-5']?.effort === 'medium' && by['claude-sonnet-5-5']?.effort === 'medium')
 check('context: 1M for the three Anthropic models; max output 128K', [by['claude-fable-5-1'], by['claude-opus-5-5'], by['claude-sonnet-5-5']].every((m) => m?.contextWindow === 1_000_000 && m.maxOutputTokens === 128_000))
-check('prices (USD per million tokens, in/out): 10/50, 4/20, 2/10 (Anthropic), 10/50, 2/10, 0.1/0.5 (OpenAI)', JSON.stringify(Object.values(by).map((m) => [m.pricing.inputPerMTok, m.pricing.outputPerMTok])) === JSON.stringify([[10, 50], [4, 20], [2, 10], [10, 50], [2, 10], [0.1, 0.5]]))
-check('every entry is for a provider this app can call, and the first three are Anthropic\'s and the last three OpenAI\'s', Object.values(by).every((m, i) => m.provider === (i < 3 ? 'anthropic' : 'openai')))
-check('the file on disk and the schema constant agree on the version', fileJson.schemaVersion === REGISTRY_SCHEMA_VERSION && REGISTRY_SCHEMA_VERSION === '0.5')
+check('prices (USD per million tokens, in/out): 10/50, 4/20, 2/10 (Anthropic), 10/50, 2/10, 0.1/0.5 (OpenAI), and (17.2) 2/10, 0.75/3.75 (Google, until their dated changes)', JSON.stringify(Object.values(by).map((m) => [m.pricing.inputPerMTok, m.pricing.outputPerMTok])) === JSON.stringify([[10, 50], [4, 20], [2, 10], [10, 50], [2, 10], [0.1, 0.5], [2, 10], [0.75, 3.75]]))
+check('every entry is for a provider this app can call: three of Anthropic\'s, three of OpenAI\'s and (17.2) two of Google\'s', Object.values(by).every((m, i) => m.provider === (i < 3 ? 'anthropic' : i < 6 ? 'openai' : 'google')))
+check('the file on disk and the schema constant agree on the version', fileJson.schemaVersion === REGISTRY_SCHEMA_VERSION && REGISTRY_SCHEMA_VERSION === '0.6') /* (0.6 since 17.2) */
 check('every supported provider has a display name', SUPPORTED_PROVIDERS.every((p) => typeof PROVIDER_NAMES[p] === 'string' && PROVIDER_NAMES[p] !== ''))
 
 // the result is a clean copy
@@ -41,7 +41,7 @@ const out = parseRegistry(input)
 input.models[1].label = 'CHANGED AFTER'
 input.models[1].pricing.inputPerMTok = 999
 check('the result is a copy: changing the input afterwards changes nothing', out.ok && out.registry.models[1].label === 'Claude Opus 5.5' && out.registry.models[1].pricing.inputPerMTok === 4)
-check('each entry has exactly the known fields', out.ok && out.registry.models.every((m) => Object.keys(m).sort().join() === 'capabilities,contextWindow,description,effort,id,label,maxOutputTokens,pricing,provider'))
+check('each entry has exactly the known fields', out.ok && out.registry.models.every((m) => Object.keys(m).sort().join() === 'capabilities,contextWindow,description,effort,id,label,maxOutputTokens,priceChanges,pricing,provider')) /* (priceChanges since 17.2) */
 
 // ============ 2. a whole file that cannot be used ============
 for (const [name, value] of [['null', null], ['a number', 5], ['a string', 'x'], ['an array', []], ['undefined', undefined]]) {
@@ -57,7 +57,7 @@ r = parseRegistry({ ...clone(fileJson), defaultModel: 'claude-opus-5-5' })
 check('refused: an unknown top-level field (a typo of defaultModelId is caught)', !r.ok && /unknown field "defaultModel"/.test(r.error), errOf(r))
 for (const v of ['0.1', '0.2', '0.3', '0.4', '1', 0.5, null, '']) {
   r = parseRegistry({ ...clone(fileJson), schemaVersion: v })
-  check(`refused: schemaVersion ${JSON.stringify(v)}`, !r.ok && /schemaVersion is .*reads 0\.5/.test(r.error), errOf(r))
+  check(`refused: schemaVersion ${JSON.stringify(v)}`, !r.ok && /schemaVersion is .*reads 0\.6/.test(r.error), errOf(r))
 }
 for (const v of [null, '', '2026-13-01', '2026-02-30', '26-10-01', '2026-1-1', 20261001, '2026-10-01T00:00:00Z', ' 2026-10-01']) {
   r = parseRegistry({ ...clone(fileJson), updatedAt: v })
@@ -155,7 +155,7 @@ check('problems name the entry by position and id', (() => { const x = parseRegi
 // ============ 4. hostile shapes ============
 const hostile = JSON.parse(raw.replace('"provider": "anthropic",', '"provider": "anthropic", "__proto__": {"polluted": true},'))
 const polluted = parseRegistry(hostile)
-check('a "__proto__" key in an entry is just an unknown field', polluted.ok && polluted.problems.some((p) => /unknown field "__proto__"/.test(p)) && polluted.registry.models.length === 5, polluted.ok ? probs(polluted) : errOf(polluted))
+check('a "__proto__" key in an entry is just an unknown field', polluted.ok && polluted.problems.some((p) => /unknown field "__proto__"/.test(p)) && polluted.registry.models.length === 7, /* (eight models since 17.2, one left out) */ polluted.ok ? probs(polluted) : errOf(polluted))
 check('...and nothing was polluted', ({}).polluted === undefined && Object.prototype.polluted === undefined)
 const rootHostile = parseRegistry(JSON.parse('{"__proto__": {"x": 1}, "schemaVersion": "0.5"}'))
 check('a "__proto__" key at the top level is refused', !rootHostile.ok)
@@ -167,7 +167,7 @@ check('an object with no prototype is handled like any other', parseRegistry(Obj
 
 // ============ 5. what the page is told ============
 const opt = toModelOption(by['claude-opus-5-5'] ?? entry())
-check('toModelOption: exactly id, label, provider, description, contextWindow, pricing, and (since 9.3) whether it reads images and PDFs', Object.keys(opt).sort().join() === 'contextWindow,description,documentInput,id,imageInput,label,pricing,provider', Object.keys(opt).join())
+check('toModelOption: exactly id, label, provider, description, contextWindow, pricing, and (since 9.3) whether it reads images and PDFs', Object.keys(opt).sort().join() === 'contextWindow,description,documentInput,id,imageInput,label,priceChange,pricing,provider' /* (17.2: and the next price change) */, Object.keys(opt).join())
 check('toModelOption: the provider is its id ("anthropic"); the page takes the name from the settings status (D-020)', opt.provider === 'anthropic')
 check('toModelOption: nothing about how the model is called (no effort, no output limit, no provider id)', !/effort|maxOutputTokens/.test(JSON.stringify(opt)) && !('effort' in opt) && !('maxOutputTokens' in opt))
 const e1 = entry(); const o1 = toModelOption(e1); o1.pricing.inputPerMTok = 777

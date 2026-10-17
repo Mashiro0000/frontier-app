@@ -1,0 +1,18 @@
+{
+  "label": "n174-chatAlwaysSearches",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "            ...(OFFERS_SEARCH[entry.provider]\n              ? { affordable: affordableSearch, search: countedSearch }\n              : {}),",
+      "to": "            ...{ affordable: affordableSearch, search: countedSearch },"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 300000
+}

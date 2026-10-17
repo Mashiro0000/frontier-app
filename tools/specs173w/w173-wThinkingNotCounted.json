@@ -1,0 +1,18 @@
+{
+  "label": "w173-wThinkingNotCounted",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "    outputTokens: candidates + thoughts",
+      "to": "    outputTokens: candidates"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run173.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 1200000
+}

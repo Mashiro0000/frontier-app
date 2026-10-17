@@ -1,0 +1,19 @@
+{
+  "label": "w172-wNoKeyNamesAnthropic",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "`No API key is saved yet. Open Settings and add your ${PROVIDER_NAMES[provider]} API key.`",
+      "to": "`No API key is saved yet. Open Settings and add your ${PROVIDER_NAMES.anthropic} API key.`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run172.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "D"
+  },
+  "timeoutMs": 900000
+}

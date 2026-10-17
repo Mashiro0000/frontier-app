@@ -1,0 +1,18 @@
+{
+  "label": "n171-gifTaken",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-gemini.mjs",
+      "from": "const INLINE_TYPES = ['image/png',",
+      "to": "const INLINE_TYPES = ['image/gif', 'image/png',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

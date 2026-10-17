@@ -1,0 +1,18 @@
+{
+  "label": "n176-capTwenty",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentRequest.ts",
+      "from": "export const GEMINI_MAX_FILE_BYTES = 14 * MB",
+      "to": "export const GEMINI_MAX_FILE_BYTES = 20 * MB"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-6.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

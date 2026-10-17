@@ -1,0 +1,18 @@
+{
+  "label": "n171-hostedTool",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-gemini.mjs",
+      "from": "problems.push(`tools[${i}]: a Google-hosted tool",
+      "to": "void (`tools[${i}]: a Google-hosted tool"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-1.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

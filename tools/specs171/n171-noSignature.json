@@ -1,0 +1,18 @@
+{
+  "label": "n171-noSignature",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/mock-gemini.mjs",
+      "from": "return { functionCall: { name, args, id }, ...(k === 0 ? { thoughtSignature: SIGNATURE } : {}) }",
+      "to": "return { functionCall: { name, args, id } }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-1.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w175-wNoteText",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/providerCopy.ts",
+      "from": "Gemini 4 Argon needs a billed key.",
+      "to": "Gemini 4 Argon is the best."
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run175.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 1200000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n174-searchStillOn",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "          ? { ...settings, enabled: { ...settings.enabled, web_search: false } }",
+      "to": "          ? settings"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-4.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

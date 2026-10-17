@@ -18,6 +18,8 @@ const page = await connect(port)
 await assertScratchProfile() // abort before writing anything if the scratch profile is not in use
 await page.send('Page.reload')
 await sleep(1800)
+// (wait for the header to be drawn again: on this PC a reload of the dev page has taken longer than the 1.8 s above, 2026-10-17)
+await page.waitFor(`[...document.querySelectorAll('.header-button')].some((b) => b.textContent.trim() === 'Settings')`, { timeoutMs: 20000 })
 await page.click('.header-button@Settings')
 await page.waitFor(`!!document.querySelector('dialog.settings')?.open`)
 const status = await page.evaluate(`document.querySelector('.settings-status').innerText`)

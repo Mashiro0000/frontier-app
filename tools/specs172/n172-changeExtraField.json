@@ -1,0 +1,18 @@
+{
+  "label": "n172-changeExtraField",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/registry.ts",
+      "from": "const PRICE_CHANGE_FIELDS = ['from', 'pricing'] as const",
+      "to": "const PRICE_CHANGE_FIELDS = ['from', 'pricing', 'note'] as const"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-2.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 300000
+}

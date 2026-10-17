@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { SettingsStatus } from '../../../shared/ipc'
 import AskFirstSection from './AskFirstSection'
 import ChatStorageSection from './ChatStorageSection'
-import { formatPrice, formatTokens, providerName } from './format'
+import { formatDay, formatPrice, formatTokens, priceRatio, providerName } from './format'
 import LimitsSection from './LimitsSection'
 import ProviderKeySection from './ProviderKeySection'
 import UsageSection from './UsageSection'
@@ -103,6 +103,19 @@ function SettingsDialog({
               your {providerName(status, model.provider)} account. Prices were checked on{' '}
               {status.modelsCheckedOn}.
             </p>
+            {model.priceChange !== null && (
+              // (17.5, D-049) a change the provider has announced: the app prices each request at the prices of its day by itself
+              <p className="settings-hint settings-price-change">
+                From {formatDay(model.priceChange.from)}:{' '}
+                {formatPrice(model.priceChange.pricing.inputPerMTok)} per million tokens it reads
+                and {formatPrice(model.priceChange.pricing.outputPerMTok)} per million tokens it
+                writes
+                {model.priceChange.pricing.inputPerMTok > model.pricing.inputPerMTok
+                  ? `, ${priceRatio(model.pricing, model.priceChange.pricing)}`
+                  : ''}
+                . The app counts each request at the prices of the day it is sent.
+              </p>
+            )}
             <p className="settings-hint">
               Change the model with the menu in the header. If you change it in the middle of a
               chat, the whole chat so far is sent to the new model with your next message.

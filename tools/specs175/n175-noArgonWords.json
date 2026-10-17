@@ -1,0 +1,16 @@
+{
+  "label": "n175-noArgonWords",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/googleKey.ts",
+      "from": "      'Gemini 4 Argon needs a billed key: on a free key Google refuses it.',\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

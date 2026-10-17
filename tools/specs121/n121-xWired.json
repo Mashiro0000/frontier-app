@@ -2,9 +2,9 @@
   "label": "n121-xWired",
   "edits": [
     {
-      "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "import { createQuestionGate } from './systemQuestion'",
-      "to": "import { createQuestionGate } from './systemQuestion'\nimport { createWorkspaceGuard } from './workspaceGuard'\nvoid createWorkspaceGuard"
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "import { adapterFor, OFFERS_SEARCH } from './providers'",
+      "to": "import { adapterFor, OFFERS_SEARCH } from './providers'\nimport { createWorkspaceGuard } from './workspaceGuard'\nvoid createWorkspaceGuard"
     }
   ],
   "argv": [

@@ -26,7 +26,7 @@ const goodSha = sha(SAVED)
 const good = JSON.parse(readFileSync(SAVED, 'utf8'))
 const variants = [
   ['whole', { ...good, schemaVersion: '0.1' }, 'EXPECT_SUGGESTIONS=0'],
-  ['row', { ...good, rankings: good.rankings.map((r, i) => (i === 0 ? { ...r, source: 'http://not-https.example/x' } : r)) }, `EXPECT_SUGGESTIONS=${good.rankings.length - 1}`]
+  ['row', { ...good, rankings: good.rankings.map((r, i) => (i === 0 ? { ...r, source: 'http://not-https.example/x' } : r)) }, `EXPECT_SUGGESTIONS=${good.rankings.filter((r) => !/^gemini-/.test(r.modelId)).length - 1}`] // (both keys = Anthropic's and OpenAI's: since 17.7 the Gemini row needs a Google key)
 ]
 try {
   for (const [name, content, expect] of mode === 'dev' ? variants : []) {

@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "    const { entry, effort } = model // fixed with the model, for this whole reply (D-024)",
-      "to": "    const { entry } = model\n    const effort = undefined"
+      "from": "    const { effort } = model // fixed with the model, for this whole reply (D-024)",
+      "to": "    const effort = undefined"
     }
   ],
   "argv": [

@@ -1,0 +1,18 @@
+{
+  "label": "n172-schemaStill05",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/registry.ts",
+      "from": "export const REGISTRY_SCHEMA_VERSION = '0.6'",
+      "to": "export const REGISTRY_SCHEMA_VERSION = '0.5'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-2.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

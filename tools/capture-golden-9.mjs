@@ -41,7 +41,8 @@ const shapes = {
   long: [{ role: 'user', content: 'lorem ipsum '.repeat(2000) }]
 }
 const captured = { requests: {} }
-for (const model of registry.registry.models) {
+// (17.6: the record is of the two providers it was taken for; the Gemini models of the registry since 17.2 are not in it)
+for (const model of registry.registry.models.filter((m) => m.provider === 'anthropic' || m.provider === 'openai')) {
   for (const [shape, messages] of Object.entries(shapes)) {
     for (const instructions of [undefined, 'Answer in French.']) {
       await reset()

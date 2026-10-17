@@ -10,7 +10,7 @@ import { CHANNELS, type ChatRequest, type ChatStreamEvent } from '../shared/ipc'
 import { checkAgainstLimits, withFilesNote, type Limits } from '../shared/limits'
 import type { Note } from '../shared/memory'
 import type { Project } from '../shared/projects'
-import { PROVIDER_NAMES, type Effort, type ProviderId } from '../shared/registry'
+import { PROVIDER_NAMES, pricedOn, type Effort, type ProviderId } from '../shared/registry'
 import type { ToolSettings } from '../shared/tools'
 import {
   costOf,
@@ -36,7 +36,7 @@ import { createConfirmations } from './confirmation'
 import { readApiKey } from './keyStore'
 import { currentModel } from './models'
 import type { LimitsStore } from './limits'
-import { adapterFor } from './providers'
+import { adapterFor, OFFERS_SEARCH } from './providers'
 import { describeFailure, unknownError } from './providers/errors'
 import { buildStreamRequest } from './providers/request'
 import { SEARCH_MAX_OUTPUT_TOKENS, SEARCH_SYSTEM, searchPrompt } from './providers/search'
@@ -289,7 +289,10 @@ async function runReply(
       send({ streamId, type: 'error', message: model.error })
       return
     }
-    const { entry, effort } = model // fixed with the model, for this whole reply (D-024)
+    const { effort } = model // fixed with the model, for this whole reply (D-024)
+    // (17.2, D-049) Priced at the prices of the day the reply begins (a provider may have announced a change for a set day): every request of this reply is
+    // counted, limited and asked about at them, and the ledger keeps them with each record.
+    const entry = pricedOn(model.entry, Date.now())
     adapter = adapterFor(entry.provider)
     modelId = entry.id
     // Before anything else is looked up or sent, say who answers (D-021): the page records it on the reply, so even a reply
@@ -464,8 +467,11 @@ async function runReply(
             signal: controller.signal,
             settings: await toolsContext.settings(),
             provider: PROVIDER_NAMES[entry.provider],
-            affordable: affordableSearch,
-            search: countedSearch,
+            // (17.4, D-049) The web search runs on the provider's own hosted search; Google's (grounding with Google Search) is not used, so for a Gemini
+            // model there is no search to hand over, and the runtime switches the tool off for the reply.
+            ...(OFFERS_SEARCH[entry.provider]
+              ? { affordable: affordableSearch, search: countedSearch }
+              : {}),
             onEvent: (event) => send({ streamId, type: 'tool', event }),
             ...(toolsContext.connectors === undefined
               ? {}

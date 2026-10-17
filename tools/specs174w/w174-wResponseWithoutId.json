@@ -1,0 +1,18 @@
+{
+  "label": "w174-wResponseWithoutId",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "              ...(call?.googleId === true ? { id: call.id } : {}),",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run174.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 1200000
+}

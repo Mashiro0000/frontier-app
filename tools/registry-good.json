@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "0.5",
-  "updatedAt": "2026-10-01",
-  "source": "Anthropic's Claude API documentation (models overview, capability fields, effort and prompt-caching pages), read on 2026-10-01; its pricing page and OpenAI's model and pricing pages (GPT-6 family), with the cache prices, read on 2026-10-02. List prices, US dollars per million tokens.",
+  "schemaVersion": "0.6",
+  "updatedAt": "2026-10-17",
+  "source": "Anthropic's Claude API docs (models, capabilities, effort, caching, pricing), read 2026-10-01; OpenAI's GPT-6 model and pricing pages, read 2026-10-02; Google's Gemini models, model cards and pricing pages, read 2026-10-17. List prices, US dollars per million tokens.",
   "defaultModelId": "claude-opus-5-5",
   "models": [
     {
@@ -17,6 +17,7 @@
         "cacheWritePerMTok": 12.5,
         "outputPerMTok": 50
       },
+      "priceChanges": [],
       "capabilities": {
         "imageInput": true,
         "documentInput": true,
@@ -40,6 +41,7 @@
         "cacheWritePerMTok": 5,
         "outputPerMTok": 20
       },
+      "priceChanges": [],
       "capabilities": {
         "imageInput": true,
         "documentInput": true,
@@ -63,6 +65,7 @@
         "cacheWritePerMTok": 2.5,
         "outputPerMTok": 10
       },
+      "priceChanges": [],
       "capabilities": {
         "imageInput": true,
         "documentInput": true,
@@ -86,6 +89,7 @@
         "cacheWritePerMTok": 1.25,
         "outputPerMTok": 5
       },
+      "priceChanges": [],
       "capabilities": {
         "imageInput": true,
         "documentInput": true,
@@ -109,6 +113,7 @@
         "cacheWritePerMTok": 12.5,
         "outputPerMTok": 50
       },
+      "priceChanges": [],
       "capabilities": {
         "imageInput": true,
         "documentInput": true,
@@ -132,6 +137,7 @@
         "cacheWritePerMTok": 2.5,
         "outputPerMTok": 10
       },
+      "priceChanges": [],
       "capabilities": {
         "imageInput": true,
         "documentInput": true,
@@ -155,6 +161,7 @@
         "cacheWritePerMTok": 0.125,
         "outputPerMTok": 0.5
       },
+      "priceChanges": [],
       "capabilities": {
         "imageInput": true,
         "documentInput": true,
@@ -162,6 +169,74 @@
         "reasoning": true,
         "promptCaching": true,
         "effortLevels": ["none", "low", "medium", "high", "xhigh", "max"]
+      },
+      "effort": "medium"
+    },
+    {
+      "provider": "google",
+      "id": "gemini-4-argon",
+      "label": "Gemini 4 Argon",
+      "description": "Google's most capable model. For demanding reasoning and long, multi-step work. Needs a billed key.",
+      "contextWindow": 1048576,
+      "maxOutputTokens": 65536,
+      "pricing": {
+        "inputPerMTok": 2,
+        "cacheReadPerMTok": 0.1,
+        "cacheWritePerMTok": 2,
+        "outputPerMTok": 10
+      },
+      "priceChanges": [
+        {
+          "from": "2026-12-01",
+          "pricing": {
+            "inputPerMTok": 4,
+            "cacheReadPerMTok": 0.2,
+            "cacheWritePerMTok": 4,
+            "outputPerMTok": 20
+          }
+        }
+      ],
+      "capabilities": {
+        "imageInput": true,
+        "documentInput": true,
+        "toolUse": true,
+        "reasoning": true,
+        "promptCaching": true,
+        "effortLevels": ["low", "medium", "high"]
+      },
+      "effort": "medium"
+    },
+    {
+      "provider": "google",
+      "id": "gemini-3.8-flash",
+      "label": "Gemini 3.8 Flash",
+      "description": "Google's everyday model: fast, with a good balance of speed and capability.",
+      "contextWindow": 1048576,
+      "maxOutputTokens": 65536,
+      "pricing": {
+        "inputPerMTok": 0.75,
+        "cacheReadPerMTok": 0.75,
+        "cacheWritePerMTok": 0.75,
+        "outputPerMTok": 3.75
+      },
+      "priceChanges": [
+        {
+          "from": "2027-01-01",
+          "pricing": {
+            "inputPerMTok": 1.5,
+            "cacheReadPerMTok": 1.5,
+            "cacheWritePerMTok": 1.5,
+            "outputPerMTok": 7.5
+          }
+        }
+      ],
+      "capabilities": {
+        "imageInput": true,
+        "documentInput": true,
+        "toolUse": true,
+        "reasoning": true,
+        "promptCaching": true,
+        "effortLevels": ["low", "medium", "high"]
       },
       "effort": "medium"
     }

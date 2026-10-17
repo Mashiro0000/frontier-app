@@ -1,0 +1,18 @@
+{
+  "label": "n172-flashCachedCheaper",
+  "edits": [
+    {
+      "file": "{{REPO}}/registry/models.json",
+      "from": "\"inputPerMTok\": 0.75,\n        \"cacheReadPerMTok\": 0.75,",
+      "to": "\"inputPerMTok\": 0.75,\n        \"cacheReadPerMTok\": 0.075,"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-2.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}

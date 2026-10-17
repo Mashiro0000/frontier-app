@@ -1,0 +1,19 @@
+{
+  "label": "w172-wNoGoogle",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/registry.ts",
+      "from": "export const SUPPORTED_PROVIDERS = ['anthropic', 'openai', 'google'] as const",
+      "to": "export const SUPPORTED_PROVIDERS = ['anthropic', 'openai'] as const"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run172.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1",
+    "STOP_AFTER": "A"
+  },
+  "timeoutMs": 900000
+}

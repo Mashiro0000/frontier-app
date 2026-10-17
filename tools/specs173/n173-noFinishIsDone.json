@@ -1,0 +1,18 @@
+{
+  "label": "n173-noFinishIsDone",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "if (finish === null) throw new ReplyEndedEarly()",
+      "to": "if (finish === null) finish = 'STOP'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-3.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

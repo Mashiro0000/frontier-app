@@ -103,6 +103,7 @@ function ProviderKeySection({
         The key lets this app use {help.uses} on your account, and the messages you send are billed
         to that account. You can create a key in {help.whereToCreate}.
       </p>
+      {help.note !== undefined && <p className="settings-hint settings-key-note">{help.note}</p>}
       <p className="settings-status">{describeStatus(provider, canStoreKey)}</p>
 
       <label className="settings-label" htmlFor={inputId}>

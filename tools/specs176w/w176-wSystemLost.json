@@ -1,0 +1,18 @@
+{
+  "label": "w176-wSystemLost",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "    systemInstruction: { parts: [{ text: request.system }] },",
+      "to": "    systemInstruction: { parts: [{ text: 'You are an AI assistant.' }] },"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run176.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 1200000
+}

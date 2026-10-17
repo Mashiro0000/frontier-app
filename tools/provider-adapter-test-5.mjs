@@ -48,7 +48,7 @@ for (const provider of SUPPORTED_PROVIDERS) {
   check(`...and has all four methods of the interface`, ['listModels', 'stream', 'usage', 'normalizeError'].every((m) => typeof adapter?.[m] === 'function'))
   check(`...and the provider has a display name`, typeof PROVIDER_NAMES[provider] === 'string' && PROVIDER_NAMES[provider] !== '')
 }
-check('Anthropic is the first provider and OpenAI the second (D-022)', JSON.stringify(SUPPORTED_PROVIDERS) === '["anthropic","openai"]')
+check('Anthropic is the first provider, OpenAI the second (D-022) and Google the third (D-049)', JSON.stringify(SUPPORTED_PROVIDERS) === '["anthropic","openai","google"]')
 check('API_BASE_URL is the real address', API_BASE_URL === 'https://api.anthropic.com')
 
 // ---- request building (the app's own rules, applied once) ---------------------------------------------

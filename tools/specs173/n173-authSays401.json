@@ -1,0 +1,18 @@
+{
+  "label": "n173-authSays401",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/errors.ts",
+      "from": "return `The API key was not accepted (${status ?? 401}). Check it in Settings.`",
+      "to": "return 'The API key was not accepted (401). Check it in Settings.'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-3.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n175-neverAsks",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      if (check.provider === 'google') {",
+      "to": "      if (check.provider === ('none' as string)) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "w177-wNoRow",
+  "edits": [
+    {
+      "file": "{{REPO}}/registry/rankings.json",
+      "from": "      \"modelId\": \"gemini-3.8-flash\",",
+      "to": "      \"modelId\": \"gemini-9-none\","
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run177.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 1200000
+}

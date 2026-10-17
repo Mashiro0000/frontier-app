@@ -55,8 +55,8 @@ await sleep(400)
 
 // ============ A. a fresh profile ============
 const st0 = await ev(`window.api.settings.getStatus()`)
-check('two providers, Anthropic then OpenAI, neither has a key', JSON.stringify(st0.providers) === '[{"id":"anthropic","name":"Anthropic","hasKey":false},{"id":"openai","name":"OpenAI","hasKey":false}]', JSON.stringify(st0.providers))
-check('the menu lists all six models (Claude Haiku 4.5 was removed, D-036), the three OpenAI ones last, by their registry names', JSON.stringify((await H.menu()).labels) === JSON.stringify(registry.models.map((m) => m.label)) && registry.models.length === 6 && registry.models.slice(3).every((m) => m.provider === 'openai') && registry.models.slice(0, 3).every((m) => m.provider === 'anthropic'), JSON.stringify((await H.menu()).labels))
+check('three providers (Google since 17.2), Anthropic, OpenAI, Google, none has a key', JSON.stringify(st0.providers) === '[{"id":"anthropic","name":"Anthropic","hasKey":false},{"id":"openai","name":"OpenAI","hasKey":false},{"id":"google","name":"Google","hasKey":false}]', JSON.stringify(st0.providers))
+check('the menu lists all eight models (Claude Haiku 4.5 was removed, D-036; the two Gemini since 17.2), three Anthropic, three OpenAI, two Google, by their registry names', JSON.stringify((await H.menu()).labels) === JSON.stringify(registry.models.map((m) => m.label)) && registry.models.length === 8 && registry.models.slice(3, 6).every((m) => m.provider === 'openai') && registry.models.slice(0, 3).every((m) => m.provider === 'anthropic') && registry.models.slice(6).every((m) => m.provider === 'google'), JSON.stringify((await H.menu()).labels))
 check('the default model is still Claude Opus 5.5, so the badge asks for the ANTHROPIC key', (await H.badges()).some((b) => b.text === 'No API key' && b.title === 'Open Settings to add your Anthropic API key.'), JSON.stringify(await H.badges()))
 
 // ============ B. a key for each provider, saved through the real Settings dialog ============
@@ -70,9 +70,9 @@ const fa = readJson('credentials.anthropic.json')
 const fo = readJson('credentials.openai.json')
 check('each file says which provider it is for (version 2), and holds a key that is encrypted, not plain', fa.provider === 'anthropic' && fo.provider === 'openai' && fa.version === 2 && fo.version === 2 && ![fa, fo].some((f) => JSON.stringify(f).includes(keyA) || JSON.stringify(f).includes(keyO)))
 const st1 = await ev(`window.api.settings.getStatus()`)
-check('the status says both providers have a key, and tells the page no key', JSON.stringify(st1.providers.map((p) => p.hasKey)) === '[true,true]' && !JSON.stringify(st1).includes(keyA) && !JSON.stringify(st1).includes(keyO))
+check('the status says both providers have a key, and tells the page no key', JSON.stringify(st1.providers.map((p) => p.hasKey)) === '[true,true,false]' /* (no Google key here, 17.2) */ && !JSON.stringify(st1).includes(keyA) && !JSON.stringify(st1).includes(keyO))
 await openSettings()
-check('Settings: two sections, each says "A key is saved."', (await ev(`[...document.querySelectorAll('dialog.settings form.settings-section')].map((f) => f.querySelector('.settings-status')?.innerText).join('|')`)) === 'A key is saved.|A key is saved.')
+check('Settings: the two sections say "A key is saved." (and the third, Google\'s since 17.5, "No key is saved yet.")', (await ev(`[...document.querySelectorAll('dialog.settings form.settings-section')].map((f) => f.querySelector('.settings-status')?.innerText).join('|')`)) === 'A key is saved.|A key is saved.|No key is saved yet.')
 // Test key, for OpenAI, through the real button: it lists models with the SAVED OpenAI key (a free call)
 const before = (await reqs()).length
 await ev(`(() => { const b = [...${sectionOf('openai')}.querySelectorAll('button')].find((x) => x.innerText === 'Test key'); b.setAttribute('data-click', '1'); b.scrollIntoView({ block: 'center' }) })()`)
@@ -144,7 +144,7 @@ check('each failed reply is saved with its error and with openai/gpt-6.1-sol as 
 await ev(`window.api.settings.clearApiKey('openai')`)
 await sleep(300)
 const st2 = await ev(`window.api.settings.getStatus()`)
-check('removing the OpenAI key leaves the Anthropic one: [true, false], and only the Anthropic file is left', JSON.stringify(st2.providers.map((p) => p.hasKey)) === '[true,false]' && JSON.stringify(credFiles()) === '["credentials.anthropic.json"]', JSON.stringify(credFiles()))
+check('removing the OpenAI key leaves the Anthropic one: [true, false], and only the Anthropic file is left', JSON.stringify(st2.providers.map((p) => p.hasKey)) === '[true,false,false]' && JSON.stringify(credFiles()) === '["credentials.anthropic.json"]', JSON.stringify(credFiles()))
 await page.send('Page.reload')
 await sleep(1500)
 await page.waitFor(`!!document.querySelector('.header-select, .app-badge')`, { timeoutMs: 20000 })

@@ -1,0 +1,18 @@
+{
+  "label": "n176-textUnnamed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "          : { text: `${textFileLead(file.name)}\\n\\n${file.text}` }",
+      "to": "          : { text: file.text }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-6.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}
