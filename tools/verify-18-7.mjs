@@ -21,7 +21,9 @@ const show = (v) => JSON.stringify(v)?.slice(0, 400)
 const M = await import(`${REPO_URL}/src/main/updateManifest.ts`)
 const root = mkdtempSync(join(tmpdir(), 'frontier-187-'))
 const config = join(root, 'releaseConfig.ts')
-copyFileSync(join(REPO, 'src', 'main', 'releaseConfig.ts'), config)
+// The copies start with an EMPTY key line (the real config holds the owner's key since 17 October 2026), as the config of a build without a key.
+const EMPTY_CONFIG = readFileSync(join(REPO, 'src', 'main', 'releaseConfig.ts'), 'utf8').replace(/^export const RELEASE_PUBLIC_KEY = '[^']*'$/m, "export const RELEASE_PUBLIC_KEY = ''")
+writeFileSync(config, EMPTY_CONFIG)
 const keyDir = join(root, 'keys')
 const out = join(root, 'dist')
 mkdirSync(out)
@@ -48,9 +50,9 @@ const k3 = spawnSync(process.execPath, [join(TOOLS, 'release.mjs'), 'keygen', '-
 check('A: keygen with a config that already holds a key is refused, no key made', k3.status !== 0 && !existsSync(join(otherDir, 'release-key.pem')) && keyLine() === pub)
 
 { // a key already in the key folder, the config still empty: only the key-file rules can stop it
-  const cfg2 = join(root, 'releaseConfig-empty.ts'); copyFileSync(join(REPO, 'src', 'main', 'releaseConfig.ts'), cfg2)
+  const cfg2 = join(root, 'releaseConfig-empty.ts'); writeFileSync(cfg2, EMPTY_CONFIG)
   const x = spawnSync(process.execPath, [join(TOOLS, 'release.mjs'), 'keygen', '--config', cfg2, '--key-dir', keyDir], { encoding: 'utf8' })
-  check('A: with a key already in the folder (and an empty config): refused, the key and the config unchanged', x.status !== 0 && readFileSync(join(keyDir, 'release-key.pem'), 'utf8') === pem && readFileSync(cfg2, 'utf8') === realConfigBefore, (x.stderr ?? '').trim().slice(0, 200))
+  check('A: with a key already in the folder (and an empty config): refused, the key and the config unchanged', x.status !== 0 && readFileSync(join(keyDir, 'release-key.pem'), 'utf8') === pem && readFileSync(cfg2, 'utf8') === EMPTY_CONFIG, (x.stderr ?? '').trim().slice(0, 200))
 }
 
 // B

@@ -4,5 +4,5 @@
 //    update at all, and Settings says so.
 //  - RELEASES_REPO: the public, releases-only GitHub repository ("owner/name") the update check reads from. The code repository is private, so an
 //    installed app could not read its releases without a token, and a token in the app is out of the question.
-export const RELEASE_PUBLIC_KEY = ''
+export const RELEASE_PUBLIC_KEY = '5UXHDXt9mjbbntLF0uGnhmi3/mom7Zu3aTrMU9SIwYc='
 export const RELEASES_REPO = 'Mashiro0000/frontier-app-releases'

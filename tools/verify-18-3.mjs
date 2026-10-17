@@ -141,7 +141,9 @@ await guard('F', async () => {
   check('F: nothing signs in the app (no sign(, no private key)', !/\bsign\(|createPrivateKey|privateKey/.test(text))
   check('F: the signature is checked before the payload is parsed', text.indexOf('verify(null, payloadBytes') > 0 && text.indexOf('verify(null, payloadBytes') < text.indexOf('.decode(payloadBytes)'))
   const config = source('src/main/releaseConfig.ts')
-  check('F: this build\'s release key is empty until the owner makes one (release.mjs keygen)', /export const RELEASE_PUBLIC_KEY = ''/.test(config))
+  // (17 October 2026) the owner's key was made with release.mjs keygen: the build holds its public half, a key the app takes, and nothing private.
+  const built = (config.match(/^export const RELEASE_PUBLIC_KEY = '([^']*)'$/m) ?? [])[1]
+  check('F: this build holds the owner\'s public release key (a key the app takes), and nothing private', typeof built === 'string' && M.releaseKey(built) !== null && !/PRIVATE/.test(config), built)
   check('F: the releases repository is named', /export const RELEASES_REPO = '[A-Za-z0-9-]+\/[A-Za-z0-9._-]+'/.test(config))
   // ipc.ts is where the key is handed to the update service (and, from source only, a test key instead); nothing of the reply path reads it.
   const others = ['src/main/chat.ts', 'src/main/index.ts', 'src/main/replyTools.ts', 'src/preload/index.ts'].filter((f) => /RELEASE_PUBLIC_KEY/.test(source(f)))
