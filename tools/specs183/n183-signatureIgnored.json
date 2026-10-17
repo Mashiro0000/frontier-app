@@ -1,0 +1,16 @@
+{
+  "label": "n183-signatureIgnored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateManifest.ts",
+      "from": "  if (!signed) return no(",
+      "to": "  if (false) return no("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n183-checksumAny",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateManifest.ts",
+      "from": "!SHA256.test(sha256)",
+      "to": "sha256.length === 0"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

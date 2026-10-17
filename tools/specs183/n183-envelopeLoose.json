@@ -1,0 +1,16 @@
+{
+  "label": "n183-envelopeLoose",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateManifest.ts",
+      "from": "!keysAre(envelope, 'format,payload,signature')",
+      "to": "!('payload' in envelope)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

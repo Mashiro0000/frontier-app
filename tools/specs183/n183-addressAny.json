@@ -1,0 +1,16 @@
+{
+  "label": "n183-addressAny",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateManifest.ts",
+      "from": "if (url !== installerUrl(rules.repo, version, name))",
+      "to": "if (typeof url !== 'string')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}
