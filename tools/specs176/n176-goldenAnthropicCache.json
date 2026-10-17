@@ -1,0 +1,18 @@
+{
+  "label": "n176-goldenAnthropicCache",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/anthropic.ts",
+      "from": "        ? { cache_control: { type: 'ephemeral' as const } }",
+      "to": "        ? { cache_control: { type: 'ephemeral' as const, ttl: '1h' } }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-6.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 600000
+}

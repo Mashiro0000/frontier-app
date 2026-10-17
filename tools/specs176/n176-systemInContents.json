@@ -1,0 +1,18 @@
+{
+  "label": "n176-systemInContents",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "    systemInstruction: { parts: [{ text: request.system }] },",
+      "to": "    systemInstruction: { parts: [{ text: 'You are an AI assistant.' }] },"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-6.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 600000
+}

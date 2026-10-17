@@ -1,0 +1,18 @@
+{
+  "label": "w176-wGifSent",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentRequest.ts",
+      "from": "        facts.mediaType === 'image/gif' &&\n        model.provider === 'google'",
+      "to": "        facts.mediaType === 'image/gif' &&\n        model.provider === ('none' as string)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run176.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 1200000
+}

@@ -1,0 +1,18 @@
+{
+  "label": "n176-pdfTyped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "          ? { inlineData: { mimeType: 'application/pdf', data: file.data } }",
+      "to": "          ? { inlineData: { mimeType: 'application/octet-stream', data: file.data } }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-6.mjs"
+  ],
+  "env": {
+    "ONLY": "B"
+  },
+  "timeoutMs": 600000
+}

@@ -487,7 +487,7 @@ the backup has been tried on real chats is not known, and it is still the thing 
 - [x] (17.3, D-049) The adapter (102 checks under Node, 27 in the window on the app and the built app; 25 negative controls, all caught): the request (contents, roles, system instruction, thinking), the stream read strictly, usage, finish reasons, the key never in a URL or a sentence (and no redirect followed), Stop, one try, the adapter's own clocks.
 - [x] (17.4, D-049) Tools (32 checks under Node, 15 in the window on the app and the built app; 14 negative controls, all caught): the app's tools as function declarations, a function call and its answer in the loop (the thought signature kept), the caps and the box as before; the web search not offered with Gemini.
 - [x] (17.5, D-049) Settings and the window (28 checks under Node, 22 in the window on the app and the built app; 14 negative controls, all caught): the Google key (saving asks in the box with the free-tier words, every time), the models in the menus, the price change shown, Usage, the Tools page's note on web search.
-- [ ] (17.6, D-049) Files, instructions, projects, notes in a Gemini request; the golden test that every request to the other two providers is byte for byte what it was.
+- [x] (17.6, D-049) Files, instructions, projects, notes in a Gemini request (no GIF, at most 14 MB of files); the golden test that every request to the other two providers is byte for byte what it was (208 of 208) (22 checks under Node, 11 in the window on the app and the built app; 11 negative controls, all caught).
 - [ ] (17.7, D-049) Kept, sealed and backed up; the shortlist; every-stage safety.
 - [ ] (17.8, D-049) The stage's threat note, the full regression, the merge.
 

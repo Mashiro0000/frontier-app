@@ -1,0 +1,18 @@
+{
+  "label": "n176-capOff",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/attachmentRequest.ts",
+      "from": "  if (model.provider === 'google' && files.bytes > GEMINI_MAX_FILE_BYTES) {",
+      "to": "  if (false && files.bytes > GEMINI_MAX_FILE_BYTES) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-6.mjs"
+  ],
+  "env": {
+    "ONLY": "C"
+  },
+  "timeoutMs": 600000
+}

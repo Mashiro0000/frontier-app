@@ -42,6 +42,13 @@ const MB = 1024 * 1024
 const mb = (bytes: number): string => `${(bytes / MB).toFixed(1)} MB`
 const count = (value: number): string => value.toLocaleString('en-US')
 
+/**
+ * (17.6, D-049) Google takes at most 20 MB in one request, the files included, and they go in it as base64 (a third larger) because the Files API is not used
+ * (it keeps files on Google's side): so the files of a request to a Gemini model may come to at most 14 MB (18.7 MB as base64), leaving room for the text.
+ * Read from Google's pages, not proven; the other two providers keep the app's own cap.
+ */
+export const GEMINI_MAX_FILE_BYTES = 14 * MB
+
 /** A PDF's name as a provider is told it: it ends in ".pdf" (a provider may decide what a file is by its name). */
 export const pdfName = (name: string): string => (/\.pdf$/i.test(name) ? name : `${name}.pdf`)
 
@@ -86,6 +93,16 @@ export async function resolveAttachments(
           `${model.label} cannot read images, and this chat has one ("${name}"). Choose a model that can.`
         )
       }
+      // (17.6) Google lists PNG, JPEG, WebP, HEIC and HEIF for pictures: a GIF is said, not sent to be refused.
+      if (
+        facts.kind === 'image' &&
+        facts.mediaType === 'image/gif' &&
+        model.provider === 'google'
+      ) {
+        return refuse(
+          `${model.label} cannot read GIF pictures, and this chat has one ("${name}"). Choose another model, or start a new chat without it.`
+        )
+      }
       if (facts.kind === 'pdf' && !model.capabilities.documentInput) {
         return refuse(
           `${model.label} cannot read PDFs, and this chat has one ("${name}"). Choose a model that can.`
@@ -114,6 +131,11 @@ export async function resolveAttachments(
   if (files.bytes > L.maxRequestBytes) {
     return refuse(
       `the files in this chat come to ${mb(files.bytes)}, and one request may carry at most ${mb(L.maxRequestBytes)}; ${again}`
+    )
+  }
+  if (model.provider === 'google' && files.bytes > GEMINI_MAX_FILE_BYTES) {
+    return refuse(
+      `the files in this chat come to ${mb(files.bytes)}, and a request to ${model.label} may carry at most ${mb(GEMINI_MAX_FILE_BYTES)} of files (Google takes 20 MB in one request, and the files go in it a third larger); ${again}`
     )
   }
   if (files.pdfPages > L.maxRequestPages) {
