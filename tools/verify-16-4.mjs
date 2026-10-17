@@ -317,7 +317,7 @@ await guard('E', async () => {
   mkdirSync(out)
   r.saved.path = null
   let s = await r.service.saveCopy(null, id)
-  check('E: "Save a copy...": the system\'s dialog is asked with a plain name (no description in it) and the type; closing it saves nothing', !s.ok && s.cancelled === true && /^picture-2026-10-16-[0-9a-f]{8}\.png$/.test(r.saved.asked.name) && r.saved.asked.type === 'image/png' && r.saved.writes.length === 0, show([s, r.saved.asked]))
+  check('E: "Save a copy...": the system\'s dialog is asked with a plain name (no description in it) and the type; closing it saves nothing', !s.ok && s.cancelled === true && /^picture-\d{4}-\d{2}-\d{2}-[0-9a-f]{8}\.png$/.test(r.saved.asked.name) /* (the day of the run: the pattern had the day it was written, 2026-10-16) */ && r.saved.asked.type === 'image/png' && r.saved.writes.length === 0, show([s, r.saved.asked]))
   r.saved.path = join(out, 'mine.png')
   s = await r.service.saveCopy(null, id)
   check('E: a path chosen: the plain picture is written there, the very bytes', s.ok && readFileSync(join(out, 'mine.png')).equals(solidPng(1024, 1536, [40, 120, 200])))

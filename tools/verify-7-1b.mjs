@@ -34,7 +34,7 @@ const status = await H.status()
 check('a new process: the model menu shows Opus, as chosen last time', (await H.menu()).value === OPUS && status.selectedModelId === OPUS)
 check('...and the Effort menu shows MAX, the level chosen for Opus last time', (await effortMenu()).value === 'max' && status.effort.selected === 'max' && status.effort.default === 'medium', JSON.stringify(status.effort))
 check('starting up and reading the choices did NOT rewrite the file: same bytes and same modification time as at the end of launch 1', sha() === PREFS_SHA && statSync(H.prefFile).mtimeMs === MTIME, `${sha()} vs ${PREFS_SHA}; ${statSync(H.prefFile).mtimeMs} vs ${MTIME}`)
-check('the saved API keys survived too', status.providers.every((p) => p.hasKey === true))
+check('the saved API keys survived too', status.providers.filter((p) => p.id !== 'google').every((p) => p.hasKey === true)) // (the two saved before the restart; no Google key is saved here, 17.2)
 
 const req = (await H.askMock('hello after restart')) ?? { body: {}, problems: ['no request reached the mock'] }
 check('the first reply after the restart asks for Max (output_config { effort: "max" }) and the mock accepts it', req.body.model === OPUS && JSON.stringify(req.body.output_config) === '{"effort":"max"}' && req.problems.length === 0, JSON.stringify(req.body.output_config))

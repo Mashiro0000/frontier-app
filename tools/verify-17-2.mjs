@@ -58,7 +58,8 @@ await guard('A', async () => {
   }
   check('A: the descriptions say what each is for, and that Argon needs a billed key', /most capable/.test(a.description) && /billed key/.test(a.description) && /everyday/.test(f.description))
   // the other six, against the file of main before this stage (git), but for the new empty field
-  const before = JSON.parse(execFileSync('git', ['-C', REPO, 'show', 'b8ee65a:registry/models.json'], { encoding: 'utf8' }))
+  // main's file of before the stage (b8ee65a), kept in tools/ because the regression runs from a copy with no .git
+  const before = JSON.parse(readFileSync(join(REPO, 'tools', 'models-before-17.json'), 'utf8'))
   const now = file.models.filter((m) => m.provider !== 'google')
   check('A: the six models of Anthropic and OpenAI are exactly what they were, but for "priceChanges": [] after "pricing"', now.length === 6 && now.every((m, i) => m.priceChanges.length === 0 && Object.keys(m).join() === Object.keys(before.models[i]).flatMap((k) => (k === 'pricing' ? [k, 'priceChanges'] : [k])).join() && same({ ...m, priceChanges: undefined }, { ...before.models[i], priceChanges: undefined })))
   check('A: the source line names Google\'s pages and fits 300 characters', /Google's Gemini/.test(file.source) && file.source.length <= 300 && file.updatedAt === '2026-10-17')

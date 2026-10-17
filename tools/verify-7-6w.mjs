@@ -79,7 +79,7 @@ try {
     await sleep(250)
     const s = await headerShape()
     const badges = await H.badges()
-    const openai = /^gpt-/.test(id)
+    const openai = /^(gpt|gemini)-/.test(id) // (no key for either: since 17.2 Gemini's models show the badge as OpenAI's do)
     const hasEffort = await ev(`!!document.querySelector('.effort-select')`)
     rowsSeen.push([id, Math.round(s.h)])
     check(`model ${id}: the header is one row (${Math.round(s.h)} px), with its Effort menu${openai ? ', and the "No API key" badge showing' : ''}`, oneRow(s) && (openai ? badges.some((b) => /No API key/.test(b.text)) : badges.length === 0) && hasEffort, JSON.stringify({ s, badges: badges.map((b) => b.text), hasEffort }))

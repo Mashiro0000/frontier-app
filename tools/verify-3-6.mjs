@@ -20,11 +20,11 @@ const good = JSON.parse(readFileSync(ORIGINAL_REGISTRY, 'utf8'))
 const L = (id) => good.models.find((m) => m.id === id).label
 const OPUS = 'claude-opus-5-5', SONNET = 'claude-sonnet-5-5', FABLE = 'claude-fable-5-1' // the entry the scenarios break (Haiku 4.5's until D-036)
 const all = good.models.map((m) => m.id)
-const OPENAI = good.models.filter((m) => m.provider === 'openai').map((m) => m.id) // OpenAI's models stay on offer when an Anthropic entry is left out
+const OPENAI = good.models.filter((m) => m.provider !== 'anthropic').map((m) => m.id) // OpenAI's (and since 17.2 Google's) models stay on offer when an Anthropic entry is left out
 const tag = `[${SCENARIO}]`
 
 const EXPECT = {
-  'wrong-version': { available: false, error: /schemaVersion is "0\.1", but this version of the app reads 0\.5/ }, // the schema is 0.5 since 9.3 (D-037)
+  'wrong-version': { available: false, error: /schemaVersion is "0\.1", but this version of the app reads 0\.6/ }, // the schema is 0.6 since 17.2 (0.5 since 9.3, D-037)
   'no-usable-models': { available: false, error: /none of the entries in models is usable/, logMore: [/unknown field "effrot"/] },
   'default-missing': { available: false, error: /defaultModelId "claude-nope" is not one of the usable models/ },
   'default-is-broken-entry': { available: false, error: /defaultModelId "claude-opus-5-5" is not one of the usable models/, logMore: [/models\[1\] \("claude-opus-5-5"\): effort must be one of "none", "low", "medium", "high", "xhigh", "max" or null/] },

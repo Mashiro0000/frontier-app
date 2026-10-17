@@ -234,12 +234,12 @@ await guard('D', async () => {
 
 await guard('E', async () => {
   const live = parseRegistry(JSON.parse(readFileSync(new URL('../registry/models.json', import.meta.url), 'utf8')))
-  check('E: the registry is schema 0.5, and every model says whether it reads PDFs (documentInput); all six do (the providers\' pages, read on 6 October 2026)', REGISTRY_SCHEMA_VERSION === '0.5' && live.ok && live.problems.length === 0 && live.registry.models.length === 6 && live.registry.models.every((m) => m.capabilities.documentInput === true && m.capabilities.imageInput === true))
+  check('E: the registry is schema 0.6 (since 17.2), and every model says whether it reads PDFs (documentInput); all eight do (the providers\' pages, read on 6 and 17 October 2026)', REGISTRY_SCHEMA_VERSION === '0.6' && live.ok && live.problems.length === 0 && live.registry.models.length === 8 && live.registry.models.every((m) => m.capabilities.documentInput === true && m.capabilities.imageInput === true))
   const without = JSON.parse(readFileSync(new URL('../registry/models.json', import.meta.url), 'utf8'))
   delete without.models[0].capabilities.documentInput
   const r = parseRegistry(without)
-  check('E: an entry without documentInput is left out, and the problem names the field', r.ok && r.registry.models.length === 5 && r.problems.some((p) => /documentInput/.test(p)), show(r.problems))
-  check('E: the page is told whether the chosen model reads images and PDFs (and still nothing about how it is called)', same(Object.keys(toModelOption(opus)).sort(), ['contextWindow', 'description', 'documentInput', 'id', 'imageInput', 'label', 'pricing', 'provider']))
+  check('E: an entry without documentInput is left out, and the problem names the field', r.ok && r.registry.models.length === 7 /* eight since 17.2 */ && r.problems.some((p) => /documentInput/.test(p)), show(r.problems))
+  check('E: the page is told whether the chosen model reads images and PDFs (and still nothing about how it is called)', same(Object.keys(toModelOption(opus)).sort(), ['contextWindow', 'description', 'documentInput', 'id', 'imageInput', 'label', 'priceChange', 'pricing', 'provider']) /* priceChange since 17.2 */)
   const told = toModelOption(blind(opus, { imageInput: false, documentInput: false }))
   check('E: ...as the registry says it: a model that reads neither is told as false and false, one that reads both as true and true', told.imageInput === false && told.documentInput === false && toModelOption(opus).imageInput === true && toModelOption(opus).documentInput === true, show(told))
 })

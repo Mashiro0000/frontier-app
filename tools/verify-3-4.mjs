@@ -52,10 +52,10 @@ const apiKeys = await ev(`JSON.stringify(Object.keys(window.api.settings))`)
 check('window.api.settings is exactly getStatus / setApiKey / clearApiKey / testApiKey / setModel / setEffort / setLimits / setAskFirst (since 8.3)', apiKeys === '["getStatus","setApiKey","clearApiKey","testApiKey","setModel","setEffort","setLimits","setAskFirst"]', apiKeys)
 const status0 = await H.status()
 check('getStatus: exactly providers, canStoreKey, models, selectedModelId, modelsError, modelsCheckedOn, tasks, suggestions, effort, limits (since 8.2), askFirst (since 8.3)', Object.keys(status0).join() === 'providers,canStoreKey,models,selectedModelId,modelsError,modelsCheckedOn,tasks,suggestions,effort,limits,askFirst', Object.keys(status0).join())
-check('getStatus: default selected, no registry error, checked on 2026-10-01', status0.selectedModelId === OPUS && status0.modelsError === null && status0.modelsCheckedOn === '2026-10-01')
-check('getStatus: each model has exactly id, label, provider, description, contextWindow, pricing, and (since 9.3) whether it reads images and PDFs', status0.models.length === models.length && status0.models.every((m) => Object.keys(m).join() === 'id,label,provider,description,contextWindow,pricing,imageInput,documentInput'))
+check('getStatus: default selected, no registry error, checked on 2026-10-17 (the day 17.2 checked it again; 2026-10-01 before)', status0.selectedModelId === OPUS && status0.modelsError === null && status0.modelsCheckedOn === '2026-10-17')
+check('getStatus: each model has exactly id, label, provider, description, contextWindow, pricing, (since 9.3) whether it reads images and PDFs, and (since 17.2) its coming price change', status0.models.length === models.length && status0.models.every((m) => Object.keys(m).join() === 'id,label,provider,description,contextWindow,pricing,priceChange,imageInput,documentInput'))
 check('the page is told nothing about how a model is called: no output limit anywhere in the status, nothing about effort on any model, and (since Stage 7, D-024) the effort of the chosen model only as a menu: levels, selected, default', !/maxOutputTokens/i.test(JSON.stringify(status0)) && status0.models.every((m) => !/effort/i.test(JSON.stringify(m))) && Object.keys(status0.effort).join() === 'levels,selected,default')
-check('the status carries the registry\'s facts (each model\'s provider, the providers named "Anthropic" and "OpenAI", prices, context)', status0.providers.map((p) => p.name).join() === 'Anthropic,OpenAI' && status0.models.every((m, i) => m.provider === models[i].provider && m.contextWindow === models[i].contextWindow && m.pricing.inputPerMTok === models[i].pricing.inputPerMTok && m.pricing.outputPerMTok === models[i].pricing.outputPerMTok))
+check('the status carries the registry\'s facts (each model\'s provider, the providers named "Anthropic" and "OpenAI", prices, context)', status0.providers.map((p) => p.name).join() === 'Anthropic,OpenAI,Google' /* (Google since 17.2) */ && status0.models.every((m, i) => m.provider === models[i].provider && m.contextWindow === models[i].contextWindow && m.pricing.inputPerMTok === models[i].pricing.inputPerMTok && m.pricing.outputPerMTok === models[i].pricing.outputPerMTok))
 
 // the Settings dialog describes the selected model
 let text = await H.settingsText()
@@ -63,7 +63,7 @@ check('Settings, Model section: names the model and its provider', /Claude Opus 
 check('...shows the description from the registry', text.includes(models[1].description))
 check('...says how much it can read: "about 1M tokens"', /about 1M tokens of conversation/.test(text))
 check('...gives the list prices: $4 in, $20 out, per million tokens', /\$4 per million tokens it reads and \$20 per million tokens it writes/.test(text), text.match(/List price:[^.]*\./)?.[0])
-check('...says when the prices were checked', /Prices were checked on 2026-10-01\./.test(text))
+check('...says when the prices were checked', /Prices were checked on 2026-10-17\./.test(text)) /* (the registry checked again by 17.2) */
 check('...says the bill goes to the Anthropic account, and how to change the model', /billed to your Anthropic account/.test(text) && /menu in the header/.test(text))
 check('...warns that a mid-chat change sends the whole chat to the new model', /whole chat so far is sent to the new model/.test(text))
 check('...the old "fixed for now" line is gone', !/fixed for now/i.test(text))

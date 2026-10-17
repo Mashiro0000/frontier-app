@@ -63,7 +63,7 @@ const bad = [
   ['no id', { ...GOOD, id: undefined }], ['an id that is not a uuid', { ...GOOD, id: 'abc' }], ['an upper-case id', { ...GOOD, id: GOOD.id.toUpperCase() }], ['a numeric id', { ...GOOD, id: 5 }],
   ['at negative', { ...GOOD, at: -1 }], ['at a fraction', { ...GOOD, at: 1.5 }], ['at NaN', { ...GOOD, at: NaN }], ['at a string', { ...GOOD, at: '1790000000000' }], ['at beyond a safe integer', { ...GOOD, at: 2 ** 60 }], ['no at', { ...GOOD, at: undefined }],
   ['chat that is not an id', { ...GOOD, chat: 'abc' }], ['chat missing (not null)', { ...GOOD, chat: undefined }],
-  ['an unknown provider', { ...GOOD, provider: 'google' }], ['no provider', { ...GOOD, provider: undefined }],
+  ['an unknown provider', { ...GOOD, provider: 'gemini' }] /* (google is a provider since 17.2) */, ['no provider', { ...GOOD, provider: undefined }],
   ['a model that is not an id', { ...GOOD, model: 'Claude Opus' }], ['a model with a slash', { ...GOOD, model: 'a/b' }], ['no model', { ...GOOD, model: undefined }],
   ['an effort that is not a level', { ...GOOD, effort: 'extreme' }], ['effort missing (not null)', { ...GOOD, effort: undefined }],
   ['an unknown state', { ...GOOD, state: 'paid' }], ['no state', { ...GOOD, state: undefined }],
@@ -119,13 +119,15 @@ check('ledgerLine: a cost written into the file is NOT read (a line cannot claim
   const file = JSON.parse(readFileSync(`${REPO}/registry/models.json`, 'utf8'))
   const parsed = parseRegistry(file)
   check('registry: the file in the repo is read, with no problem', parsed.ok && parsed.problems.length === 0, JSON.stringify(parsed.problems ?? parsed.error))
-  check('registry: the schema is 0.5 (documentInput since 9.3; the prices are what 8.1 made them)', reg.REGISTRY_SCHEMA_VERSION === '0.5' && file.schemaVersion === '0.5')
+  check('registry: the schema is 0.6 (documentInput since 9.3, priceChanges since 17.2; the prices are what 8.1 made them)', reg.REGISTRY_SCHEMA_VERSION === '0.6' && file.schemaVersion === '0.6')
   // What the providers' pricing pages said on 2026-10-02 (the Anthropic page and OpenAI's pricing table): input, cache read, cache write, output.
   const PAGES = {
     'claude-fable-5-1': [10, 0.25, 12.5, 50], 'claude-opus-5-5': [4, 0.2, 5, 20], 'claude-sonnet-5-5': [2, 0.2, 2.5, 10],
-    'gpt-6-astra': [10, 1, 12.5, 50], 'gpt-6.1-sol': [2, 0.1, 2.5, 10], 'gpt-6-luna': [0.1, 0.01, 0.125, 0.5]
+    'gpt-6-astra': [10, 1, 12.5, 50], 'gpt-6.1-sol': [2, 0.1, 2.5, 10], 'gpt-6-luna': [0.1, 0.01, 0.125, 0.5],
+    // (17.2, D-049) Google's pages of 2026-10-17, until the dated changes; a cache write is ordinary input, Flash's cached price is its input price
+    'gemini-4-argon': [2, 0.1, 2, 10], 'gemini-3.8-flash': [0.75, 0.75, 0.75, 3.75]
   }
-  check('registry: it lists exactly the six models the pages were read for (Claude Haiku 4.5 was removed on 2026-10-06, D-036)', same([...Object.keys(PAGES)].sort(), (parsed.ok ? parsed.registry.models : []).map((m) => m.id).sort()))
+  check('registry: it lists exactly the eight models the pages were read for (two of Google\'s since 17.2) (Claude Haiku 4.5 was removed on 2026-10-06, D-036)', same([...Object.keys(PAGES)].sort(), (parsed.ok ? parsed.registry.models : []).map((m) => m.id).sort()))
   for (const m of parsed.ok ? parsed.registry.models : []) {
     const p = m.pricing
     check(`registry: ${m.id} is priced as the pages said (in / cache read / cache write / out)`, same([p.inputPerMTok, p.cacheReadPerMTok, p.cacheWritePerMTok, p.outputPerMTok], PAGES[m.id]), JSON.stringify(p))

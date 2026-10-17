@@ -1,0 +1,146 @@
+{
+  "schemaVersion": "0.5",
+  "updatedAt": "2026-10-01",
+  "source": "Anthropic's Claude API documentation (models overview, capability fields, effort and prompt-caching pages), read on 2026-10-01; its pricing page and OpenAI's model and pricing pages (GPT-6 family), with the cache prices, read on 2026-10-02. List prices, US dollars per million tokens.",
+  "defaultModelId": "claude-opus-5-5",
+  "models": [
+    {
+      "provider": "anthropic",
+      "id": "claude-fable-5-1",
+      "label": "Claude Fable 5.1",
+      "description": "The most capable, and the slowest and priciest. For demanding reasoning and long, multi-step work.",
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "pricing": {
+        "inputPerMTok": 10,
+        "cacheReadPerMTok": 0.25,
+        "cacheWritePerMTok": 12.5,
+        "outputPerMTok": 50
+      },
+      "capabilities": {
+        "imageInput": true,
+        "documentInput": true,
+        "toolUse": true,
+        "reasoning": true,
+        "promptCaching": true,
+        "effortLevels": ["low", "medium", "high", "xhigh", "max"]
+      },
+      "effort": "high"
+    },
+    {
+      "provider": "anthropic",
+      "id": "claude-opus-5-5",
+      "label": "Claude Opus 5.5",
+      "description": "A strong all-rounder for coding and knowledge work.",
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "pricing": {
+        "inputPerMTok": 4,
+        "cacheReadPerMTok": 0.2,
+        "cacheWritePerMTok": 5,
+        "outputPerMTok": 20
+      },
+      "capabilities": {
+        "imageInput": true,
+        "documentInput": true,
+        "toolUse": true,
+        "reasoning": true,
+        "promptCaching": true,
+        "effortLevels": ["low", "medium", "high", "xhigh", "max"]
+      },
+      "effort": "medium"
+    },
+    {
+      "provider": "anthropic",
+      "id": "claude-sonnet-5-5",
+      "label": "Claude Sonnet 5.5",
+      "description": "Fast, with a good balance of speed and capability for everyday use.",
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "pricing": {
+        "inputPerMTok": 2,
+        "cacheReadPerMTok": 0.2,
+        "cacheWritePerMTok": 2.5,
+        "outputPerMTok": 10
+      },
+      "capabilities": {
+        "imageInput": true,
+        "documentInput": true,
+        "toolUse": true,
+        "reasoning": true,
+        "promptCaching": true,
+        "effortLevels": ["low", "medium", "high", "xhigh", "max"]
+      },
+      "effort": "medium"
+    },
+    {
+      "provider": "openai",
+      "id": "gpt-6-astra",
+      "label": "GPT-6 Astra",
+      "description": "OpenAI's most capable model, and the priciest. For demanding reasoning and long, multi-step work.",
+      "contextWindow": 1050000,
+      "maxOutputTokens": 128000,
+      "pricing": {
+        "inputPerMTok": 10,
+        "cacheReadPerMTok": 1,
+        "cacheWritePerMTok": 12.5,
+        "outputPerMTok": 50
+      },
+      "capabilities": {
+        "imageInput": true,
+        "documentInput": true,
+        "toolUse": true,
+        "reasoning": true,
+        "promptCaching": true,
+        "effortLevels": ["low", "medium", "high", "xhigh", "max"]
+      },
+      "effort": "medium"
+    },
+    {
+      "provider": "openai",
+      "id": "gpt-6.1-sol",
+      "label": "GPT-6.1 Sol",
+      "description": "OpenAI's balanced model: a good all-rounder for everyday and professional work.",
+      "contextWindow": 1050000,
+      "maxOutputTokens": 128000,
+      "pricing": {
+        "inputPerMTok": 2,
+        "cacheReadPerMTok": 0.1,
+        "cacheWritePerMTok": 2.5,
+        "outputPerMTok": 10
+      },
+      "capabilities": {
+        "imageInput": true,
+        "documentInput": true,
+        "toolUse": true,
+        "reasoning": true,
+        "promptCaching": true,
+        "effortLevels": ["low", "medium", "high", "xhigh", "max"]
+      },
+      "effort": "medium"
+    },
+    {
+      "provider": "openai",
+      "id": "gpt-6-luna",
+      "label": "GPT-6 Luna",
+      "description": "OpenAI's fastest and cheapest model, for quick answers and high volume.",
+      "contextWindow": 1050000,
+      "maxOutputTokens": 128000,
+      "pricing": {
+        "inputPerMTok": 0.1,
+        "cacheReadPerMTok": 0.01,
+        "cacheWritePerMTok": 0.125,
+        "outputPerMTok": 0.5
+      },
+      "capabilities": {
+        "imageInput": true,
+        "documentInput": true,
+        "toolUse": true,
+        "reasoning": true,
+        "promptCaching": true,
+        "effortLevels": ["none", "low", "medium", "high", "xhigh", "max"]
+      },
+      "effort": "medium"
+    }
+  ]
+}

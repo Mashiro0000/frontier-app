@@ -11,7 +11,7 @@
 import './ts-resolve.mjs'
 import { checker } from './cdp.mjs'
 import { execFileSync } from 'node:child_process'
-import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto'
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto'
 import { mkdtempSync, promises as fsp, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -95,7 +95,7 @@ await guard('D', async () => {
   const rows = parsed.rankings.rows.filter((r) => /gemini/.test(r.modelId))
   check('D: one row for Gemini: Gemini 3.8 Flash for coding, quoting Google\'s models page, read on 17 October 2026', rows.length === 1 && rows[0].task === 'coding' && rows[0].modelId === 'gemini-3.8-flash' && /^"engineered for long-horizon software engineering, autonomous agents/.test(rows[0].note) && rows[0].source === 'https://ai.google.dev/gemini-api/docs/models' && rows[0].asOf === '2026-10-17', show(rows))
   check('D: no row for Gemini 4 Argon (the page names no task for it), and no score anywhere (D-023)', !rows.some((r) => r.modelId === 'gemini-4-argon') && !/score/i.test(JSON.stringify(file)))
-  const before = JSON.parse(git('show', 'b8ee65a:registry/rankings.json'))
+  const before = JSON.parse(readFileSync(join(REPO, 'tools', 'rankings-before-17.json'), 'utf8')) // main's file of before the stage (b8ee65a)
   check('D: the rows of before are exactly what they were', same(file.rankings.filter((r) => !/gemini/.test(r.modelId)), before.rankings), show(file.rankings.length))
   const models = R.parseRegistry(JSON.parse(source('registry/models.json'))).registry.models
   const withKey = RK.suggestionsFor(parsed.rankings, models, () => true)
@@ -106,8 +106,10 @@ await guard('D', async () => {
 
 // ============ E. every stage's safety ============
 await guard('E', async () => {
-  check('E: no new package: package.json and package-lock.json are byte for byte main\'s of before the stage (rule 10)', git('diff', 'b8ee65a', '--', 'package.json', 'package-lock.json') === '')
-  check('E: the window\'s policy (index.html) is unchanged (rule 7)', git('diff', 'b8ee65a', '--', 'src/renderer/index.html') === '')
+  // the SHA-256 of main's files of before the stage (b8ee65a), as git gave them: the regression runs from a copy with no .git
+  const hash = (rel) => createHash('sha256').update(readFileSync(join(REPO, rel)).toString('utf8').replace(/\r\n/g, '\n')).digest('hex')
+  check('E: no new package: package.json and package-lock.json are byte for byte main\'s of before the stage (rule 10)', hash('package.json') === '7d971fabb05583de24eb38abeae3b2ec7c2f7303b50892fdb3e66323eb715d4f' && hash('package-lock.json') === '47ae1caaa4d8628a0500f046d038a00d95110708b15a1f3a34adb8e4eda7a906')
+  check('E: the window\'s policy (index.html) is unchanged (rule 7)', hash('src/renderer/index.html') === 'f80ed67d49883c8105c73f0b5b502537829b5d35f59145c10418d71133a29a90')
   const gemini = source('src/main/providers/gemini.ts')
   check('E: the adapter logs nothing at all (no console), so it can log no key (rule 5)', !/console\./.test(gemini))
   check('E: the key never in an address: no "key=" in the adapter (rule 5)', !/[?&]key=/.test(gemini.replace(/\/\/.*$/gm, '')))

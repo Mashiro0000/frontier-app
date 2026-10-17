@@ -262,12 +262,13 @@ await guard('E', async () => {
 // ============ F. the baseline ============
 await guard('F', async () => {
   const registry = source('src/shared/registry.ts')
-  check('F: the app knows two providers, anthropic and openai (no google yet)', /SUPPORTED_PROVIDERS = \['anthropic', 'openai'\] as const/.test(registry))
+  // (F is the baseline of 17.1, taken before 17.2 made Google a provider and moved the registry to 0.6: those two checks now say what 17.2 made true)
+  check('F: the app knows three providers since 17.2 (two at the baseline: anthropic and openai)', /SUPPORTED_PROVIDERS = \['anthropic', 'openai', 'google'\] as const/.test(registry))
   const pkg = JSON.parse(source('package.json'))
   const deps = { ...pkg.dependencies, ...pkg.devDependencies }
   check('F: no Google package in package.json, and none installed (@google/genai, @google/generative-ai)', !Object.keys(deps).some((d) => /google/i.test(d)) && !existsSync(join(REPO, 'node_modules', '@google', 'genai')) && !existsSync(join(REPO, 'node_modules', '@google', 'generative-ai')))
   const models = JSON.parse(source('registry/models.json'))
-  check('F: the registry has no Gemini model, and is schema 0.5', models.schemaVersion === '0.5' && !models.models.some((m) => /gemini/.test(m.id)))
+  check('F: the registry is schema 0.6 with the two Gemini models since 17.2 (0.5 and none at the baseline)', models.schemaVersion === '0.6' && models.models.filter((m) => /gemini/.test(m.id)).length === 2)
   const golden = JSON.parse(readFileSync(join(REPO, 'tools', 'golden-17.json'), 'utf8'))
   const keys = Object.keys(golden.requests)
   check('F: the golden record of the other two providers is there (208 requests: 6 models, files, tools, search, listings)', keys.length === 208 && keys.includes('gpt-6-luna|tool-loop') && keys.includes('claude-opus-5-5|files|all') && keys.includes('anthropic|listing'), String(keys.length))
