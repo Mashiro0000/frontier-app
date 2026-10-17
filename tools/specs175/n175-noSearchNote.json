@@ -1,0 +1,16 @@
+{
+  "label": "n175-noSearchNote",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/tools/SwitchesSection.tsx",
+      "from": "                {tool.id === 'web_search' && (",
+      "to": "                {tool.id === ('none' as string) && ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

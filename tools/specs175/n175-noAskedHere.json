@@ -1,0 +1,16 @@
+{
+  "label": "n175-noAskedHere",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/googleKey.ts",
+      "from": "      ASKED_HERE\n",
+      "to": "      ''\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n175-monthOffByOne",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/format.ts",
+      "from": "return `${date} ${MONTHS[month - 1] ?? '?'} ${year}`",
+      "to": "return `${date} ${MONTHS[month] ?? '?'} ${year}`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

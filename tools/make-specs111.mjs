@@ -188,7 +188,8 @@ const win = {
   'w111-openai-tool-choice': [[OAI, '      store: false,\n', "      store: false,\n      tool_choice: 'none',\n"]],
   'w111-tool-call-shown': [[ANT, "    if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {", "    if (event.type === 'content_block_start' && event.content_block.type === 'tool_use') {\n      yield { type: 'text', text: `[tool_use ${event.content_block.name}]` }\n    }\n    if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {"]],
   'w111-page-says-tools': [[CB, 'Attach...', 'Attach tools...']],
-  'w111-bundle-holds-registry': [[IPC, "import { createQuestionGate } from './systemQuestion'", "import { createQuestionGate } from './systemQuestion'\nimport { WEB_SEARCH } from './toolRegistry'"], [IPC, '  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))', '  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))\n  console.log(WEB_SEARCH.title)']]
+  // (17.5: since 11.3 the check is that the running program HOLDS the registry and the audit log, so the control now takes the audit log's question out)
+  'w111-bundle-holds-registry': [['{{REPO}}/src/main/auditService.ts', "    message: 'Delete the whole audit log?',", "    message: 'Remove every line of it?',"]]
 }
 
 const write = (dir, specs, argv, env, timeoutMs) => {

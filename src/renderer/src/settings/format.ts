@@ -86,6 +86,38 @@ export function formatPrice(dollars: number): string {
   return Number.isInteger(dollars) ? `$${dollars}` : `$${dollars.toFixed(2)}`
 }
 
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+]
+
+/** (17.5) A day written like 2026-12-01, as words: "1 December 2026" (the same on every computer, whatever its language). */
+export function formatDay(day: string): string {
+  const [year, month, date] = day.split('-').map(Number)
+  return `${date} ${MONTHS[month - 1] ?? '?'} ${year}`
+}
+
+/** (17.5) How an announced price compares with today's, in words: "twice today's prices" when both prices double, else "more than today's prices". */
+export function priceRatio(
+  today: { inputPerMTok: number; outputPerMTok: number },
+  later: { inputPerMTok: number; outputPerMTok: number }
+): string {
+  return later.inputPerMTok === today.inputPerMTok * 2 &&
+    later.outputPerMTok === today.outputPerMTok * 2
+    ? "twice today's prices"
+    : "more than today's prices"
+}
+
 /** What something cost (D-030): "$0.00", "$0.0041" (a fraction of a cent keeps four places), "$0.12", "$12.34". */
 export function formatCost(dollars: number): string {
   if (dollars === 0) return '$0.00'

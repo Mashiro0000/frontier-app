@@ -1,0 +1,16 @@
+{
+  "label": "n175-alwaysTwice",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/format.ts",
+      "from": "    ? \"twice today's prices\"\n    : \"more than today's prices\"",
+      "to": "    ? \"twice today's prices\"\n    : \"twice today's prices\""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

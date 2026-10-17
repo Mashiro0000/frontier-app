@@ -131,6 +131,13 @@ function SwitchesSection({ settings, busy, working }: SwitchesSectionProps): Rea
               <div className="tools-switch-text">
                 <span className="tools-switch-title">{tool.title}</span>
                 <span className="tools-hint">{tool.about}</span>
+                {tool.id === 'web_search' && (
+                  // (17.5, D-049) Google's own search is not used: the search is not offered while a Gemini model answers, whatever this switch says.
+                  <span className="tools-hint tools-search-gemini">
+                    Not offered with Gemini models: the search would run on Google Search, and Google
+                    keeps searched prompts for 30 days.
+                  </span>
+                )}
               </div>
               <button
                 type="button"

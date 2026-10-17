@@ -1,0 +1,18 @@
+{
+  "label": "w175-wNeverAsks",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      if (check.provider === 'google') {",
+      "to": "      if (check.provider === ('none' as string)) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run175.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 1200000
+}

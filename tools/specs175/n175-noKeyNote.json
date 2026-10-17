@@ -1,0 +1,16 @@
+{
+  "label": "n175-noKeyNote",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/ProviderKeySection.tsx",
+      "from": "      {help.note !== undefined && <p className=\"settings-hint settings-key-note\">{help.note}</p>}\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-5.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

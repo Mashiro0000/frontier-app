@@ -1,0 +1,18 @@
+{
+  "label": "w175-wNoPriceChange",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/SettingsDialog.tsx",
+      "from": "            {model.priceChange !== null && (",
+      "to": "            {false && model.priceChange !== null && ("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run175.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 1200000
+}
