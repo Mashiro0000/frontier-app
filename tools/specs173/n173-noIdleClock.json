@@ -1,0 +1,18 @@
+{
+  "label": "n173-noIdleClock",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "      dog.arm(idleMs, 'for too long in the middle of the reply')",
+      "to": "      void idleMs"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-3.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

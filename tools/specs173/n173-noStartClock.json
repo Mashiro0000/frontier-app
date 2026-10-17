@@ -1,0 +1,18 @@
+{
+  "label": "n173-noStartClock",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "  dog.arm(startMs, 'within the time allowed for an answer to begin')",
+      "to": "  void startMs"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-3.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 150000
+}

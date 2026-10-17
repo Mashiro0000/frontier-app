@@ -74,7 +74,8 @@ export function createGeminiMock({ json, readBody, requests, expectedKey, models
           for (const extra of Object.keys(part)) if (![...kinds, 'thought', 'thoughtSignature'].includes(extra)) problems.push(`Invalid JSON payload received. Unknown name "${extra}" at '${at}': Cannot find field.`)
           if (kinds.length !== 1) { problems.push(`${at}: a part must hold exactly one of text, inlineData, functionCall, functionResponse (it holds ${kinds.length})`); return }
           const kind = kinds[0]
-          if (kind === 'text' && (typeof part.text !== 'string' || part.text === '')) problems.push(`${at}.text: must be a non-empty string`)
+          // (an empty text part is taken back only when it carries a thought signature: in a stream the signature can come in a part of its own)
+          if (kind === 'text' && (typeof part.text !== 'string' || (part.text === '' && typeof part.thoughtSignature !== 'string'))) problems.push(`${at}.text: must be a non-empty string`)
           if (kind === 'fileData') problems.push(`${at}: fileData (the Files API) is not used by this app: files are sent inline`)
           if (kind === 'inlineData') {
             const d = part.inlineData
@@ -102,7 +103,9 @@ export function createGeminiMock({ json, readBody, requests, expectedKey, models
       })
       if (body.contents[0]?.role !== 'user') problems.push('contents[0]: the first turn must be the user\'s')
       if (body.contents.at(-1)?.role !== 'user') problems.push('the last turn must be the user\'s (a model turn at the end is not continued)')
-      if (inlineBytes + 4096 > GEMINI_INLINE_LIMIT) problems.push(`Request payload size exceeds the limit: ${GEMINI_INLINE_LIMIT} bytes.`)
+      // (17.6: the limit is on the whole request as sent, base64 and text included, as Google's pages say "total request size"; my reading, not proven)
+      void inlineBytes
+      if (Buffer.byteLength(JSON.stringify(body)) > GEMINI_INLINE_LIMIT) problems.push(`Request payload size exceeds the limit: ${GEMINI_INLINE_LIMIT} bytes.`)
       // a model turn that called functions is answered, in the very next turn, by a functionResponse for each call, by name (and by id when the call had one);
       // a call the mock issued with a thought signature must come back WITH that signature ("Function call is missing a thought_signature")
       body.contents.forEach((content, i) => {

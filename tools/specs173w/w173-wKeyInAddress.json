@@ -1,0 +1,18 @@
+{
+  "label": "w173-wKeyInAddress",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "/models/${encodeURIComponent(request.model.id)}:streamGenerateContent?alt=sse`",
+      "to": "/models/${encodeURIComponent(request.model.id)}:streamGenerateContent?alt=sse&key=${request.credentials.apiKey}`"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run173.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 1200000
+}

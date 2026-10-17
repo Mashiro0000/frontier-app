@@ -47,7 +47,8 @@ function sentence(facts: ErrorFacts, providerName: string, modelId: string): str
   const { kind, status, detail, raw } = facts
   switch (kind) {
     case 'auth':
-      return 'The API key was not accepted (401). Check it in Settings.'
+      // (17.3) Google refuses a key with a 400, not a 401: the status said is the one that came (for the other two it is always 401, so their words are unchanged)
+      return `The API key was not accepted (${status ?? 401}). Check it in Settings.`
     case 'permission':
       return `This API key is not allowed to do that (403). ${detail ?? ''}`.trim()
     case 'not-found':

@@ -1,0 +1,18 @@
+{
+  "label": "w173-wThoughtsShown",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "if (part['thought'] !== true && typeof part['text'] === 'string' && part['text'] !== '') {",
+      "to": "if (typeof part['text'] === 'string' && part['text'] !== '') {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run173.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 1200000
+}

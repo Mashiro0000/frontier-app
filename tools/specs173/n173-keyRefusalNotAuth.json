@@ -1,0 +1,18 @@
+{
+  "label": "n173-keyRefusalNotAuth",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "      api.reason === 'API_KEY_INVALID' ||\n      /API key not valid/i.test(api.message)",
+      "to": "      false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-3.mjs"
+  ],
+  "env": {
+    "ONLY": "D"
+  },
+  "timeoutMs": 300000
+}

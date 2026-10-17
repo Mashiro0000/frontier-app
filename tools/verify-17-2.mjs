@@ -218,7 +218,7 @@ await guard('G', async () => {
   check('G: a Google key that is not saved is still found by its shape', S.findLookalikes(`key ${KEY}`).some((f) => /Google API key/.test(f.what)), show(S.findLookalikes(`key ${KEY}`)))
   check('G: the search fee table names Google ($14 per 1,000; never used: Google Search is not offered)', U.SEARCH_FEE_USD.google === 0.014 && Object.isFrozen(U.SEARCH_FEE_USD))
   const copy = source('src/renderer/src/settings/providerCopy.ts')
-  check('G: Settings says what a Google key is for and where to make one', /google: \{ uses: "Google's Gemini models", whereToCreate: 'Google AI Studio' \}/.test(copy))
+  check('G: Settings says what a Google key is for and where to make one', /google: \{\s*uses: "Google's Gemini models",\s*whereToCreate: 'Google AI Studio'/.test(copy))
   check('G: the system prompt does not call a Gemini model Claude', /google: 'an AI assistant'/.test(source('src/main/providers/request.ts')))
 })
 
@@ -231,7 +231,8 @@ await guard('H', async () => {
   check('H: the page\'s list is priced at one moment for every model', /const now = Date\.now\(\)/.test(ipc) && /registry\.registry\.models\.map\(\(entry\) => toModelOption\(entry, now\)\)/.test(ipc) && !/map\(toModelOption\)/.test(ipc))
   const index = source('src/main/providers/index.ts')
   check('H: the adapter table has an entry for Google', /google: geminiAdapter/.test(index))
-  check('H: no Google package and no Google address in the app yet (the adapter is 17.3)', !/@google\//.test(source('package.json')) && !/googleapis\.com/.test(source('src/main/providers/gemini.ts')))
+  // (written in 17.2, when the adapter was a stand-in with no address; since 17.3 the address is in the adapter and nowhere else in main)
+  check('H: no Google package; Google\'s address only in the adapter (none in chat.ts, ipc.ts, the registry)', !/@google\//.test(source('package.json')) && /googleapis\.com/.test(source('src/main/providers/gemini.ts')) && !/googleapis\.com/.test(source('src/main/chat.ts') + source('src/main/ipc.ts') + source('registry/models.json')))
 })
 
 process.exit(check.summary() ? 0 : 1)
