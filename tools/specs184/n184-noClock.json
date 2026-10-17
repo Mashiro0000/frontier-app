@@ -1,0 +1,16 @@
+{
+  "label": "n184-noClock",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateFetch.ts",
+      "from": "  const timer = setTimeout(() => controller.abort(), rules.timeoutMs)",
+      "to": "  const timer = setTimeout(() => undefined, rules.timeoutMs)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

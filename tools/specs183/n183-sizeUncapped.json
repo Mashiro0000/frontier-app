@@ -1,0 +1,16 @@
+{
+  "label": "n183-sizeUncapped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateManifest.ts",
+      "from": "size > MAX_INSTALLER_BYTES",
+      "to": "size > Number.MAX_VALUE"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

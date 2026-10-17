@@ -1,0 +1,16 @@
+{
+  "label": "n183-signatureAnyLength",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateManifest.ts",
+      "from": "signatureBytes.length !== 64",
+      "to": "signatureBytes.length < 1"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

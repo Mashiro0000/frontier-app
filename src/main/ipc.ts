@@ -102,7 +102,7 @@ import { getRankings, reportRankingsProblems } from './rankings'
 import { getRegistry, reportRegistryProblems } from './registry'
 import { createToolRuntime } from './replyTools'
 import { heldKey, type SavedKey } from './secrets'
-import { isSafeExternalUrl, isTrustedSender } from './security'
+import { isAppUrl, isSafeExternalUrl, isTrustedSender } from './security'
 import {
   createQuestionGate,
   QUESTION_BUSY,
@@ -139,6 +139,12 @@ import { createImageService } from './imageService'
 import { createImageSettings } from './imageSettings'
 import { createImageStore, writePlainCopy } from './imageStore'
 import { createVoiceSettings } from './voiceSettings'
+import { RELEASE_PUBLIC_KEY, RELEASES_REPO } from './releaseConfig'
+import { githubOnly } from './updateFetch'
+import { createUpdateService } from './updateService'
+import { createUpdateSettings } from './updateSettings'
+import { UPDATE_LIMITS, type UpdateChangeResult, type UpdateStatus } from '../shared/updates'
+import { spawn } from 'child_process'
 import { microphoneGate } from './voiceWindow'
 import { createToolSettingsService } from './toolSettingsService'
 import { createUsageLedger } from './usageLedger'
@@ -505,6 +511,13 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     box: secureStorage,
     writeMode: protection.writeMode
   })
+  // Updates (D-050): whether the daily check is on, when it last ran and the version declined, in updates.json, kept the same way: off with no file or a file
+  // that cannot be read.
+  const updateSettings = createUpdateSettings({
+    pathOf: () => join(app.getPath('userData'), 'updates.json'),
+    box: secureStorage,
+    writeMode: protection.writeMode
+  })
   // Pictures (D-048): whether "Make images" is on (image-settings.json: off with no file or a file that cannot be read), the gallery's index (images.json) and the
   // pictures themselves (images/, one file each, named by a random id), all kept and sealed like the chats.
   const imageSettings = createImageSettings({
@@ -715,6 +728,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     documents: keptDocuments([
       everyChat.file,
       memory.file,
+      updateSettings.file,
       projects.file,
       auditLog.document,
       toolSettings.file,
@@ -724,7 +738,7 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       voiceSettings.file,
       imageSettings.file,
       imageIndex
-    ]) // rewritten with the chats (D-039, D-041, D-045, D-047, D-048)
+    ]) // rewritten with the chats (D-039, D-041, D-045, D-047, D-048, D-050: updates.json sits after memory.json, where no older check reads two lines side by side)
   })
 
   ipcMain.handle(
@@ -1545,6 +1559,68 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     )
   )
 
+  // Updates (D-050, 18.4 to 18.6). The page reads the status and asks; the daily check is switched on only after the person's yes in the system's box, and an update is
+  // downloaded and run only after a yes there too. Running from source, FRONTIER_UPDATE_URL points both addresses at a stand-in (the checks); never in the installed app.
+  const updateStandIn = !app.isPackaged ? (process.env['FRONTIER_UPDATE_URL'] ?? '') : ''
+  const updates = createUpdateService({
+    settings: updateSettings,
+    gate: questions,
+    fetch: (url, init) => fetch(url, init),
+    allowed: updateStandIn ? (url) => url.origin === new URL(updateStandIn).origin : githubOnly,
+    publicKey: !app.isPackaged
+      ? (process.env['FRONTIER_UPDATE_KEY'] ?? RELEASE_PUBLIC_KEY)
+      : RELEASE_PUBLIC_KEY,
+    repo: RELEASES_REPO,
+    currentVersion: app.getVersion(),
+    rewrite: updateStandIn
+      ? (address) =>
+          address.replace(/^https:\/\/github\.com\//, `${new URL(updateStandIn).origin}/`)
+      : null,
+    downloadsDir: () => join(app.getPath('userData'), 'updates'),
+    installed: app.isPackaged,
+    runInstaller: (path) => {
+      // The NSIS installer of an update: silent, as an update (shortcuts and data kept), and it starts the app again when it is done.
+      spawn(path, ['--updated', '/S', '--force-run'], { detached: true, stdio: 'ignore' }).unref()
+    },
+    quit: () => app.quit(),
+    owner: () =>
+      BrowserWindow.getAllWindows().find(
+        (w) => !w.isDestroyed() && isAppUrl(w.webContents.getURL(), appUrl)
+      ) ?? null
+  })
+  const updateFailed = { ok: false as const, error: 'The update settings could not be changed.' }
+  const updateCall =
+    (work: (window: BrowserWindow | null, input: unknown) => Promise<UpdateChangeResult>) =>
+    async (window: BrowserWindow | null, input: unknown): Promise<UpdateChangeResult> => {
+      try {
+        return await work(window, input)
+      } catch (error) {
+        console.error('An update call failed:', reason(error))
+        return updateFailed
+      }
+    }
+  ipcMain.handle(
+    CHANNELS.updatesStatus,
+    guarded(async (): Promise<UpdateStatus> => {
+      try {
+        return await updates.status()
+      } catch (error) {
+        console.error('Reading the update settings failed:', reason(error))
+        throw new Error('Your update settings could not be read.')
+      }
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.updatesSetOn,
+    guardedForWindow(updateCall((w, input) => updates.setOn(w, input)))
+  )
+  ipcMain.handle(CHANNELS.updatesReset, guardedForWindow(updateCall(() => updates.reset())))
+  ipcMain.handle(CHANNELS.updatesCheckNow, guardedForWindow(updateCall(() => updates.checkNow())))
+  ipcMain.handle(CHANNELS.updatesInstall, guardedForWindow(updateCall((w) => updates.install(w))))
+  // The daily check: looked at a minute after start, then every hour; it runs only when it is on and the last one is a day old.
+  const updateTimer = setInterval(() => void updates.tick(), UPDATE_LIMITS.tickMs)
+  const firstUpdateLook = setTimeout(() => void updates.tick(), 60_000)
+
   // At start, the copies left by messages that were never sent (D-037): deleted when no chat and no project uses them (D-039), they are over an hour
   // old, and every chat and projects.json could be read (otherwise what uses them is not known, and nothing is deleted). It runs in the stores' own turns, after the folder has been read.
   void usedFiles()
@@ -1620,6 +1696,9 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   return () => {
     voice.cancel() // a recording or a clip on its way ends with the app
     images.stop() // ...and a request for pictures on its way (it may still be billed; its record says so)
+    updates.cancel() // ...and an update check or download (an installer that was not complete is never run)
+    clearInterval(updateTimer)
+    clearTimeout(firstUpdateLook)
     connectorService.stopAll()
     connectorBox.stopAll()
     programBox.stopAll()
@@ -1639,7 +1718,8 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       imageIndex.whenIdle(),
       workspaceStore.file.whenIdle(),
       undoJournal.whenIdle(),
-      connectorStore.file.whenIdle()
+      connectorStore.file.whenIdle(),
+      updateSettings.file.whenIdle()
     ]).then(() => undefined)
   }
 }

@@ -493,7 +493,11 @@ the backup has been tried on real chats is not known, and it is still the thing 
 
 **Questions for the owner** (each changes the plan; the picks above stand until you say otherwise): (1) Gemini 4 Argon and Gemini 3.8 Flash (my pick), or also the cheaper `gemini-3.5-flash-lite`, or the `gemini-3.1-pro-preview` preview? (2) A free key: allowed after the box says what Google does with the data (my pick), or refused (the app cannot tell, so "refused" means asking you to confirm the key is billed)? (3) No new package, the adapter over `fetch` (my pick), or install Google's `@google/genai` SDK (a download)? (4) Dated prices in the registry so the app prices correctly after 1 December and 1 January by itself (my pick), or a plain price that I update by hand on those days? (5) Google Search grounding left out (my pick), or offered behind the box per search like web search in Stage 11 (30-day retention, $14 per 1,000)? (6) Gemini's thoughts not asked for or shown (my pick), or asked for and shown folded under the reply? (7) The shortlist stays words from Google's own pages with no scores (my pick), or name a source of scores you trust?
 
-## Stage 18 - Packaged installer and updates (plan written 17 October 2026; not approved, nothing built)
+## Stage 18 - Packaged installer and updates (plan written 17 October 2026; approved the same day, all seven picks kept; built 17 October 2026, D-050)
+
+**Done:** a per-user Windows installer (unsigned), the data folder kept, uninstall keeps the data, updates off until the owner's yes, signed with the owner's Ed25519 key, installed only after a yes, and `tools/release.mjs`. **Left for the owner:** make the release key (`node tools/release.mjs keygen`), create the public repository `Mashiro0000/frontier-app-releases`, then build, sign and attach the first release.
+
+**The owner's answers (17 October 2026):** (1) yes, the first build may download electron-builder's tools once, recorded; (2) unsigned, with the Ed25519 check; (3) a public releases-only repo; (4) the current data in `%APPDATA%\frontier-app`; (5) the uninstall test may remove only the scratch install folder the test makes, nothing else; (6) Windows only; (7) once a day when on.
 
 - A Windows installer (`npm run build:win` has never been run), a signed build if a certificate is available, an update check that is
   **opt-in** and tells the owner what it downloads. macOS and Linux only if wanted; they have never been tested.

@@ -1,0 +1,16 @@
+{
+  "label": "n184-redirectsFollowedByFetch",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateFetch.ts",
+      "from": "redirect: 'manual',",
+      "to": "redirect: 'follow',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

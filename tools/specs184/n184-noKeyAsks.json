@@ -1,0 +1,16 @@
+{
+  "label": "n184-noKeyAsks",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateService.ts",
+      "from": "        if (!hasKey) return { ok: false, error: UPDATE_WORDS.noKey }\n        const answer",
+      "to": "        const answer"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

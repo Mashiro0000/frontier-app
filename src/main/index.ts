@@ -1,3 +1,5 @@
+// First, so the data folder is pinned before any other module can read it (18.1).
+import './dataFolder'
 import { app, shell, session, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { pathToFileURL } from 'url'

@@ -1,0 +1,16 @@
+{
+  "label": "n183-envelopeUncapped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateManifest.ts",
+      "from": "if (bytes.length > MAX_ENVELOPE_BYTES)",
+      "to": "if (bytes.length > 1e9)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

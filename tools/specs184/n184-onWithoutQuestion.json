@@ -1,0 +1,16 @@
+{
+  "label": "n184-onWithoutQuestion",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateService.ts",
+      "from": "const answer = await gate.ask(owner, updatesOnQuestion(options.repo))",
+      "to": "const answer = 'yes' as string"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

@@ -1,0 +1,16 @@
+{
+  "label": "n183-bomTaken",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateManifest.ts",
+      "from": "ignoreBOM: true }).decode(bytes)",
+      "to": "ignoreBOM: false }).decode(bytes)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

@@ -5,3 +5,5 @@ out
 .eslintcache
 *.log*
 tools/.out
+/dist-nc*/
+/dist-nc-v011/

@@ -50,7 +50,7 @@ try {
     const keys = await ev(`Object.keys(window.api.images).sort().join()`)
     check('A: the bridge has exactly the eleven images functions', keys === 'estimate,generate,list,picture,remove,reset,saveCopy,setOn,status,stop,useInChat', keys)
     const groups = await ev(`Object.keys(window.api).sort().join()`)
-    check('A: one new group, images, and nothing that takes a path, a size, a key or an address', groups === 'attachments,audit,changes,chat,connectors,history,images,instructions,memory,programs,projects,settings,tools,usage,voice,workspace', groups)
+    check('A: one new group, images, and nothing that takes a path, a size, a key or an address', groups === 'attachments,audit,changes,chat,connectors,history,images,instructions,memory,programs,projects,settings,tools,updates,usage,voice,workspace', groups)
     check('A: the page has no ipcRenderer of its own', await ev(`typeof window.require === 'undefined' && typeof window.ipcRenderer === 'undefined'`))
     const status = await ev(`window.api.images.status()`)
     check('A: off at first; the three models; gpt-image-2 the default; an empty gallery; with no OpenAI key yet, the key is what it says first (16.6)', status.on === false && status.models.length === 3 && status.defaultModelId === 'gpt-image-2' && status.pictures === 0 && status.blocked === 'Making images needs an OpenAI key. Save one in Settings.', show(status))

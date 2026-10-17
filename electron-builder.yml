@@ -2,42 +2,38 @@ appId: com.frontier.app
 productName: Frontier App
 directories:
   buildResources: build
+  output: dist
+# 18.1 (D-050): an allow-list, not a deny-list. The package holds the built app (out/) and package.json;
+# electron-builder adds the production dependencies from node_modules itself. Nothing else of the repo
+# (src/, tools/, docs/, registry/, the owner's files) can slip in. tools/verify-18-1.mjs checks the result.
 files:
-  - '!**/.vscode/*'
-  - '!src/*'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
-  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
-  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
-asarUnpack:
-  - resources/**
+  - out/**/*
+  - package.json
+# Windows only (Stage 18): macOS and Linux builds have never been tested.
 win:
   executableName: frontier-app
+  target:
+    - target: nsis
+      arch:
+        - x64
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
-mac:
-  entitlementsInherit: build/entitlements.mac.plist
-  extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: false
-dmg:
-  artifactName: ${name}-${version}.${ext}
-linux:
-  target:
-    - AppImage
-    - snap
-    - deb
-  maintainer: electronjs.org
-  category: Utility
-appImage:
-  artifactName: ${name}-${version}.${ext}
+  # Per user, no admin: installed under %LOCALAPPDATA%\Programs.
+  perMachine: false
+  # The uninstaller removes the program only; the data folder (%APPDATA%\frontier-app) stays.
+  deleteAppDataOnUninstall: false
+# The installed program cannot be turned into something else (18.1, D-050): no running as plain Node
+# (ELECTRON_RUN_AS_NODE), no NODE_OPTIONS, no --inspect debugger, and the app is loaded only from its
+# app.asar, whose hash the program checks. Development (npm run dev / start) uses the plain Electron.
+electronFuses:
+  runAsNode: false
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
 npmRebuild: false
-publish:
-  provider: generic
-  url: https://example.com/auto-updates
+# Nothing is published by the builder: releases are signed by tools/release.mjs and uploaded by hand (18.7).
+publish: null

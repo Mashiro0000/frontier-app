@@ -1,0 +1,16 @@
+{
+  "label": "n184-noTakenAsYes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateService.ts",
+      "from": "    if (answer !== 'yes') {\n      if (answer === 'no') {",
+      "to": "    if (answer !== 'yes' && answer !== 'no') {\n      if (answer === 'no') {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

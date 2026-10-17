@@ -1,0 +1,15 @@
+{
+  "label": "n187-keyOverwritten",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/release.mjs",
+      "from": "  if (existsSync(KEY_FILE)) fail(`a release key is already at",
+      "to": "  if (false) fail(`a release key is already at"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-18-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 180000
+}

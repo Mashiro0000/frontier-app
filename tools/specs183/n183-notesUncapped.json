@@ -1,0 +1,16 @@
+{
+  "label": "n183-notesUncapped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateManifest.ts",
+      "from": "notes.length > MAX_NOTES_CHARS",
+      "to": "notes.length > 1e9"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-3.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 120000
+}

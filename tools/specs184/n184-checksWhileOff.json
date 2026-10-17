@@ -1,0 +1,16 @@
+{
+  "label": "n184-checksWhileOff",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateService.ts",
+      "from": "if (before.problem !== null || !before.settings.on || !hasKey) return",
+      "to": "if (before.problem !== null || !hasKey) return"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

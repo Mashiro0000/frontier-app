@@ -1,0 +1,16 @@
+{
+  "label": "n184-declaredLengthIgnored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateFetch.ts",
+      "from": "    if (Number.isFinite(declared) && declared !== expected.size) {",
+      "to": "    if (false) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}
