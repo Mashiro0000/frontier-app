@@ -36,7 +36,7 @@ import { createConfirmations } from './confirmation'
 import { readApiKey } from './keyStore'
 import { currentModel } from './models'
 import type { LimitsStore } from './limits'
-import { adapterFor } from './providers'
+import { adapterFor, OFFERS_SEARCH } from './providers'
 import { describeFailure, unknownError } from './providers/errors'
 import { buildStreamRequest } from './providers/request'
 import { SEARCH_MAX_OUTPUT_TOKENS, SEARCH_SYSTEM, searchPrompt } from './providers/search'
@@ -467,8 +467,11 @@ async function runReply(
             signal: controller.signal,
             settings: await toolsContext.settings(),
             provider: PROVIDER_NAMES[entry.provider],
-            affordable: affordableSearch,
-            search: countedSearch,
+            // (17.4, D-049) The web search runs on the provider's own hosted search; Google's (grounding with Google Search) is not used, so for a Gemini
+            // model there is no search to hand over, and the runtime switches the tool off for the reply.
+            ...(OFFERS_SEARCH[entry.provider]
+              ? { affordable: affordableSearch, search: countedSearch }
+              : {}),
             onEvent: (event) => send({ streamId, type: 'tool', event }),
             ...(toolsContext.connectors === undefined
               ? {}

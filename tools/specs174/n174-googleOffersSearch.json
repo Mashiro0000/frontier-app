@@ -1,0 +1,18 @@
+{
+  "label": "n174-googleOffersSearch",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/index.ts",
+      "from": "  google: false\n})",
+      "to": "  google: true\n})"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-4.mjs"
+  ],
+  "env": {
+    "ONLY": "E"
+  },
+  "timeoutMs": 300000
+}

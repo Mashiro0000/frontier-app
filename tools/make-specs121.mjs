@@ -105,7 +105,8 @@ const g = {
   tMixed: [TXT, "  if (cr > 0 || (lf > 0 && crlf > 0)) return 'mixed'", "  if (cr > 0) return 'mixed'"],
   tCrlf: [TXT, "  if (crlf > 0) return 'crlf'", "  if (crlf > 0) return 'lf'"],
   // ----- wired in before its time, or doing more than it should -----
-  xWired: [IPC, "import { createQuestionGate } from './systemQuestion'", "import { createQuestionGate } from './systemQuestion'\nimport { createWorkspaceGuard } from './workspaceGuard'\nvoid createWorkspaceGuard"],
+  // (17.4: ipc.ts has imported the guard on purpose since 12.3, so the control now puts the import into chat.ts, which must never have it)
+  xWired: ['{{REPO}}/src/main/chat.ts', "import { adapterFor, OFFERS_SEARCH } from './providers'", "import { adapterFor, OFFERS_SEARCH } from './providers'\nimport { createWorkspaceGuard } from './workspaceGuard'\nvoid createWorkspaceGuard"],
   xBridge: [CH, 'export const CHANNELS = {', "export const CHANNELS = {\n  workspaceChoose: 'workspace:choose',"],
   xWrites: [GRD, "      real = plainPath(await fs.realpath(existing), platform)", "      await fs.writeFile(existing + '.x', '')\n      real = plainPath(await fs.realpath(existing), platform)"],
   xElectron: [WSM, "import { promises as fs } from 'fs'", "import { promises as fs } from 'fs'\nvoid 'electron'"],

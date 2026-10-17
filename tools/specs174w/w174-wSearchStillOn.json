@@ -1,0 +1,18 @@
+{
+  "label": "w174-wSearchStillOn",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/replyTools.ts",
+      "from": "          ? { ...settings, enabled: { ...settings.enabled, web_search: false } }",
+      "to": "          ? settings"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run174.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 1200000
+}

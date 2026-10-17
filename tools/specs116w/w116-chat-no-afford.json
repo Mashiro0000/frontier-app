@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/chat.ts",
-      "from": "            affordable: affordableSearch,\n",
-      "to": ""
+      "from": "              ? { affordable: affordableSearch, search: countedSearch }",
+      "to": "              ? { search: countedSearch }"
     }
   ],
   "argv": [

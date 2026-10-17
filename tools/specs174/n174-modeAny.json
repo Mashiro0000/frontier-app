@@ -1,0 +1,18 @@
+{
+  "label": "n174-modeAny",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "toolConfig: { functionCallingConfig: { mode: 'AUTO' } }",
+      "to": "toolConfig: { functionCallingConfig: { mode: 'ANY' } }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-4.mjs"
+  ],
+  "env": {
+    "ONLY": "A"
+  },
+  "timeoutMs": 300000
+}
