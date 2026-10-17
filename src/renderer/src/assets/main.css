@@ -2814,3 +2814,25 @@ body {
 .images-table caption {
   text-align: left;
 }
+
+/* Settings > Updates (18.6, D-050) */
+.updates-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.updates-available {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.updates-notes {
+  font-size: 13px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 0;
+}

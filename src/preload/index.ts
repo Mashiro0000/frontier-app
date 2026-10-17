@@ -145,6 +145,13 @@ const api: FrontierApi = {
     remove: (id) => ipcRenderer.invoke(CHANNELS.imagesRemove, { id }),
     useInChat: (id) => ipcRenderer.invoke(CHANNELS.imagesUseInChat, { id })
   },
+  updates: {
+    status: () => ipcRenderer.invoke(CHANNELS.updatesStatus),
+    setOn: (on) => ipcRenderer.invoke(CHANNELS.updatesSetOn, { on }),
+    reset: () => ipcRenderer.invoke(CHANNELS.updatesReset),
+    checkNow: () => ipcRenderer.invoke(CHANNELS.updatesCheckNow),
+    install: () => ipcRenderer.invoke(CHANNELS.updatesInstall)
+  },
   projects: {
     status: () => ipcRenderer.invoke(CHANNELS.projectsStatus),
     create: (name) => ipcRenderer.invoke(CHANNELS.projectsCreate, { name }),

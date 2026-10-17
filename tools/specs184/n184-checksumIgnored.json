@@ -1,0 +1,16 @@
+{
+  "label": "n184-checksumIgnored",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateFetch.ts",
+      "from": "    if (hash.digest('hex') !== expected.sha256)",
+      "to": "    if (false)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

@@ -36,6 +36,7 @@ import {
   type PictureResult,
   type PictureSummary
 } from './images'
+import { UPDATE_CHANNELS, type UpdateChangeResult, type UpdateStatus } from './updates'
 
 /**
  * A model the person can choose, as the page sees it: what to show about it, and nothing about how
@@ -788,6 +789,18 @@ export interface FrontierApi {
     /** The way out when projects.json cannot be read: every project deleted, the damaged file kept as a copy. */
     removeAll(): Promise<ProjectChangeResult>
   }
+  /**
+   * Updates (Stage 18, D-050). The daily check is switched ON only after the person's yes in the system's box; OFF is at once. "Check now" works while it is on. An
+   * update is downloaded and run only after a yes in the system's box. The page cannot name an address, a version or a file, and cannot answer a question.
+   */
+  updates: {
+    status(): Promise<UpdateStatus>
+    setOn(on: boolean): Promise<UpdateChangeResult>
+    /** When updates.json could not be read: off, the file kept as a copy beside it. */
+    reset(): Promise<UpdateChangeResult>
+    checkNow(): Promise<UpdateChangeResult>
+    install(): Promise<UpdateChangeResult>
+  }
 }
 
 export const CHANNELS = {
@@ -886,7 +899,12 @@ export const CHANNELS = {
   imagesPicture: IMAGE_CHANNELS.picture,
   imagesSaveCopy: IMAGE_CHANNELS.saveCopy,
   imagesRemove: IMAGE_CHANNELS.remove,
-  imagesUseInChat: IMAGE_CHANNELS.useInChat
+  imagesUseInChat: IMAGE_CHANNELS.useInChat,
+  updatesStatus: UPDATE_CHANNELS.status,
+  updatesSetOn: UPDATE_CHANNELS.setOn,
+  updatesReset: UPDATE_CHANNELS.reset,
+  updatesCheckNow: UPDATE_CHANNELS.checkNow,
+  updatesInstall: UPDATE_CHANNELS.install
 } as const
 
 /**

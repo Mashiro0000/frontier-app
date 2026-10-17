@@ -1,0 +1,16 @@
+{
+  "label": "n184-aHeaderAdded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateFetch.ts",
+      "from": "credentials: 'omit'",
+      "to": "credentials: 'omit',\n        headers: { 'x-frontier-app': 'frontier-app' }"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

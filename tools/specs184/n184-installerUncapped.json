@@ -1,0 +1,16 @@
+{
+  "label": "n184-installerUncapped",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateFetch.ts",
+      "from": "      if (total > expected.size) {",
+      "to": "      if (total > expected.size * 10) {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

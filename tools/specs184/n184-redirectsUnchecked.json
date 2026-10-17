@@ -1,0 +1,16 @@
+{
+  "label": "n184-redirectsUnchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateFetch.ts",
+      "from": "    if (!rules.allowed(url))",
+      "to": "    if (hop === 0 && !rules.allowed(url))"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}

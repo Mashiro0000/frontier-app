@@ -1,0 +1,16 @@
+{
+  "label": "n184-notNowForgotten",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/updateService.ts",
+      "from": "latest.settings.declined !== available.version",
+      "to": "true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-18-4.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 240000
+}
