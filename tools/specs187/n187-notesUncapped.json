@@ -1,0 +1,15 @@
+{
+  "label": "n187-notesUncapped",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/release.mjs",
+      "from": "  if (notes.length > M.MAX_NOTES_CHARS) fail(",
+      "to": "  if (false) fail("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-18-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 180000
+}

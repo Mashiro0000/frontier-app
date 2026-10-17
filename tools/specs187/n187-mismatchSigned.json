@@ -1,0 +1,15 @@
+{
+  "label": "n187-mismatchSigned",
+  "edits": [
+    {
+      "file": "{{TOOLS}}/release.mjs",
+      "from": "  if (rawPublic(createPublicKey(privateKey)) !== publicKey) fail(",
+      "to": "  if (false) fail("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-18-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 180000
+}
