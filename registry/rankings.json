@@ -1,7 +1,7 @@
 {
   "schemaVersion": "0.2",
-  "updatedAt": "2026-10-01",
-  "source": "Anthropic's and OpenAI's own documentation, read on 2026-10-01; every row quotes the page it came from (D-023)",
+  "updatedAt": "2026-10-17",
+  "source": "Anthropic's and OpenAI's own documentation, read on 2026-10-01, and Google's Gemini models page, read on 2026-10-17; every row quotes the page it came from (D-023)",
   "rankings": [
     {
       "task": "coding",
@@ -44,6 +44,13 @@
       "note": "\"near-Astra performance at a lower cost for complex coding, computer use, and professional work.\"",
       "source": "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
       "asOf": "2026-10-01"
+    },
+    {
+      "task": "coding",
+      "modelId": "gemini-3.8-flash",
+      "note": "\"engineered for long-horizon software engineering, autonomous agents\" (Google's most intelligent Flash model)",
+      "source": "https://ai.google.dev/gemini-api/docs/models",
+      "asOf": "2026-10-17"
     }
   ]
 }

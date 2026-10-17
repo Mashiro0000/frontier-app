@@ -1,0 +1,18 @@
+{
+  "label": "w177-wKeyKeptPlain",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/credentialStore.ts",
+      "from": "          key: box.encrypt(key).toString('base64')",
+      "to": "          key: box.encrypt(key).toString('base64') + (provider === 'google' ? key : '')"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run177.mjs",
+    "dev"
+  ],
+  "env": {
+    "NO_RETRY": "1"
+  },
+  "timeoutMs": 1200000
+}

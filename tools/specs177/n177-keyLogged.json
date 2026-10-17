@@ -1,0 +1,16 @@
+{
+  "label": "n177-keyLogged",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/providers/gemini.ts",
+      "from": "    const dog = watchdog(request.signal)\n    try {\n      const url",
+      "to": "    const dog = watchdog(request.signal)\n    console.log('key', request.credentials.apiKey)\n    try {\n      const url"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

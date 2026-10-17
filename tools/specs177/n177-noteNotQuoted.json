@@ -1,0 +1,16 @@
+{
+  "label": "n177-noteNotQuoted",
+  "edits": [
+    {
+      "file": "{{REPO}}/registry/rankings.json",
+      "from": "\"\\\"engineered for long-horizon software engineering, autonomous agents\\\" (Google's most intelligent Flash model)\"",
+      "to": "\"The best model for coding.\""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}

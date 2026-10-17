@@ -1,0 +1,16 @@
+{
+  "label": "n177-packageAdded",
+  "edits": [
+    {
+      "file": "{{REPO}}/package.json",
+      "from": "\"dependencies\": {",
+      "to": "\"dependencies\": {\n    \"@google/genai\": \"1.0.0\","
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/guarded.mjs",
+    "{{TOOLS}}/verify-17-7.mjs"
+  ],
+  "env": {},
+  "timeoutMs": 300000
+}
