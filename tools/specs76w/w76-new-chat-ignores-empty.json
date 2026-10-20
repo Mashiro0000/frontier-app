@@ -2,7 +2,7 @@
   "label": "w76-new-chat-ignores-empty",
   "edits": [
     {
-      "file": "{{REPO}}/src/renderer/src/chat/ChatBar.tsx",
+      "file": "{{REPO}}/src/renderer/src/sidebar/Sidebar.tsx",
       "from": "disabled={isReplying || messageCount === 0}",
       "to": "disabled={isReplying}"
     }

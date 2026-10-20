@@ -1,5 +1,6 @@
 {
   "label": "w76-bar-too-tall",
+  "retired": "D-051: the chat bar is inside the message box; the room the chat keeps is checked by w76-header-too-tall",
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/assets/main.css",

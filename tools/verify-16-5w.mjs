@@ -105,7 +105,7 @@ try {
     await Q.queue('yes')
     const d = await ev(`window.api.images.remove(${JSON.stringify(ids[1])})`)
     check('D: (setup) the second picture is deleted from the gallery through the box', d.ok === true, show(d))
-    await ev(`(() => { const b = [...document.querySelectorAll('.chat-bar .chat-button')].find((x) => x.textContent === 'New chat'); b.click() })()`)
+    await ev(`(() => { const b = [...document.querySelectorAll('.chat-button')].find((x) => x.textContent === 'New chat'); b.click() })()`)
     await sleep(300)
     await H.openHistory()
     await page.waitFor(`[...document.querySelectorAll('dialog.history .history-title')].some((t) => t.textContent === 'hello')`, { timeoutMs: 8000 })

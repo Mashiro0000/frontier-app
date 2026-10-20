@@ -1,0 +1,29 @@
+{
+  "label": "w76-bar-outside-the-box",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/Composer.tsx",
+      "from": "      <div className=\"composer-inner\">\n        {attachments}",
+      "to": "      {toolbar}\n      <div className=\"composer-inner\">\n        {attachments}"
+    },
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/Composer.tsx",
+      "from": "        <div className=\"composer-row\">\n          {toolbar}\n",
+      "to": "        <div className=\"composer-row\">\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-7-6w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s76nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w76-bar-outside-the-box"
+  }
+}

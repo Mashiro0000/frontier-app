@@ -1,5 +1,6 @@
 {
   "label": "w76-bar-above-everything",
+  "retired": "D-051: the chat bar is inside the message box; it is no longer a row of its own that could be drawn above the page",
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/assets/main.css",

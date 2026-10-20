@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { IconSend, IconStop } from '../icons'
 import MicButton from '../voice/MicButton'
 import { useListen } from '../voice/useListen'
 import { useVoiceStatus } from '../voice/voiceStatus'
@@ -9,8 +10,10 @@ interface ComposerProps {
   isReplying: boolean
   onSend: (text: string) => void
   onStop: () => void
-  /** The chips of the files on this message (D-037), drawn above the box. */
+  /** The chips of the files on this message (D-037), drawn at the top of the box. */
   attachments?: React.ReactNode
+  /** The chat's own buttons (D-051): drawn in the box, in the row under the text, beside Send. */
+  toolbar?: React.ReactNode
   /** Files are on the message (D-037): it can be sent with no text. */
   hasFiles?: boolean
   /** Why the message cannot be sent as it is (a model that cannot read a kind of file, too many files in the chat), or null. */
@@ -27,6 +30,7 @@ function Composer({
   onSend,
   onStop,
   attachments,
+  toolbar,
   hasFiles = false,
   blocked = null,
   onPasteFiles,
@@ -64,8 +68,8 @@ function Composer({
         submit()
       }}
     >
-      {attachments}
       <div className="composer-inner">
+        {attachments}
         <textarea
           ref={inputRef}
           className="composer-input"
@@ -97,37 +101,44 @@ function Composer({
             }
           }}
         />
-        {voice?.listen === true && <MicButton listen={listen} />}
-        {/* Two separate buttons (note the keys) rather than one that changes type: otherwise a
-            click on Stop could turn into a form submit and send the half-typed next message. */}
-        {isReplying ? (
-          <button
-            key="stop"
-            type="button"
-            className="composer-button composer-button-stop"
-            title={
-              stopEverything
-                ? 'Ends the reply, stops a tool that is running and closes a question that is waiting.'
-                : undefined
-            }
-            onClick={() => {
-              onStop()
-              inputRef.current?.focus()
-            }}
-          >
-            {stopEverything ? 'Stop everything' : 'Stop'}
-          </button>
-        ) : (
-          <button
-            key="send"
-            type="submit"
-            className="composer-button"
-            disabled={!canSend}
-            title={blocked ?? undefined}
-          >
-            Send
-          </button>
-        )}
+        <div className="composer-row">
+          {toolbar}
+          <div className="composer-end">
+            {voice?.listen === true && <MicButton listen={listen} />}
+            {/* Two separate buttons (note the keys) rather than one that changes type: otherwise a
+                click on Stop could turn into a form submit and send the half-typed next message. */}
+            {isReplying ? (
+              <button
+                key="stop"
+                type="button"
+                className="composer-button composer-button-stop"
+                title={
+                  stopEverything
+                    ? 'Ends the reply, stops a tool that is running and closes a question that is waiting.'
+                    : undefined
+                }
+                onClick={() => {
+                  onStop()
+                  inputRef.current?.focus()
+                }}
+              >
+                <IconStop />
+                {stopEverything ? 'Stop everything' : 'Stop'}
+              </button>
+            ) : (
+              <button
+                key="send"
+                type="submit"
+                className="composer-button"
+                disabled={!canSend}
+                title={blocked ?? undefined}
+              >
+                <IconSend />
+                <span className="visually-hidden">Send</span>
+              </button>
+            )}
+          </div>
+        </div>
       </div>
       {/* How a hold of the microphone is going (D-047). The window's title and the taskbar button say the same, and are main's; this is the page's own line. */}
       {listen.phase !== 'idle' && (

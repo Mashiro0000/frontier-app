@@ -526,6 +526,17 @@ the backup has been tried on real chats is not known, and it is still the thing 
 
 **Questions for the owner** (each changes the plan; the picks above stand until you say otherwise): (1) **May the first build download electron-builder's tools** (NSIS, winCodeSign, 7-Zip, maybe the Electron zip, a few hundred MB at most) from GitHub? Without it there is no installer (my pick: yes, once, recorded). (2) **Unsigned, with the Ed25519 check** (my pick), or pay for a certificate (an OV certificate yearly; Artifact Signing only if you have a US or Canadian presence)? (3) **The update source:** a public releases-only repo you create (my pick), or no online check at all, only "Install an update from a file" you downloaded? (4) **The installed app uses your current data** in `%APPDATA%\frontier-app` (my pick), or a fresh profile of its own? (5) **Testing the installer installs and uninstalls on this PC.** The uninstaller deletes its own program folder, which your no-delete rule forbids me: may it remove only the scratch install folder the tests make (my pick), or do you run the uninstall by hand? (6) **Windows only** (my pick), or also macOS and Linux builds (untested)? (7) **The check, when on: once a day** (my pick), or only when you press "Check now"?
 
+## Stage 19 - The new look (asked for 20 October 2026: "simple, vibrant, minimalist, easy to use"; sample shown and approved the same day; D-051)
+
+**Done:** a sidebar (New chat, History, Tools, the saved chats, Settings and the theme; it folds to a rail of icons and is always the rail in a narrow
+window), the header beside it (the chat's title where there is room, the Task, model and Effort menus), the chat's own buttons inside the message box,
+a dark theme (the default) and a light one, kept on this computer, and one look for every dialog. Nothing was taken away: every button keeps its name,
+tooltip and rule.
+
+- **The owner's answers:** the colours mine (approved on the sample: violet to magenta on a near-black or near-white), the sidebar visible with a way to
+  fold it, light and dark with dark first, the whole app.
+- **Not in this stage:** a choice of accent colour, a "follow Windows" theme, a Review window that follows the app's theme (it follows Windows').
+
 ## What is deliberately not promised
 
 Exact copies of vendor-only features (their memory, Projects and Artifacts, custom GPTs, the one-click connector directory), and any power

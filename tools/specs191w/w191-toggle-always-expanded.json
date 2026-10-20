@@ -1,0 +1,24 @@
+{
+  "label": "w191-toggle-always-expanded",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/sidebar/Sidebar.tsx",
+      "from": "aria-expanded={!rail}",
+      "to": "aria-expanded={true}"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-19-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s191nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w191-toggle-always-expanded"
+  }
+}

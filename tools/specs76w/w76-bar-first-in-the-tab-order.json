@@ -1,5 +1,6 @@
 {
   "label": "w76-bar-first-in-the-tab-order",
+  "retired": "D-051: the chat bar is inside the message box; its place in the keyboard order is checked by w76-attach-not-in-the-tab-order",
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/App.tsx",

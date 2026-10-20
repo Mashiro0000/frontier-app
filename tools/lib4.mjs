@@ -72,11 +72,12 @@ export function h4(page, { userData, mockUrl }) {
       }
       return null
     },
-    // The header holds only Settings among its buttons since 7.6 (D-029); New chat, History and Instructions are in the chat bar under the message box.
-    headerButtons: () => ev(`[...document.querySelectorAll('.app-header .header-button')].map((b) => ({ text: b.textContent, disabled: b.disabled, title: b.title }))`),
+    // Settings is the one .header-button: in the header until D-051, at the foot of the sidebar since. The chat's buttons (.chat-button) were in a bar
+    // under the message box from 7.6 (D-029); since D-051 New chat, History and Tools are in the sidebar and the rest in the message box.
+    headerButtons: () => ev(`[...document.querySelectorAll('.header-button')].map((b) => ({ text: b.textContent, disabled: b.disabled, title: b.title }))`),
     headerButton: async (text) => (await H4.headerButtons()).find((b) => b.text === text),
     clickHeader: (text) => page.click(`.header-button@${text}`),
-    chatButtons: () => ev(`[...document.querySelectorAll('.chat-bar .chat-button')].map((b) => ({ text: b.textContent, disabled: b.disabled, title: b.title }))`),
+    chatButtons: () => ev(`[...document.querySelectorAll('.chat-button')].map((b) => ({ text: b.textContent, disabled: b.disabled, title: b.title }))`),
     chatButton: async (text) => (await H4.chatButtons()).find((b) => b.text === text),
     clickChat: (text) => page.click(`.chat-button@${text}`),
     /** The messages on screen: [{ role, text, note }]. A reply is read as a person sees it (innerText), the person's own message as typed (see `shown`). */

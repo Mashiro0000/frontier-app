@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src\\renderer\\src\\App.tsx",
-      "from": "disabled={chat.isReplying}\n            onStatusChange={setStatus}",
-      "to": "disabled={false}\n            onStatusChange={setStatus}"
+      "from": "disabled={chat.isReplying}\n              onStatusChange={setStatus}",
+      "to": "disabled={false}\n              onStatusChange={setStatus}"
     }
   ],
   "argv": [

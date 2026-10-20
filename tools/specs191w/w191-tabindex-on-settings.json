@@ -1,0 +1,24 @@
+{
+  "label": "w191-tabindex-on-settings",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/sidebar/Sidebar.tsx",
+      "from": "          className=\"header-button sidebar-item\"\n          title=\"Settings\"",
+      "to": "          className=\"header-button sidebar-item\"\n          tabIndex={1}\n          title=\"Settings\""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-19-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s191nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w191-tabindex-on-settings"
+  }
+}

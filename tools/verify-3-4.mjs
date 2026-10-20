@@ -80,12 +80,13 @@ for (const width of [420, 320]) {
 await page.send('Emulation.clearDeviceMetricsOverride')
 await sleep(200)
 
-// keyboard: Tab goes model menu -> Effort menu (7.1, D-024: Opus, the default, takes an effort setting) -> Settings
+// keyboard: Tab goes model menu -> Effort menu (7.1, D-024: Opus, the default, takes an effort setting) -> the chat (D-051: Settings is at the foot of the sidebar,
+// which comes before the header in the page)
 await ev(`document.querySelector('.header-select').focus()`)
 await page.press('Tab')
 check('keyboard: Tab from the model menu lands on the Effort menu (7.1)', (await ev(`document.activeElement.getAttribute('aria-label')`)) === 'Effort', await ev(`document.activeElement.getAttribute('aria-label')`))
 await page.press('Tab')
-check('keyboard: the next Tab lands on the Settings button', (await ev(`document.activeElement.textContent`)) === 'Settings', await ev(`document.activeElement.textContent`))
+check('keyboard: the next Tab leaves the header for the chat, and Settings comes before the header (in the sidebar)', (await ev(`!document.activeElement.closest('.app-header') && !!document.activeElement.closest('.chat')`)) && (await ev(`!!(document.querySelector('.header-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING)`)), await ev(`document.activeElement.className + ' ' + document.activeElement.textContent`))
 
 // ===================== B. choosing a model =====================
 await H.chooseInPage(SONNET)

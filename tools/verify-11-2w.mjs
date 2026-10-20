@@ -72,7 +72,7 @@ const seed = (events = EVENTS, extra = '') => {
   writeFileSync(LOG, events.map((e) => logMod.auditLine(e)).join('\n') + '\n' + extra)
 }
 
-const toolsButton = () => ev(`(() => { const b = document.querySelector('.chat-bar .chat-tools'); if (!b) return null; const r = b.getBoundingClientRect(); return { text: b.textContent, title: b.title, disabled: b.disabled, w: r.width, h: r.height } })()`)
+const toolsButton = () => ev(`(() => { const b = document.querySelector('.chat-tools'); if (!b) return null; const r = b.getBoundingClientRect(); return { text: b.textContent, title: b.title, disabled: b.disabled, w: r.width, h: r.height } })()`)
 const dlg = () => ev(`(() => {
   const d = document.querySelector('dialog.tools')
   if (!d) return null
@@ -126,7 +126,7 @@ try {
 
   // ============ A. the button, and nothing recorded ============
   const btn = await toolsButton()
-  check('A: the chat bar has a "Tools" button, enabled, with a tooltip that says what it opens', btn?.text === 'Tools' && btn.disabled === false && /what the model has asked tools to do/.test(btn.title), show(btn))
+  check('A: there is a "Tools" button (in the sidebar since D-051), enabled, with a tooltip that says what it opens', btn?.text === 'Tools' && btn.disabled === false && /what the model has asked tools to do/.test(btn.title), show(btn))
   await openTools()
   let d = await dlg()
   check('A: it opens the Tools page, with the Audit log section and what it is', d?.open === true && d.heading === 'Tools' && d.section === 'Audit log' && /Every time the model asks for a tool, the app writes it here/.test(d.hint ?? '') && /holds no page text/.test(d.hint ?? '') && /until you delete it/.test(d.hint ?? ''), show(d))

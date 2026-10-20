@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from 'react'
+import { LogoMark } from '../icons'
 import MessageBubble from './MessageBubble'
 import type { ChatMessage } from './types'
 
@@ -89,7 +90,17 @@ function MessageList({
       onScroll={handleScroll}
     >
       {messages.length === 0 ? (
-        emptyHint && <p className="empty-state">{emptyHint}</p>
+        emptyHint && (
+          <div className="empty">
+            <span className="empty-logo">
+              <LogoMark />
+            </span>
+            <h2 className="empty-heading">
+              What are we <span className="empty-accent">working on</span>?
+            </h2>
+            <p className="empty-state">{emptyHint}</p>
+          </div>
+        )
       ) : (
         <div className="message-list-inner">
           {messages.map((message, index) => (

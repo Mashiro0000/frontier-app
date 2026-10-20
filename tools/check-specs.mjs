@@ -10,9 +10,15 @@ import { OUT, REPO, TOOLS } from './paths.mjs'
 const fill = (text) => text.replaceAll('{{REPO}}', REPO).replaceAll('{{TOOLS}}', TOOLS.replaceAll('\\', '/')).replaceAll('{{OUT}}', OUT.replaceAll('\\', '/'))
 let total = 0
 let stale = 0
+let retired = 0
 for (const entry of readdirSync(TOOLS, { withFileTypes: true }).filter((e) => e.isDirectory() && /^specs/.test(e.name))) {
   for (const name of readdirSync(join(TOOLS, entry.name)).filter((n) => n.endsWith('.json'))) {
     const spec = JSON.parse(fill(readFileSync(join(TOOLS, entry.name, name), 'utf8')))
+    // a spec whose code is gone is kept, marked "retired" with the reason, and never run (nc.mjs refuses it): files are not deleted (D-051)
+    if (spec.retired) {
+      retired++
+      continue
+    }
     total++
     for (const edit of spec.edits) {
       if (!existsSync(edit.file)) {
@@ -29,5 +35,5 @@ for (const entry of readdirSync(TOOLS, { withFileTypes: true }).filter((e) => e.
     }
   }
 }
-console.log(`${total} specs checked, ${stale} stale`)
+console.log(`${total} specs checked, ${stale} stale${retired ? `, ${retired} retired (not checked, never run)` : ''}`)
 process.exit(stale === 0 ? 0 : 1)

@@ -2,9 +2,9 @@
   "label": "w76-history-enabled-while-replying",
   "edits": [
     {
-      "file": "{{REPO}}/src/renderer/src/chat/ChatBar.tsx",
-      "from": "        disabled={isReplying}\n        title={\n          isReplying\n            ? 'History can be opened",
-      "to": "        disabled={false}\n        title={\n          isReplying\n            ? 'History can be opened"
+      "file": "{{REPO}}/src/renderer/src/sidebar/Sidebar.tsx",
+      "from": "          disabled={isReplying}\n          title={\n            isReplying\n              ? 'History can be opened",
+      "to": "          disabled={false}\n          title={\n            isReplying\n              ? 'History can be opened"
     }
   ],
   "argv": [

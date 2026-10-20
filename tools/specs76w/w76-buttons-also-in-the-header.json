@@ -1,5 +1,6 @@
 {
   "label": "w76-buttons-also-in-the-header",
+  "retired": "D-051: the header has no title of its own to put buttons after; a button in the header is checked by w76-button-in-the-header",
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/App.tsx",

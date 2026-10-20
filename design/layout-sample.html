@@ -1,0 +1,2506 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Frontier Design Sample</title>
+    <style>
+      /* ============ Tokens ============ */
+      :root {
+        --grad: linear-gradient(135deg, #6a4dff 0%, #a43be0 100%);
+        --accent: #6a4dff; /* filled buttons: white text 5.1:1 */
+        --radius-s: 8px;
+        --radius: 12px;
+        --radius-l: 20px;
+        --sb: 264px;
+        --col: 760px;
+        --font: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+        --mono: 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
+      }
+      :root[data-theme='dark'] {
+        color-scheme: dark;
+        --bg: #0d0e13;
+        --sidebar: #111219;
+        --surface: #171922;
+        --surface-2: #1f2230;
+        --border: #262a38;
+        --input-border: #646b80; /* 3.3:1 on surfaces: controls stay visible */
+        --text: #ecedf3;
+        --text-muted: #9ba1b4;
+        --accent-text: #a794ff;
+        --accent-soft: rgba(124, 92, 255, 0.16);
+        --user-bubble: #262150;
+        --active: #1f2230;
+        --code-bg: #10121a;
+        --ok: #3dd68c;
+        --ok-soft: rgba(61, 214, 140, 0.13);
+        --warn: #f5b544;
+        --warn-soft: rgba(245, 181, 68, 0.1);
+        --warn-border: rgba(245, 181, 68, 0.35);
+        --danger: #ff7a7a;
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+        --shadow-s: 0 6px 24px rgba(0, 0, 0, 0.35);
+        --tok-kw: #c2b3ff;
+        --tok-str: #7ee0b5;
+        --tok-fn: #f5c56b;
+        --tok-com: #7d8499;
+        --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ba1b4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      }
+      :root[data-theme='light'] {
+        color-scheme: light;
+        --bg: #f6f6fa;
+        --sidebar: #eeeef6;
+        --surface: #ffffff;
+        --surface-2: #f0f0f7;
+        --border: #e3e4ee;
+        --input-border: #8a8fa3;
+        --text: #15161c;
+        --text-muted: #5d6375;
+        --accent-text: #5b3ff0;
+        --accent-soft: rgba(106, 77, 255, 0.1);
+        --user-bubble: #ece8ff;
+        --active: #ffffff;
+        --code-bg: #f7f7fb;
+        --ok: #1e8c52;
+        --ok-soft: rgba(30, 158, 90, 0.12);
+        --warn: #9a5b00;
+        --warn-soft: rgba(245, 165, 36, 0.12);
+        --warn-border: rgba(178, 106, 0, 0.35);
+        --danger: #d33a3a;
+        --shadow: 0 18px 50px rgba(30, 30, 70, 0.16);
+        --shadow-s: 0 6px 24px rgba(30, 30, 70, 0.08);
+        --tok-kw: #5b3ff0;
+        --tok-str: #157f4e;
+        --tok-fn: #9a5b00;
+        --tok-com: #6b7186;
+        --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235d6375' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      }
+
+      /* ============ Base ============ */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font: 14px/1.5 var(--font);
+        -webkit-font-smoothing: antialiased;
+        overflow: hidden;
+        transition:
+          background-color 0.2s,
+          color 0.2s;
+      }
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        cursor: pointer;
+        background: none;
+        border: 0;
+      }
+      button:disabled {
+        cursor: default;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent-text);
+        outline-offset: 2px;
+        border-radius: 8px;
+      }
+      svg.i {
+        width: 18px;
+        height: 18px;
+        flex: none;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--input-border);
+        background-clip: padding-box;
+        border: 2px solid transparent;
+      }
+
+      /* ============ Shell ============ */
+      [hidden] {
+        display: none !important;
+      }
+      .app {
+        display: grid;
+        grid-template-columns: var(--sb) minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+        height: 100%;
+        transition: grid-template-columns 0.22s ease;
+      }
+      .app.collapsed {
+        --sb: 68px;
+      }
+
+      /* ============ Sidebar ============ */
+      .sidebar {
+        background: var(--sidebar);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        padding: 14px 12px;
+        gap: 4px;
+      }
+      .sb-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 40px;
+        padding: 0 4px 0 6px;
+        margin-bottom: 8px;
+      }
+      .logo {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: var(--grad);
+        display: grid;
+        place-items: center;
+        flex: none;
+        box-shadow: 0 4px 14px rgba(106, 77, 255, 0.4);
+      }
+      .logo svg {
+        width: 18px;
+        height: 18px;
+        fill: #fff;
+        stroke: none;
+      }
+      .wordmark {
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: -0.01em;
+        flex: 1;
+      }
+      .icon-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        color: var(--text-muted);
+        display: grid;
+        place-items: center;
+        flex: none;
+        transition:
+          background-color 0.15s,
+          color 0.15s;
+      }
+      .icon-btn:hover:not(:disabled) {
+        background: var(--surface-2);
+        color: var(--text);
+      }
+      .icon-btn:disabled {
+        opacity: 0.45;
+      }
+
+      .btn-new {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--grad);
+        color: #fff;
+        font-weight: 600;
+        box-shadow: 0 6px 18px rgba(106, 77, 255, 0.35);
+        margin-bottom: 10px;
+        transition:
+          transform 0.12s,
+          box-shadow 0.15s;
+      }
+      .btn-new:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(106, 77, 255, 0.45);
+      }
+      .btn-new:active {
+        transform: translateY(0);
+      }
+
+      .sb-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 38px;
+        padding: 0 12px;
+        border-radius: 10px;
+        color: var(--text-muted);
+        width: 100%;
+        text-align: left;
+        transition:
+          background-color 0.15s,
+          color 0.15s;
+      }
+      .sb-item:hover {
+        background: var(--surface-2);
+        color: var(--text);
+      }
+      .sb-item .count {
+        margin-left: auto;
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent-text);
+      }
+      .sb-label-small {
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        padding: 18px 12px 6px;
+      }
+      .recent {
+        flex: 1;
+        overflow-y: auto;
+        margin: 0 -4px;
+        padding: 0 4px;
+        min-height: 0;
+      }
+      .chat-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        height: 34px;
+        padding: 0 12px;
+        border-radius: 9px;
+        font-size: 13.5px;
+        color: var(--text-muted);
+        text-align: left;
+      }
+      .chat-link span:last-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .chat-link:hover {
+        background: var(--surface-2);
+        color: var(--text);
+      }
+      .chat-link[aria-current='true'] {
+        background: var(--active);
+        color: var(--text);
+        font-weight: 600;
+        box-shadow: var(--shadow-s);
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex: none;
+        background: var(--input-border);
+      }
+      .dot.p1 {
+        background: #a794ff;
+      }
+      .dot.p2 {
+        background: #ff8a6b;
+      }
+      .dot.p3 {
+        background: #3dd6c0;
+      }
+      .all-chats {
+        font-size: 13px;
+        color: var(--accent-text);
+        padding: 8px 12px;
+        border-radius: 9px;
+        text-align: left;
+      }
+      .all-chats:hover {
+        background: var(--surface-2);
+      }
+      .sb-foot {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        border-top: 1px solid var(--border);
+        padding-top: 10px;
+        margin-top: 6px;
+      }
+      .sb-foot .sb-item {
+        flex: 1;
+      }
+
+      /* Collapsed rail: icons only, every button keeps its tooltip */
+      .collapsed .sidebar {
+        padding: 14px 12px;
+        align-items: center;
+      }
+      .collapsed .wordmark,
+      .collapsed .sb-text,
+      .collapsed .sb-label-small,
+      .collapsed .recent,
+      .collapsed .all-chats,
+      .collapsed .sb-item .count,
+      .collapsed .logo {
+        display: none;
+      }
+      .collapsed .sb-head {
+        padding: 0;
+        justify-content: center;
+        width: 44px;
+      }
+      .collapsed .btn-new {
+        width: 44px;
+        height: 44px;
+        padding: 0;
+      }
+      .collapsed .sb-item {
+        width: 44px;
+        justify-content: center;
+        padding: 0;
+      }
+      .collapsed .sb-item.has-count::after {
+        content: '';
+        position: absolute;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent-text);
+        transform: translate(10px, -10px);
+      }
+      .collapsed .sb-foot {
+        flex-direction: column;
+        width: 44px;
+        margin-top: auto;
+      }
+      .collapsed .nav {
+        width: 44px;
+      }
+
+      /* ============ Main ============ */
+      .main {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+        height: 100%;
+      }
+      .topbar {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 58px;
+        padding: 0 20px;
+        border-bottom: 1px solid var(--border);
+      }
+      .menu-btn {
+        display: none;
+      }
+      .chat-title {
+        font-weight: 600;
+        font-size: 15px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+      }
+      .top-actions {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: none;
+      }
+      .pick {
+        appearance: none;
+        height: 34px;
+        padding: 0 32px 0 13px;
+        border-radius: 999px;
+        background: var(--surface-2) var(--chev) no-repeat right 11px center / 14px;
+        border: 1px solid var(--input-border);
+        font-size: 13px;
+        cursor: pointer;
+        transition: border-color 0.15s;
+      }
+      .pick:hover {
+        border-color: var(--accent-text);
+      }
+      .pick.model {
+        font-weight: 600;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 28px;
+        padding: 0 11px;
+        border-radius: 999px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--warn);
+        background: var(--warn-soft);
+        border: 1px solid var(--warn-border);
+      }
+
+      .thread {
+        flex: 1;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+      }
+      .col {
+        max-width: var(--col);
+        margin: 0 auto;
+        padding: 30px 24px 16px;
+      }
+
+      /* Messages */
+      .msg-user {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+        margin: 4px 0 26px;
+      }
+      .bubble {
+        background: var(--user-bubble);
+        padding: 10px 16px;
+        border-radius: 18px 18px 6px 18px;
+        max-width: 80%;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      .file-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 12px 6px 6px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        border-radius: 12px;
+        font-size: 13px;
+      }
+      .file-chip .ico {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: var(--accent-soft);
+        color: var(--accent-text);
+        display: grid;
+        place-items: center;
+      }
+      .file-chip small {
+        display: block;
+        color: var(--text-muted);
+        font-size: 11.5px;
+      }
+      .msg-ai {
+        display: grid;
+        grid-template-columns: 30px minmax(0, 1fr);
+        gap: 14px;
+        margin-bottom: 22px;
+      }
+      .avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--grad);
+        display: grid;
+        place-items: center;
+      }
+      .avatar svg {
+        width: 15px;
+        height: 15px;
+        fill: #fff;
+        stroke: none;
+      }
+      .ai-name {
+        font-size: 12.5px;
+        color: var(--text-muted);
+        margin: 4px 0 6px;
+        font-weight: 600;
+      }
+      .prose {
+        font-size: 15px;
+        line-height: 1.7;
+      }
+      .prose p {
+        margin-bottom: 12px;
+      }
+      .prose ul {
+        padding-left: 20px;
+        margin-bottom: 12px;
+      }
+      .prose li {
+        margin-bottom: 4px;
+      }
+      .prose li::marker {
+        color: var(--accent-text);
+      }
+      .prose strong {
+        font-weight: 650;
+      }
+      .prose code.inline {
+        font: 13px var(--mono);
+        background: var(--surface-2);
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+      .tool-note {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-muted);
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: var(--surface-2);
+        margin-bottom: 12px;
+      }
+      .tool-note svg {
+        color: var(--ok);
+        width: 15px;
+        height: 15px;
+      }
+      .code {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--code-bg);
+        margin: 4px 0 14px;
+      }
+      .code-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 8px 6px 14px;
+        border-bottom: 1px solid var(--border);
+        font-size: 12.5px;
+        color: var(--text-muted);
+      }
+      .code-head button {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        height: 28px;
+        padding: 0 10px;
+        border-radius: 8px;
+        color: var(--text-muted);
+        font-size: 12.5px;
+      }
+      .code-head button:hover {
+        background: var(--surface-2);
+        color: var(--text);
+      }
+      .code pre {
+        margin: 0;
+        padding: 14px 16px;
+        overflow-x: auto;
+        font: 13px/1.65 var(--mono);
+      }
+      .kw {
+        color: var(--tok-kw);
+      }
+      .str {
+        color: var(--tok-str);
+      }
+      .fn {
+        color: var(--tok-fn);
+      }
+      .com {
+        color: var(--tok-com);
+        font-style: italic;
+      }
+      .sources {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 2px 0 6px;
+      }
+      .source {
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        padding: 4px 11px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+      }
+      .source:hover {
+        border-color: var(--accent-text);
+        color: var(--text);
+      }
+      .source svg {
+        width: 13px;
+        height: 13px;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+        margin-left: -8px;
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+      .msg-ai:hover .actions,
+      .msg-ai:focus-within .actions,
+      .msg-ai.last .actions,
+      .msg-user:hover .actions,
+      .msg-user:focus-within .actions {
+        opacity: 1;
+      }
+      .act {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 30px;
+        padding: 0 9px;
+        border-radius: 8px;
+        color: var(--text-muted);
+        font-size: 12.5px;
+      }
+      .act:hover {
+        background: var(--surface-2);
+        color: var(--text);
+      }
+      .act svg {
+        width: 15px;
+        height: 15px;
+      }
+      .msg-user .actions {
+        margin: 0 -8px 0 0;
+      }
+
+      /* Empty chat */
+      .empty {
+        min-height: 100%;
+        display: grid;
+        place-items: center;
+        padding: 30px 24px;
+        text-align: center;
+      }
+      .empty .logo {
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        margin: 0 auto;
+      }
+      .empty .logo svg {
+        width: 30px;
+        height: 30px;
+      }
+      .empty h1 {
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 20px 0 6px;
+      }
+      .grad-text {
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      :root[data-theme='dark'] .grad-text {
+        background: linear-gradient(135deg, #a794ff, #e08bff);
+        -webkit-background-clip: text;
+        background-clip: text;
+      }
+      .empty .lead {
+        color: var(--text-muted);
+        font-size: 15px;
+      }
+      .tasks {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 26px auto 0;
+        max-width: 680px;
+      }
+      .task {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 14px;
+        border-radius: 16px;
+        text-align: left;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        transition:
+          border-color 0.15s,
+          background-color 0.15s,
+          transform 0.12s;
+      }
+      .task:hover {
+        border-color: var(--accent-text);
+        transform: translateY(-2px);
+      }
+      .task[aria-pressed='true'] {
+        border-color: var(--accent-text);
+        background: var(--accent-soft);
+      }
+      .task .ico {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: var(--accent-soft);
+        color: var(--accent-text);
+        display: grid;
+        place-items: center;
+      }
+      .task b {
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .task small {
+        color: var(--text-muted);
+        font-size: 12.5px;
+        line-height: 1.4;
+        display: block;
+      }
+      .notice {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 12px 12px 16px;
+        border-radius: 14px;
+        background: var(--warn-soft);
+        border: 1px solid var(--warn-border);
+        max-width: 560px;
+        margin: 22px auto 0;
+        text-align: left;
+        font-size: 13.5px;
+      }
+      .notice > svg {
+        color: var(--warn);
+      }
+      .notice span {
+        flex: 1;
+      }
+
+      /* Composer */
+      .composer-wrap {
+        flex: none;
+        padding: 8px 24px 18px;
+      }
+      .composer {
+        max-width: var(--col);
+        margin: 0 auto;
+        background: var(--surface);
+        border: 1px solid var(--input-border);
+        border-radius: var(--radius-l);
+        padding: 10px 10px 8px 14px;
+        box-shadow: var(--shadow-s);
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+      }
+      .composer:focus-within {
+        border-color: var(--accent-text);
+        box-shadow:
+          0 0 0 4px var(--accent-soft),
+          var(--shadow-s);
+      }
+      .composer .chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 6px;
+      }
+      .composer .chips:empty {
+        display: none;
+      }
+      .composer textarea {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        resize: none;
+        outline: none;
+        font-size: 15px;
+        line-height: 1.55;
+        min-height: 28px;
+        max-height: 220px;
+        padding: 4px 2px;
+      }
+      .composer textarea::placeholder {
+        color: var(--text-muted);
+      }
+      .composer-bar {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        flex-wrap: wrap;
+        margin-top: 4px;
+        margin-left: -6px;
+      }
+      .sep {
+        width: 1px;
+        height: 18px;
+        background: var(--border);
+        margin: 0 6px;
+      }
+      .ctx {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 30px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 12.5px;
+        color: var(--text-muted);
+        transition:
+          background-color 0.15s,
+          color 0.15s;
+      }
+      .ctx:hover {
+        background: var(--surface-2);
+        color: var(--text);
+      }
+      .ctx svg {
+        width: 15px;
+        height: 15px;
+      }
+      .mark {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 1px 7px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent-text);
+      }
+      .send {
+        margin-left: auto;
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: var(--grad);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 6px 16px rgba(106, 77, 255, 0.4);
+        transition:
+          transform 0.12s,
+          opacity 0.15s;
+      }
+      .send:hover:not(:disabled) {
+        transform: translateY(-1px);
+      }
+      .send:disabled {
+        background: var(--surface-2);
+        color: var(--text-muted);
+        box-shadow: none;
+      }
+      .send svg {
+        width: 18px;
+        height: 18px;
+        stroke-width: 2.2;
+      }
+
+      /* ============ Dialogs ============ */
+      dialog.dlg {
+        margin: auto;
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        padding: 0;
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: var(--shadow);
+        width: min(820px, calc(100vw - 32px));
+        height: min(640px, calc(100vh - 48px));
+        overflow: hidden;
+      }
+      dialog.dlg.small {
+        width: min(560px, calc(100vw - 32px));
+        height: min(600px, calc(100vh - 48px));
+      }
+      dialog.dlg[open] {
+        display: flex;
+        flex-direction: column;
+        animation: pop 0.18s ease;
+      }
+      dialog.dlg:focus-visible {
+        outline: none;
+      }
+      dialog.dlg::backdrop {
+        background: rgba(5, 6, 12, 0.55);
+        backdrop-filter: blur(4px);
+      }
+      .no-anim dialog.dlg[open] {
+        animation: none;
+      }
+      @keyframes pop {
+        from {
+          opacity: 0;
+          transform: translateY(8px) scale(0.985);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .dlg-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 16px 16px 24px;
+        border-bottom: 1px solid var(--border);
+      }
+      .dlg-head h2 {
+        font-size: 18px;
+        font-weight: 700;
+        flex: 1;
+      }
+      .dlg-body {
+        display: grid;
+        grid-template-columns: 200px minmax(0, 1fr);
+        flex: 1;
+        min-height: 0;
+      }
+      .dlg-nav {
+        border-right: 1px solid var(--border);
+        padding: 12px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .dlg-nav button {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 36px;
+        padding: 0 12px;
+        border-radius: 10px;
+        color: var(--text-muted);
+        text-align: left;
+        font-size: 13.5px;
+        white-space: nowrap;
+      }
+      .dlg-nav button:hover {
+        background: var(--surface-2);
+        color: var(--text);
+      }
+      .dlg-nav button[aria-current='true'] {
+        background: var(--accent-soft);
+        color: var(--accent-text);
+        font-weight: 600;
+      }
+      .dlg-nav svg {
+        width: 16px;
+        height: 16px;
+      }
+      .dlg-content {
+        overflow-y: auto;
+        padding: 8px 28px 28px;
+        scroll-behavior: smooth;
+      }
+      .sec {
+        padding: 22px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .sec:last-child {
+        border-bottom: 0;
+      }
+      .sec h3 {
+        font-size: 15.5px;
+        font-weight: 650;
+        margin-bottom: 4px;
+      }
+      .help {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-bottom: 14px;
+      }
+      .rows {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+      }
+      .row .prov {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        background: var(--accent-soft);
+        color: var(--accent-text);
+        flex: none;
+      }
+      .row .grow {
+        flex: 1;
+        min-width: 0;
+      }
+      .row .grow b {
+        font-weight: 600;
+        display: block;
+      }
+      .row .grow small {
+        color: var(--text-muted);
+        font-size: 12.5px;
+      }
+      .pill {
+        font-size: 12px;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 999px;
+      }
+      .pill.ok {
+        color: var(--ok);
+        background: var(--ok-soft);
+      }
+      .pill.off {
+        color: var(--text-muted);
+        background: var(--surface-2);
+      }
+      .btn {
+        height: 34px;
+        padding: 0 14px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1px solid var(--input-border);
+        background: var(--surface);
+        white-space: nowrap;
+      }
+      .btn:hover {
+        background: var(--surface-2);
+      }
+      .btn.primary {
+        background: var(--accent);
+        border-color: transparent;
+        color: #fff;
+      }
+      .btn.primary:hover {
+        background: #5a3df0;
+      }
+      .btn.danger {
+        color: var(--danger);
+      }
+      .fields {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .field label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      .money {
+        display: flex;
+        align-items: center;
+        height: 40px;
+        border: 1px solid var(--input-border);
+        border-radius: 10px;
+        background: var(--surface-2);
+        padding: 0 12px;
+        gap: 6px;
+      }
+      .money:focus-within {
+        border-color: var(--accent-text);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+      }
+      .money span {
+        color: var(--text-muted);
+      }
+      .money input {
+        border: 0;
+        background: transparent;
+        outline: none;
+        width: 100%;
+        font-size: 14px;
+      }
+      .meter {
+        margin-bottom: 14px;
+      }
+      .meter-top {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+      .meter-top span:last-child {
+        color: var(--text-muted);
+      }
+      .bar {
+        height: 8px;
+        border-radius: 99px;
+        background: var(--surface-2);
+        overflow: hidden;
+      }
+      .bar i {
+        display: block;
+        height: 100%;
+        border-radius: 99px;
+        background: var(--grad);
+      }
+      .seg {
+        display: inline-flex;
+        padding: 4px;
+        border-radius: 12px;
+        background: var(--surface-2);
+        gap: 4px;
+      }
+      .seg button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 34px;
+        padding: 0 16px;
+        border-radius: 9px;
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .seg button[aria-pressed='true'] {
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: var(--shadow-s);
+      }
+      .switch-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 0;
+      }
+      .switch-row .grow {
+        flex: 1;
+      }
+      .switch-row b {
+        font-weight: 600;
+        display: block;
+      }
+      .switch-row small {
+        color: var(--text-muted);
+        font-size: 12.5px;
+      }
+      .switch {
+        appearance: none;
+        width: 40px;
+        height: 24px;
+        border-radius: 99px;
+        background: var(--surface-2);
+        border: 1px solid var(--input-border);
+        position: relative;
+        cursor: pointer;
+        flex: none;
+        transition: background-color 0.15s;
+      }
+      .switch::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--text-muted);
+        transition:
+          transform 0.18s,
+          background-color 0.15s;
+      }
+      .switch:checked {
+        background: var(--accent);
+        border-color: transparent;
+      }
+      .switch:checked::after {
+        transform: translateX(16px);
+        background: #fff;
+      }
+
+      /* History dialog */
+      .search {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 42px;
+        margin: 16px 20px 6px;
+        padding: 0 14px;
+        border: 1px solid var(--input-border);
+        border-radius: 12px;
+        background: var(--surface-2);
+      }
+      .search:focus-within {
+        border-color: var(--accent-text);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+      }
+      .search input {
+        border: 0;
+        outline: none;
+        background: transparent;
+        flex: 1;
+        font-size: 14px;
+      }
+      .search svg {
+        color: var(--text-muted);
+      }
+      .hist {
+        overflow-y: auto;
+        padding: 4px 12px 16px;
+        flex: 1;
+      }
+      .hist h4 {
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        padding: 14px 10px 6px;
+      }
+      .hist-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        border-radius: 12px;
+      }
+      .hist-item:hover {
+        background: var(--surface-2);
+      }
+      .hist-item .grow {
+        flex: 1;
+        min-width: 0;
+      }
+      .hist-item b {
+        font-weight: 600;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .hist-item small {
+        color: var(--text-muted);
+        font-size: 12.5px;
+      }
+      .hist-item .icon-btn {
+        opacity: 0;
+      }
+      .hist-item:hover .icon-btn,
+      .hist-item:focus-within .icon-btn {
+        opacity: 1;
+      }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 110px;
+        transform: translate(-50%, 20px);
+        opacity: 0;
+        pointer-events: none;
+        background: var(--text);
+        color: var(--bg);
+        padding: 10px 16px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: var(--shadow);
+        transition:
+          opacity 0.2s,
+          transform 0.2s;
+        z-index: 50;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .scrim {
+        display: none;
+      }
+
+      /* ============ Narrow windows ============ */
+      @media (max-width: 820px) {
+        .app,
+        .app.collapsed {
+          grid-template-columns: minmax(0, 1fr);
+          --sb: 264px;
+        }
+        .sidebar {
+          position: fixed;
+          inset: 0 auto 0 0;
+          width: 280px;
+          z-index: 30;
+          transform: translateX(-100%);
+          transition: transform 0.22s ease;
+          box-shadow: var(--shadow);
+        }
+        .collapse-btn {
+          display: none;
+        }
+        .app.drawer .sidebar {
+          transform: none;
+        }
+        .app.drawer .scrim {
+          display: block;
+          position: fixed;
+          inset: 0;
+          background: rgba(5, 6, 12, 0.5);
+          z-index: 20;
+        }
+        /* the rail never applies in the drawer */
+        .collapsed .sidebar {
+          align-items: stretch;
+        }
+        .collapsed .wordmark,
+        .collapsed .sb-text,
+        .collapsed .sb-label-small,
+        .collapsed .all-chats,
+        .collapsed .sb-item .count {
+          display: revert;
+        }
+        .collapsed .logo {
+          display: grid;
+        }
+        .collapsed .recent {
+          display: block;
+        }
+        .collapsed .sb-head,
+        .collapsed .nav,
+        .collapsed .sb-foot {
+          width: auto;
+        }
+        .collapsed .sb-head {
+          padding: 0 4px 0 6px;
+          justify-content: flex-start;
+        }
+        .collapsed .btn-new {
+          width: auto;
+          height: 42px;
+        }
+        .collapsed .sb-item {
+          width: 100%;
+          justify-content: flex-start;
+          padding: 0 12px;
+        }
+        .collapsed .sb-foot {
+          flex-direction: row;
+          margin-top: 6px;
+        }
+        .collapsed .sb-item.has-count::after {
+          display: none;
+        }
+        .menu-btn {
+          display: grid;
+          margin-left: -8px;
+        }
+        .topbar {
+          padding: 0 14px;
+          gap: 8px;
+        }
+        .col {
+          padding: 22px 16px 12px;
+        }
+        .composer-wrap {
+          padding: 6px 12px 12px;
+        }
+        .tasks {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .dlg-body {
+          grid-template-columns: minmax(0, 1fr);
+          grid-template-rows: auto minmax(0, 1fr);
+        }
+        .dlg-nav {
+          flex-direction: row;
+          border-right: 0;
+          border-bottom: 1px solid var(--border);
+          overflow-x: auto;
+        }
+        .dlg-nav button {
+          flex: none;
+        }
+        .dlg-content {
+          padding: 4px 18px 22px;
+        }
+      }
+      @media (max-width: 560px) {
+        .pick.task-pick,
+        .chat-title {
+          display: none;
+        }
+        .top-actions {
+          margin-left: auto;
+          min-width: 0;
+        }
+        .pick.model {
+          max-width: 160px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .bubble {
+          max-width: 92%;
+        }
+        .empty h1 {
+          font-size: 24px;
+        }
+        .fields {
+          grid-template-columns: 1fr;
+        }
+        .ctx .ctx-text,
+        .badge-text {
+          display: none;
+        }
+        .badge {
+          width: 30px;
+          padding: 0;
+          justify-content: center;
+        }
+        .row {
+          flex-wrap: wrap;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition: none !important;
+          animation: none !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Icon sprite -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="i-peak" viewBox="0 0 24 24">
+        <path d="M2.5 19.5 9 8.5l3.6 5.6 2.4-3.6 6.5 9z" />
+        <circle cx="17.5" cy="5.5" r="2" />
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24">
+        <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      </symbol>
+      <symbol id="i-image" viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="16" rx="3" />
+        <circle cx="9" cy="10" r="1.7" />
+        <path d="m21 16-5-5-9 9" />
+      </symbol>
+      <symbol id="i-tool" viewBox="0 0 24 24">
+        <path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.6 2.6-2.4-.6-.6-2.4z" />
+      </symbol>
+      <symbol id="i-sliders" viewBox="0 0 24 24">
+        <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
+        <circle cx="15" cy="7" r="2" />
+        <circle cx="9" cy="17" r="2" />
+      </symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="4" />
+        <path
+          d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"
+        />
+      </symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24">
+        <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
+      </symbol>
+      <symbol id="i-sidebar" viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="16" rx="3" />
+        <path d="M9.5 4v16" />
+      </symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></symbol>
+      <symbol id="i-clip" viewBox="0 0 24 24">
+        <path
+          d="m20.5 11.5-8.4 8.4a5 5 0 0 1-7.1-7.1l8.6-8.6a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4l7.9-7.9"
+        />
+      </symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24">
+        <path
+          d="m11 3 1.9 5.1L18 10l-5.1 1.9L11 17l-1.9-5.1L4 10l5.1-1.9zM18.5 15l.8 2 2 .8-2 .7-.8 2-.7-2-2-.7 2-.8z"
+        />
+      </symbol>
+      <symbol id="i-mic" viewBox="0 0 24 24">
+        <rect x="9" y="3" width="6" height="11" rx="3" />
+        <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" />
+      </symbol>
+      <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5" /></symbol>
+      <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6.5 4h11v16l-5.5-4-5.5 4z" /></symbol>
+      <symbol id="i-list" viewBox="0 0 24 24">
+        <path d="M9 6.5h11M9 12h11M9 17.5h11M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01" />
+      </symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24">
+        <rect x="9" y="9" width="11" height="11" rx="2.5" />
+        <path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15" />
+      </symbol>
+      <symbol id="i-redo" viewBox="0 0 24 24">
+        <path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5" />
+      </symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24">
+        <path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4" />
+      </symbol>
+      <symbol id="i-speaker" viewBox="0 0 24 24">
+        <path d="M4 9.5v5h4l5 4v-13l-5 4zM16.5 9a4.2 4.2 0 0 1 0 6M19 6.5a7.8 7.8 0 0 1 0 11" />
+      </symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7" />
+        <path d="m20 20-3.5-3.5" />
+      </symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24">
+        <path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13" />
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" /></symbol>
+      <symbol id="i-file" viewBox="0 0 24 24">
+        <path
+          d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8zM14 3v5h5"
+        />
+      </symbol>
+      <symbol id="i-chat" viewBox="0 0 24 24">
+        <path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4z" />
+      </symbol>
+      <symbol id="i-code" viewBox="0 0 24 24"><path d="m8.5 8-4 4 4 4M15.5 8l4 4-4 4" /></symbol>
+      <symbol id="i-pen" viewBox="0 0 24 24">
+        <path d="M12 20h8M4 20h3.5L18 9.5l-3.5-3.5L4 16.5z" />
+      </symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24">
+        <path d="M13 2.5 4.5 14H11l-1 7.5L18.5 10H12z" />
+      </symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+      </symbol>
+      <symbol id="i-warn" viewBox="0 0 24 24">
+        <path d="M12 3.5 2.5 20h19zM12 10v4.5M12 17.5h.01" />
+      </symbol>
+      <symbol id="i-key" viewBox="0 0 24 24">
+        <circle cx="8" cy="15" r="4" />
+        <path d="m11 12 8.5-8.5M16 7l2.5 2.5M14 9l2 2" />
+      </symbol>
+      <symbol id="i-wallet" viewBox="0 0 24 24">
+        <path d="M4 7a2 2 0 0 1 2-2h11v4M4 7v10a2 2 0 0 0 2 2h14V9H6a2 2 0 0 1-2-2z" />
+        <circle cx="16" cy="14" r="1" />
+      </symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24">
+        <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+      </symbol>
+      <symbol id="i-palette" viewBox="0 0 24 24">
+        <path
+          d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.7 0-1.4-1.2-1.6-1.2-2.8 0-1 .8-1.6 1.8-1.6H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"
+        />
+        <circle cx="7.5" cy="11" r="1" />
+        <circle cx="10.5" cy="7.5" r="1" />
+        <circle cx="15" cy="7.5" r="1" />
+      </symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24">
+        <path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.3 7.5 9.5 4.3-1.2 7.5-4.9 7.5-9.5V6z" />
+      </symbol>
+      <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12M6 11l6 6 6-6M5 20h14" /></symbol>
+      <symbol id="i-box" viewBox="0 0 24 24">
+        <path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5zM4 7.5l8 4.5 8-4.5M12 12v9" />
+      </symbol>
+    </svg>
+
+    <div class="app" id="app">
+      <!-- ============ Sidebar ============ -->
+      <aside class="sidebar" aria-label="Chats and pages">
+        <div class="sb-head">
+          <div class="logo" aria-hidden="true">
+            <svg><use href="#i-peak" /></svg>
+          </div>
+          <span class="wordmark">Frontier</span>
+          <button
+            class="icon-btn collapse-btn"
+            id="collapseBtn"
+            title="Collapse the sidebar"
+            aria-label="Collapse the sidebar"
+            aria-expanded="true"
+          >
+            <svg class="i"><use href="#i-sidebar" /></svg>
+          </button>
+        </div>
+
+        <button
+          class="btn-new"
+          id="newChat"
+          title="Start a new chat. This one stays saved in History."
+        >
+          <svg class="i"><use href="#i-plus" /></svg><span class="sb-text">New chat</span>
+        </button>
+
+        <nav class="nav" aria-label="Pages">
+          <button class="sb-item" data-open="history" title="Open a saved chat, or delete one.">
+            <svg class="i"><use href="#i-clock" /></svg><span class="sb-text">History</span>
+          </button>
+          <button
+            class="sb-item"
+            data-toast="Projects keeps what it has today, in the new style."
+            title="Put this chat in a project, or make one."
+          >
+            <svg class="i"><use href="#i-folder" /></svg><span class="sb-text">Projects</span>
+          </button>
+          <button
+            class="sb-item"
+            data-toast="The gallery keeps what it has today, in the new style."
+            title="Pictures you made."
+          >
+            <svg class="i"><use href="#i-image" /></svg><span class="sb-text">Gallery</span>
+          </button>
+          <button
+            class="sb-item"
+            data-toast="Tools keeps what it has today, in the new style."
+            title="See what the model has asked tools to do, and what you answered."
+          >
+            <svg class="i"><use href="#i-tool" /></svg><span class="sb-text">Tools</span>
+          </button>
+        </nav>
+
+        <div class="sb-label-small">Recent</div>
+        <div class="recent" role="list">
+          <button class="chat-link" role="listitem" aria-current="true" data-chat>
+            <span class="dot p1"></span><span>Best sales month</span>
+          </button>
+          <button class="chat-link" role="listitem" data-chat>
+            <span class="dot"></span><span>What's new in Python 3.14</span>
+          </button>
+          <button class="chat-link" role="listitem" data-chat>
+            <span class="dot p2"></span><span>Cover letter for the design role</span>
+          </button>
+          <button class="chat-link" role="listitem" data-chat>
+            <span class="dot p3"></span><span>Thesis outline, chapter 3</span>
+          </button>
+          <button class="chat-link" role="listitem" data-chat>
+            <span class="dot"></span><span>Weekend trip packing list</span>
+          </button>
+          <button class="chat-link" role="listitem" data-chat>
+            <span class="dot p1"></span><span>Quarterly report charts</span>
+          </button>
+          <button class="all-chats" data-open="history">All chats →</button>
+        </div>
+
+        <div class="sb-foot">
+          <button class="sb-item" data-open="settings" title="Settings">
+            <svg class="i"><use href="#i-sliders" /></svg><span class="sb-text">Settings</span>
+          </button>
+          <button
+            class="icon-btn"
+            id="themeBtn"
+            title="Switch to light"
+            aria-label="Switch to light"
+          >
+            <svg class="i"><use href="#i-sun" /></svg>
+          </button>
+        </div>
+      </aside>
+      <div class="scrim" id="scrim"></div>
+
+      <!-- ============ Main ============ -->
+      <main class="main">
+        <header class="topbar">
+          <button
+            class="icon-btn menu-btn"
+            id="menuBtn"
+            aria-label="Open the sidebar"
+            title="Open the sidebar"
+          >
+            <svg class="i"><use href="#i-menu" /></svg>
+          </button>
+          <div class="chat-title" id="chatTitle">Best sales month</div>
+          <div class="top-actions">
+            <span
+              class="badge"
+              id="keyBadge"
+              hidden
+              title="Open Settings to add your OpenAI API key."
+              ><svg class="i" style="width: 14px; height: 14px"><use href="#i-warn" /></svg
+              ><span class="badge-text">No API key</span></span
+            >
+            <select
+              class="pick task-pick"
+              id="taskPick"
+              aria-label="What are you doing?"
+              title="What you are doing: the model menu marks the models named for it."
+            >
+              <option value="">Any task</option>
+              <option value="chat">Chat</option>
+              <option value="coding" selected>Coding</option>
+              <option value="writing">Writing</option>
+              <option value="quick">Quick answer</option>
+            </select>
+            <select class="pick model" aria-label="Model">
+              <optgroup label="Anthropic">
+                <option>Claude Fable 5.1</option>
+                <option selected>Claude Opus 5.5</option>
+                <option>Claude Sonnet 5.5</option>
+              </optgroup>
+              <optgroup label="OpenAI">
+                <option>GPT-6 Astra</option>
+                <option>GPT-6.1 Sol</option>
+                <option>GPT-6 Luna</option>
+              </optgroup>
+              <optgroup label="Google">
+                <option>Gemini 4 Argon</option>
+                <option>Gemini 3.8 Flash</option>
+              </optgroup>
+            </select>
+            <select
+              class="pick"
+              aria-label="Effort"
+              title="How hard the model thinks before it answers."
+            >
+              <option>Low</option>
+              <option>Medium</option>
+              <option selected>High</option>
+              <option>Max</option>
+            </select>
+          </div>
+        </header>
+
+        <div class="thread" id="thread">
+          <!-- Conversation -->
+          <div class="col" id="conversation">
+            <div class="msg-user">
+              <div class="bubble">What's new in Python 3.14? Just the headlines.</div>
+            </div>
+            <div class="msg-ai">
+              <div class="avatar" aria-hidden="true">
+                <svg><use href="#i-peak" /></svg>
+              </div>
+              <div>
+                <div class="ai-name">Claude Opus 5.5</div>
+                <div class="prose">
+                  <p>The big ones:</p>
+                  <ul>
+                    <li>
+                      <strong>Template strings</strong>:
+                      <code class="inline">t"..."</code> literals, like f-strings but processed by
+                      your own code.
+                    </li>
+                    <li>
+                      <strong>Lazy annotations</strong>: type hints are evaluated only when
+                      something asks for them.
+                    </li>
+                    <li>
+                      <strong>Free-threaded build</strong>: now officially supported, so threads can
+                      run without the GIL.
+                    </li>
+                  </ul>
+                </div>
+                <div class="sources">
+                  <a class="source" href="#" onclick="return false"
+                    ><svg class="i"><use href="#i-globe" /></svg>docs.python.org</a
+                  >
+                  <a class="source" href="#" onclick="return false"
+                    ><svg class="i"><use href="#i-globe" /></svg>peps.python.org</a
+                  >
+                </div>
+                <div class="actions">
+                  <button class="act">
+                    <svg class="i"><use href="#i-copy" /></svg>Copy
+                  </button>
+                  <button class="act">
+                    <svg class="i"><use href="#i-redo" /></svg>Regenerate
+                  </button>
+                  <button class="act">
+                    <svg class="i"><use href="#i-bookmark" /></svg>Remember...
+                  </button>
+                  <button class="act">
+                    <svg class="i"><use href="#i-speaker" /></svg>Read aloud
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="msg-user">
+              <div class="file-chip">
+                <span class="ico"
+                  ><svg class="i"><use href="#i-file" /></svg></span
+                ><span>sales.csv<small>CSV · 18 KB</small></span>
+              </div>
+              <div class="bubble">
+                Find the best month in this file, and give me a short script to check it myself.
+              </div>
+              <div class="actions">
+                <button class="act">
+                  <svg class="i"><use href="#i-edit" /></svg>Edit
+                </button>
+                <button class="act">
+                  <svg class="i"><use href="#i-copy" /></svg>Copy
+                </button>
+              </div>
+            </div>
+            <div class="msg-ai last">
+              <div class="avatar" aria-hidden="true">
+                <svg><use href="#i-peak" /></svg>
+              </div>
+              <div>
+                <div class="ai-name">Claude Opus 5.5</div>
+                <div class="tool-note">
+                  <svg class="i"><use href="#i-check" /></svg>Read sales.csv in your workspace
+                </div>
+                <div class="prose">
+                  <p>
+                    <strong>March</strong> was your best month: $42,300, which is 18% above
+                    February.
+                  </p>
+                  <p>This script adds up each month and prints the top one:</p>
+                </div>
+                <div class="code">
+                  <div class="code-head">
+                    <span>python</span
+                    ><button>
+                      <svg class="i" style="width: 14px; height: 14px"><use href="#i-copy" /></svg
+                      >Copy
+                    </button>
+                  </div>
+                  <pre><span class="kw">import</span> csv
+<span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+
+totals = defaultdict(<span class="fn">float</span>)
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"sales.csv"</span>, newline=<span class="str">""</span>) <span class="kw">as</span> f:
+    <span class="kw">for</span> row <span class="kw">in</span> csv.<span class="fn">DictReader</span>(f):
+        totals[row[<span class="str">"month"</span>]] += <span class="fn">float</span>(row[<span class="str">"amount"</span>])
+
+best = <span class="fn">max</span>(totals, key=totals.get)  <span class="com"># the month with the largest total</span>
+<span class="fn">print</span>(<span class="str">f"Best month: {best} (${totals[best]:,.0f})"</span>)</pre>
+                </div>
+                <div class="prose">
+                  <p>Run it in the folder that holds <strong>sales.csv</strong>.</p>
+                </div>
+                <div class="actions">
+                  <button class="act">
+                    <svg class="i"><use href="#i-copy" /></svg>Copy
+                  </button>
+                  <button class="act">
+                    <svg class="i"><use href="#i-redo" /></svg>Regenerate
+                  </button>
+                  <button class="act">
+                    <svg class="i"><use href="#i-bookmark" /></svg>Remember...
+                  </button>
+                  <button class="act">
+                    <svg class="i"><use href="#i-speaker" /></svg>Read aloud
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty chat -->
+          <div class="empty" id="empty" hidden>
+            <div>
+              <div class="logo" aria-hidden="true">
+                <svg><use href="#i-peak" /></svg>
+              </div>
+              <h1>What are we <span class="grad-text">working on</span>?</h1>
+              <p class="lead">
+                Pick what you're doing to see the models that suit it, or just start typing.
+              </p>
+              <div class="tasks">
+                <button class="task" data-task="chat" aria-pressed="false">
+                  <span class="ico"
+                    ><svg class="i"><use href="#i-chat" /></svg></span
+                  ><span><b>Chat</b><small>Talk anything through</small></span>
+                </button>
+                <button class="task" data-task="coding" aria-pressed="false">
+                  <span class="ico"
+                    ><svg class="i"><use href="#i-code" /></svg></span
+                  ><span><b>Coding</b><small>Write, fix and explain code</small></span>
+                </button>
+                <button class="task" data-task="writing" aria-pressed="false">
+                  <span class="ico"
+                    ><svg class="i"><use href="#i-pen" /></svg></span
+                  ><span><b>Writing</b><small>Drafts, edits and tone</small></span>
+                </button>
+                <button class="task" data-task="quick" aria-pressed="false">
+                  <span class="ico"
+                    ><svg class="i"><use href="#i-bolt" /></svg></span
+                  ><span><b>Quick answer</b><small>Short, fast replies</small></span>
+                </button>
+              </div>
+              <div class="notice">
+                <svg class="i"><use href="#i-warn" /></svg>
+                <span>Add your OpenAI API key before the first message.</span>
+                <button class="btn" data-open="settings">Open Settings</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Composer -->
+        <div class="composer-wrap">
+          <form class="composer" id="composer" onsubmit="return false">
+            <div class="chips" id="chips"></div>
+            <textarea
+              id="input"
+              rows="1"
+              placeholder="Message Frontier..."
+              aria-label="Message"
+            ></textarea>
+            <div class="composer-bar">
+              <button
+                type="button"
+                class="icon-btn"
+                id="attachBtn"
+                title="Attach images, PDFs or text files to your message."
+                aria-label="Attach files"
+              >
+                <svg class="i"><use href="#i-clip" /></svg>
+              </button>
+              <button
+                type="button"
+                class="icon-btn"
+                title="Make an image"
+                aria-label="Make an image"
+              >
+                <svg class="i"><use href="#i-spark" /></svg>
+              </button>
+              <button
+                type="button"
+                class="icon-btn"
+                title="Speak to type"
+                aria-label="Speak to type"
+              >
+                <svg class="i"><use href="#i-mic" /></svg>
+              </button>
+              <span class="sep"></span>
+              <button
+                type="button"
+                class="ctx"
+                title='This chat is in the project "Shop reports". Click to see the project, or to move the chat.'
+              >
+                <svg class="i"><use href="#i-folder" /></svg
+                ><span class="ctx-text">Shop reports</span>
+              </button>
+              <button
+                type="button"
+                class="ctx"
+                title="Your instructions for every chat are on and are sent with every message. Click to read or change them."
+              >
+                <svg class="i"><use href="#i-list" /></svg><span class="ctx-text">Instructions</span
+                ><span class="mark">on</span>
+              </button>
+              <button
+                type="button"
+                class="ctx"
+                title="3 notes go with every message of this chat. Click to see or change them."
+              >
+                <svg class="i"><use href="#i-bookmark" /></svg><span class="ctx-text">Memory</span
+                ><span class="mark">3</span>
+              </button>
+              <button
+                type="submit"
+                class="send"
+                id="sendBtn"
+                disabled
+                title="Send"
+                aria-label="Send"
+              >
+                <svg class="i"><use href="#i-up" /></svg>
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+
+    <!-- ============ Settings ============ -->
+    <dialog class="dlg" id="settings" autofocus aria-labelledby="settingsTitle">
+      <div class="dlg-head">
+        <h2 id="settingsTitle">Settings</h2>
+        <button class="icon-btn" data-close aria-label="Close">
+          <svg class="i"><use href="#i-x" /></svg>
+        </button>
+      </div>
+      <div class="dlg-body">
+        <nav class="dlg-nav" aria-label="Settings sections">
+          <button data-sec="s-keys" aria-current="true">
+            <svg class="i"><use href="#i-key" /></svg>API keys
+          </button>
+          <button data-sec="s-look">
+            <svg class="i"><use href="#i-palette" /></svg>Appearance
+          </button>
+          <button data-sec="s-usage">
+            <svg class="i"><use href="#i-chart" /></svg>Usage
+          </button>
+          <button data-sec="s-limits">
+            <svg class="i"><use href="#i-wallet" /></svg>Spending limits
+          </button>
+          <button data-sec="s-large">
+            <svg class="i"><use href="#i-shield" /></svg>Large requests
+          </button>
+          <button data-sec="s-voice">
+            <svg class="i"><use href="#i-mic" /></svg>Voice
+          </button>
+          <button data-sec="s-images">
+            <svg class="i"><use href="#i-image" /></svg>Images
+          </button>
+          <button data-sec="s-updates">
+            <svg class="i"><use href="#i-down" /></svg>Updates
+          </button>
+          <button data-sec="s-chats">
+            <svg class="i"><use href="#i-box" /></svg>Saved chats
+          </button>
+        </nav>
+        <div class="dlg-content" id="settingsContent">
+          <section class="sec" id="s-keys">
+            <h3>API keys</h3>
+            <p class="help">Each provider needs its own key. Keys are kept on this computer.</p>
+            <div class="rows">
+              <div class="row">
+                <span class="prov">A</span
+                ><span class="grow"><b>Anthropic</b><small>Claude models</small></span
+                ><span class="pill ok">Saved</span><button class="btn">Replace</button
+                ><button class="btn danger">Remove</button>
+              </div>
+              <div class="row">
+                <span class="prov">O</span
+                ><span class="grow"><b>OpenAI</b><small>GPT models, images, read-aloud</small></span
+                ><span class="pill off">Not added</span><button class="btn primary">Add key</button>
+              </div>
+              <div class="row">
+                <span class="prov">G</span
+                ><span class="grow"><b>Google</b><small>Gemini models</small></span
+                ><span class="pill off">Not added</span><button class="btn primary">Add key</button>
+              </div>
+            </div>
+          </section>
+          <section class="sec" id="s-look">
+            <h3>Appearance</h3>
+            <p class="help">Dark is the default.</p>
+            <div class="seg" role="group" aria-label="Theme">
+              <button data-theme-pick="dark" aria-pressed="true">
+                <svg class="i" style="width: 15px; height: 15px"><use href="#i-moon" /></svg>Dark
+              </button>
+              <button data-theme-pick="light" aria-pressed="false">
+                <svg class="i" style="width: 15px; height: 15px"><use href="#i-sun" /></svg>Light
+              </button>
+            </div>
+          </section>
+          <section class="sec" id="s-usage">
+            <h3>Usage</h3>
+            <p class="help">What your replies have cost, as the providers price them.</p>
+            <div class="meter">
+              <div class="meter-top"><span>Today</span><span>$0.12 of $0.50</span></div>
+              <div class="bar"><i style="width: 24%"></i></div>
+            </div>
+            <div class="meter">
+              <div class="meter-top"><span>This month</span><span>$1.84 of $10.00</span></div>
+              <div class="bar"><i style="width: 18%"></i></div>
+            </div>
+          </section>
+          <section class="sec" id="s-limits">
+            <h3>Spending limits</h3>
+            <p class="help">Nothing is sent once a limit is reached.</p>
+            <div class="fields">
+              <div class="field">
+                <label for="day">Daily limit (US dollars)</label>
+                <div class="money">
+                  <span>$</span><input id="day" value="0.50" inputmode="decimal" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="month">Monthly limit (US dollars)</label>
+                <div class="money">
+                  <span>$</span><input id="month" value="10.00" inputmode="decimal" />
+                </div>
+              </div>
+            </div>
+          </section>
+          <section class="sec" id="s-large">
+            <h3>Large requests</h3>
+            <div class="switch-row">
+              <span class="grow"
+                ><b>Ask before a large request</b
+                ><small>You see what it can cost before it is sent.</small></span
+              ><input
+                type="checkbox"
+                class="switch"
+                role="switch"
+                checked
+                aria-label="Ask before a large request"
+              />
+            </div>
+          </section>
+          <section class="sec" id="s-voice">
+            <h3>Voice</h3>
+            <div class="switch-row">
+              <span class="grow"
+                ><b>Speak to type</b><small>A microphone button in the message box.</small></span
+              ><input
+                type="checkbox"
+                class="switch"
+                role="switch"
+                checked
+                aria-label="Speak to type"
+              />
+            </div>
+            <div class="switch-row">
+              <span class="grow"
+                ><b>Read aloud</b><small>Replies read with a voice of this computer.</small></span
+              ><input
+                type="checkbox"
+                class="switch"
+                role="switch"
+                checked
+                aria-label="Read aloud"
+              />
+            </div>
+          </section>
+          <section class="sec" id="s-images">
+            <h3>Images</h3>
+            <div class="switch-row">
+              <span class="grow"
+                ><b>Make images</b
+                ><small>Uses OpenAI. You see the most it can cost first.</small></span
+              ><input
+                type="checkbox"
+                class="switch"
+                role="switch"
+                checked
+                aria-label="Make images"
+              />
+            </div>
+          </section>
+          <section class="sec" id="s-updates">
+            <h3>Updates</h3>
+            <div class="switch-row">
+              <span class="grow"
+                ><b>Check for updates</b
+                ><small>Version 0.1.0. Only signed updates are installed.</small></span
+              ><input type="checkbox" class="switch" role="switch" aria-label="Check for updates" />
+            </div>
+          </section>
+          <section class="sec" id="s-chats">
+            <h3>Saved chats</h3>
+            <div class="switch-row">
+              <span class="grow"
+                ><b>Keep chats on this computer</b
+                ><small>They appear under Recent and in History.</small></span
+              ><input
+                type="checkbox"
+                class="switch"
+                role="switch"
+                checked
+                aria-label="Keep chats on this computer"
+              />
+            </div>
+          </section>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- ============ History ============ -->
+    <dialog class="dlg small" id="history" autofocus aria-labelledby="historyTitle">
+      <div class="dlg-head">
+        <h2 id="historyTitle">History</h2>
+        <button class="icon-btn" data-close aria-label="Close">
+          <svg class="i"><use href="#i-x" /></svg>
+        </button>
+      </div>
+      <label class="search"
+        ><svg class="i"><use href="#i-search" /></svg
+        ><input placeholder="Search your chats" aria-label="Search your chats"
+      /></label>
+      <div class="hist">
+        <h4>Today</h4>
+        <div class="hist-item">
+          <span class="dot p1"></span
+          ><span class="grow"><b>Best sales month</b><small>Shop reports · 2 messages</small></span
+          ><button class="icon-btn" aria-label="Delete this chat" title="Delete this chat">
+            <svg class="i"><use href="#i-trash" /></svg>
+          </button>
+        </div>
+        <div class="hist-item">
+          <span class="dot"></span
+          ><span class="grow"
+            ><b>What's new in Python 3.14</b><small>No project · 2 messages</small></span
+          ><button class="icon-btn" aria-label="Delete this chat" title="Delete this chat">
+            <svg class="i"><use href="#i-trash" /></svg>
+          </button>
+        </div>
+        <h4>Yesterday</h4>
+        <div class="hist-item">
+          <span class="dot p2"></span
+          ><span class="grow"
+            ><b>Cover letter for the design role</b><small>Job hunt · 9 messages</small></span
+          ><button class="icon-btn" aria-label="Delete this chat" title="Delete this chat">
+            <svg class="i"><use href="#i-trash" /></svg>
+          </button>
+        </div>
+        <div class="hist-item">
+          <span class="dot p3"></span
+          ><span class="grow"
+            ><b>Thesis outline, chapter 3</b><small>Thesis · 14 messages</small></span
+          ><button class="icon-btn" aria-label="Delete this chat" title="Delete this chat">
+            <svg class="i"><use href="#i-trash" /></svg>
+          </button>
+        </div>
+        <h4>Last week</h4>
+        <div class="hist-item">
+          <span class="dot"></span
+          ><span class="grow"
+            ><b>Weekend trip packing list</b><small>No project · 6 messages</small></span
+          ><button class="icon-btn" aria-label="Delete this chat" title="Delete this chat">
+            <svg class="i"><use href="#i-trash" /></svg>
+          </button>
+        </div>
+        <div class="hist-item">
+          <span class="dot p1"></span
+          ><span class="grow"
+            ><b>Quarterly report charts</b><small>Shop reports · 11 messages</small></span
+          ><button class="icon-btn" aria-label="Delete this chat" title="Delete this chat">
+            <svg class="i"><use href="#i-trash" /></svg>
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status"></div>
+
+    <script>
+      ;(() => {
+        const $ = (s, r = document) => r.querySelector(s)
+        const $$ = (s, r = document) => [...r.querySelectorAll(s)]
+        const store = {
+          get(k) {
+            try {
+              return localStorage.getItem(k)
+            } catch {
+              return null
+            }
+          },
+          set(k, v) {
+            try {
+              localStorage.setItem(k, v)
+            } catch {}
+          }
+        }
+        const app = $('#app')
+
+        /* Theme: dark by default */
+        const themeBtn = $('#themeBtn')
+        function setTheme(t) {
+          document.documentElement.dataset.theme = t
+          const next = t === 'dark' ? 'light' : 'dark'
+          themeBtn.title = themeBtn.ariaLabel = 'Switch to ' + next
+          themeBtn.querySelector('use').setAttribute('href', t === 'dark' ? '#i-sun' : '#i-moon')
+          $$('[data-theme-pick]').forEach((b) =>
+            b.setAttribute('aria-pressed', String(b.dataset.themePick === t))
+          )
+          store.set('fx-theme', t)
+        }
+        setTheme(store.get('fx-theme') === 'light' ? 'light' : 'dark')
+        themeBtn.onclick = () =>
+          setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark')
+        $$('[data-theme-pick]').forEach((b) => (b.onclick = () => setTheme(b.dataset.themePick)))
+
+        /* Sidebar: collapse to a rail (wide windows), drawer (narrow windows) */
+        const collapseBtn = $('#collapseBtn')
+        function setCollapsed(c) {
+          app.classList.toggle('collapsed', c)
+          collapseBtn.title = collapseBtn.ariaLabel = c
+            ? 'Expand the sidebar'
+            : 'Collapse the sidebar'
+          collapseBtn.setAttribute('aria-expanded', String(!c))
+          store.set('fx-collapsed', c ? '1' : '0')
+        }
+        setCollapsed(store.get('fx-collapsed') === '1')
+        collapseBtn.onclick = () => setCollapsed(!app.classList.contains('collapsed'))
+        $('#menuBtn').onclick = () => app.classList.add('drawer')
+        $('#scrim').onclick = () => app.classList.remove('drawer')
+        // In the rail the head shows only the expand button.
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') app.classList.remove('drawer')
+        })
+
+        /* Views: conversation / new chat */
+        const conv = $('#conversation'),
+          empty = $('#empty'),
+          title = $('#chatTitle'),
+          badge = $('#keyBadge')
+        function showChat(name) {
+          conv.hidden = false
+          empty.hidden = true
+          badge.hidden = true
+          title.textContent = name
+          app.classList.remove('drawer')
+        }
+        function showEmpty() {
+          conv.hidden = true
+          empty.hidden = false
+          badge.hidden = false
+          title.textContent = 'New chat'
+          $$('.chat-link').forEach((l) => l.removeAttribute('aria-current'))
+          syncTasks()
+          app.classList.remove('drawer')
+          $('#input').focus()
+        }
+        $('#newChat').onclick = showEmpty
+        $$('[data-chat]').forEach(
+          (l) =>
+            (l.onclick = () => {
+              $$('.chat-link').forEach((x) => x.removeAttribute('aria-current'))
+              l.setAttribute('aria-current', 'true')
+              showChat(l.textContent.trim())
+            })
+        )
+
+        /* Task cards set the Task picker */
+        const taskPick = $('#taskPick')
+        function syncTasks() {
+          $$('.task').forEach((t) =>
+            t.setAttribute('aria-pressed', String(t.dataset.task === taskPick.value))
+          )
+        }
+        $$('.task').forEach(
+          (t) =>
+            (t.onclick = () => {
+              taskPick.value = taskPick.value === t.dataset.task ? '' : t.dataset.task
+              syncTasks()
+              $('#input').focus()
+            })
+        )
+        taskPick.onchange = syncTasks
+
+        /* Composer */
+        const input = $('#input'),
+          send = $('#sendBtn')
+        function grow() {
+          input.style.height = 'auto'
+          input.style.height = Math.min(input.scrollHeight, 220) + 'px'
+          send.disabled = input.value.trim() === ''
+        }
+        input.addEventListener('input', grow)
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            doSend()
+          }
+        })
+        send.onclick = doSend
+        function doSend() {
+          const text = input.value.trim()
+          if (!text) return
+          if (!empty.hidden) {
+            showChat(text.length > 40 ? text.slice(0, 40) + '...' : text)
+            conv.innerHTML = ''
+          }
+          const m = document.createElement('div')
+          m.className = 'msg-user'
+          const b = document.createElement('div')
+          b.className = 'bubble'
+          b.textContent = text
+          m.append(b)
+          conv.append(m)
+          input.value = ''
+          grow()
+          $('#thread').scrollTop = $('#thread').scrollHeight
+          toast('Sample only: nothing is sent.')
+        }
+        $('#attachBtn').onclick = () => {
+          const chips = $('#chips')
+          if (chips.children.length) {
+            chips.innerHTML = ''
+            return
+          }
+          chips.innerHTML =
+            '<span class="file-chip"><span class="ico"><svg class="i"><use href="#i-file"/></svg></span><span>notes.pdf<small>PDF · 214 KB</small></span><button type="button" class="icon-btn" style="width:26px;height:26px" aria-label="Remove notes.pdf"><svg class="i" style="width:14px;height:14px"><use href="#i-x"/></svg></button></span>'
+          chips.querySelector('button').onclick = () => (chips.innerHTML = '')
+        }
+
+        /* Dialogs */
+        $$('[data-open]').forEach(
+          (b) =>
+            (b.onclick = () => {
+              app.classList.remove('drawer')
+              $('#' + b.dataset.open).showModal()
+            })
+        )
+        $$('[data-close]').forEach((b) => (b.onclick = () => b.closest('dialog').close()))
+        $$('dialog').forEach((d) =>
+          d.addEventListener('click', (e) => {
+            if (e.target === d) d.close()
+          })
+        )
+        const content = $('#settingsContent')
+        const markSec = (id) =>
+          $$('[data-sec]').forEach((x) =>
+            x.dataset.sec === id
+              ? x.setAttribute('aria-current', 'true')
+              : x.removeAttribute('aria-current')
+          )
+        $$('[data-sec]').forEach(
+          (b) =>
+            (b.onclick = () => {
+              $('#' + b.dataset.sec).scrollIntoView({ block: 'start' })
+              markSec(b.dataset.sec)
+            })
+        )
+        content.addEventListener('scroll', () => {
+          const secs = $$('.sec', content)
+          let current = secs[0]
+          for (const s of secs)
+            if (s.getBoundingClientRect().top - content.getBoundingClientRect().top <= 60)
+              current = s
+          if (content.scrollTop + content.clientHeight >= content.scrollHeight - 2)
+            current = secs[secs.length - 1]
+          markSec(current.id)
+        })
+
+        /* Toasts for pages the sample does not draw */
+        const t = $('#toast')
+        let timer
+        function toast(msg) {
+          t.textContent = msg
+          t.classList.add('show')
+          clearTimeout(timer)
+          timer = setTimeout(() => t.classList.remove('show'), 2200)
+        }
+        $$('[data-toast]').forEach(
+          (b) =>
+            (b.onclick = () => {
+              app.classList.remove('drawer')
+              toast(b.dataset.toast)
+            })
+        )
+
+        /* Opening states for screenshots: ?theme=light&rail=1&view=empty&open=settings|history&drawer=1 */
+        const q = new URLSearchParams(location.search)
+        if (q.has('theme')) setTheme(q.get('theme') === 'light' ? 'light' : 'dark')
+        if (q.has('rail')) setCollapsed(q.get('rail') === '1')
+        if (q.get('view') === 'empty') showEmpty()
+        if (q.get('drawer') === '1') app.classList.add('drawer')
+        if (q.has('open')) document.documentElement.classList.add('no-anim')
+        if (q.has('open')) {
+          const d = $('#' + q.get('open'))
+          if (d instanceof HTMLDialogElement) d.showModal()
+        }
+      })()
+    </script>
+  </body>
+</html>

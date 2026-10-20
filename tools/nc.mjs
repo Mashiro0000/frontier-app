@@ -10,6 +10,11 @@ import { OUT, REPO, TOOLS } from './paths.mjs'
 
 // the committed specs name paths as {{REPO}} / {{TOOLS}} / {{OUT}} so they work wherever the repo is
 const spec = JSON.parse(readFileSync(process.argv[2], 'utf8').replaceAll('{{REPO}}', REPO).replaceAll('{{TOOLS}}', TOOLS.replaceAll('\\', '/')).replaceAll('{{OUT}}', OUT.replaceAll('\\', '/')))
+// A spec whose code is gone is marked "retired" with the reason (the owner's rule keeps files: none is deleted, D-051); it is never run.
+if (spec.retired) {
+  console.log(`RETIRED ${spec.label}: ${spec.retired} (nothing changed, nothing run)`)
+  process.exit(2)
+}
 // A spec written before the window runs had their own AppData (D-044) names its throwaway profile in the REAL Roaming folder; inside a window run (tools/guarded-window-copy.mjs) the
 // profiles are the run's own, so the real folder in the spec's environment is put for the run's.
 if (process.env.FRONTIER_REAL_APPDATA && process.env.APPDATA && process.env.FRONTIER_REAL_APPDATA.toLowerCase() !== process.env.APPDATA.toLowerCase()) {

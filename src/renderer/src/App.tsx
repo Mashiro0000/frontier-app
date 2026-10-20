@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { ATTACHMENT_LIMITS, type AttachmentInfo } from '../../shared/attachments'
 import { limitsAreSet } from '../../shared/limits'
 import type { TaskId } from '../../shared/rankings'
+import { useRail } from './appearance'
 import ChatBar from './chat/ChatBar'
 import ChatView from './chat/ChatView'
 import { ipcReply } from './chat/ipcReply'
@@ -29,6 +30,7 @@ import ModelPicker from './settings/ModelPicker'
 import SettingsDialog from './settings/SettingsDialog'
 import TaskPicker from './settings/TaskPicker'
 import { useSettingsStatus } from './settings/useSettingsStatus'
+import Sidebar from './sidebar/Sidebar'
 
 /** No project files: one empty list, so the chat does not draw again for a new one each time. */
 const NO_FILES: AttachmentInfo[] = []
@@ -104,94 +106,108 @@ function App(): React.JSX.Element {
   const missingKey = providerMissingKey(status)
   // No limits chosen yet: asked for before the first message, and until they are chosen nothing is sent (D-031).
   const needsLimits = status !== null && !limitsAreSet(status.limits)
+  // The sidebar folded to a rail of icons (D-051): the person's choice, kept on this computer.
+  const rail = useRail()
+  // The chat's title over the messages: its saved title, or "New chat" until it is saved.
+  const chatTitle =
+    history.conversations?.find((conversation) => conversation.id === history.activeId)?.title ??
+    'New chat'
+  const openTools = (): void => {
+    reloadAudit()
+    reloadToolSettings()
+    setToolsOpen(true)
+  }
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1 className="app-title">Frontier App</h1>
-        <div className="app-header-actions">
-          <TaskPicker status={status} task={task} onChange={setTask} />
-          <ModelPicker
-            status={status}
-            task={task}
-            disabled={chat.isReplying}
-            onStatusChange={setStatus}
-          />
-          <EffortPicker status={status} disabled={chat.isReplying} onStatusChange={setStatus} />
-          {history.saveError !== null && (
-            <button
-              type="button"
-              className="app-badge app-badge-warn app-badge-button"
-              title={`${history.saveError} Click to try again.`}
-              onClick={history.retrySave}
-            >
-              Not saved
-            </button>
-          )}
-          {missingKey !== null && (
-            <span
-              className="app-badge app-badge-warn"
-              title={`Open Settings to add your ${missingKey.name} API key.`}
-            >
-              No API key
-            </span>
-          )}
-          <button type="button" className="header-button" onClick={() => setSettingsOpen(true)}>
-            Settings
-          </button>
-        </div>
-      </header>
-      <ChatView
-        status={status}
-        chat={chat}
-        conversationId={history.activeId}
-        needsLimits={needsLimits}
-        onOpenSettings={() => setSettingsOpen(true)}
-        onOpenLimits={() => setLimitsPutOff(false)}
-        attachments={attachments}
-        onRemember={onRemember}
-        projectFiles={chatProject?.files ?? NO_FILES}
-        toolsOn={anyToolOn(toolSettings.status, toolSettings.workspace, toolSettings.programs)}
-      />
-      {/* New chat, History and Instructions live under the message box, not in the header, so the header stays one row (D-029). */}
-      <ChatBar
+    <div className={rail ? 'app app-rail' : 'app'}>
+      <Sidebar
         isReplying={chat.isReplying}
         messageCount={chat.messages.length}
-        instructions={chat.instructions}
-        everyChat={everyChat.status}
-        memory={memory.status}
-        onOpenMemory={() => openMemory(null)}
-        projectName={chatProject?.name ?? null}
-        onOpenProjects={() => {
-          projects.reload()
-          setProjectsOpen(true)
-        }}
-        onOpenTools={() => {
-          reloadAudit()
-          reloadToolSettings()
-          setToolsOpen(true)
-        }}
-        saveFailed={history.saveError !== null}
+        history={history}
         onNewChat={() => history.startNew()}
         onOpenHistory={() => setHistoryOpen(true)}
-        onOpenInstructions={() => {
-          everyChat.reload()
-          setInstructionsOpen(true)
-        }}
-        onAttach={attachments.pick}
-        imagesOn={imageStatus?.on === true}
-        onMakeImage={() => setMakeOpen(true)}
-        attachDisabled={attachments.busy || attachFull}
-        attachTitle={
-          attachments.busy
-            ? 'Files are being attached.'
-            : attachFull
-              ? attachments.files.length >= ATTACHMENT_LIMITS.perMessage
-                ? `A message can carry at most ${ATTACHMENT_LIMITS.perMessage} files.`
-                : `A chat can hold at most ${ATTACHMENT_LIMITS.perChat} files. Start a new chat for more.`
-              : 'Attach images, PDFs or text files to your message. You choose them in a Windows dialog; the app keeps a copy and sends it to the model.'
-        }
+        onOpenTools={openTools}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
+      <div className="app-main">
+        <header className="app-header">
+          <h2 className="chat-title" title={chatTitle}>
+            {chatTitle}
+          </h2>
+          <div className="app-header-actions">
+            <TaskPicker status={status} task={task} onChange={setTask} />
+            <ModelPicker
+              status={status}
+              task={task}
+              disabled={chat.isReplying}
+              onStatusChange={setStatus}
+            />
+            <EffortPicker status={status} disabled={chat.isReplying} onStatusChange={setStatus} />
+            {history.saveError !== null && (
+              <button
+                type="button"
+                className="app-badge app-badge-warn app-badge-button"
+                title={`${history.saveError} Click to try again.`}
+                onClick={history.retrySave}
+              >
+                Not saved
+              </button>
+            )}
+            {missingKey !== null && (
+              <span
+                className="app-badge app-badge-warn"
+                title={`Open Settings to add your ${missingKey.name} API key.`}
+              >
+                No API key
+              </span>
+            )}
+          </div>
+        </header>
+        <ChatView
+          status={status}
+          chat={chat}
+          conversationId={history.activeId}
+          needsLimits={needsLimits}
+          onOpenSettings={() => setSettingsOpen(true)}
+          onOpenLimits={() => setLimitsPutOff(false)}
+          attachments={attachments}
+          onRemember={onRemember}
+          projectFiles={chatProject?.files ?? NO_FILES}
+          toolsOn={anyToolOn(toolSettings.status, toolSettings.workspace, toolSettings.programs)}
+          toolbar={
+            // The chat's own buttons, in the message box (D-051): New chat, History and Tools are in the sidebar, Settings at its foot.
+            <ChatBar
+              isReplying={chat.isReplying}
+              instructions={chat.instructions}
+              everyChat={everyChat.status}
+              memory={memory.status}
+              onOpenMemory={() => openMemory(null)}
+              projectName={chatProject?.name ?? null}
+              onOpenProjects={() => {
+                projects.reload()
+                setProjectsOpen(true)
+              }}
+              onOpenInstructions={() => {
+                everyChat.reload()
+                setInstructionsOpen(true)
+              }}
+              onAttach={attachments.pick}
+              imagesOn={imageStatus?.on === true}
+              onMakeImage={() => setMakeOpen(true)}
+              attachDisabled={attachments.busy || attachFull}
+              attachTitle={
+                attachments.busy
+                  ? 'Files are being attached.'
+                  : attachFull
+                    ? attachments.files.length >= ATTACHMENT_LIMITS.perMessage
+                      ? `A message can carry at most ${ATTACHMENT_LIMITS.perMessage} files.`
+                      : `A chat can hold at most ${ATTACHMENT_LIMITS.perChat} files. Start a new chat for more.`
+                    : 'Attach images, PDFs or text files to your message. You choose them in a Windows dialog; the app keeps a copy and sends it to the model.'
+              }
+            />
+          }
+        />
+      </div>
       <MakeImageDialog
         open={makeOpen}
         chatId={history.activeId}

@@ -114,10 +114,11 @@ try {
   check('E: Settings says nothing of tools, searches, approvals or the audit log (nothing can be switched on yet)', !/\btools?\b|web search|search the web|approval|audit/i.test(settingsText), show(settingsText.slice(0, 200)))
   await page.press('Escape')
   await sleep(300)
-  // (the chat's own messages are left out: this suite's own text, "find the newest release", is in them)
-  const chrome = await ev(`['.app-header', '.chat-bar', '.composer'].map((s) => document.querySelector(s)?.innerText ?? '').join('\\n')`)
-  check('E: the page itself (the header, the chat bar, the message box) says nothing of a search or the audit log; its one word about tools is the "Tools" button', chrome.length > 40 && !/web search|search the web|audit/i.test(chrome) && (chrome.match(/\btools?\b/gi) ?? []).length === 1, show(chrome.slice(0, 300)))
-  const buttons = await ev(`[...document.querySelectorAll('.app-header button, .chat-bar button, .composer button, dialog.settings button')].map((b) => b.textContent.trim()).filter(Boolean)`)
+  // (the chat's own messages are left out: this suite's own text, "find the newest release", is in them; so are the saved chats' titles in the sidebar)
+  // Since D-051 New chat, History, Tools and Settings are in the sidebar (its head, its pages and its foot are read here).
+  const chrome = await ev(`['.sidebar-head', '.sidebar-new', '.sidebar-nav', '.sidebar-foot', '.app-header', '.chat-bar', '.composer'].map((s) => document.querySelector(s)?.innerText ?? '').join('\\n')`)
+  check('E: the page itself (the sidebar, the header, the chat bar, the message box) says nothing of a search or the audit log; its one word about tools is the "Tools" button', chrome.length > 40 && !/web search|search the web|audit/i.test(chrome) && (chrome.match(/\btools?\b/gi) ?? []).length === 1, show(chrome.slice(0, 300)))
+  const buttons = await ev(`[...document.querySelectorAll('.sidebar-head button, .sidebar-new, .sidebar-nav button, .sidebar-foot button, .app-header button, .chat-bar button, .composer button, dialog.settings button')].map((b) => b.textContent.trim()).filter(Boolean)`)
   check('E: no button of the page is about a search, an approval or Stop everything; the only one about tools is "Tools"', buttons.length >= 8 && !buttons.some((b) => /search|audit|stop everything|approv/i.test(b)) && buttons.filter((b) => /tool/i.test(b)).join() === 'Tools', show(buttons))
 } catch (error) {
   check(`the suite stopped before its end: ${String(error?.stack ?? error).slice(0, 400)}`, false)

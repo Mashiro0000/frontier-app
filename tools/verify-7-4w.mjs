@@ -52,7 +52,8 @@ const reqs = () => H.mockReqs()
 const reset = () => fetch(`${mockUrl}/__reset`, { method: 'POST' })
 
 // ---- the chat-bar button (under the message box since 7.6, D-029) and the dialog ----
-const hdr = () => ev(`(() => { const b = document.querySelector('.chat-bar .chat-instructions'); if (!b) return null; return { text: b.textContent, disabled: b.disabled, title: b.title, mark: b.querySelector('.chat-mark')?.textContent ?? null, before: b.previousElementSibling?.textContent ?? null, focused: document.activeElement === b } })()`)
+// `before` is the button before it in the bar (since D-051 a divider stands between Attach... and Instructions, and is not a button)
+const hdr = () => ev(`(() => { const b = document.querySelector('.chat-bar .chat-instructions'); if (!b) return null; let p = b.previousElementSibling; while (p && p.tagName !== 'BUTTON') p = p.previousElementSibling; return { text: b.textContent, disabled: b.disabled, title: b.title, mark: b.querySelector('.chat-mark')?.textContent ?? null, before: p?.textContent ?? null, focused: document.activeElement === b } })()`)
 const dlg = () => ev(`(() => { const d = document.querySelector('dialog.instructions'); if (!d) return null; const t = d.querySelector('textarea'); const b = [...d.querySelectorAll('button')]; const submit = b.find((x) => x.type === 'submit'); return { open: d.open, value: t ? t.value : null, focused: !!t && document.activeElement === t, caret: t ? [t.selectionStart, t.selectionEnd] : null, count: d.querySelector('.instructions-count')?.textContent ?? null, over: !!d.querySelector('.instructions-count-over'), alert: d.querySelector('[role=alert]')?.textContent ?? null, save: submit?.textContent ?? null, saveDisabled: submit ? submit.disabled : null, buttons: b.map((x) => x.textContent), text: d.innerText } })()`)
 const openDialog = async () => {
   await page.click('.chat-instructions')
@@ -166,7 +167,7 @@ check('the damaged file has been counted and left alone through all of this', se
 await newChat()
 await reset()
 let hb = await hdr()
-check('the chat bar has an Instructions button right after History, with no "on" mark while the chat has none', hb !== null && hb.text === 'Instructions' && hb.mark === null && hb.before === 'History' && !hb.disabled && /Give the model instructions/.test(hb.title), JSON.stringify(hb))
+check('the chat bar has an Instructions button (after Attach... since D-051: History is in the sidebar), with no "on" mark while the chat has none', hb !== null && hb.text === 'Instructions' && hb.mark === null && hb.before === 'Attach...' && !hb.disabled && /Give the model instructions/.test(hb.title), JSON.stringify(hb))
 await openDialog()
 d = await dlg()
 check('clicking it opens a modal dialog with a box: empty, with the keyboard in it, and Save is off because there is nothing to save', d.open && d.value === '' && d.focused && d.saveDisabled === true && d.save === 'Save' && d.buttons.join() === 'Change...,Cancel,Save', JSON.stringify(d)) // since 10.2 (D-039) the dialog also shows the instructions for every chat, with their own "Change..."

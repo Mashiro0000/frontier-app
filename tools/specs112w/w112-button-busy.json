@@ -2,9 +2,9 @@
   "label": "w112-button-busy",
   "edits": [
     {
-      "file": "{{REPO}}/src/renderer/src/chat/ChatBar.tsx",
-      "from": "        className=\"chat-button chat-tools\"\n        disabled={isReplying}",
-      "to": "        className=\"chat-button chat-tools\"\n        disabled={false}"
+      "file": "{{REPO}}/src/renderer/src/sidebar/Sidebar.tsx",
+      "from": "          className=\"chat-button sidebar-item chat-tools\"\n          disabled={isReplying}",
+      "to": "          className=\"chat-button sidebar-item chat-tools\"\n          disabled={false}"
     }
   ],
   "argv": [

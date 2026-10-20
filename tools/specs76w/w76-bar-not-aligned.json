@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/assets/main.css",
-      "from": "  max-width: calc(var(--chat-width) + 40px);\n  margin: 0 auto;\n  padding: 0 20px 10px;",
-      "to": "  max-width: none;\n  margin: 0 auto;\n  padding: 0 20px 10px;"
+      "from": "  gap: 2px;\n  min-width: 0;\n  margin-left: -6px;",
+      "to": "  gap: 2px;\n  min-width: 0;\n  margin-left: 120px;"
     }
   ],
   "argv": [

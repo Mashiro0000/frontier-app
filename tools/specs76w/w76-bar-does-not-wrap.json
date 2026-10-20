@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/assets/main.css",
-      "from": ".chat-bar {\n  flex: none;\n  display: flex;\n  flex-wrap: wrap;",
-      "to": ".chat-bar {\n  flex: none;\n  display: flex;\n  flex-wrap: nowrap;"
+      "from": ".chat-bar {\n  display: flex;\n  flex: 1;\n  flex-wrap: wrap;",
+      "to": ".chat-bar {\n  display: flex;\n  flex: 1;\n  flex-wrap: nowrap;"
     }
   ],
   "argv": [
