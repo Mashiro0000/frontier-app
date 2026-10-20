@@ -108,6 +108,9 @@ try {
   }
   await widest(886, 'with the sidebar open')
   await page.screenshot(`${shots}/7-6-widest.png`)
+  // the tightest one-row widths beside the open sidebar (612 and 600 px of chat area): here the menus must give way more than the floor allows
+  await widest(860, 'with the sidebar open')
+  await widest(848, 'with the sidebar open')
   await page.send('Emulation.clearDeviceMetricsOverride')
   await sleep(300)
   await rail(true)
@@ -196,9 +199,16 @@ try {
   await sleep(250)
   for (const width of [420, 320, 280]) { // 280: where the buttons and the mark no longer fit one line, so a bar that cannot wrap would spill out of the window
     await metrics(width, 700)
+    // In the box, the bar's buttons and Send must each be inside the box and none may lie over another: a bar that cannot wrap pushes its last buttons over Send or out of the box.
     const n = await ev(`(() => { const bs = [...document.querySelectorAll('.chat-button')].filter((e) => e.getBoundingClientRect().width > 0).map((e) => e.getBoundingClientRect()); const box = document.querySelector('.composer-inner').getBoundingClientRect(); const bar = document.querySelector('.chat-bar').getBoundingClientRect();
-      return { overflowX: document.documentElement.scrollWidth > innerWidth, inside: bs.every((r) => r.left >= 0 && r.right <= innerWidth), boxInside: box.left >= 0 && box.right <= innerWidth && box.bottom <= innerHeight, barInBox: bar.left >= box.left && bar.right <= box.right + 0.5 && bar.bottom <= box.bottom, rows: new Set([...document.querySelectorAll('.chat-bar .chat-button')].map((e) => Math.round(e.getBoundingClientRect().top))).size, oneLine: bs.every((r) => r.height <= 40) } })()`)
-    check(`at ${width} px, with the "on" mark, there is no sideways scroll, every button is inside the window and keeps its label on ONE line (the bar wraps as a row, not inside a button), and the bar stays inside the box (${n.rows} row${n.rows === 1 ? '' : 's'} of buttons)`, !n.overflowX && n.inside && n.oneLine && n.boxInside && n.barInBox, JSON.stringify(n))
+      const inBox = [...document.querySelectorAll('.chat-bar .chat-button, .composer-button')].map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0)
+      const overlap = (a, b) => Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1
+      return { overflowX: document.documentElement.scrollWidth > innerWidth, inside: bs.every((r) => r.left >= 0 && r.right <= innerWidth), boxInside: box.left >= 0 && box.right <= innerWidth && box.bottom <= innerHeight, barInBox: bar.left >= box.left && bar.right <= box.right + 0.5 && bar.bottom <= box.bottom,
+        buttonsInBox: inBox.every((r) => r.left >= box.left - 0.5 && r.right <= box.right + 0.5), noOverlap: inBox.every((a, i) => inBox.every((b, j) => i === j || !overlap(a, b))),
+        // a bar that cannot wrap squeezes its buttons instead (they may shrink, for a long project name): none may be narrower than what it holds
+        notSqueezed: [...document.querySelectorAll('.chat-bar .chat-button')].every((b) => b.scrollWidth <= b.clientWidth + 1),
+        rows: new Set([...document.querySelectorAll('.chat-bar .chat-button')].map((e) => Math.round(e.getBoundingClientRect().top))).size, oneLine: bs.every((r) => r.height <= 40) } })()`)
+    check(`at ${width} px, with the "on" mark, there is no sideways scroll, every button is inside the window and keeps its label on ONE line (the bar wraps as a row, not inside a button), and the bar, its buttons and Send stay inside the box, none over another and none squeezed (${n.rows} row${n.rows === 1 ? '' : 's'} of buttons)`, !n.overflowX && n.inside && n.oneLine && n.boxInside && n.barInBox && n.buttonsInBox && n.noOverlap && n.notSqueezed, JSON.stringify(n))
     await page.screenshot(`${shots}/7-6-narrow-${width}.png`)
   }
   await page.send('Emulation.clearDeviceMetricsOverride')
