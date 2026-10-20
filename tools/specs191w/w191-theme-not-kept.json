@@ -1,0 +1,24 @@
+{
+  "label": "w191-theme-not-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/appearance.ts",
+      "from": "  theme = next\n  write(THEME_KEY, next)\n",
+      "to": "  theme = next\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-19-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s191nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w191-theme-not-kept"
+  }
+}

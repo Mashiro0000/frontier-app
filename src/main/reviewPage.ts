@@ -9,27 +9,28 @@ import { MARK_CLOSE, MARK_OPEN } from './reviewModel'
 /** The characters of a nonce: only these, so that it can sit in a header and an attribute without any quoting. */
 export const NONCE_PATTERN = /^[A-Za-z0-9_-]{16,64}$/
 
+// (D-051) The colours are the app's (violet, the same greys); the window follows the system's light or dark, as it cannot read the page's choice.
 const STYLE = `
-:root { color-scheme: light dark; --bg: #ffffff; --fg: #1b1f24; --muted: #57606a; --line: #d0d7de; --add: #e6ffec; --addfg: #116329; --del: #ffebe9; --delfg: #82071e; --hunk: #ddf4ff; --hunkfg: #0550ae; --mark: #fff8c5; --markfg: #7d4e00; --red: #cf222e; --amber: #9a6700; --accent: #0969da; --btn: #f6f8fa; }
-@media (prefers-color-scheme: dark) { :root { --bg: #0d1117; --fg: #e6edf3; --muted: #8d96a0; --line: #30363d; --add: #12261e; --addfg: #7ee787; --del: #2d1517; --delfg: #ffa198; --hunk: #0c2d6b; --hunkfg: #79c0ff; --mark: #3b2e00; --markfg: #f2cc60; --red: #ff7b72; --amber: #e3b341; --accent: #4493f8; --btn: #21262d; } }
+:root { color-scheme: light dark; --bg: #ffffff; --fg: #15161c; --muted: #5d6375; --line: #e3e4ee; --add: #e6ffec; --addfg: #116329; --del: #ffebe9; --delfg: #82071e; --hunk: #ece8ff; --hunkfg: #4a2fd6; --mark: #fff8c5; --markfg: #7d4e00; --red: #c62f2f; --amber: #9a5b00; --accent: #6a4dff; --btn: #f6f6fa; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0d0e13; --fg: #ecedf3; --muted: #9ba1b4; --line: #2c3042; --add: #12261e; --addfg: #7ee787; --del: #2d1517; --delfg: #ffa198; --hunk: #262150; --hunkfg: #c2b3ff; --mark: #3b2e00; --markfg: #f2cc60; --red: #ff7a7a; --amber: #f5b544; --accent: #6a4dff; --btn: #1f2230; } }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
-body { display: flex; flex-direction: column; background: var(--bg); color: var(--fg); font: 14px/1.45 "Segoe UI", system-ui, sans-serif; }
+body { display: flex; flex-direction: column; background: var(--bg); color: var(--fg); font: 14px/1.45 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; }
 header, footer { flex: none; padding: 10px 16px; border-bottom: 1px solid var(--line); }
 footer { border-bottom: 0; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 h1 { font-size: 16px; margin: 0 0 4px; overflow-wrap: anywhere; }
 .meta { color: var(--muted); overflow-wrap: anywhere; }
-.banner { margin: 6px 0 0; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line); overflow-wrap: anywhere; }
+.banner { margin: 6px 0 0; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); overflow-wrap: anywhere; }
 .banner.red { border-color: var(--red); color: var(--red); font-weight: 600; }
 .banner.amber { border-color: var(--amber); color: var(--amber); font-weight: 600; }
 nav { flex: none; display: flex; gap: 6px; padding: 8px 16px 0; }
-button { font: inherit; color: var(--fg); background: var(--btn); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+button { font: inherit; color: var(--fg); background: var(--btn); border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; cursor: pointer; }
 button:hover:not(:disabled) { border-color: var(--accent); }
 button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 button:disabled { opacity: 0.55; cursor: default; }
 button[aria-pressed="true"] { border-color: var(--accent); font-weight: 600; }
 #ask:not(:disabled) { background: var(--accent); color: #ffffff; border-color: var(--accent); }
-main { flex: 1 1 auto; min-height: 0; overflow: auto; margin: 8px 16px; border: 1px solid var(--line); border-radius: 6px; font: 13px/1.5 Consolas, "Courier New", monospace; tab-size: 4; }
+main { flex: 1 1 auto; min-height: 0; overflow: auto; margin: 8px 16px; border: 1px solid var(--line); border-radius: 12px; font: 13px/1.5 "Cascadia Mono", Consolas, "Courier New", monospace; tab-size: 4; }
 main:focus-visible { outline: 2px solid var(--accent); }
 .line { display: flex; white-space: pre-wrap; overflow-wrap: anywhere; padding: 0 8px; }
 .line .sign { flex: none; width: 1.6em; color: var(--muted); user-select: none; }

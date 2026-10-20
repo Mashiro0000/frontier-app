@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { SettingsStatus } from '../../../shared/ipc'
+import AppearanceSection from './AppearanceSection'
 import AskFirstSection from './AskFirstSection'
 import ChatStorageSection from './ChatStorageSection'
 import { formatDay, formatPrice, formatTokens, priceRatio, providerName } from './format'
@@ -152,6 +153,9 @@ function SettingsDialog({
         open={open}
         onChanged={onChatStorageChanged}
       />
+
+      {/* Appearance (D-051): dark or light, as the button at the foot of the sidebar. */}
+      <AppearanceSection />
 
       <div className="settings-footer">
         <button

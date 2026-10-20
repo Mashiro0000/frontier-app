@@ -50,7 +50,7 @@ const s = {
   noSettle: [USECHAT, '        ...(m.tools !== undefined ? { tools: settleNotes(m.tools, stopped) } : {})\n', ''],
   notSaved: [CONVERT, "...(role === 'assistant' && tools !== undefined && tools.length > 0 ? { tools } : {})", '...{}'],
   notLoaded: [CONVERT, '    ...(tools !== undefined ? { tools } : {})\n', ''],
-  settingsNotReloaded: [APP, '          reloadToolSettings()\n', ''],
+  settingsNotReloaded: [APP, '    reloadToolSettings()\n', ''], // (D-051: inside openTools, which the sidebar's Tools button calls)
   providerNotPassed: [CHAT, '            provider: PROVIDER_NAMES[entry.provider],\n', '']
 }
 

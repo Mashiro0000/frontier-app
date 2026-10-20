@@ -72,7 +72,8 @@ try {
   const originals = Object.fromEntries(['holiday.jpg', 'diagram.png', 'report.pdf', 'notes.md'].map((n) => [n, sha(readFileSync(F(n)))]))
 
   // ============ 1. the button ============
-  const bar = await H.chatButtons()
+  // (D-051) the chat bar is in the message box; New chat, History and Tools moved to the sidebar, so the bar's own buttons are read here
+  const bar = await ev(`[...document.querySelectorAll('.chat-bar .chat-button')].map((b) => ({ text: b.textContent, disabled: b.disabled, title: b.title }))`)
   check('the chat bar starts with "Attach...", enabled, and its tooltip says the files are chosen in a Windows dialog and sent to the model', bar[0]?.text === 'Attach...' && !bar[0].disabled && /Windows dialog/.test(bar[0].title) && /sends it to the model/.test(bar[0].title), show(bar))
   check('no chips, no notices and no attachments folder before anything is attached', (await chips()).length === 0 && (await notices()) === null && copies().length === 0)
 

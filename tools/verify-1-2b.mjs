@@ -89,9 +89,10 @@ await page.press('Enter')
 await userCount(6)
 await settled()
 await sleep(100)
-const wrap = await page.evaluate(`(() => { const all = [...document.querySelectorAll('.bubble')]; const l = document.querySelector('.message-list'); const over = all.some((b) => b.scrollWidth > b.clientWidth); const widest = Math.max(...all.map((b) => b.offsetWidth)); return { bubbleOverflow: over, listOverflow: l.scrollWidth > l.clientWidth, widest, colW: document.querySelector('.message-list-inner').offsetWidth } })()`)
+// (D-051) the person's messages are bubbles of at most 85% of the column; a reply is the page's own text and may take the whole column
+const wrap = await page.evaluate(`(() => { const all = [...document.querySelectorAll('.bubble')]; const l = document.querySelector('.message-list'); const over = all.some((b) => b.scrollWidth > b.clientWidth); const widest = Math.max(...[...document.querySelectorAll('.message-user .bubble')].map((b) => b.offsetWidth)); const widestReply = Math.max(...[...document.querySelectorAll('.message-assistant .bubble')].map((b) => b.offsetWidth)); return { bubbleOverflow: over, listOverflow: l.scrollWidth > l.clientWidth, widest, widestReply, colW: document.querySelector('.message-list-inner').offsetWidth } })()`)
 check('600-char word wraps in both the message and its echo (no horizontal overflow)', !wrap.bubbleOverflow && !wrap.listOverflow, JSON.stringify(wrap))
-check('no bubble is wider than 85% of the column', wrap.widest <= wrap.colW * 0.85 + 1, JSON.stringify(wrap))
+check('no bubble of the person\'s is wider than 85% of the column, and no reply wider than the column', wrap.widest <= wrap.colW * 0.85 + 1 && wrap.widestReply <= wrap.colW + 1, JSON.stringify(wrap))
 
 // 8. Many messages: list scrolls and stays at the bottom
 for (let i = 1; i <= 14; i++) {

@@ -362,7 +362,7 @@ The instructions are the person's, set only by pressing Save in the dialog, kept
 whichever provider answers (the dialog says so). They are added AFTER the app's own rules and never replace them: the page has no field that
 sets the system prompt, and a field called `system` in a request is dropped by `checkChatRequest`. A chat without instructions sends exactly the
 prompt it sent before Stage 7.4 (checked byte for byte against the recorded requests). A new chat starts without instructions; a chat opened
-from History brings its own back. The Instructions button (in the chat bar under the message box since 7.6) says "on" while they are set, and is
+from History brings its own back. The Instructions button (in the message box's row since D-051; under the box from 7.6) says "on" while they are set, and is
 off while a reply arrives, like the model and the effort. Asking again (Regenerate, an edited message) uses the instructions the chat has at that moment. See DECISIONS.md D-027.
 
 **Instructions for every chat (10.2, D-039).** Main keeps one more text, `instructions.json` in the data folder (`everyChat.ts` over `keptFile.ts`:
@@ -377,7 +377,7 @@ chat's cannot be read.
 **Notes (10.3, 10.4, D-039).** Main keeps the person's notes in `memory.json` (`memory.ts` over `keptFile.ts`), reads them for every request and puts
 them right after the app's rules, after a line that says they are information and not instructions, as a list; then the instructions. The page has
 `window.api.memory` (read, ask to add or change, delete, turn on or off, export); a new or changed note and turning memory back on wait for a yes in
-the system's message box. A damaged file, or a note holding a saved API key, refuses every request. The Memory page is opened from "Memory N" under the
+the system's message box. A damaged file, or a note holding a saved API key, refuses every request. The Memory page is opened from "Memory N" in the
 message box, or with "Remember..." under a message (the selected part, or all of it).
 
 **Projects (10.5, D-039).** Main keeps `projects.json` (`projects.ts`): a name (never sent), instructions and files (main's copies, D-037). A chat
@@ -418,7 +418,7 @@ which; Stop everything aborts the reply's signal, which also closes the open que
 | File                 | Job                                                                                                                                  |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `ChatView.tsx`       | Puts the message list and the input box together. The conversation itself is held in `App`, which also feeds the header's model menu |
-| `ChatBar.tsx`        | (7) The slim row under the message box: New chat, History and Instructions, with the rules they had in the header (D-029)            |
+| `ChatBar.tsx`        | (19) The row in the message box: Attach, Make an image, Instructions, Memory, Project, with their rules (D-029, D-051)               |
 | `useChat.ts`         | Conversation state and the cycle: send, reply streams in, then done / stopped / error. (4) `load`. (7) Instructions (D-027)          |
 | `ipcReply.ts`        | The reply function: sends the conversation (and the instructions, if any) to main over the bridge and streams the answer             |
 | `history.ts`         | Decides what the model is told about earlier turns (D-013)                                                                           |
@@ -428,13 +428,17 @@ which; Stop everything aborts the reply's signal, which also closes the open que
 | `MessageActions.tsx` | (7) Copy, Regenerate (Try again) and Edit under a message; the last two wait for a reply that is arriving (D-026)                    |
 | `MessageEdit.tsx`    | (7) A message of the person's open for editing in place; asks first when more than the last exchange would go (D-026)                |
 | `rewrite.ts`         | (7) What is sent again: the conversation without its last reply, or up to an edited message (plain functions)                        |
-| `Composer.tsx`       | Input box. Enter sends, Shift+Enter adds a line. Shows Send, or Stop while a reply streams                                           |
+| `Composer.tsx`       | Input box. Enter sends, Shift+Enter adds a line. Shows Send, or Stop while a reply streams. (19) Holds the files and the chat bar    |
 
 `src/renderer/src/useCopy.ts` is the one place that writes the clipboard (on a click, D-025, D-026).
 
-`App.tsx` adds the header (the Task, model and Effort menus, the badges, Settings: one row from 720 px up, whatever is showing, D-029) and the chat bar
-under the message box (New chat, History, Instructions). All styling is one stylesheet,
-`assets/main.css`, with colours as CSS variables at the top. The UI is dark only.
+**The window (D-051).** `App.tsx` puts the sidebar (`sidebar/Sidebar.tsx`: the app's mark and name, New chat, History, Tools, the saved chats newest
+first, Settings and the theme at its foot; it folds to a 60 px rail of icons and is always the rail under 720 px) beside the chat area: the header (the
+chat's title where there is room, the Task, model and Effort menus, the badges: one row from 600 px of chat area, whatever is showing, D-029) and
+`ChatView`, whose message box holds the chat bar. `appearance.ts` keeps the theme (dark unless the person picks light) and the rail in the page's own
+storage and puts the theme on `<html data-theme>` before the first render; `settings/AppearanceSection.tsx` is the same choice in Settings. `icons.tsx`
+draws the icons as lines (no file, no font). All styling is two stylesheets: `assets/base.css` holds every colour as a CSS variable, once per theme,
+each pair measured for contrast; `assets/main.css` the layout, which follows the room the chat area has (container queries) rather than the window's width.
 
 ```
 Composer --onSend--> useChat.send --> reply(history, signal) --text pieces--> messages --> MessageList

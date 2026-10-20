@@ -9,7 +9,7 @@ import { TOOLS } from './paths.mjs'
 
 const R = '{{REPO}}/'
 const LOG = R + 'src/main/auditLog.ts', SVC = R + 'src/main/auditService.ts', COR = R + 'src/main/toolCore.ts', SHT = R + 'src/shared/tools.ts'
-const IPC = R + 'src/main/ipc.ts', PRE = R + 'src/preload/index.ts', TD = R + 'src/renderer/src/tools/ToolsDialog.tsx', CB = R + 'src/renderer/src/chat/ChatBar.tsx'
+const IPC = R + 'src/main/ipc.ts', PRE = R + 'src/preload/index.ts', TD = R + 'src/renderer/src/tools/ToolsDialog.tsx', SB = R + 'src/renderer/src/sidebar/Sidebar.tsx'
 const UCS = R + 'src/renderer/src/settings/useChatStorage.ts'
 
 const s = {
@@ -85,8 +85,9 @@ const s = {
   wHandlerExtra: [IPC, '  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))', "  ipcMain.handle(CHANNELS.settingsStatus, guarded(currentStatus))\n  ipcMain.handle('audit:append', guarded(async () => true))"],
   wNotSealed: [IPC, '      auditLog.document,\n      toolSettings.file', '      toolSettings.file'],
   wReport: [UCS, 'your projects, your tool settings and the audit log of tool calls are encrypted too.', 'and your notes are encrypted too.'],
-  wButton: [CB, '        Tools\n      </button>', '        Tool box\n      </button>'],
-  wBusy: [CB, "        className=\"chat-button chat-tools\"\n        disabled={isReplying}", '        className="chat-button chat-tools"\n        disabled={false}'],
+  // (D-051) the Tools button is in the sidebar
+  wButton: [SB, '          <span className="sidebar-label">Tools</span>', '          <span className="sidebar-label">Tool box</span>'],
+  wBusy: [SB, '          className="chat-button sidebar-item chat-tools"\n          disabled={isReplying}', '          className="chat-button sidebar-item chat-tools"\n          disabled={false}'],
   wCancelError: [TD, "setNotice({ kind: result.cancelled ? 'ok' : 'error', text: result.error })", "setNotice({ kind: 'error', text: result.error })"],
   wEscape: [TD, '        if (busyRef.current) event.preventDefault()', '        void busyRef'],
   wLinks: [TD, '<span className="tools-source-url">{source.url}</span>', '<a className="tools-source-url" href={source.url}>{source.url}</a>'],

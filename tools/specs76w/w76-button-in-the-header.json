@@ -1,0 +1,24 @@
+{
+  "label": "w76-button-in-the-header",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/App.tsx",
+      "from": "          <h2 className=\"chat-title\" title={chatTitle}>",
+      "to": "          <button type=\"button\" className=\"probe-in-header\">Settings</button>\n          <h2 className=\"chat-title\" title={chatTitle}>"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-7-6w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s76nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w76-button-in-the-header"
+  }
+}

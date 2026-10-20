@@ -1,21 +1,11 @@
 @import './base.css';
 
 :root {
-  /* Tell Chromium this is a dark UI so scrollbars and form controls match. */
-  color-scheme: dark;
-
-  --color-border: var(--ev-c-gray-3);
-  --color-text-muted: var(--ev-c-text-2);
-  --color-accent: #4263eb;
-  --color-accent-hover: #3b5bdb; /* darker on hover, so white text stays above 4.5:1 */
-  --color-on-accent: #ffffff;
-  --color-focus: #748ffc;
-  --color-danger: #ff8787;
-  /* Edge of a text field or secondary button: 3.6:1 on the dialog, so the control can be seen. */
-  --color-input-border: #6e7a89;
-
   /* Width of the centred column that holds messages and the input box. */
   --chat-width: 760px;
+  /* The sidebar (D-051): open, and folded to a rail of icons. */
+  --sidebar-width: 248px;
+  --rail-width: 60px;
 }
 
 /* The window never scrolls; only the message list does. */
@@ -29,10 +19,375 @@ body {
   overflow: hidden;
 }
 
+/* Slim scrollbars in the theme's colours, with no arrows. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ev-c-gray-2);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ev-c-gray-1);
+  background-clip: padding-box;
+}
+
+/* A name that is read out but not shown: the label of a button that shows only an icon. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.logo-mark {
+  width: 18px;
+  height: 18px;
+  fill: #ffffff;
+}
+
+/* A round button that shows only an icon; its name is in a hidden label and its tooltip. */
+.icon-button {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  color: var(--color-text);
+  background: var(--ev-c-gray-3);
+}
+
+.icon-button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+/* ---------- the window: the sidebar at the left, the header and the chat beside it (D-051) ---------- */
+
 .app {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  height: 100%;
+  transition: grid-template-columns 0.2s ease;
+}
+
+.app-rail {
+  --sidebar-width: var(--rail-width);
+}
+
+/* A narrow window always shows the rail: the chat needs the room. */
+@media (max-width: 719px) {
+  .app {
+    --sidebar-width: var(--rail-width);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app {
+    transition: none;
+  }
+}
+
+.app-main {
+  container: main / inline-size;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ---------- sidebar ---------- */
+
+.sidebar {
+  container: sidebar / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  min-height: 0;
+  padding: 12px 10px;
+  overflow: hidden;
+  background: var(--color-sidebar);
+  border-right: 1px solid var(--color-border);
+}
+
+.sidebar-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  margin-bottom: 10px;
+  padding: 0 0 0 4px;
+}
+
+.sidebar-logo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--gradient);
+  box-shadow: var(--gradient-shadow);
+}
+
+.app-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--color-text);
+}
+
+/* New chat: the one bright button. */
+.sidebar-new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  margin-bottom: 10px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-on-accent);
+  background: var(--gradient);
+  border: 0;
+  border-radius: 12px;
+  box-shadow: var(--gradient-shadow);
+  cursor: pointer;
+}
+
+.sidebar-new:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+/* Off while a reply arrives, or while there is nothing to start over from. */
+.sidebar-new:disabled {
+  opacity: 0.45;
+  box-shadow: none;
+  cursor: default;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.sidebar-item:hover:not(:disabled) {
+  color: var(--color-text);
+  background: var(--ev-c-gray-3);
+}
+
+.sidebar-item:disabled {
+  color: var(--ev-c-text-3);
+  cursor: default;
+}
+
+.sidebar-new:focus-visible,
+.sidebar-item:focus-visible,
+.sidebar-chat:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.sidebar-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* The saved chats, newest first: the list scrolls, the rest of the sidebar stays. */
+.sidebar-recent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  margin-top: 12px;
+}
+
+.sidebar-heading {
+  padding: 0 12px 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.sidebar-chats {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.sidebar-chat {
+  display: block;
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 12px;
+  overflow: hidden;
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.sidebar-chat:hover:not(:disabled) {
+  color: var(--color-text);
+  background: var(--ev-c-gray-3);
+}
+
+.sidebar-chat[aria-current='true'] {
+  font-weight: 600;
+  color: var(--color-text);
+  background: var(--color-sidebar-active);
+}
+
+.sidebar-chat:disabled {
+  cursor: default;
+}
+
+.sidebar-none,
+.sidebar-problem {
+  padding: 4px 12px;
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+}
+
+.sidebar-problem {
+  color: var(--color-danger);
+  overflow-wrap: anywhere;
+}
+
+.sidebar-foot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+
+.sidebar-foot .sidebar-item {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The rail: icons only, each with its tooltip and its name kept for screen readers; no list of chats (History has them). */
+@container sidebar (max-width: 120px) {
+  .sidebar-head {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .sidebar-logo,
+  .sidebar-recent {
+    display: none;
+  }
+
+  .app-title,
+  .sidebar-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .sidebar-new,
+  .sidebar-item {
+    align-self: center;
+    justify-content: center;
+    width: 40px;
+    padding: 0;
+  }
+
+  .sidebar-foot {
+    flex-direction: column;
+  }
+
+  .sidebar-foot .sidebar-item {
+    flex: none;
+  }
+}
+
+/* In a narrow window the rail cannot be opened, so its button is not shown; the app's mark takes its place. */
+@media (max-width: 719px) {
+  .sidebar-toggle {
+    display: none;
+  }
+
+  .sidebar .sidebar-logo {
+    display: grid;
+  }
 }
 
 /* ---------- header ---------- */
@@ -40,31 +395,49 @@ body {
 .app-header {
   flex: none;
   display: flex;
-  flex-wrap: wrap; /* in a narrow window the controls drop under the title instead of overflowing */
+  flex-wrap: wrap; /* in a narrow window the menus drop under the title instead of overflowing */
   align-items: center;
   justify-content: space-between;
   gap: 8px 12px;
+  min-height: 56px;
   padding: 10px 20px;
   border-bottom: 1px solid var(--color-border);
 }
 
-.app-title {
-  font-size: 16px;
+/* The chat's title: its saved title, or "New chat". It takes only the room the menus leave, and is not shown where that is too little
+   to read it (the sidebar marks the chat on screen too). */
+.chat-title {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--ev-c-text-1);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@container main (max-width: 699px) {
+  .chat-title {
+    display: none;
+  }
 }
 
 .app-badge {
-  padding: 2px 10px;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 2px 11px;
+  font-size: 12.5px;
   color: var(--color-text-muted);
   border: 1px solid var(--color-border);
   border-radius: 999px;
 }
 
 .app-badge-warn {
-  color: var(--color-danger);
-  border-color: var(--color-danger);
+  font-weight: 600;
+  color: var(--color-warning-text);
+  background: var(--color-warning-soft);
+  border-color: var(--color-warning-border);
 }
 
 .app-header-actions {
@@ -72,50 +445,18 @@ body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px 10px;
-}
-
-/* The pill buttons: Settings in the header, and New chat, History and Instructions under the message box (D-029). */
-.header-button,
-.chat-button {
-  padding: 2px 12px;
-  font: inherit;
-  font-size: 13px;
-  color: var(--color-text);
-  background: transparent;
-  border: 1px solid var(--color-input-border);
-  border-radius: 999px;
-  cursor: pointer;
-}
-
-.header-button:hover:not(:disabled),
-.chat-button:hover:not(:disabled) {
-  background: var(--ev-c-gray-3);
-}
-
-.header-button:focus-visible,
-.chat-button:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
-/* Off while a reply arrives, or while there is nothing to start over from. */
-.header-button:disabled,
-.chat-button:disabled {
-  color: var(--ev-c-text-3);
-  cursor: default;
+  gap: 8px;
 }
 
 /* The "Not saved" badge is a button: pressing it tries the save again. */
 .app-badge-button {
   font: inherit;
-  font-size: 12px;
-  background: transparent;
+  font-size: 12.5px;
   cursor: pointer;
 }
 
 .app-badge-button:hover {
-  background: var(--ev-c-gray-3);
+  filter: brightness(1.15);
 }
 
 .app-badge-button:focus-visible {
@@ -123,25 +464,31 @@ body {
   outline-offset: 2px;
 }
 
-/* The model menu, the task menu and the effort menu. They look like the pill buttons beside them. */
+/* The model menu, the task menu and the effort menu: rounded, with a drawn arrow. */
 .header-select,
 .task-select,
 .effort-select {
   max-width: 200px;
-  padding: 2px 8px;
+  height: 34px;
+  padding: 0 30px 0 12px;
   font: inherit;
   font-size: 13px;
   color: var(--color-text);
-  background: var(--color-background);
+  appearance: none;
+  background: var(--color-background-soft) var(--chevron) no-repeat right 10px center / 14px;
   border: 1px solid var(--color-input-border);
   border-radius: 999px;
   cursor: pointer;
 }
 
+.header-select {
+  font-weight: 600;
+}
+
 .header-select:hover:not(:disabled),
 .task-select:hover:not(:disabled),
 .effort-select:hover:not(:disabled) {
-  background: var(--ev-c-gray-3);
+  border-color: var(--color-focus);
 }
 
 .header-select:focus-visible,
@@ -159,12 +506,11 @@ body {
 }
 
 /*
- * From the default window width up (900 px, 886 of page) the header is ONE row, whatever is showing in it (D-029): with both badges at
- * once and a task chosen it would need about 870 px, so the three menus give way (their text is cut with an ellipsis, never below 96 px
- * each) before anything wraps. The title, the badges and Settings never shrink. In a narrower window the controls drop under the title
- * as before.
+ * Where there is room (600 px of chat beside the sidebar; 638 at the default window) the header is ONE row, whatever is showing in it
+ * (D-029, D-051): the title gives way first, then the three menus (their text is cut with an ellipsis, never below 96 px each); the
+ * badges never shrink. With less room the menus drop under the title.
  */
-@media (min-width: 720px) {
+@container main (min-width: 600px) {
   .app-header,
   .app-header-actions {
     flex-wrap: nowrap;
@@ -174,9 +520,7 @@ body {
     min-width: 0;
   }
 
-  .app-title,
-  .app-badge,
-  .header-button {
+  .app-badge {
     flex: none;
     white-space: nowrap;
   }
@@ -207,13 +551,47 @@ body {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  padding: 20px;
+  padding: 24px 24px 12px;
+}
+
+/* An empty chat: the app's mark, a greeting, and the line that says what to do first. */
+.empty {
+  margin: auto; /* centres it in the empty list */
+  max-width: 440px;
+  text-align: center;
+}
+
+.empty-logo {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 18px;
+  border-radius: 16px;
+  background: var(--gradient);
+  box-shadow: 0 10px 30px rgba(106, 77, 255, 0.35);
+}
+
+.empty-logo .logo-mark {
+  width: 28px;
+  height: 28px;
+}
+
+.empty-heading {
+  margin-bottom: 8px;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.empty-accent {
+  color: var(--color-accent-text);
 }
 
 .empty-state {
-  margin: auto; /* centres it in the empty list */
   max-width: 360px;
-  text-align: center;
+  margin: 0 auto;
   color: var(--color-text-muted);
 }
 
@@ -221,10 +599,12 @@ body {
 .link-button {
   padding: 0;
   font: inherit;
-  color: var(--color-focus);
+  font-weight: 600;
+  color: var(--color-accent-text);
   background: none;
   border: 0;
   text-decoration: underline;
+  text-underline-offset: 3px;
   cursor: pointer;
 }
 
@@ -239,7 +619,7 @@ body {
   flex: none; /* never shrink: a taller list scrolls instead */
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 20px;
   width: 100%;
   max-width: var(--chat-width);
   margin: 0 auto;
@@ -251,33 +631,36 @@ body {
   max-width: 85%;
 }
 
+/* The person's messages in a tinted bubble at the right; a reply is the page's own text, as wide as the column. */
 .message-user {
   align-self: flex-end;
   align-items: flex-end;
 }
 
 .message-assistant {
-  align-self: flex-start;
+  align-self: stretch;
   align-items: flex-start;
+  max-width: 100%;
 }
 
 .bubble {
-  padding: 10px 14px;
-  line-height: 1.55;
+  padding: 10px 16px;
+  line-height: 1.6;
   white-space: pre-wrap; /* keep the line breaks the user typed */
   overflow-wrap: anywhere; /* long words and URLs wrap instead of overflowing */
-  border-radius: 16px;
+  border-radius: 18px;
 }
 
 .message-user .bubble {
-  color: var(--color-on-accent);
-  background: var(--color-accent);
-  border-bottom-right-radius: 4px;
+  color: var(--color-text);
+  background: var(--color-user-bubble);
+  border-bottom-right-radius: 6px;
 }
 
 .message-assistant .bubble {
-  background: var(--color-background-mute);
-  border-bottom-left-radius: 4px;
+  padding: 0 2px;
+  background: transparent;
+  border-radius: 0;
 }
 
 /* ---------- Markdown in a reply (D-025) ---------- */
@@ -371,18 +754,18 @@ body {
 }
 
 .bubble-markdown .md-code {
-  padding: 1px 5px;
-  font-family: Consolas, 'Cascadia Mono', 'Courier New', monospace;
-  font-size: 0.9em;
-  background: var(--color-background);
-  border-radius: 5px;
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--color-background-mute);
+  border-radius: 6px;
 }
 
 .md-codeblock {
   overflow: hidden;
-  background: var(--color-background);
+  background: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .md-codeblock-head {
@@ -390,25 +773,26 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  min-height: 30px;
-  padding: 3px 8px 3px 12px;
-  font-size: 12px;
+  min-height: 34px;
+  padding: 3px 8px 3px 14px;
+  font-size: 12.5px;
   color: var(--color-text-muted);
   border-bottom: 1px solid var(--color-border);
 }
 
 .md-copy {
-  padding: 2px 10px;
+  padding: 3px 10px;
   font: inherit;
-  font-size: 12px;
-  color: var(--color-text);
+  font-size: 12.5px;
+  color: var(--color-text-muted);
   background: transparent;
-  border: 1px solid var(--color-input-border);
-  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   cursor: pointer;
 }
 
 .md-copy:hover {
+  color: var(--color-text);
   background: var(--ev-c-gray-3);
 }
 
@@ -420,11 +804,11 @@ body {
 
 .md-pre {
   margin: 0;
-  padding: 10px 12px;
+  padding: 12px 16px;
   overflow-x: auto;
-  font-family: Consolas, 'Cascadia Mono', 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.6;
   white-space: pre; /* code keeps every space and line */
 }
 
@@ -453,7 +837,7 @@ body {
 
 .md-table th {
   font-weight: 600;
-  background: var(--color-background);
+  background: var(--color-background-mute);
 }
 
 .md-table .md-align-center {
@@ -468,7 +852,7 @@ body {
 .md-link {
   padding: 0;
   font: inherit;
-  color: var(--color-focus);
+  color: var(--color-accent-text);
   text-align: inherit;
   overflow-wrap: anywhere;
   background: none;
@@ -484,11 +868,13 @@ body {
   color: var(--color-text);
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-large);
 }
 
 .link-confirm::backdrop {
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--backdrop);
+  backdrop-filter: blur(3px);
 }
 
 .link-confirm-heading {
@@ -502,7 +888,7 @@ body {
   padding: 8px 10px;
   overflow-y: auto;
   overflow-wrap: anywhere;
-  font-family: Consolas, 'Cascadia Mono', 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   background: var(--color-background);
   border: 1px solid var(--color-border);
@@ -524,10 +910,24 @@ body {
 
 /* Who wrote a reply: said above it when it is the first one, or when the model changed (D-021) */
 .message-model {
-  margin-bottom: 4px;
-  padding: 0 4px;
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  padding: 0 2px;
+  font-size: 12.5px;
+  font-weight: 600;
   color: var(--color-text-muted);
+}
+
+/* A small dot of the app's gradient marks where a reply starts. */
+.message-model::before {
+  content: '';
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gradient);
 }
 
 /* "Stopped" / error line under a message */
@@ -563,7 +963,7 @@ body {
   line-height: 1.45;
   border: 1px solid var(--color-border);
   border-left: 3px solid var(--color-focus);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--color-background-soft);
   overflow-wrap: anywhere;
 }
@@ -692,9 +1092,10 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 2px 4px;
-  margin-top: 2px;
-  padding: 0 2px;
+  margin-top: 4px;
+  padding: 0;
   opacity: 0;
+  transition: opacity 0.15s;
 }
 
 .message:hover .message-actions,
@@ -710,13 +1111,13 @@ body {
 }
 
 .message-action {
-  padding: 2px 8px;
+  padding: 3px 9px;
   font: inherit;
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--color-text-muted);
   background: transparent;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
@@ -831,37 +1232,44 @@ body {
 /* ---------- input box ---------- */
 
 .composer {
+  container: composer / inline-size;
   flex: none;
-  padding: 12px 20px 6px; /* the chat bar sits right under the box (D-029) */
+  padding: 8px 24px 16px;
 }
 
+/* One card: the files, the text, then a row with the chat's own buttons, the microphone and Send (D-051). */
 .composer-inner {
   display: flex;
-  align-items: flex-end;
-  gap: 8px;
+  flex-direction: column;
+  gap: 4px;
   max-width: var(--chat-width);
   margin: 0 auto;
-  padding: 8px;
+  padding: 10px 10px 8px 14px;
   background: var(--color-background-soft);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border: 1px solid var(--color-input-border);
+  border-radius: 20px;
+  box-shadow: var(--shadow-small);
 }
 
 .composer-inner:focus-within {
   border-color: var(--color-focus);
+  box-shadow:
+    0 0 0 4px var(--color-accent-soft),
+    var(--shadow-small);
 }
 
 .composer-input {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
+  min-height: 30px;
   max-height: 200px;
-  padding: 6px 8px;
+  padding: 4px 2px;
   font: inherit;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.55;
   color: inherit;
   background: transparent;
   border: 0;
-  outline: 0; /* the focus border on .composer-inner shows focus instead */
+  outline: 0; /* the focus ring around .composer-inner shows focus instead */
   resize: none;
   overflow-y: auto;
   field-sizing: content; /* grows with the text, up to max-height */
@@ -871,21 +1279,66 @@ body {
   color: var(--color-text-muted);
 }
 
+/* A narrow chat area: smaller margins, so that the text and a file's chip (at least 150 px) keep their room. */
+@container main (max-width: 480px) {
+  .app-header {
+    padding: 8px 12px;
+  }
+
+  .message-list {
+    padding: 16px 12px 8px;
+  }
+
+  .composer {
+    padding: 6px 10px 10px;
+  }
+
+  .composer-inner {
+    padding: 8px 8px 6px 10px;
+  }
+}
+
+.composer-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.composer-end {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+/* Send: an arrow on the gradient, its name in a hidden label. */
 .composer-button {
   flex: none;
-  height: 36px;
-  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
   font: inherit;
+  font-size: 13px;
   font-weight: 600;
   color: var(--color-on-accent);
-  background: var(--color-accent);
+  background: var(--gradient);
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
+  box-shadow: var(--gradient-shadow);
   cursor: pointer;
 }
 
+.composer-button .icon {
+  stroke-width: 2.2;
+}
+
 .composer-button:hover:not(:disabled) {
-  background: var(--color-accent-hover);
+  filter: brightness(1.08);
 }
 
 .composer-button:focus-visible {
@@ -896,25 +1349,37 @@ body {
 .composer-button:disabled {
   color: var(--ev-c-text-3);
   background: var(--ev-c-gray-3);
+  box-shadow: none;
   cursor: default;
 }
 
+/* Stop: named, because "Stop everything" (a tool is on) does more than end the reply. */
 .composer-button-stop {
-  color: var(--ev-c-text-1);
+  width: auto;
+  padding: 0 14px;
+  color: var(--color-text);
   background: var(--ev-c-gray-2);
+  box-shadow: none;
+}
+
+.composer-button-stop .icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
 }
 
 /* Needs the same specificity as the Send hover rule above to win over it. */
 .composer-button-stop:hover:not(:disabled) {
+  filter: none;
   background: var(--ev-c-gray-1);
 }
 
 /* ---------- files on the message being written (D-037) ---------- */
 
 /* As wide as the message box, right above it. The chips wrap in a narrow window; a long name is cut with "..." (the whole name is in the tooltip). */
+/* At the top of the message box, above the text. */
 .attachments {
-  max-width: var(--chat-width);
-  margin: 0 auto 8px;
+  margin: 0 0 6px;
 }
 
 .attachment-list {
@@ -933,9 +1398,9 @@ body {
   min-width: 0;
   max-width: min(100%, 320px);
   padding: 4px 4px 4px 4px;
-  background: var(--color-background-soft);
+  background: var(--color-background-mute);
   border: 1px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .attachment-thumb,
@@ -943,7 +1408,7 @@ body {
   flex: none;
   width: 40px;
   height: 40px;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .attachment-thumb {
@@ -1026,7 +1491,9 @@ body {
 }
 
 .composer-blocked {
-  margin: 6px 2px 0;
+  max-width: var(--chat-width);
+  margin: 6px auto 0;
+  padding: 0 8px;
   font-size: 12px;
   color: var(--color-danger);
   overflow-wrap: anywhere;
@@ -1053,36 +1520,109 @@ body {
   padding: 4px 10px 4px 4px;
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .message-file-missing {
   border-style: dashed;
 }
 
-/* ---------- the chat's own buttons, under the message box (D-029) ---------- */
+/* ---------- the chat's own buttons, in the message box (D-029, D-051) ---------- */
 
-/* As wide as the message box above it (its edges line up with the box's), and wrapping instead of overflowing in a narrow window. */
+/* The row under the text: Attach and Make an image as icons, then the project, the instructions and the notes, named. It wraps
+   instead of overflowing; in a narrow box the names go and the icons and marks stay. */
 .chat-bar {
-  flex: none;
   display: flex;
+  flex: 1;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 8px;
-  width: 100%;
-  max-width: calc(var(--chat-width) + 40px);
-  margin: 0 auto;
-  padding: 0 20px 10px;
+  gap: 2px;
+  min-width: 0;
+  margin-left: -6px;
+}
+
+.chat-bar .chat-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 30px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.chat-bar .chat-attach,
+.chat-bar .chat-make-image {
+  justify-content: center;
+  width: 32px;
+  padding: 0;
+  border-radius: 10px;
+}
+
+.chat-bar .chat-button:hover:not(:disabled) {
+  color: var(--color-text);
+  background: var(--ev-c-gray-3);
+}
+
+.chat-bar .chat-button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+/* Off while a reply arrives. */
+.chat-bar .chat-button:disabled {
+  color: var(--ev-c-text-3);
+  cursor: default;
+}
+
+.chat-bar-gap {
+  flex: none;
+  width: 1px;
+  height: 18px;
+  margin: 0 6px;
+  background: var(--color-border);
+}
+
+/* A chat in a project shows the project's name in the text's colour. */
+.chat-bar .chat-project:has(.chat-project-name) {
+  color: var(--color-text);
+}
+
+.chat-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@container composer (max-width: 520px) {
+  .chat-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .chat-bar .chat-button {
+    padding: 0 8px;
+  }
 }
 
 /* The Instructions button says "on" while the chat has instructions: they are sent with every message (D-027). */
 .chat-mark {
-  margin-left: 2px;
-  padding: 0 6px;
+  padding: 1px 7px;
   font-size: 11px;
-  font-weight: 600;
-  color: var(--color-on-accent);
-  background: var(--color-accent);
+  font-weight: 700;
+  color: var(--color-accent-text);
+  background: var(--color-accent-soft);
   border-radius: 999px;
 }
 
@@ -1098,6 +1638,7 @@ body {
   height: 36px;
   padding: 0 16px;
   font: inherit;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-on-accent);
   background: var(--color-accent);
@@ -1151,7 +1692,8 @@ body {
   color: var(--color-text);
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-large);
 }
 
 .settings::backdrop,
@@ -1159,7 +1701,8 @@ body {
 .instructions::backdrop,
 .limits-dialog::backdrop,
 .large-request::backdrop {
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--backdrop);
+  backdrop-filter: blur(3px);
 }
 
 /* The question before a large request (D-032): what it could cost at the most, in three rows that add up */
@@ -1215,6 +1758,53 @@ body {
 .settings-heading {
   font-size: 14px;
   font-weight: 600;
+}
+
+/* Appearance (D-051): Dark and Light side by side, the chosen one raised. */
+.theme-choice {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 4px;
+  padding: 4px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.theme-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.theme-option .icon {
+  width: 15px;
+  height: 15px;
+}
+
+.theme-option:hover {
+  color: var(--color-text);
+}
+
+.theme-option[aria-pressed='true'] {
+  color: var(--color-text);
+  background: var(--color-background-soft);
+  box-shadow: var(--shadow-small);
+}
+
+.theme-option:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
 }
 
 .settings-hint,
@@ -1726,11 +2316,13 @@ body {
   color: var(--color-text);
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-large);
 }
 
 .memory::backdrop {
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--backdrop);
+  backdrop-filter: blur(3px);
 }
 
 .memory-heading {
@@ -1889,11 +2481,13 @@ body {
   color: var(--color-text);
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-large);
 }
 
 .tools::backdrop {
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--backdrop);
+  backdrop-filter: blur(3px);
 }
 
 .tools-heading {
@@ -2152,11 +2746,13 @@ body {
   color: var(--color-text);
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-large);
 }
 
 .projects::backdrop {
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--backdrop);
+  backdrop-filter: blur(3px);
 }
 
 .projects-heading {
@@ -2493,8 +3089,8 @@ body {
   width: 36px;
   height: 36px;
   padding: 0;
-  color: var(--color-text);
-  background: var(--ev-c-gray-2);
+  color: var(--color-text-muted);
+  background: transparent;
   border: 0;
   border-radius: 10px;
   cursor: pointer;
@@ -2502,7 +3098,8 @@ body {
 }
 
 .composer-mic:hover:not(:disabled) {
-  background: var(--ev-c-gray-1);
+  color: var(--color-text);
+  background: var(--ev-c-gray-3);
 }
 
 .composer-mic:focus-visible {
@@ -2640,12 +3237,14 @@ body {
   color: var(--color-text);
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-large);
 }
 
 .make-image::backdrop,
 .gallery::backdrop {
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--backdrop);
+  backdrop-filter: blur(3px);
 }
 
 .make-image[open],

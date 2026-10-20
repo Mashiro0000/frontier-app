@@ -32,6 +32,8 @@ interface ChatViewProps {
   projectFiles: AttachmentInfo[]
   /** A tool is switched on (D-041, 11.4): the button that ends a reply says "Stop everything". */
   toolsOn: boolean
+  /** The chat's own buttons (D-051), drawn inside the message box. */
+  toolbar: React.ReactNode
 }
 
 function ChatView({
@@ -44,7 +46,8 @@ function ChatView({
   attachments,
   onRemember,
   projectFiles,
-  toolsOn
+  toolsOn,
+  toolbar
 }: ChatViewProps): React.JSX.Element {
   const { messages, isReplying, largeRequest, answerLargeRequest, send, stop, regenerate, resend } =
     chat
@@ -179,6 +182,7 @@ function ChatView({
         blocked={blocked}
         onPasteFiles={attachments.addFiles}
         stopEverything={toolsOn}
+        toolbar={toolbar}
         attachments={
           <AttachmentChips
             files={attachments.files}

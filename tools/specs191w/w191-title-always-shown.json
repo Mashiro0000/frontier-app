@@ -1,0 +1,24 @@
+{
+  "label": "w191-title-always-shown",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/assets/main.css",
+      "from": "@container main (max-width: 699px) {\n  .chat-title {\n    display: none;",
+      "to": "@container main (max-width: 699px) {\n  .chat-title {\n    display: block;"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-19-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s191nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w191-title-always-shown"
+  }
+}

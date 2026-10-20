@@ -1,12 +1,11 @@
 import type { EveryChatStatus } from '../../../shared/ipc'
 import type { MemoryStatus } from '../../../shared/memory'
+import { IconAttach, IconImage, IconInstructions, IconMemory, IconProject } from '../icons'
 import { notesSent } from '../memory/useMemory'
 
 interface ChatBarProps {
-  /** A reply is arriving: nothing here can start or open another chat meanwhile. */
+  /** A reply is arriving: the pages that could change what the next message carries wait for it. */
   isReplying: boolean
-  /** How many messages the chat on screen has; a new chat can only be started from one that has some. */
-  messageCount: number
   /** The person's instructions for this chat (D-027); '' for none. */
   instructions: string
   /** Their instructions for every chat (D-039), as main has them; null while not known. */
@@ -17,12 +16,6 @@ interface ChatBarProps {
   /** The name of the project the chat belongs to (D-039), or null for none. */
   projectName: string | null
   onOpenProjects: () => void
-  /** Opens the Tools page (D-041): the audit log of tool calls, and from 11.4 the switches for the tools. */
-  onOpenTools: () => void
-  /** The chat on screen could not be saved (D-017): starting a new one would lose it, and the button says so. */
-  saveFailed: boolean
-  onNewChat: () => void
-  onOpenHistory: () => void
   onOpenInstructions: () => void
   /** Opens the system's dialog to attach files to the message being written (D-037). */
   onAttach: () => void
@@ -76,23 +69,19 @@ function memoryTitle(isReplying: boolean, memory: MemoryStatus | null): string {
 }
 
 /**
- * The buttons of the chat on screen, in a slim row under the message box (D-029). They were in the header until Stage 7.4 made the header
- * too wide for the default window, so that it wrapped to two rows. They keep the rules they had there: all of them wait for a reply that is
- * arriving, and a tooltip says why and when they come back.
+ * The buttons of the chat on screen, in a row inside the message box under the text (D-051; under the box since D-029, in the header
+ * before that). Attach and Make an image are icons with a hidden name; the chat's project, instructions and notes are named, because what
+ * they add to every message must always be in view (D-027, D-039). New chat, History and Tools moved to the sidebar. The buttons keep their
+ * rules: they wait for a reply that is arriving, and a tooltip says why and when they come back.
  */
 function ChatBar({
   isReplying,
-  messageCount,
   instructions,
   everyChat,
   memory,
   onOpenMemory,
   projectName,
   onOpenProjects,
-  onOpenTools,
-  saveFailed,
-  onNewChat,
-  onOpenHistory,
   onOpenInstructions,
   onAttach,
   attachDisabled,
@@ -104,12 +93,13 @@ function ChatBar({
     <div className="chat-bar" role="group" aria-label="This chat">
       <button
         type="button"
-        className="chat-button"
+        className="chat-button chat-attach"
         disabled={attachDisabled}
         title={attachTitle}
         onClick={onAttach}
       >
-        Attach...
+        <IconAttach />
+        <span className="visually-hidden">Attach...</span>
       </button>
       {/* (D-048) Only while "Make images" is on, as the microphone button is only while "Speak to type" is. */}
       {imagesOn && (
@@ -124,39 +114,11 @@ function ChatBar({
           }
           onClick={onMakeImage}
         >
-          Make an image...
+          <IconImage />
+          <span className="visually-hidden">Make an image...</span>
         </button>
       )}
-      <button
-        type="button"
-        className="chat-button"
-        disabled={isReplying || messageCount === 0}
-        title={
-          isReplying
-            ? 'A new chat can be started when the reply has finished.'
-            : messageCount === 0
-              ? 'This chat is empty.'
-              : saveFailed
-                ? 'Start a new chat. This one is not saved, so it would be lost.'
-                : 'Start a new chat. This one stays saved in History.'
-        }
-        onClick={onNewChat}
-      >
-        New chat
-      </button>
-      <button
-        type="button"
-        className="chat-button"
-        disabled={isReplying}
-        title={
-          isReplying
-            ? 'History can be opened when the reply has finished.'
-            : 'Open a saved chat, or delete one.'
-        }
-        onClick={onOpenHistory}
-      >
-        History
-      </button>
+      <span className="chat-bar-gap" aria-hidden="true" />
       {/* The instructions are sent with every message, so while any part is on the button says so: the always-visible mark (D-027, D-039). */}
       <button
         type="button"
@@ -165,7 +127,8 @@ function ChatBar({
         title={instructionsTitle(isReplying, instructions, everyChat)}
         onClick={onOpenInstructions}
       >
-        Instructions
+        <IconInstructions />
+        <span className="chat-label">Instructions</span>
         {everyChat?.problem != null ? (
           <>
             {' '}
@@ -188,7 +151,8 @@ function ChatBar({
         title={memoryTitle(isReplying, memory)}
         onClick={onOpenMemory}
       >
-        Memory
+        <IconMemory />
+        <span className="chat-label">Memory</span>
         {memory?.problem != null ? (
           <>
             {' '}
@@ -217,27 +181,17 @@ function ChatBar({
         }
         onClick={onOpenProjects}
       >
-        {projectName === null ? (
-          'Project'
-        ) : (
-          <>
-            Project: <span className="chat-project-name">{projectName}</span>
-          </>
-        )}
-      </button>
-      {/* The tools the model may ask for, and the audit log of what it asked (D-041). */}
-      <button
-        type="button"
-        className="chat-button chat-tools"
-        disabled={isReplying}
-        title={
-          isReplying
-            ? 'Tools can be opened when the reply has finished.'
-            : 'See what the model has asked tools to do, and what you answered.'
-        }
-        onClick={onOpenTools}
-      >
-        Tools
+        <IconProject />
+        <span className="chat-label">
+          {projectName === null ? (
+            'Project'
+          ) : (
+            <>
+              <span className="visually-hidden">Project: </span>
+              <span className="chat-project-name">{projectName}</span>
+            </>
+          )}
+        </span>
       </button>
     </div>
   )

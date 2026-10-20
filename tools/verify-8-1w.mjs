@@ -130,7 +130,7 @@ try {
   // 9.6: Settings opened again after a reply must not show the sums of its last opening (0 requests here) while it waits for main: the click and the
   // first look at the table happen in one turn of the page, before main's answer can arrive (it comes as a later task).
   const atOnce = await ev(`(async () => {
-    const button = [...document.querySelectorAll('.app-header .header-button')].find((b) => b.textContent === 'Settings')
+    const button = [...document.querySelectorAll('.header-button')].find((b) => b.textContent === 'Settings')
     button.click()
     for (let i = 0; i < 100 && !document.querySelector('dialog.settings')?.open; i++) await Promise.resolve()
     const d = document.querySelector('dialog.settings')

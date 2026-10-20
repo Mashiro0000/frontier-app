@@ -118,7 +118,8 @@ if (parts.includes('window')) {
   launcher('run177.mjs', 'dev', 'w177', 'verify-17-7w (Gemini: the scan for the key, sealed and backed up, the shortlist)')
   launcher('run186.mjs', 'dev', 'w186', 'verify-18-6w (Settings > Updates: off, the box, one check, Install, the stand-in)')
   launcher('run93.mjs', 'dev', 'w93', 'verify-9-3 (sending and saving files: both providers, History, delete, encryption, the sweep, a model that cannot read them)')
-  rec(seeded('w76', 'dev', 'setup-key.mjs,verify-7-6w.mjs', { USER_DATA_DIR: scratch('s76'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('w76'), 'verify-7-6 (header one row, chat bar under the box)')
+  rec(seeded('w76', 'dev', 'setup-key.mjs,verify-7-6w.mjs', { USER_DATA_DIR: scratch('s76'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('w76'), 'verify-7-6 (header one row, the chat\'s buttons; the layout of D-051)')
+  rec(seeded('w191', 'dev', 'setup-key.mjs,verify-19-1w.mjs', { USER_DATA_DIR: scratch('s191'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('w191'), 'verify-19-1 (the look: sidebar, theme, rail, narrow, contrast, keyboard)')
   const mtime = picked('34b') ? statSync(join(P, 'preferences.json')).mtimeMs : 0 // (the profile of an earlier run of this regression; a re-run of a few labels need not have one)
   rec(seeded('34b', 'dev', 'verify-3-4b.mjs', { USER_DATA_DIR: P, MOCK_PORT: MOCK, EXPECT_MODEL: 'claude-fable-5-1', PREFS_MTIME_MS: String(mtime) }), pfx('34b'), 'verify-3-4b (restart)')
 }
@@ -211,7 +212,8 @@ if (parts.includes('preview')) {
   launcher('run177.mjs', 'preview', 'prev-w177', 'built: verify-17-7w (Gemini: kept and sealed)')
   launcher('run186.mjs', 'preview', 'prev-w186', 'built: verify-18-6w (Settings > Updates)')
   launcher('run93.mjs', 'preview', 'prev-w93', 'built: verify-9-3 (sending and saving files)')
-  rec(seeded('prev-w76', 'preview', 'setup-key.mjs,verify-7-6w.mjs', { USER_DATA_DIR: scratch('s76p'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('prev-w76'), 'built: verify-7-6 (header one row, chat bar)')
+  rec(seeded('prev-w76', 'preview', 'setup-key.mjs,verify-7-6w.mjs', { USER_DATA_DIR: scratch('s76p'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('prev-w76'), 'built: verify-7-6 (header one row, chat\'s buttons)')
+  rec(seeded('prev-w191', 'preview', 'setup-key.mjs,verify-19-1w.mjs', { USER_DATA_DIR: scratch('s191p'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('prev-w191'), 'built: verify-19-1 (the look)')
   stage4('preview')
 }
 

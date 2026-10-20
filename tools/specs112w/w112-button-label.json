@@ -2,9 +2,9 @@
   "label": "w112-button-label",
   "edits": [
     {
-      "file": "{{REPO}}/src/renderer/src/chat/ChatBar.tsx",
-      "from": "        Tools\n      </button>",
-      "to": "        Tool box\n      </button>"
+      "file": "{{REPO}}/src/renderer/src/sidebar/Sidebar.tsx",
+      "from": "          <span className=\"sidebar-label\">Tools</span>",
+      "to": "          <span className=\"sidebar-label\">Tool box</span>"
     }
   ],
   "argv": [
