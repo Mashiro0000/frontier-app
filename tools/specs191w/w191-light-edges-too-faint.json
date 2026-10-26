@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/assets/base.css",
-      "from": "  --color-input-border: #82879b; /* 3.3:1 on the window, 3.6:1 on white */",
-      "to": "  --color-input-border: #c4c7d4; /* 3.3:1 on the window, 3.6:1 on white */"
+      "from": "  --color-input-border: #8a8a8a; /* 3.4:1 on the window, 3.3:1 on the sidebar */",
+      "to": "  --color-input-border: #c4c4c4; /* 3.4:1 on the window, 3.3:1 on the sidebar */"
     }
   ],
   "argv": [

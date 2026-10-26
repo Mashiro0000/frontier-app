@@ -143,7 +143,8 @@ function ChatView({
 
   return (
     <main
-      className="chat"
+      // An empty chat puts the greeting and the message box together in the middle (D-052); the first message sends the box to the foot.
+      className={messages.length === 0 ? 'chat chat-empty' : 'chat'}
       onDragOver={(event) => {
         if (event.dataTransfer.types.includes('Files')) {
           event.preventDefault()
@@ -192,6 +193,7 @@ function ChatView({
           />
         }
       />
+      <p className="chat-footnote">Models can make mistakes. Check what matters.</p>
       {/* A large request is held by the main process until the person says yes here (D-032). */}
       <LargeRequestDialog
         request={largeRequest}

@@ -143,6 +143,9 @@ function App(): React.JSX.Element {
               onStatusChange={setStatus}
             />
             <EffortPicker status={status} disabled={chat.isReplying} onStatusChange={setStatus} />
+          </div>
+          {/* The warnings, at the right (D-052): the menus lead at the left, the title is in the middle. */}
+          <div className="app-header-badges">
             {history.saveError !== null && (
               <button
                 type="button"
