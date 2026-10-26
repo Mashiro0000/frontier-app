@@ -3068,3 +3068,11 @@ You asked me to look at how ChatGPT and Claude are laid out, take the best of ea
 7. **The regression** of every earlier stage: 240 runs, 227 clean the first time. It found one fault of mine: opening Settings put the keyboard on the new list instead of the first key's box; fixed, so it starts in the box as before. The other failures were older checks that described the old layout (the box at the foot of an empty chat, 30 px buttons, the old colours, the Tab count in Settings, the old sidebar width), put right one by one; and one check about scrolling that failed twice in that run and passed the seven times it was run again (cause not found; that code did not change). Every launch that was not clean was run again with the fixes: 14 of 14 clean.
 
 **In all:** 21 deliberate breakages, each caught. Not done: Claude's own page was not measured (it needs your sign-in).
+
+**20b. Claude measured (26 October 2026).** You signed in to claude.ai in the browser pane, so its layout was measured like ChatGPT's (your chats were opened only for their layout: nothing they say was read out or kept, nothing was sent, no setting changed). Two of my earlier Claude picks were wrong, because I could not see it before: Claude's chat title sits at the top LEFT, not in the middle, and its model menu sits UNDER the message box, at the right, beside the "can make mistakes" note, which leaves its header for the title alone. Its greeting is also a light serif. So:
+
+- the header now holds just the chat's title (at the left, always shown) and the warnings at the right;
+- the Task, model and Effort menus moved under the message box, at its right, next to the note; in a narrow window they stay on one line and shorten with "...", the model's name last, and the note goes under them;
+- the greeting is in a serif (Georgia, the font Claude falls back to).
+
+Kept on purpose where Claude differs: ChatGPT's greys, the 16 px text and the grey bubble, and the words on the buttons under a reply (Claude shows icons only). The checks were changed for the new places, and every one of the new and changed checks was broken on purpose and caught (three of them had to be made stricter first, because they could not fail).

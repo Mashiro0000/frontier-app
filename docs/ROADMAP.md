@@ -544,7 +544,8 @@ the message box together in the middle of an empty chat, a round Send, a 768 px 
 box; Claude's title in the middle of the header, the mark beside the greeting, the two-row box and Settings with its sections listed at the left.
 The violet gradient is kept as the one bright touch; nothing was taken away.
 
-- **Not seen live:** Claude.ai (it asks to sign in); its picks come from what is known of it, not from a measurement.
+- **Claude measured (20b, the owner signed in):** the title moved to the header's left and the Task, model and Effort menus under the message box,
+  as Claude has them; the greeting is a serif.
 - **Not in this stage:** ChatGPT's single "+" menu (it would hide Attach and Make an image), the model menu inside the box, Claude's warm palette
   and serif replies, a "..." menu per chat in the sidebar.
 
