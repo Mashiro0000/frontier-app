@@ -2,9 +2,9 @@
 
 :root {
   /* Width of the centred column that holds messages and the input box. */
-  --chat-width: 760px;
-  /* The sidebar (D-051): open, and folded to a rail of icons. */
-  --sidebar-width: 248px;
+  --chat-width: 768px;
+  /* The sidebar (D-051, D-052): open, and folded to a rail of icons. */
+  --sidebar-width: 260px;
   --rail-width: 60px;
 }
 
@@ -138,10 +138,10 @@ body {
   container: sidebar / inline-size;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
   min-height: 0;
-  padding: 12px 10px;
+  padding: 8px;
   overflow: hidden;
   background: var(--color-sidebar);
   border-right: 1px solid var(--color-border);
@@ -151,20 +151,19 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 40px;
-  margin-bottom: 10px;
-  padding: 0 0 0 4px;
+  min-height: 44px;
+  margin-bottom: 6px;
+  padding: 0 0 0 6px;
 }
 
 .sidebar-logo {
   flex: none;
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   background: var(--gradient);
-  box-shadow: var(--gradient-shadow);
 }
 
 .app-title {
@@ -172,41 +171,53 @@ body {
   min-width: 0;
   overflow: hidden;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
   text-overflow: ellipsis;
   color: var(--color-text);
 }
 
-/* New chat: the one bright button. */
+/* New chat: a row like the others (as ChatGPT's and Claude's), its plus on the app's gradient: the one bright touch of the sidebar. */
 .sidebar-new {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 40px;
-  margin-bottom: 10px;
-  padding: 0 14px;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 9px;
   font: inherit;
   font-size: 14px;
-  font-weight: 600;
-  color: var(--color-on-accent);
-  background: var(--gradient);
+  font-weight: 500;
+  text-align: left;
+  color: var(--color-text);
+  background: transparent;
   border: 0;
-  border-radius: 12px;
-  box-shadow: var(--gradient-shadow);
+  border-radius: 10px;
   cursor: pointer;
 }
 
+.sidebar-new .icon {
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  color: var(--color-on-accent);
+  stroke-width: 2.4;
+  background: var(--gradient);
+  border-radius: 50%;
+}
+
 .sidebar-new:hover:not(:disabled) {
-  filter: brightness(1.08);
+  background: var(--ev-c-gray-3);
 }
 
 /* Off while a reply arrives, or while there is nothing to start over from. */
 .sidebar-new:disabled {
-  opacity: 0.45;
-  box-shadow: none;
+  color: var(--ev-c-text-3);
   cursor: default;
+}
+
+.sidebar-new:disabled .icon {
+  opacity: 0.45;
 }
 
 .sidebar-nav {
@@ -220,12 +231,12 @@ body {
   align-items: center;
   gap: 12px;
   width: 100%;
-  min-height: 38px;
+  min-height: 36px;
   padding: 0 12px;
   font: inherit;
   font-size: 14px;
   text-align: left;
-  color: var(--color-text-muted);
+  color: var(--color-text);
   background: transparent;
   border: 0;
   border-radius: 10px;
@@ -261,15 +272,14 @@ body {
   flex: 1;
   flex-direction: column;
   min-height: 0;
-  margin-top: 12px;
+  margin-top: 18px;
 }
 
+/* "Recent", in the muted colour and the case of a sentence (as both apps label their lists). */
 .sidebar-heading {
-  padding: 0 12px 6px;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  padding: 0 12px 4px;
+  font-size: 12.5px;
+  font-weight: 500;
   color: var(--color-text-muted);
 }
 
@@ -284,18 +294,19 @@ body {
 .sidebar-chat {
   display: block;
   width: 100%;
-  min-height: 34px;
-  padding: 6px 12px;
+  min-height: 36px;
+  padding: 8px 12px;
   overflow: hidden;
   font: inherit;
-  font-size: 13.5px;
+  font-size: 14px;
+  line-height: 20px;
   text-align: left;
   white-space: nowrap;
   text-overflow: ellipsis;
-  color: var(--color-text-muted);
+  color: var(--color-text);
   background: transparent;
   border: 0;
-  border-radius: 9px;
+  border-radius: 10px;
   cursor: pointer;
 }
 
@@ -305,7 +316,7 @@ body {
 }
 
 .sidebar-chat[aria-current='true'] {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text);
   background: var(--color-sidebar-active);
 }
@@ -331,7 +342,7 @@ body {
   align-items: center;
   gap: 4px;
   margin-top: auto;
-  padding-top: 10px;
+  padding-top: 6px;
   border-top: 1px solid var(--color-border);
 }
 
@@ -398,22 +409,24 @@ body {
   flex-wrap: wrap; /* in a narrow window the menus drop under the title instead of overflowing */
   align-items: center;
   justify-content: space-between;
-  gap: 8px 12px;
-  min-height: 56px;
-  padding: 10px 20px;
-  border-bottom: 1px solid var(--color-border);
+  gap: 4px 12px;
+  min-height: 52px;
+  padding: 8px 12px;
 }
 
-/* The chat's title: its saved title, or "New chat". It takes only the room the menus leave, and is not shown where that is too little
-   to read it (the sidebar marks the chat on screen too). */
+/* The chat's title: its saved title, or "New chat", in the middle of the header (as Claude's). It takes only the room the menus leave,
+   and is not shown where that is too little to read it (the sidebar marks the chat on screen too). */
 .chat-title {
   flex: 1 1 0;
+  order: 2;
   min-width: 0;
   overflow: hidden;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
   white-space: nowrap;
   text-overflow: ellipsis;
+  color: var(--color-text-muted);
 }
 
 @container main (max-width: 699px) {
@@ -443,6 +456,15 @@ body {
 .app-header-actions {
   display: flex;
   flex-wrap: wrap;
+  order: 1;
+  align-items: center;
+  gap: 2px;
+}
+
+.app-header-badges {
+  display: flex;
+  flex-wrap: wrap;
+  order: 3;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
@@ -464,31 +486,44 @@ body {
   outline-offset: 2px;
 }
 
-/* The model menu, the task menu and the effort menu: rounded, with a drawn arrow. */
+/* The model menu, the task menu and the effort menu: words with a drawn arrow, no box (as ChatGPT's model menu); a soft fill under the
+   pointer. The model's name leads, larger. */
 .header-select,
 .task-select,
 .effort-select {
-  max-width: 200px;
-  height: 34px;
-  padding: 0 30px 0 12px;
+  max-width: 220px;
+  height: 36px;
+  padding: 0 28px 0 10px;
+  field-sizing: content; /* as wide as the choice shown, not as the longest choice */
   font: inherit;
-  font-size: 13px;
-  color: var(--color-text);
+  font-size: 14px;
+  color: var(--color-text-muted);
   appearance: none;
-  background: var(--color-background-soft) var(--chevron) no-repeat right 10px center / 14px;
-  border: 1px solid var(--color-input-border);
-  border-radius: 999px;
+  background: transparent var(--chevron) no-repeat right 8px center / 14px;
+  border: 0;
+  border-radius: 10px;
   cursor: pointer;
 }
 
 .header-select {
+  font-size: 16px;
   font-weight: 600;
+  color: var(--color-text);
+}
+
+.header-select option,
+.task-select option,
+.effort-select option {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text);
+  background: var(--color-background-soft);
 }
 
 .header-select:hover:not(:disabled),
 .task-select:hover:not(:disabled),
 .effort-select:hover:not(:disabled) {
-  border-color: var(--color-focus);
+  background-color: var(--ev-c-gray-3);
 }
 
 .header-select:focus-visible,
@@ -512,12 +547,17 @@ body {
  */
 @container main (min-width: 600px) {
   .app-header,
-  .app-header-actions {
+  .app-header-actions,
+  .app-header-badges {
     flex-wrap: nowrap;
   }
 
   .app-header-actions {
     min-width: 0;
+  }
+
+  .app-header-badges {
+    flex: none;
   }
 
   .app-badge {
@@ -554,35 +594,61 @@ body {
   padding: 24px 24px 12px;
 }
 
-/* An empty chat: the app's mark, a greeting, and the line that says what to do first. */
+/*
+ * An empty chat (D-052): the greeting and the message box sit together a little above the middle of the chat area (as both ChatGPT and
+ * Claude start a chat); with the first message the list takes the room and the box goes to the foot.
+ */
+.chat-empty {
+  justify-content: center;
+  padding-bottom: 8vh;
+}
+
+.chat-empty .message-list {
+  flex: none;
+  overflow: visible;
+  padding-bottom: 20px;
+}
+
+.chat-empty .composer {
+  padding-bottom: 8px;
+}
+
+/* An empty chat: the app's mark beside a greeting (as Claude's), and the line that says what to do first. */
 .empty {
   margin: auto; /* centres it in the empty list */
-  max-width: 440px;
+  max-width: 560px;
   text-align: center;
 }
 
+.empty-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
 .empty-logo {
+  flex: none;
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 18px;
-  border-radius: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
   background: var(--gradient);
-  box-shadow: 0 10px 30px rgba(106, 77, 255, 0.35);
 }
 
 .empty-logo .logo-mark {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
 }
 
 .empty-heading {
-  margin-bottom: 8px;
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 400;
   line-height: 1.25;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .empty-accent {
@@ -590,7 +656,7 @@ body {
 }
 
 .empty-state {
-  max-width: 360px;
+  max-width: 420px;
   margin: 0 auto;
   color: var(--color-text-muted);
 }
@@ -619,7 +685,7 @@ body {
   flex: none; /* never shrink: a taller list scrolls instead */
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
   width: 100%;
   max-width: var(--chat-width);
   margin: 0 auto;
@@ -643,18 +709,20 @@ body {
   max-width: 100%;
 }
 
+/* The text of messages is a little larger than the app's controls (16 px, as both apps), and loosely set for reading. */
 .bubble {
-  padding: 10px 16px;
-  line-height: 1.6;
+  padding: 10px 18px;
+  font-size: 16px;
+  line-height: 1.65;
   white-space: pre-wrap; /* keep the line breaks the user typed */
   overflow-wrap: anywhere; /* long words and URLs wrap instead of overflowing */
-  border-radius: 18px;
+  border-radius: 22px;
 }
 
+/* The person's message: a soft grey bubble at the right (as ChatGPT's), round all over. */
 .message-user .bubble {
   color: var(--color-text);
   background: var(--color-user-bubble);
-  border-bottom-right-radius: 6px;
 }
 
 .message-assistant .bubble {
@@ -868,7 +936,7 @@ body {
   color: var(--color-text);
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 18px;
+  border-radius: 20px;
   box-shadow: var(--shadow-large);
 }
 
@@ -908,26 +976,16 @@ body {
   margin-top: 16px;
 }
 
-/* Who wrote a reply: said above it when it is the first one, or when the model changed (D-021) */
+/* Who wrote a reply: said above it when it is the first one, or when the model changed (D-021). Quiet: the reply is what matters. */
 .message-model {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   padding: 0 2px;
-  font-size: 12.5px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--color-text-muted);
-}
-
-/* A small dot of the app's gradient marks where a reply starts. */
-.message-model::before {
-  content: '';
-  flex: none;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--gradient);
 }
 
 /* "Stopped" / error line under a message */
@@ -1110,9 +1168,10 @@ body {
 }
 
 .message-action {
-  padding: 3px 9px;
+  min-height: 28px;
+  padding: 3px 10px;
   font: inherit;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--color-text-muted);
   background: transparent;
   border: 0;
@@ -1233,38 +1292,35 @@ body {
 .composer {
   container: composer / inline-size;
   flex: none;
-  padding: 8px 24px 16px;
+  padding: 4px 24px 6px;
 }
 
 /* One card: the files, the text, then a row with the chat's own buttons, the microphone and Send (D-051). */
 .composer-inner {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   max-width: var(--chat-width);
   margin: 0 auto;
-  padding: 10px 10px 8px 14px;
-  background: var(--color-background-soft);
+  padding: 12px 10px 10px 16px;
+  background: var(--color-composer);
   border: 1px solid var(--color-input-border);
-  border-radius: 20px;
+  border-radius: 26px;
   box-shadow: var(--shadow-small);
 }
 
 .composer-inner:focus-within {
   border-color: var(--color-focus);
-  box-shadow:
-    0 0 0 4px var(--color-accent-soft),
-    var(--shadow-small);
 }
 
 .composer-input {
   width: 100%;
   min-height: 30px;
   max-height: 200px;
-  padding: 4px 2px;
+  padding: 2px 2px 4px;
   font: inherit;
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: 16px;
+  line-height: 1.5;
   color: inherit;
   background: transparent;
   border: 0;
@@ -1311,15 +1367,15 @@ body {
   margin-left: auto;
 }
 
-/* Send: an arrow on the gradient, its name in a hidden label. */
+/* Send: an arrow on the gradient in a circle (ChatGPT's round button, in the app's colour), its name in a hidden label. */
 .composer-button {
   flex: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   font: inherit;
   font-size: 13px;
@@ -1327,8 +1383,7 @@ body {
   color: var(--color-on-accent);
   background: var(--gradient);
   border: 0;
-  border-radius: 12px;
-  box-shadow: var(--gradient-shadow);
+  border-radius: 999px;
   cursor: pointer;
 }
 
@@ -1355,7 +1410,7 @@ body {
 /* Stop: named, because "Stop everything" (a tool is on) does more than end the reply. */
 .composer-button-stop {
   width: auto;
-  padding: 0 14px;
+  padding: 0 16px;
   color: var(--color-text);
   background: var(--ev-c-gray-2);
   box-shadow: none;
@@ -1371,6 +1426,16 @@ body {
 .composer-button-stop:hover:not(:disabled) {
   filter: none;
   background: var(--ev-c-gray-1);
+}
+
+/* Under the box, as under both apps' boxes: a reply is a model's guess, not a fact. */
+.chat-footnote {
+  flex: none;
+  padding: 0 16px 8px;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--color-text-muted);
 }
 
 /* ---------- files on the message being written (D-037) ---------- */
@@ -1545,10 +1610,10 @@ body {
   align-items: center;
   gap: 6px;
   min-width: 0;
-  min-height: 30px;
-  padding: 0 10px;
+  min-height: 32px;
+  padding: 0 11px;
   font: inherit;
-  font-size: 13px;
+  font-size: 13.5px;
   white-space: nowrap;
   color: var(--color-text-muted);
   background: transparent;
@@ -1560,9 +1625,9 @@ body {
 .chat-bar .chat-attach,
 .chat-bar .chat-make-image {
   justify-content: center;
-  width: 32px;
+  width: 34px;
   padding: 0;
-  border-radius: 10px;
+  border-radius: 999px;
 }
 
 .chat-bar .chat-button:hover:not(:disabled) {
@@ -1585,7 +1650,7 @@ body {
   flex: none;
   width: 1px;
   height: 18px;
-  margin: 0 6px;
+  margin: 0 4px;
   background: var(--color-border);
 }
 
@@ -1642,7 +1707,7 @@ body {
   color: var(--color-on-accent);
   background: var(--color-accent);
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 999px;
   cursor: pointer;
 }
 
@@ -1691,7 +1756,7 @@ body {
   color: var(--color-text);
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 18px;
+  border-radius: 20px;
   box-shadow: var(--shadow-large);
 }
 
@@ -1739,6 +1804,86 @@ body {
   margin-bottom: 14px;
   font-size: 18px;
   font-weight: 600;
+}
+
+/*
+ * Settings is wider where there is room (D-052): the list of its sections at the left, staying in view while the page scrolls, and the
+ * sections beside it. In a narrow window the list goes and Settings is the single column it was.
+ */
+.settings {
+  width: min(820px, calc(100vw - 32px));
+  padding-top: 0;
+}
+
+.settings-title {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0 0 6px;
+  padding: 20px 0 12px;
+  background: var(--color-background-soft);
+  /* covers the dialog's side margins too, so that nothing scrolls by beside it (a shadow takes no room: nothing scrolls sideways) */
+  box-shadow:
+    -24px 0 0 var(--color-background-soft),
+    24px 0 0 var(--color-background-soft);
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 28px;
+}
+
+.settings-nav {
+  position: sticky;
+  top: 58px;
+  display: flex;
+  flex-direction: column;
+  align-self: start;
+  gap: 1px;
+}
+
+.settings-nav-item {
+  min-height: 34px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.settings-nav-item:hover {
+  color: var(--color-text);
+  background: var(--ev-c-gray-3);
+}
+
+.settings-nav-item:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+/* A section brought to the top stops under the sticky title. */
+.settings-body > .settings-section,
+.settings-body .settings-heading {
+  scroll-margin-top: 64px;
+}
+
+@media (max-width: 719px) {
+  .settings {
+    width: min(480px, calc(100vw - 32px));
+  }
+
+  .settings-layout {
+    display: block;
+  }
+
+  .settings-nav {
+    display: none;
+  }
 }
 
 .settings-section,
@@ -2315,7 +2460,7 @@ body {
   color: var(--color-text);
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 18px;
+  border-radius: 20px;
   box-shadow: var(--shadow-large);
 }
 
@@ -2480,7 +2625,7 @@ body {
   color: var(--color-text);
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 18px;
+  border-radius: 20px;
   box-shadow: var(--shadow-large);
 }
 
@@ -2745,7 +2890,7 @@ body {
   color: var(--color-text);
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 18px;
+  border-radius: 20px;
   box-shadow: var(--shadow-large);
 }
 
@@ -3236,7 +3381,7 @@ body {
   color: var(--color-text);
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
-  border-radius: 18px;
+  border-radius: 20px;
   box-shadow: var(--shadow-large);
 }
 

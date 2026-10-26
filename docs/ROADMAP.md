@@ -537,6 +537,17 @@ tooltip and rule.
   fold it, light and dark with dark first, the whole app.
 - **Not in this stage:** a choice of accent colour, a "follow Windows" theme, a Review window that follows the app's theme (it follows Windows').
 
+## Stage 20 - The layout from ChatGPT and Claude (asked for 26 October 2026: "pick the best layout of each and make Frontier's from inside out"; D-052)
+
+**Done:** ChatGPT's neutral greys, plain sidebar rows (New chat one of them), a header without its line with the menus as words, the greeting and
+the message box together in the middle of an empty chat, a round Send, a 768 px column of 16 px text, a grey round bubble and a note under the
+box; Claude's title in the middle of the header, the mark beside the greeting, the two-row box and Settings with its sections listed at the left.
+The violet gradient is kept as the one bright touch; nothing was taken away.
+
+- **Not seen live:** Claude.ai (it asks to sign in); its picks come from what is known of it, not from a measurement.
+- **Not in this stage:** ChatGPT's single "+" menu (it would hide Attach and Make an image), the model menu inside the box, Claude's warm palette
+  and serif replies, a "..." menu per chat in the sidebar.
+
 ## What is deliberately not promised
 
 Exact copies of vendor-only features (their memory, Projects and Artifacts, custom GPTs, the one-click connector directory), and any power

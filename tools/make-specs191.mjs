@@ -30,9 +30,9 @@ const win = {
   // the chat's buttons are drawn above the message box, not in it
   'w191-bar-outside-the-box': [[COMPOSER, '      <div className="composer-inner">\n        {attachments}', '      {toolbar}\n      <div className="composer-inner">\n        {attachments}'], [COMPOSER, '        <div className="composer-row">\n          {toolbar}\n', '        <div className="composer-row">\n']],
   // the muted text of the dark theme is too faint to read
-  'w191-dark-muted-too-faint': [[BASE, '  --color-text-muted: #9ba1b4; /* 7.4:1 on the window */', '  --color-text-muted: #4a4f60; /* 7.4:1 on the window */']],
+  'w191-dark-muted-too-faint': [[BASE, '  --color-text-muted: #a3a3a3; /* 6.4:1 on the window, 5.2:1 on the message box */', '  --color-text-muted: #4a4a4a; /* 6.4:1 on the window, 5.2:1 on the message box */']],
   // the edge of a control in the light theme cannot be seen
-  'w191-light-edges-too-faint': [[BASE, '  --color-input-border: #82879b; /* 3.3:1 on the window, 3.6:1 on white */', '  --color-input-border: #c4c7d4; /* 3.3:1 on the window, 3.6:1 on white */']],
+  'w191-light-edges-too-faint': [[BASE, '  --color-input-border: #8a8a8a; /* 3.4:1 on the window, 3.3:1 on the sidebar */', '  --color-input-border: #c4c4c4; /* 3.4:1 on the window, 3.3:1 on the sidebar */']],
   // Settings jumps ahead in the keyboard order
   'w191-tabindex-on-settings': [[SIDE, '          className="header-button sidebar-item"\n          title="Settings"', '          className="header-button sidebar-item"\n          tabIndex={1}\n          title="Settings"']],
   // the chat's title squeezes the menus at the default window instead of giving way

@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/assets/main.css",
-      "from": "@container main (min-width: 600px) {\n  .app-header,\n  .app-header-actions {\n    flex-wrap: nowrap;\n  }",
-      "to": "@container main (min-width: 600px) {\n  .app-header,\n  .app-header-actions {\n    flex-wrap: wrap;\n  }"
+      "from": "@container main (min-width: 600px) {\n  .app-header,\n  .app-header-actions,\n  .app-header-badges {\n    flex-wrap: nowrap;\n  }",
+      "to": "@container main (min-width: 600px) {\n  .app-header,\n  .app-header-actions,\n  .app-header-badges {\n    flex-wrap: wrap;\n  }"
     }
   ],
   "argv": [

@@ -1,0 +1,24 @@
+{
+  "label": "w201-empty-always-marked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/ChatView.tsx",
+      "from": "className={messages.length === 0 ? 'chat chat-empty' : 'chat'}",
+      "to": "className=\"chat chat-empty\""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-20-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s201nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w201-empty-always-marked"
+  }
+}

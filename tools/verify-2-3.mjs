@@ -75,13 +75,14 @@ check('focus returns to the Settings button', await page.evaluate(`document.acti
 // 3b. The modal traps keyboard focus: tabbing around never reaches the chat behind it
 await openSettings()
 const tabStops = []
-for (let i = 0; i < 18; i++) {
+for (let i = 0; i < 28; i++) {
   // (16 since 15.6: the Voice section adds the Read aloud switch, the voice, the speed and "Try the voice" before the Close button; 9 before)
   // (18 since D-051: the Appearance section adds Dark and Light before Close)
+  // (28 since D-052: the list of the ten sections comes first, beside them)
   await page.press('Tab')
   tabStops.push(await page.evaluate(`document.activeElement.closest('dialog.settings') ? (document.activeElement.id || document.activeElement.innerText || document.activeElement.tagName) : 'OUTSIDE:' + (document.activeElement.className || document.activeElement.tagName)`))
 }
-check('Tab stays inside the dialog (18 presses, never reaches the chat)', tabStops.every((s) => !String(s).startsWith('OUTSIDE')), JSON.stringify(tabStops))
+check('Tab stays inside the dialog (28 presses, never reaches the chat)', tabStops.every((s) => !String(s).startsWith('OUTSIDE')), JSON.stringify(tabStops))
 check('Tab visits the field and the Close button', tabStops.includes('api-key-anthropic') && tabStops.includes('Close'), JSON.stringify(tabStops))
 await page.press('Escape')
 await sleep(200)

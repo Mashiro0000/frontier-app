@@ -380,7 +380,7 @@ try {
     await clickMarked(button('Add a note...'))
     d = await dlg()
     b = await bar()
-    check(`K: at ${width} px the Memory page has no sideways scroll, nor the page, and the button's label stays on one line`, !d.sideways && !d.pageSideways && b.height <= 30, show([d.sideways, d.pageSideways, b.height]))
+    check(`K: at ${width} px the Memory page has no sideways scroll, nor the page, and the button's label stays on one line`, !d.sideways && !d.pageSideways && b.height <= 36, show([d.sideways, d.pageSideways, b.height])) // 36 since D-052: the buttons of the box are 32 px pills
     await page.screenshot(`${shots}/10-4-${width}.png`)
     await page.press('Escape')
     await closed()

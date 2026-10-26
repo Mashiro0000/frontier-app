@@ -92,12 +92,14 @@ function MessageList({
       {messages.length === 0 ? (
         emptyHint && (
           <div className="empty">
-            <span className="empty-logo">
-              <LogoMark />
-            </span>
-            <h2 className="empty-heading">
-              What are we <span className="empty-accent">working on</span>?
-            </h2>
+            <div className="empty-title">
+              <span className="empty-logo">
+                <LogoMark />
+              </span>
+              <h2 className="empty-heading">
+                What are we <span className="empty-accent">working on</span>?
+              </h2>
+            </div>
             <p className="empty-state">{emptyHint}</p>
           </div>
         )

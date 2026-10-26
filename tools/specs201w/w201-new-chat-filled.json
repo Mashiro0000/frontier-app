@@ -1,0 +1,24 @@
+{
+  "label": "w201-new-chat-filled",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/assets/main.css",
+      "from": "  text-align: left;\n  color: var(--color-text);\n  background: transparent;\n  border: 0;\n  border-radius: 10px;\n  cursor: pointer;\n}\n\n.sidebar-new .icon {",
+      "to": "  text-align: left;\n  color: var(--color-text);\n  background: var(--gradient);\n  border: 0;\n  border-radius: 10px;\n  cursor: pointer;\n}\n\n.sidebar-new .icon {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-20-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s201nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8796",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w201-new-chat-filled"
+  }
+}

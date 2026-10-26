@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/assets/base.css",
-      "from": "  --color-text-muted: #9ba1b4; /* 7.4:1 on the window */",
-      "to": "  --color-text-muted: #4a4f60; /* 7.4:1 on the window */"
+      "from": "  --color-text-muted: #a3a3a3; /* 6.4:1 on the window, 5.2:1 on the message box */",
+      "to": "  --color-text-muted: #4a4a4a; /* 6.4:1 on the window, 5.2:1 on the message box */"
     }
   ],
   "argv": [

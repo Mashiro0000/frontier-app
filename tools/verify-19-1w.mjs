@@ -73,12 +73,12 @@ try {
   await sleep(500)
 
   // ============ A. the default window: dark, the sidebar open ============
-  check('A: a fresh profile starts dark: the page says data-theme="dark" and its background is the dark one', (await theme()) === 'dark' && (await pageBackground()) === 'rgb(13, 14, 19)', `${await theme()} ${await pageBackground()}`)
+  check('A: a fresh profile starts dark: the page says data-theme="dark" and its background is the dark one', (await theme()) === 'dark' && (await pageBackground()) === 'rgb(33, 33, 33)', `${await theme()} ${await pageBackground()}`)
   check('A: nothing is kept until the person chooses (no theme or sidebar value in the page storage)', JSON.stringify(await stored()) === JSON.stringify({ theme: null, sidebar: null }), JSON.stringify(await stored()))
   const S = await box('.sidebar')
   const M = await box('.app-main')
   const vw = await ev('innerWidth')
-  check('A: the sidebar is at the left, 248 px wide and as tall as the window; the chat area takes the rest', S && S.l === 0 && Math.abs(S.w - 248) < 1 && Math.abs(M.l - S.r) < 1 && Math.abs(M.r - vw) < 1, JSON.stringify({ S, M, vw }))
+  check('A: the sidebar is at the left, 260 px wide (D-052) and as tall as the window; the chat area takes the rest', S && S.l === 0 && Math.abs(S.w - 260) < 1 && Math.abs(M.l - S.r) < 1 && Math.abs(M.r - vw) < 1, JSON.stringify({ S, M, vw }))
   const sb = await sidebarButtons()
   const named = (t) => sb.find((b) => b.text === t)
   check('A: the sidebar holds New chat, History, Tools, Settings and the theme button, each with its name', ['New chat', 'History', 'Tools', 'Settings', 'Switch to the light theme'].every((t) => named(t)) && sb.every((b) => b.text !== ''), JSON.stringify(sb.map((b) => b.text)))
@@ -92,7 +92,8 @@ try {
   check('A: at the default window the chat\'s title ("New chat") gives its room to the menus: it is not shown', (await chatTitle()) === 'New chat' && !(await visible('.chat-title')))
   await metrics(1200, 700)
   const wide = await headerShape()
-  check('A: in a wider window the title is shown at the left of the header, still ONE row', (await visible('.chat-title')) && oneRow(wide) && (await box('.chat-title')).l < (await box('.task-select')).l, JSON.stringify(wide))
+  // (D-052) The title moved to the middle, after the menus (verify-20-1w checks where).
+  check('A: in a wider window the title is shown after the menus, still ONE row', (await visible('.chat-title')) && oneRow(wide) && (await box('.chat-title')).l > (await box('.effort-select')).r, JSON.stringify(wide))
   await page.screenshot(`${shots}/19-dark-wide.png`)
   await clearMetrics()
   check('A: the header has no button any more (Settings is at the foot of the sidebar)', (await ev(`document.querySelectorAll('.app-header button').length`)) === 0)
@@ -147,7 +148,7 @@ try {
   await page.screenshot(`${shots}/19-dark-settings.png`)
   await page.click('.theme-option@Light')
   await sleep(300)
-  check('C: Light turns the whole page light at once and is kept on this computer', (await theme()) === 'light' && (await pageBackground()) === 'rgb(246, 246, 250)' && (await stored()).theme === 'light', `${await theme()} ${await pageBackground()} ${JSON.stringify(await stored())}`)
+  check('C: Light turns the whole page light at once and is kept on this computer', (await theme()) === 'light' && (await pageBackground()) === 'rgb(255, 255, 255)' && (await stored()).theme === 'light', `${await theme()} ${await pageBackground()} ${JSON.stringify(await stored())}`)
   await page.screenshot(`${shots}/19-light-settings.png`)
   await page.press('Escape')
   await sleep(250)
@@ -188,7 +189,7 @@ try {
   check('D: after a reload the sidebar is still a rail', Math.abs((await box('.sidebar')).w - 60) < 1)
   await page.click('.sidebar-toggle')
   await sleep(450)
-  check('D: and the toggle opens it again, which is kept', Math.abs((await box('.sidebar')).w - 248) < 1 && (await stored()).sidebar === 'open')
+  check('D: and the toggle opens it again, which is kept', Math.abs((await box('.sidebar')).w - 260) < 1 && (await stored()).sidebar === 'open')
 
   // ============ E. narrow windows ============
   for (const width of [700, 420, 320, 280]) {

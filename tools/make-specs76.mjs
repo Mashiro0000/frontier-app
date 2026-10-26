@@ -10,7 +10,7 @@ import { scratch } from './drive.mjs'
 
 const P = '{{REPO}}/src/renderer/src/'
 const CSS = P + 'assets/main.css', BAR = P + 'chat/ChatBar.tsx', APP = P + 'App.tsx', SIDE = P + 'sidebar/Sidebar.tsx', COMPOSER = P + 'chat/Composer.tsx'
-const ONE_ROW = '@container main (min-width: 600px) {\n  .app-header,\n  .app-header-actions {\n    flex-wrap: nowrap;\n  }'
+const ONE_ROW = '@container main (min-width: 600px) {\n  .app-header,\n  .app-header-actions,\n  .app-header-badges {\n    flex-wrap: nowrap;\n  }'
 
 // name: [[file, from, to], ...]
 const win = {
@@ -27,7 +27,7 @@ const win = {
   // the chat's buttons are drawn above the message box, not in it
   'w76-bar-outside-the-box': [[COMPOSER, '      <div className="composer-inner">\n        {attachments}', '      {toolbar}\n      <div className="composer-inner">\n        {attachments}'], [COMPOSER, '        <div className="composer-row">\n          {toolbar}\n', '        <div className="composer-row">\n']],
   // the header takes far too much of the window
-  'w76-header-too-tall': [[CSS, '  gap: 8px 12px;\n  min-height: 56px;', '  gap: 8px 12px;\n  min-height: 220px;']],
+  'w76-header-too-tall': [[CSS, '  gap: 4px 12px;\n  min-height: 52px;', '  gap: 4px 12px;\n  min-height: 220px;']],
   // History can be opened while a reply is arriving
   'w76-history-enabled-while-replying': [[SIDE, "          disabled={isReplying}\n          title={\n            isReplying\n              ? 'History can be opened", "          disabled={false}\n          title={\n            isReplying\n              ? 'History can be opened"]],
   // New chat is on in an empty chat
