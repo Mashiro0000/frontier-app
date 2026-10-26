@@ -172,8 +172,9 @@ function SettingsDialog({
                   </p>
                 )}
                 <p className="settings-hint">
-                  Change the model with the menu in the header. If you change it in the middle of a
-                  chat, the whole chat so far is sent to the new model with your next message.
+                  Change the model with the menu under the message box. If you change it in the
+                  middle of a chat, the whole chat so far is sent to the new model with your next
+                  message.
                 </p>
               </>
             )}

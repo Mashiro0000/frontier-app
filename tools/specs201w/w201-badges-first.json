@@ -1,5 +1,6 @@
 {
   "label": "w201-badges-first",
+  "retired": "D-052 (20b): the menus left the header for the row under the box; replaced by w201-menus-above-the-box",
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/assets/main.css",

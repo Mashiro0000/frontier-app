@@ -134,17 +134,7 @@ function App(): React.JSX.Element {
           <h2 className="chat-title" title={chatTitle}>
             {chatTitle}
           </h2>
-          <div className="app-header-actions">
-            <TaskPicker status={status} task={task} onChange={setTask} />
-            <ModelPicker
-              status={status}
-              task={task}
-              disabled={chat.isReplying}
-              onStatusChange={setStatus}
-            />
-            <EffortPicker status={status} disabled={chat.isReplying} onStatusChange={setStatus} />
-          </div>
-          {/* The warnings, at the right (D-052): the menus lead at the left, the title is in the middle. */}
+          {/* The warnings, at the right (D-052); the title is at the left, as Claude's (the menus are under the message box). */}
           <div className="app-header-badges">
             {history.saveError !== null && (
               <button
@@ -177,6 +167,24 @@ function App(): React.JSX.Element {
           onRemember={onRemember}
           projectFiles={chatProject?.files ?? NO_FILES}
           toolsOn={anyToolOn(toolSettings.status, toolSettings.workspace, toolSettings.programs)}
+          menus={
+            // Under the message box, at the right (D-052, as Claude's model menu). "app-header-actions": the name the checks know the group by,
+            // from the time it sat in the header.
+            <div
+              className="app-header-actions composer-menus"
+              role="group"
+              aria-label="Task, model and effort"
+            >
+              <TaskPicker status={status} task={task} onChange={setTask} />
+              <ModelPicker
+                status={status}
+                task={task}
+                disabled={chat.isReplying}
+                onStatusChange={setStatus}
+              />
+              <EffortPicker status={status} disabled={chat.isReplying} onStatusChange={setStatus} />
+            </div>
+          }
           toolbar={
             // The chat's own buttons, in the message box (D-051): New chat, History and Tools are in the sidebar, Settings at its foot.
             <ChatBar

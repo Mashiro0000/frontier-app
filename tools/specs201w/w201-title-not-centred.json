@@ -1,5 +1,6 @@
 {
   "label": "w201-title-not-centred",
+  "retired": "D-052 (20b): Claude's title was measured at the header's left; replaced by w201-title-centred",
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/assets/main.css",

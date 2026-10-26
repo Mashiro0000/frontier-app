@@ -64,7 +64,7 @@ check('...shows the description from the registry', text.includes(models[1].desc
 check('...says how much it can read: "about 1M tokens"', /about 1M tokens of conversation/.test(text))
 check('...gives the list prices: $4 in, $20 out, per million tokens', /\$4 per million tokens it reads and \$20 per million tokens it writes/.test(text), text.match(/List price:[^.]*\./)?.[0])
 check('...says when the prices were checked', /Prices were checked on 2026-10-17\./.test(text)) /* (the registry checked again by 17.2) */
-check('...says the bill goes to the Anthropic account, and how to change the model', /billed to your Anthropic account/.test(text) && /menu in the header/.test(text))
+check('...says the bill goes to the Anthropic account, and how to change the model', /billed to your Anthropic account/.test(text) && /menu under the message box/.test(text)) // (D-052: the menus moved under the box)
 check('...warns that a mid-chat change sends the whole chat to the new model', /whole chat so far is sent to the new model/.test(text))
 check('...the old "fixed for now" line is gone', !/fixed for now/i.test(text))
 await page.screenshot(`${shots}/3-4-header-nokey.png`)
@@ -86,7 +86,8 @@ await ev(`document.querySelector('.header-select').focus()`)
 await page.press('Tab')
 check('keyboard: Tab from the model menu lands on the Effort menu (7.1)', (await ev(`document.activeElement.getAttribute('aria-label')`)) === 'Effort', await ev(`document.activeElement.getAttribute('aria-label')`))
 await page.press('Tab')
-check('keyboard: the next Tab leaves the header for the chat, and Settings comes before the header (in the sidebar)', (await ev(`!document.activeElement.closest('.app-header') && !!document.activeElement.closest('.chat')`)) && (await ev(`!!(document.querySelector('.header-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING)`)), await ev(`document.activeElement.className + ' ' + document.activeElement.textContent`))
+// (D-052) The menus are under the message box, the last of the page: Send comes before them, and the next Tab goes back to the top (the sidebar).
+check('keyboard: the menus are the last of the page (after Send), so the next Tab goes back to the sidebar; Settings comes before them', (await ev(`!!document.activeElement.closest('.sidebar')`)) && (await ev(`!!(document.querySelector('.composer-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(document.querySelector('.header-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING)`)), await ev(`document.activeElement.className + ' ' + document.activeElement.textContent`))
 
 // ===================== B. choosing a model =====================
 await H.chooseInPage(SONNET)

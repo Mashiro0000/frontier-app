@@ -404,7 +404,7 @@ await setInstructions(INSTR)
 for (const width of [420, 320]) {
   await page.send('Emulation.setDeviceMetricsOverride', { width, height: 700, deviceScaleFactor: 1, mobile: false })
   await sleep(250)
-  const header = await ev(`(() => { const bs = [...document.querySelectorAll('.app-header .header-button, .app-header .header-select, .app-header .task-select, .app-header .effort-select, .chat-bar .chat-button')]; const r = bs.map((b) => b.getBoundingClientRect()); return { overflowX: document.documentElement.scrollWidth > window.innerWidth, allInside: r.every((x) => x.left >= 0 && x.right <= window.innerWidth), count: bs.length } })()`)
+  const header = await ev(`(() => { const bs = [...document.querySelectorAll('.app-header .header-button, .app-header-actions select, .chat-bar .chat-button')]; const r = bs.map((b) => b.getBoundingClientRect()); return { overflowX: document.documentElement.scrollWidth > window.innerWidth, allInside: r.every((x) => x.left >= 0 && x.right <= window.innerWidth), count: bs.length } })()`)
   check(`at ${width}px the header and the chat bar, with the "on" mark on the Instructions button, still fit: no sideways scroll, every control inside`, header.overflowX === false && header.allInside === true, JSON.stringify(header))
   await openDialog()
   await setText('w'.repeat(MAX))

@@ -39,7 +39,7 @@ const recent = () => ev(`[...document.querySelectorAll('.sidebar-chat')].map((b)
 const chatTitle = () => ev(`document.querySelector('.chat-title')?.textContent ?? null`)
 /** The header as one row: its height, how far apart the vertical centres of its controls are, and that each is inside the window. */
 const headerShape = () => ev(`(() => {
-  const kids = [...document.querySelectorAll('.app-header .chat-title, .app-header-actions > *')].filter((e) => e.getBoundingClientRect().width > 0)
+  const kids = [...document.querySelectorAll('.app-header .chat-title, .app-header-badges > *')] /* (D-052: the menus are under the box) */.filter((e) => e.getBoundingClientRect().width > 0)
   const boxes = kids.map((e) => { const b = e.getBoundingClientRect(); return { l: b.left, r: b.right, c: (b.top + b.bottom) / 2 } })
   const cs = boxes.map((b) => b.c)
   return { h: document.querySelector('.app-header').getBoundingClientRect().height, spread: Math.max(...cs) - Math.min(...cs), inside: boxes.every((b) => b.l >= 0 && b.r <= innerWidth + 0.5), overflowX: document.documentElement.scrollWidth > innerWidth }
@@ -88,12 +88,12 @@ try {
   check('A: the list of saved chats says there are none yet', (await ev(`document.querySelector('.sidebar-none')?.textContent ?? null`)) === 'Your chats appear here once you send a message.')
   const head = await headerShape()
   const actions = await ev(`[...document.querySelectorAll('.app-header-actions > *')].map((e) => e.className.split(' ')[0])`)
-  check('A: the header beside the sidebar is ONE row: the Task, model and Effort menus (and the "No API key" badge while no key is saved)', oneRow(head) && JSON.stringify(actions.filter((c) => c !== 'app-badge')) === JSON.stringify(['task-select', 'header-select', 'effort-select']), JSON.stringify({ head, actions }))
-  check('A: at the default window the chat\'s title ("New chat") gives its room to the menus: it is not shown', (await chatTitle()) === 'New chat' && !(await visible('.chat-title')))
+  check('A: the header beside the sidebar is ONE row (the title and the "No API key" badge while no key is saved); the Task, model and Effort menus are under the box (D-052)', oneRow(head) && JSON.stringify(actions) === JSON.stringify(['task-select', 'header-select', 'effort-select']) && (await ev(`!!document.querySelector('.composer-meta > .app-header-actions') && !document.querySelector('.app-header select')`)), JSON.stringify({ head, actions }))
+  check('A: at the default window the chat\'s title ("New chat") is shown (D-052: the menus left the header)', (await chatTitle()) === 'New chat' && (await visible('.chat-title')))
   await metrics(1200, 700)
   const wide = await headerShape()
   // (D-052) The title moved to the middle, after the menus (verify-20-1w checks where).
-  check('A: in a wider window the title is shown after the menus, still ONE row', (await visible('.chat-title')) && oneRow(wide) && (await box('.chat-title')).l > (await box('.effort-select')).r, JSON.stringify(wide))
+  check('A: in a wider window the title is shown at the header\'s left, still ONE row', (await visible('.chat-title')) && oneRow(wide) && (await box('.chat-title')).l - (await box('.app-header')).l < 24, JSON.stringify(wide))
   await page.screenshot(`${shots}/19-dark-wide.png`)
   await clearMetrics()
   check('A: the header has no button any more (Settings is at the foot of the sidebar)', (await ev(`document.querySelectorAll('.app-header button').length`)) === 0)
@@ -210,7 +210,7 @@ try {
   const order = await ev(`[...document.querySelectorAll('select, button, textarea')].filter((e) => !e.closest('dialog') && getComputedStyle(e).display !== 'none').map((e) => e.tagName === 'SELECT' ? e.className.split(' ')[0] : e.classList.contains('sidebar-chat') ? 'chat' : e.classList.contains('composer-input') ? 'input' : e.classList.contains('composer-button') ? 'send' : e.textContent.trim())`)
   const at = (k) => order.indexOf(k)
   check('F: no element changes the keyboard order with a tabindex', (await ev(`document.querySelectorAll('[tabindex]:not(dialog)').length`)) === 0)
-  check('F: the keyboard goes through the sidebar (New chat, History, Tools, the chats, Settings, the theme), then the header\'s menus, then the box (the text, its buttons, Send)', at('New chat') < at('History') && at('History') < at('Tools') && at('Tools') < at('chat') && at('chat') < at('Settings') && at('Settings') < at('task-select') && at('task-select') < at('header-select') && at('header-select') < at('effort-select') && at('effort-select') < at('input') && at('input') < at('Attach...') && at('Attach...') < at('send') && order.at(-1) === 'send', JSON.stringify(order))
+  check('F: the keyboard goes through the sidebar (New chat, History, Tools, the chats, Settings, the theme), then the box (the text, its buttons, Send), then the menus under it (D-052)', at('New chat') < at('History') && at('History') < at('Tools') && at('Tools') < at('chat') && at('chat') < at('Settings') && at('Settings') < at('input') && at('input') < at('Attach...') && at('Attach...') < at('send') && at('send') < at('task-select') && at('task-select') < at('header-select') && at('header-select') < at('effort-select') && order.at(-1) === 'effort-select', JSON.stringify(order))
 
   check('no console errors, warnings, exceptions or CSP violations in the whole run', page.problems.length === 0, page.problems.join(' | '))
 } catch (error) {

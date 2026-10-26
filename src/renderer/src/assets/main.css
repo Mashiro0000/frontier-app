@@ -403,36 +403,27 @@ body {
 
 /* ---------- header ---------- */
 
+/* The header (D-052, as Claude's): the chat's title at the left, the warnings at the right; always one row. */
 .app-header {
   flex: none;
   display: flex;
-  flex-wrap: wrap; /* in a narrow window the menus drop under the title instead of overflowing */
   align-items: center;
-  justify-content: space-between;
-  gap: 4px 12px;
-  min-height: 52px;
-  padding: 8px 12px;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 12px 8px 20px;
 }
 
-/* The chat's title: its saved title, or "New chat", in the middle of the header (as Claude's). It takes only the room the menus leave,
-   and is not shown where that is too little to read it (the sidebar marks the chat on screen too). */
+/* The chat's title: its saved title, or "New chat". It takes the room the badges leave and is cut with "..." (the whole title is in its
+   tooltip). */
 .chat-title {
   flex: 1 1 0;
-  order: 2;
   min-width: 0;
   overflow: hidden;
   font-size: 14px;
   font-weight: 500;
-  text-align: center;
   white-space: nowrap;
   text-overflow: ellipsis;
-  color: var(--color-text-muted);
-}
-
-@container main (max-width: 699px) {
-  .chat-title {
-    display: none;
-  }
+  color: var(--color-text);
 }
 
 .app-badge {
@@ -453,21 +444,16 @@ body {
   border-color: var(--color-warning-border);
 }
 
-.app-header-actions {
-  display: flex;
-  flex-wrap: wrap;
-  order: 1;
-  align-items: center;
-  gap: 2px;
-}
-
 .app-header-badges {
   display: flex;
-  flex-wrap: wrap;
-  order: 3;
+  flex: none;
   align-items: center;
-  justify-content: flex-end;
   gap: 8px;
+}
+
+.app-badge {
+  flex: none;
+  white-space: nowrap;
 }
 
 /* The "Not saved" badge is a button: pressing it tries the save again. */
@@ -486,27 +472,86 @@ body {
   outline-offset: 2px;
 }
 
-/* The model menu, the task menu and the effort menu: words with a drawn arrow, no box (as ChatGPT's model menu); a soft fill under the
-   pointer. The model's name leads, larger. */
+/*
+ * Under the message box (D-052, as Claude's): the note at the left, the Task, model and Effort menus at the right. The menus are words with a
+ * drawn arrow, no box, each as wide as its choice; a soft fill under the pointer. The model's name is in the text's colour. In a narrow
+ * chat area the row wraps: the menus go under the note.
+ */
+.composer-meta {
+  container: meta / inline-size;
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 12px;
+  width: min(100%, calc(var(--chat-width) + 48px));
+  margin: 0 auto;
+  padding: 0 24px 8px 30px;
+}
+
+.composer-menus {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  min-width: 0;
+  margin-left: auto;
+}
+
+/* The menus keep one line: where the row is short they give way, their words cut with "..." (each keeps at least its arrow and a word). */
+.composer-menus select {
+  flex: 0 1 auto;
+  min-width: 56px;
+}
+
+/* The model's name gives way last: only where even the other two at their least leave it too little room. */
+.composer-menus .header-select {
+  flex-shrink: 0;
+}
+
+@container meta (max-width: 280px) {
+  .composer-menus select {
+    flex-shrink: 8;
+  }
+
+  .composer-menus .header-select {
+    flex-shrink: 1;
+  }
+}
+
+/* Where the note and the menus do not fit side by side, the menus stay right under the box and the note goes under them, centred. */
+@container meta (max-width: 700px) {
+  .composer-meta .chat-footnote {
+    flex-basis: 100%;
+    order: 2;
+    line-height: 18px;
+    text-align: center;
+  }
+}
+
 .header-select,
 .task-select,
 .effort-select {
   max-width: 220px;
-  height: 36px;
-  padding: 0 28px 0 10px;
+  height: 32px;
+  padding: 0 26px 0 10px;
   field-sizing: content; /* as wide as the choice shown, not as the longest choice */
+  overflow: hidden;
   font: inherit;
   font-size: 14px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   color: var(--color-text-muted);
   appearance: none;
   background: transparent var(--chevron) no-repeat right 8px center / 14px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
 .header-select {
-  font-size: 16px;
   font-weight: 600;
   color: var(--color-text);
 }
@@ -538,42 +583,6 @@ body {
 .effort-select:disabled {
   color: var(--ev-c-text-3);
   cursor: default;
-}
-
-/*
- * Where there is room (600 px of chat beside the sidebar; 638 at the default window) the header is ONE row, whatever is showing in it
- * (D-029, D-051): the title gives way first, then the three menus (their text is cut with an ellipsis, never below 96 px each); the
- * badges never shrink. With less room the menus drop under the title.
- */
-@container main (min-width: 600px) {
-  .app-header,
-  .app-header-actions,
-  .app-header-badges {
-    flex-wrap: nowrap;
-  }
-
-  .app-header-actions {
-    min-width: 0;
-  }
-
-  .app-header-badges {
-    flex: none;
-  }
-
-  .app-badge {
-    flex: none;
-    white-space: nowrap;
-  }
-
-  .header-select,
-  .task-select,
-  .effort-select {
-    flex: 0 1 auto;
-    min-width: 96px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
 }
 
 /* ---------- chat area ---------- */
@@ -644,8 +653,10 @@ body {
   height: 22px;
 }
 
+/* The greeting in a serif, light, as Claude's (31 px, weight 360 there; Georgia is its fallback, and Windows has it). */
 .empty-heading {
-  font-size: 28px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 31px;
   font-weight: 400;
   line-height: 1.25;
   letter-spacing: -0.01em;
@@ -1348,6 +1359,10 @@ body {
     padding: 6px 10px 10px;
   }
 
+  .composer-meta {
+    padding: 0 10px 6px 14px;
+  }
+
   .composer-inner {
     padding: 8px 8px 6px 10px;
   }
@@ -1428,13 +1443,12 @@ body {
   background: var(--ev-c-gray-1);
 }
 
-/* Under the box, as under both apps' boxes: a reply is a model's guess, not a fact. */
+/* Under the box, as under both apps' boxes: a reply is a model's guess, not a fact (in the row of the menus, as Claude's). */
 .chat-footnote {
-  flex: none;
-  padding: 0 16px 8px;
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: 12px;
-  line-height: 16px;
-  text-align: center;
+  line-height: 32px;
   color: var(--color-text-muted);
 }
 

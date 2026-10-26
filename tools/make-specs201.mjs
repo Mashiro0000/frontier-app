@@ -20,16 +20,22 @@ const win = {
   'w201-empty-box-at-foot': [[CSS, '.chat-empty {\n  justify-content: center;', '.chat-empty {\n  justify-content: flex-end;']],
   // the note under the box is gone
   'w201-no-footnote': [[VIEW, '      <p className="chat-footnote">Models can make mistakes. Check what matters.</p>\n', '']],
-  // the title is at the left again
-  'w201-title-not-centred': [[CSS, '  text-align: center;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  color: var(--color-text-muted);\n}', '  text-align: left;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  color: var(--color-text-muted);\n}']],
-  // the badges come before the menus
-  'w201-badges-first': [[CSS, '  order: 3;', '  order: 0;']],
+  // (20b: Claude's layout measured) the title is centred again, not at the left
+  'w201-title-centred': [[CSS, '  font-weight: 500;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  color: var(--color-text);\n}', '  font-weight: 500;\n  text-align: center;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  color: var(--color-text);\n}']],
+  // the menus are drawn above the message box, not under it
+  'w201-menus-above-the-box': [[VIEW, '        {menus}\n      </div>', '      </div>'], [VIEW, '      <Composer\n', '      {menus}\n      <Composer\n']],
+  // the note and the menus are never side by side
+  'w201-note-never-beside-menus': [[CSS, '  justify-content: space-between;\n  gap: 0 12px;', '  flex-direction: column;\n  justify-content: space-between;\n  gap: 0 12px;']],
+  // the greeting is in the sans-serif of the app again
+  'w201-greeting-sans': [[CSS, "  font-family: Georgia, 'Times New Roman', serif;\n", '']],
+  // the model's name gives way first
+  'w201-model-shrinks-first': [[CSS, '.composer-menus .header-select {\n  flex-shrink: 0;', '.composer-menus .header-select {\n  flex-shrink: 6;']],
   // the menus have their boxes back
   'w201-menus-boxed': [[CSS, '  appearance: none;\n  background: transparent var(--chevron) no-repeat right 8px center / 14px;\n  border: 0;', '  appearance: none;\n  background: transparent var(--chevron) no-repeat right 8px center / 14px;\n  border: 1px solid var(--color-input-border);']],
   // the menus are as wide as their longest choice
   'w201-menus-full-width': [[CSS, '  field-sizing: content; /* as wide as the choice shown, not as the longest choice */\n', '']],
-  // the model's name is no larger than the other menus
-  'w201-model-not-larger': [[CSS, '.header-select {\n  font-size: 16px;', '.header-select {\n  font-size: 14px;']],
+  // the model's name is as muted as the other menus
+  'w201-model-muted': [[CSS, '.header-select {\n  font-weight: 600;\n  color: var(--color-text);\n}', '.header-select {\n  font-weight: 600;\n  color: var(--color-text-muted);\n}']],
   // New chat is a filled button again
   'w201-new-chat-filled': [[CSS, '  text-align: left;\n  color: var(--color-text);\n  background: transparent;\n  border: 0;\n  border-radius: 10px;\n  cursor: pointer;\n}\n\n.sidebar-new .icon {', '  text-align: left;\n  color: var(--color-text);\n  background: var(--gradient);\n  border: 0;\n  border-radius: 10px;\n  cursor: pointer;\n}\n\n.sidebar-new .icon {']],
   // the sidebar keeps its old width

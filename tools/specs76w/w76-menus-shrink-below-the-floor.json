@@ -1,5 +1,6 @@
 {
   "label": "w76-menus-shrink-below-the-floor",
+  "retired": "D-052 (20b): the menus left the header for the row under the message box (as Claude's); the header rule this broke is gone. The row is checked by w76-menus-wrap and w76-menus-do-not-give-way",
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/assets/main.css",
