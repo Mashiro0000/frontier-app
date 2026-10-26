@@ -296,7 +296,7 @@ try {
     await openDialog()
     d = await dlg()
     b = await bar()
-    check(`G: at ${width} px the dialog has no sideways scroll, nor the page, and the button's label stays on one line`, !d.sideways && !d.pageSideways && b.height <= 30, show([d.sideways, d.pageSideways, b.height]))
+    check(`G: at ${width} px the dialog has no sideways scroll, nor the page, and the button's label stays on one line`, !d.sideways && !d.pageSideways && b.height <= 36, show([d.sideways, d.pageSideways, b.height])) // 36 since D-052: the buttons of the box are 32 px pills
     await page.screenshot(`${shots}/10-2-${width}.png`)
     await page.press('Escape')
     await closed()

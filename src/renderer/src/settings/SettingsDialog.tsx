@@ -60,8 +60,16 @@ function SettingsDialog({
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
-    if (open && !dialog.open) dialog.showModal()
-    else if (!open && dialog.open) dialog.close()
+    if (open && !dialog.open) {
+      dialog.showModal()
+      // The keyboard starts in the first field of the page (the first key's box), as before the list of sections came first (D-052): the
+      // list is one Shift+Tab away.
+      dialog
+        .querySelector<HTMLElement>(
+          '.settings-body :is(input, select, textarea, button):not(:disabled)'
+        )
+        ?.focus()
+    } else if (!open && dialog.open) dialog.close()
   }, [open])
 
   function handleClosed(): void {

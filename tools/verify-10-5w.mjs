@@ -265,7 +265,7 @@ try {
     await openProjects()
     d = await dlg()
     b = await bar()
-    check(`H: at ${width} px the Projects page has no sideways scroll, nor the page, and the button stays on one line`, !d.sideways && !d.pageSideways && b.height <= 30, show([d.sideways, d.pageSideways, b.height]))
+    check(`H: at ${width} px the Projects page has no sideways scroll, nor the page, and the button stays on one line`, !d.sideways && !d.pageSideways && b.height <= 36, show([d.sideways, d.pageSideways, b.height])) // 36 since D-052: the buttons of the box are 32 px pills
     await page.screenshot(`${shots}/10-5-${width}.png`)
     await closeProjects()
   }

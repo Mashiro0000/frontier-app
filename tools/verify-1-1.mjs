@@ -18,12 +18,13 @@ check('textarea is focused on start', (await page.evaluate('document.activeEleme
 
 const layout = await page.evaluate(`(() => {
   const r = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return { top: b.top, bottom: b.bottom, left: b.left, right: b.right, height: b.height } }
-  return { vh: innerHeight, vw: innerWidth, header: r('.app-header'), list: r('.message-list'), composer: r('.composer'), inner: r('.composer-inner'), bar: r('.chat-bar'), main: r('.app-main'),
+  return { vh: innerHeight, vw: innerWidth, header: r('.app-header'), list: r('.message-list'), composer: r('.composer'), inner: r('.composer-inner'), bar: r('.chat-bar'), main: r('.app-main'), note: r('.chat-footnote'),
            docScroll: document.documentElement.scrollHeight > innerHeight || document.body.scrollHeight > innerHeight }
 })()`)
 check('header sits at top', layout.header.top === 0)
-check('the composer sits at the very bottom (since D-051 the chat bar is inside it, under the text)', Math.abs(layout.composer.bottom - layout.vh) < 1 && layout.bar.top >= layout.inner.top && layout.bar.bottom <= layout.inner.bottom, `composer.bottom=${layout.composer.bottom} vh=${layout.vh} bar=${JSON.stringify(layout.bar)}`)
-check('message list fills the space between', Math.abs(layout.list.top - layout.header.bottom) < 1 && Math.abs(layout.list.bottom - layout.composer.top) < 1)
+// (D-052) An empty chat holds the greeting and the box together in the middle; the box goes to the foot with the first message (verify-20-1w checks that).
+check('an empty chat: the composer sits right under the greeting, the note under it, all inside the window; the chat bar is inside the composer', Math.abs(layout.composer.top - layout.list.bottom) < 1 && layout.note.top >= layout.composer.bottom - 1 && layout.note.bottom <= layout.vh && layout.bar.top >= layout.inner.top && layout.bar.bottom <= layout.inner.bottom, `composer=${JSON.stringify(layout.composer)} list=${JSON.stringify(layout.list)} note=${JSON.stringify(layout.note)} vh=${layout.vh}`)
+check('the message list starts under the header', layout.list.top >= layout.header.bottom - 1)
 check('page itself does not scroll', !layout.docScroll)
 check('input column is centred in the chat area (beside the sidebar since D-051)', Math.abs((layout.inner.left + layout.inner.right) / 2 - (layout.main.left + layout.main.right) / 2) < 1)
 

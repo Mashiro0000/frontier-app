@@ -38,7 +38,7 @@ const headerShape = () => ev(`(() => {
 const oneRow = (s) => s.h < 64 && s.spread <= 4 && s.inside && s.noOverlap && !s.overflowX
 const layout = () => ev(`(() => {
   const r = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return { l: b.left, r: b.right, t: b.top, b: b.bottom, h: b.height } }
-  return { vw: innerWidth, vh: innerHeight, side: r('.sidebar'), main: r('.app-main'), header: r('.app-header'), list: r('.message-list'), composer: r('.composer'), box: r('.composer-inner'), bar: r('.chat-bar'), first: r('.chat-bar .chat-button'),
+  return { vw: innerWidth, vh: innerHeight, side: r('.sidebar'), main: r('.app-main'), header: r('.app-header'), list: r('.message-list'), composer: r('.composer'), chat: r('main.chat'), box: r('.composer-inner'), bar: r('.chat-bar'), first: r('.chat-bar .chat-button'),
     scroll: document.documentElement.scrollHeight > innerHeight || document.documentElement.scrollWidth > innerWidth }
 })()`)
 // Every .chat-button, in the order of the page (since D-051: New chat, History and Tools in the sidebar, then Attach..., Instructions, Memory and Project in the
@@ -68,9 +68,10 @@ try {
   check('the chat bar is a named group INSIDE the message box, under the text, holding Instructions, Memory and Project; New chat, History and Tools are in the sidebar', bar !== null && bar.role === 'group' && bar.label === 'This chat' && bar.inBox && bar.afterText && JSON.stringify((await chatBtns()).map((b) => b.text)) === JSON.stringify(['New chat', 'History', 'Tools', 'Instructions', 'Memory', 'Project']), JSON.stringify(bar))
   check('the sidebar holds New chat, History and Tools', (await ev(`['New chat', 'History', 'Tools'].every((t) => [...document.querySelectorAll('.sidebar .chat-button')].some((b) => b.textContent === t))`)))
   check('the header is at the top of the chat area and ONE row (under 64 px high, every control on one line)', L.header.t === 0 && Math.abs(L.header.l - L.side.r) < 1 && oneRow(await headerShape()), JSON.stringify(await headerShape()))
-  check('the message box sits at the very bottom of the window, and the list fills what is between the header and the box', Math.abs(L.composer.b - L.vh) < 1 && Math.abs(L.list.t - L.header.b) < 1 && Math.abs(L.list.b - L.composer.t) < 1, JSON.stringify({ composer: L.composer, list: L.list }))
+  // (D-052) An empty chat holds the greeting and the box together in the middle (the box goes to the foot with the first message: verify-20-1w).
+  check('an empty chat: the message box sits right under the greeting, inside the window, and the list starts under the header', L.composer.b <= L.vh && L.list.t >= L.header.b - 1 && Math.abs(L.list.b - L.composer.t) < 1, JSON.stringify({ composer: L.composer, list: L.list }))
   check('the first button of the bar is inside the message box, at its left', L.first.l >= L.box.l && L.first.l - L.box.l < 24, `button ${L.first.l} box ${L.box.l}`)
-  check('the page does not scroll, and the chat area keeps at least 470 px of the 634', !L.scroll && L.list.h + L.composer.h >= 470, `list ${Math.round(L.list.h)} composer ${Math.round(L.composer.h)}`)
+  check('the page does not scroll, and the chat area keeps at least 470 px of the 634', !L.scroll && L.chat.h >= 470, `chat ${Math.round(L.chat.h)}`)
   await page.screenshot(`${shots}/7-6-default.png`)
 
   // ============ B. the header stays ONE row, whatever is showing ============
@@ -108,9 +109,9 @@ try {
   }
   await widest(886, 'with the sidebar open')
   await page.screenshot(`${shots}/7-6-widest.png`)
-  // the tightest one-row widths beside the open sidebar (612 and 600 px of chat area): here the menus must give way more than the floor allows
+  // the tightest one-row widths beside the open sidebar (612 and 600 px of chat area; 872 and 860 px since D-052 made the sidebar 260 px): here the menus must give way more than the floor allows
+  await widest(872, 'with the sidebar open')
   await widest(860, 'with the sidebar open')
-  await widest(848, 'with the sidebar open')
   await page.send('Emulation.clearDeviceMetricsOverride')
   await sleep(300)
   await rail(true)

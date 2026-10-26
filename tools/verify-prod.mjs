@@ -18,7 +18,7 @@ check('stylesheet applied (dark colour scheme)', (await ev(`getComputedStyle(doc
 check('field-sizing survived the CSS build (textarea auto-grows)', (await ev(`getComputedStyle(document.querySelector('.composer-input')).fieldSizing`)) === 'content')
 // (D-051) the theme's tokens: the violet accent, and the dark theme the app starts with, put on the page before the first render
 check('accent colour is the updated token', (await ev(`getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim()`)) === '#6a4dff')
-check('the built app starts dark: the theme is on the page and its background is the dark one', (await ev(`document.documentElement.dataset.theme`)) === 'dark' && (await ev(`getComputedStyle(document.body).backgroundColor`)) === 'rgb(13, 14, 19)')
+check('the built app starts dark: the theme is on the page and its background is the dark one', (await ev(`document.documentElement.dataset.theme`)) === 'dark' && (await ev(`getComputedStyle(document.body).backgroundColor`)) === 'rgb(33, 33, 33)')
 check('textarea focused on start', (await ev('document.activeElement?.className')) === 'composer-input')
 
 const h1 = await ev(`document.querySelector('.composer-input').offsetHeight`)
