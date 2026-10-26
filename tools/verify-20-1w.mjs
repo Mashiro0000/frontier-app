@@ -1,4 +1,4 @@
-// Stage 20 (D-052), the layout taken from ChatGPT and Claude, in the real window against the mock: an empty chat puts the greeting and the
+// Stage 20 (D-052), the layout taken from ChatGPT and Claude (Claude's parts measured on claude.ai in 20b), in the real window against the mock: an empty chat puts the greeting and the
 // message box together in the middle and the first message sends the box to the foot; the header leads with the menus as plain words, the
 // chat's title in the middle, the warnings at the right; New chat is a row of the sidebar; the person's bubble is grey and round; the text
 // of messages is 16 px; a note under the box; Settings has the list of its sections at the left (each brings its section to the top), no
@@ -47,13 +47,15 @@ const PAIRS = [
 ]
 const contrastFails = () => ev(`(() => { const ratio = ${CONTRAST}; return ${JSON.stringify(PAIRS)}.map(([a, b, min]) => ({ a, b, min, r: ratio(a, b) })).filter((p) => p.r === null || p.r < p.min) })()`)
 
-/** Where the header's parts are: the menus' group, the title, the badges' group, left to right. */
+/** Where the parts are (D-052, as measured on Claude): the title and the badges in the header; the menus' group and the note under the box. */
 const headerParts = () => ev(`(() => {
   const b = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, r: r.right, w: r.width, shown: r.width > 2 && getComputedStyle(e).display !== 'none' } }
-  return { menus: b('.app-header-actions'), title: b('.chat-title'), badges: b('.app-header-badges'), header: b('.app-header'),
+  const t = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, r: r.right, t: r.top, b: r.bottom } }
+  return { menus: b('.app-header-actions'), title: b('.chat-title'), badges: b('.app-header-badges'), header: b('.app-header'), box: t('.composer-inner'), menusBox: t('.app-header-actions'), note: t('.chat-footnote'),
+    inHeader: !!document.querySelector('.app-header .app-header-actions'), underBox: !!document.querySelector('.composer-meta > .app-header-actions'),
     menuKids: [...document.querySelectorAll('.app-header-actions > *')].map((e) => e.className.split(' ')[0]),
     badgeKids: [...document.querySelectorAll('.app-header-badges > *')].map((e) => e.textContent.trim()),
-    titleAlign: getComputedStyle(document.querySelector('.chat-title')).textAlign }
+    titleAlign: getComputedStyle(document.querySelector('.chat-title')).textAlign, menusLabel: document.querySelector('.app-header-actions')?.getAttribute('aria-label') }
 })()`)
 
 const SECTIONS = ['API keys', 'Model', 'Usage', 'Spending limits', 'Large requests', 'Voice', 'Images', 'Updates', 'Saved chats', 'Appearance']
@@ -67,14 +69,16 @@ try {
   const greet = await box('.empty-title')
   let inner = await box('.composer-inner')
   check('A: an empty chat: the greeting (the mark beside the heading) sits right above the message box', greet && inner && (await visible('.empty-logo')) && inner.t > greet.b && inner.t - greet.b < 120 && Math.abs((greet.t + greet.b) / 2 - (await box('.empty-logo')).t - 18) < 30, JSON.stringify({ greet, inner }))
-  check('A: ...and the two are in the middle of the window, not at its foot', inner.b < vh - 100 && greet.t > 100, JSON.stringify({ greet, inner, vh }))
-  check('A: the main area says it is empty (chat-empty), and the heading is plain, not bold', (await ev(`document.querySelector('main.chat').classList.contains('chat-empty')`)) && Number(await css('.empty-heading', 'fontWeight')) < 600)
+  check('A: ...and the two are in the middle of the window, not at its foot (the box ends in its upper three quarters)', inner.b < vh * 0.75 && greet.t > 100, JSON.stringify({ greet, inner, vh }))
+  check('A: the main area says it is empty (chat-empty), and the heading is plain, not bold, in a serif (Georgia, as Claude\'s greeting)', (await ev(`document.querySelector('main.chat').classList.contains('chat-empty')`)) && Number(await css('.empty-heading', 'fontWeight')) < 600 && /^Georgia/.test(await css('.empty-heading', 'fontFamily')))
   check('A: a note under the box says a model can be wrong', (await ev(`document.querySelector('.chat-footnote')?.textContent`)) === 'Models can make mistakes. Check what matters.' && (await box('.chat-footnote')).t >= inner.b)
   const hp = await headerParts()
-  check('A: the header: the menus (Task, model, Effort) at the left, the title in the middle (centred text), the "No API key" badge... at the right', JSON.stringify(hp.menuKids) === JSON.stringify(['task-select', 'header-select', 'effort-select']) && hp.menus.l < hp.badges.l && hp.titleAlign === 'center' && hp.badges.r <= hp.header.r + 0.5, JSON.stringify(hp))
+  check('A: the header (as Claude\'s): the title at its left, left-aligned, the "No API key" badge... at the right, and no menu in it', hp.title.shown && hp.title.l - hp.header.l < 24 && hp.titleAlign !== 'center' && hp.badges.r <= hp.header.r + 0.5 && hp.badges.l >= hp.title.l && !hp.inHeader, JSON.stringify(hp))
+  check('A: the Task, model and Effort menus are a named group right under the message box, at its right edge (as Claude\'s model menu)', JSON.stringify(hp.menuKids) === JSON.stringify(['task-select', 'header-select', 'effort-select']) && hp.underBox && hp.menusLabel === 'Task, model and effort' && hp.menusBox.t >= hp.box.b - 0.5 && hp.menusBox.t - hp.box.b < 24 && Math.abs(hp.menusBox.r - hp.box.r) < 8, JSON.stringify(hp))
   // "As wide as its choice": the width of the chosen option's text in the menu's own font, measured on a canvas, plus the padding (10 + 28).
-  const sel = await ev(`(() => { const c = document.createElement('canvas').getContext('2d'); return [...document.querySelectorAll('.app-header select')].map((e) => { const s = getComputedStyle(e); c.font = s.fontWeight + ' ' + s.fontSize + ' ' + s.fontFamily; const text = Math.ceil(c.measureText(e.selectedOptions[0]?.textContent ?? '').width); return { cls: e.className.split(' ')[0], border: s.borderTopWidth, bg: s.backgroundColor, w: Math.round(e.getBoundingClientRect().width), text, size: s.fontSize } }) })()`)
-  check('A: the menus are words with an arrow (no edge, no fill until pointed at), each only as wide as its choice; the model leads, larger', sel.length === 3 && sel.every((s) => s.border === '0px' && s.bg === 'rgba(0, 0, 0, 0)' && s.w <= s.text + 38 + 6) && sel.find((s) => s.cls === 'header-select').size === '16px', JSON.stringify(sel))
+  const sel = await ev(`(() => { const c = document.createElement('canvas').getContext('2d'); return [...document.querySelectorAll('.app-header-actions select')].map((e) => { const s = getComputedStyle(e); c.font = s.fontWeight + ' ' + s.fontSize + ' ' + s.fontFamily; const text = Math.ceil(c.measureText(e.selectedOptions[0]?.textContent ?? '').width); return { cls: e.className.split(' ')[0], border: s.borderTopWidth, bg: s.backgroundColor, w: Math.round(e.getBoundingClientRect().width), h: Math.round(e.getBoundingClientRect().height), text, size: s.fontSize, weight: s.fontWeight, color: s.color } }) })()`)
+  const textColour = await ev(`getComputedStyle(document.body).color`)
+  check('A: the menus are words with an arrow (no edge, no fill until pointed at), 32 px high, each only as wide as its choice; the model\'s name in the text\'s colour, semibold', sel.length === 3 && sel.every((s) => s.border === '0px' && s.bg === 'rgba(0, 0, 0, 0)' && s.w <= s.text + 36 + 6 && s.h === 32) && sel.find((s) => s.cls === 'header-select').weight === '600' && sel.find((s) => s.cls === 'header-select').color === textColour && sel.find((s) => s.cls === 'task-select').color !== textColour, JSON.stringify({ sel, textColour }))
   const nc = await ev(`(() => { const b = document.querySelector('.sidebar-new'); const s = getComputedStyle(b); const i = getComputedStyle(b.querySelector('.icon')); const h = document.querySelector('.sidebar-nav .sidebar-item'); return { bg: s.backgroundColor, image: s.backgroundImage, h: b.getBoundingClientRect().height, itemH: h.getBoundingClientRect().height, left: b.getBoundingClientRect().left, iconBg: i.backgroundImage.slice(0, 15), sidebar: document.querySelector('.sidebar').getBoundingClientRect().width } })()`)
   check('A: New chat is a row like History (no filled button), its plus on the gradient; the sidebar is 260 px', nc.bg === 'rgba(0, 0, 0, 0)' && nc.image === 'none' && Math.abs(nc.h - nc.itemH) <= 1 && nc.iconBg.startsWith('linear-gradient') && Math.abs(nc.sidebar - 260) < 1, JSON.stringify(nc))
   const fails = await contrastFails()
@@ -86,8 +90,9 @@ try {
   check('B: a message goes and its reply comes back', reply !== null)
   await sleep(300)
   inner = await box('.composer-inner')
-  const foot = await box('.chat-footnote')
-  check('B: with a message, the box is at the foot of the window (the note under it), and the main area is no longer "empty"', foot !== null && foot.b <= vh + 0.5 && foot.b > vh - 40 && inner.b <= foot.t + 0.5 && !(await ev(`document.querySelector('main.chat').classList.contains('chat-empty')`)), JSON.stringify({ inner, foot, vh }))
+  const foot = await box('.composer-meta')
+  const note = await box('.chat-footnote')
+  check('B: with a message, the box is at the foot of the window (the menus and the note under it), and the main area is no longer "empty"', foot !== null && note !== null && note.h > 2 && foot.b <= vh + 0.5 && foot.b > vh - 80 && inner.b <= foot.t + 0.5 && !(await ev(`document.querySelector('main.chat').classList.contains('chat-empty')`)), JSON.stringify({ inner, foot, note, vh }))
   const bub = await ev(`(() => { const u = getComputedStyle(document.querySelector('.message-user .bubble')); const a = getComputedStyle(document.querySelector('.message-assistant .bubble')); const root = getComputedStyle(document.documentElement); return { userBg: u.backgroundColor, userSize: u.fontSize, radius: [u.borderTopLeftRadius, u.borderBottomRightRadius], aSize: a.fontSize, aBg: a.backgroundColor, want: root.getPropertyValue('--color-user-bubble').trim() } })()`)
   const hex = (rgb) => '#' + rgb.match(/\d+/g).slice(0, 3).map((n) => Number(n).toString(16).padStart(2, '0')).join('')
   check('B: the person\'s bubble is the grey of --color-user-bubble and round at every corner; both messages are set at 16 px; a reply has no bubble', hex(bub.userBg) === bub.want && bub.radius[0] === bub.radius[1] && bub.userSize === '16px' && bub.aSize === '16px' && bub.aBg === 'rgba(0, 0, 0, 0)', JSON.stringify(bub))
@@ -99,7 +104,7 @@ try {
   const composerW = (await box('.composer-inner')).w
   check('B: in a wide window the column of messages and the box are 768 px wide, not wider', Math.abs(col.w - 768) < 1 && Math.abs(composerW - 768) < 1, JSON.stringify({ col, composerW }))
   const wide = await headerParts()
-  check('B: in a wide window the chat\'s title is shown between the menus and the right edge', wide.title.shown && wide.title.l >= wide.menus.r - 0.5 && wide.title.r <= wide.header.r, JSON.stringify(wide))
+  check('B: in a wide window the title is at the header\'s left, and the note sits beside the menus in ONE row under the box (as Claude\'s)', wide.title.shown && wide.title.l - wide.header.l < 24 && Math.abs((wide.note.t + wide.note.b) / 2 - (wide.menusBox.t + wide.menusBox.b) / 2) < 4 && wide.note.r <= wide.menusBox.l, JSON.stringify(wide))
   await page.screenshot(`${shots}/20-dark-wide.png`)
   await clearMetrics()
 
@@ -152,12 +157,13 @@ try {
   await page.click('.chat-button@New chat')
   await page.waitFor(`document.querySelector('main.chat').classList.contains('chat-empty')`, { timeoutMs: 6000, label: 'the empty chat' })
   await sleep(300)
-  check('D: New chat gives the empty chat again: the box back in the middle', (await box('.composer-inner')).b < vh - 100)
+  check('D: New chat gives the empty chat again: the box back in the middle', (await box('.composer-inner')).b < vh * 0.75)
   await page.screenshot(`${shots}/20-light-empty.png`)
   for (const width of [420, 280]) {
     await metrics(width, 700)
     const n = await ev(`(() => { const b = document.querySelector('.composer-inner').getBoundingClientRect(); const g = document.querySelector('.empty-title').getBoundingClientRect(); return { overflowX: document.documentElement.scrollWidth > innerWidth, box: b.right <= innerWidth + 0.5 && b.bottom <= innerHeight, greet: g.right <= innerWidth + 0.5 && g.left >= 0, over: g.bottom <= b.top + 0.5 } })()`)
-    check(`D: at ${width} px an empty chat fits: no sideways scroll, the greeting and the box inside the window, the greeting above the box`, !n.overflowX && n.box && n.greet && n.over, JSON.stringify(n))
+    const m = await ev(`(() => { const s = [...document.querySelectorAll('.app-header-actions select')].map((e) => e.getBoundingClientRect()); return { tops: s.map((r) => Math.round(r.top)), inside: s.every((r) => r.left >= -0.5 && r.right <= innerWidth + 0.5), model: Math.round(document.querySelector('.header-select').getBoundingClientRect().width), modelWhole: (() => { const e = document.querySelector('.header-select'); const c = document.createElement('canvas').getContext('2d'); const st = getComputedStyle(e); c.font = st.fontWeight + ' ' + st.fontSize + ' ' + st.fontFamily; return c.measureText(e.selectedOptions[0].textContent).width + 36 <= e.getBoundingClientRect().width + 1 })(), widths: s.map((r) => Math.round(r.width)) } })()`)
+    check(`D: at ${width} px an empty chat fits: no sideways scroll, the greeting and the box inside the window, the greeting above the box; the three menus on ONE line inside the window, the model's name whole or, where it must be cut, the widest (it gives way last)`, !n.overflowX && n.box && n.greet && n.over && new Set(m.tops).size === 1 && m.inside && (m.modelWhole || m.model === Math.max(...m.widths)), JSON.stringify({ n, m }))
     await page.screenshot(`${shots}/20-light-empty-${width}.png`)
   }
   await clearMetrics()

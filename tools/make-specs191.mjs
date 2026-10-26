@@ -35,8 +35,7 @@ const win = {
   'w191-light-edges-too-faint': [[BASE, '  --color-input-border: #8a8a8a; /* 3.4:1 on the window, 3.3:1 on the sidebar */', '  --color-input-border: #c4c4c4; /* 3.4:1 on the window, 3.3:1 on the sidebar */']],
   // Settings jumps ahead in the keyboard order
   'w191-tabindex-on-settings': [[SIDE, '          className="header-button sidebar-item"\n          title="Settings"', '          className="header-button sidebar-item"\n          tabIndex={1}\n          title="Settings"']],
-  // the chat's title squeezes the menus at the default window instead of giving way
-  'w191-title-always-shown': [[CSS, '@container main (max-width: 699px) {\n  .chat-title {\n    display: none;', '@container main (max-width: 699px) {\n  .chat-title {\n    display: block;']],
+  // (w191-title-always-shown is retired since D-052, 20b: the title is always shown, so its rule is gone; its spec file is kept, marked "retired")
   // Settings has no Appearance section
   'w191-no-appearance-section': [[SETTINGS, '      <AppearanceSection />\n', '']],
   // the rail's toggle says the sidebar is open when it is not

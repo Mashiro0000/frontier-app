@@ -10,16 +10,14 @@ import { scratch } from './drive.mjs'
 
 const P = '{{REPO}}/src/renderer/src/'
 const CSS = P + 'assets/main.css', BAR = P + 'chat/ChatBar.tsx', APP = P + 'App.tsx', SIDE = P + 'sidebar/Sidebar.tsx', COMPOSER = P + 'chat/Composer.tsx'
-const ONE_ROW = '@container main (min-width: 600px) {\n  .app-header,\n  .app-header-actions,\n  .app-header-badges {\n    flex-wrap: nowrap;\n  }'
-
 // name: [[file, from, to], ...]
+// (D-052, 20b) w76-header-may-wrap-again, w76-menus-do-not-shrink and w76-menus-shrink-below-the-floor are retired: the menus left the header for the row
+// under the box, and the rules they broke are gone; their spec files are kept, marked "retired".
 const win = {
-  // the header may wrap again where it has room
-  'w76-header-may-wrap-again': [[CSS, ONE_ROW, ONE_ROW.replace('flex-wrap: nowrap;', 'flex-wrap: wrap;')]],
-  // nothing gives way: in one row the controls spill out of the window or over each other
-  'w76-menus-do-not-shrink': [[CSS, '    flex: 0 1 auto;\n    min-width: 96px;', '    flex: none;\n    min-width: 96px;']],
-  // the menus give way without a floor
-  'w76-menus-shrink-below-the-floor': [[CSS, '    min-width: 96px;', '    min-width: 0;']],
+  // the menus' row under the box wraps instead of giving way: at its narrowest the menus take two lines
+  'w76-menus-wrap': [[CSS, '.composer-menus {\n  display: flex;\n  flex-wrap: nowrap;', '.composer-menus {\n  display: flex;\n  flex-wrap: wrap;']],
+  // nothing in the menus' row gives way: at its narrowest they spill out of the window
+  'w76-menus-do-not-give-way': [[CSS, '.composer-menus select {\n  flex: 0 1 auto;', '.composer-menus select {\n  flex: none;']],
   // the bar's first button is not at the left of the message box
   'w76-bar-not-aligned': [[CSS, '  gap: 2px;\n  min-width: 0;\n  margin-left: -6px;', '  gap: 2px;\n  min-width: 0;\n  margin-left: 120px;']],
   // the bar cannot wrap: at 280 px its buttons spill out of the box
@@ -27,7 +25,7 @@ const win = {
   // the chat's buttons are drawn above the message box, not in it
   'w76-bar-outside-the-box': [[COMPOSER, '      <div className="composer-inner">\n        {attachments}', '      {toolbar}\n      <div className="composer-inner">\n        {attachments}'], [COMPOSER, '        <div className="composer-row">\n          {toolbar}\n', '        <div className="composer-row">\n']],
   // the header takes far too much of the window
-  'w76-header-too-tall': [[CSS, '  gap: 4px 12px;\n  min-height: 52px;', '  gap: 4px 12px;\n  min-height: 220px;']],
+  'w76-header-too-tall': [[CSS, '  gap: 12px;\n  min-height: 48px;', '  gap: 12px;\n  min-height: 220px;']],
   // History can be opened while a reply is arriving
   'w76-history-enabled-while-replying': [[SIDE, "          disabled={isReplying}\n          title={\n            isReplying\n              ? 'History can be opened", "          disabled={false}\n          title={\n            isReplying\n              ? 'History can be opened"]],
   // New chat is on in an empty chat

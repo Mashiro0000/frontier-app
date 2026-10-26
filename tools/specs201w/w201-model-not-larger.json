@@ -1,5 +1,6 @@
 {
   "label": "w201-model-not-larger",
+  "retired": "D-052 (20b): under the box every menu is 14 px, as Claude's; replaced by w201-model-muted",
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/assets/main.css",

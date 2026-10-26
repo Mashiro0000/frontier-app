@@ -238,7 +238,8 @@ await page.press('Tab')
 check('keyboard: Tab from the model menu lands on the Effort menu', (await ev(`document.activeElement.getAttribute('aria-label')`)) === 'Effort')
 await page.press('Tab')
 // (D-051) Settings is at the foot of the sidebar, before the header in the page: after the Effort menu the keyboard goes on into the chat
-check('...and the next Tab leaves the header for the chat (Settings is in the sidebar, before it)', (await ev(`!document.activeElement.closest('.app-header') && !!document.activeElement.closest('.chat')`)) && (await ev(`!!(document.querySelector('.header-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING)`)), await ev(`document.activeElement.className + ' ' + document.activeElement.textContent`))
+// (D-052) The menus are under the message box, the last of the page: the next Tab goes back to the top (the sidebar).
+check('...and the next Tab goes back to the sidebar: the menus are the last of the page, after Send (Settings is in the sidebar, before them)', (await ev(`!!document.activeElement.closest('.sidebar')`)) && (await ev(`!!(document.querySelector('.composer-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(document.querySelector('.header-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING)`)), await ev(`document.activeElement.className + ' ' + document.activeElement.textContent`))
 await chooseEffort('medium')
 await ev(`document.querySelector('.effort-select').focus()`)
 await page.press('ArrowDown')

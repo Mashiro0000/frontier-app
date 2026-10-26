@@ -34,6 +34,8 @@ interface ChatViewProps {
   toolsOn: boolean
   /** The chat's own buttons (D-051), drawn inside the message box. */
   toolbar: React.ReactNode
+  /** The Task, model and Effort menus (D-052): drawn under the message box, beside the note, as Claude draws its model menu. */
+  menus: React.ReactNode
 }
 
 function ChatView({
@@ -47,7 +49,8 @@ function ChatView({
   onRemember,
   projectFiles,
   toolsOn,
-  toolbar
+  toolbar,
+  menus
 }: ChatViewProps): React.JSX.Element {
   const { messages, isReplying, largeRequest, answerLargeRequest, send, stop, regenerate, resend } =
     chat
@@ -193,7 +196,10 @@ function ChatView({
           />
         }
       />
-      <p className="chat-footnote">Models can make mistakes. Check what matters.</p>
+      <div className="composer-meta">
+        <p className="chat-footnote">Models can make mistakes. Check what matters.</p>
+        {menus}
+      </div>
       {/* A large request is held by the main process until the person says yes here (D-032). */}
       <LargeRequestDialog
         request={largeRequest}

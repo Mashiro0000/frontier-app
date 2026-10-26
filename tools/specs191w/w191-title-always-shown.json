@@ -1,5 +1,6 @@
 {
   "label": "w191-title-always-shown",
+  "retired": "D-052 (20b): the title is always shown now, at the header's left (as Claude's); there is no rule that hides it",
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/assets/main.css",

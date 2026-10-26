@@ -1,5 +1,6 @@
-// Stage 7.6 (D-029), brought to the layout of Stage 19 (D-051), in the real window against the mock. The header is ONE row wherever the chat area
-// beside the sidebar has room (600 px: the default window with the sidebar open, or a narrower one with the rail), in every state: each model (the
+// Stage 7.6 (D-029), brought to the layout of Stage 19 (D-051) and of Stage 20 (D-052: the title alone in the header, the Task, model and Effort menus
+// in a row under the message box, as Claude's), in the real window against the mock. The header and the menus' row are each ONE row wherever the chat
+// area beside the sidebar has room (600 px: the default window with the sidebar open, or a narrower one with the rail), in every state: each model (the
 // OpenAI and Gemini ones show "No API key"), each task (a task makes the model menu wider, "(suggested)"), and the widest one (a task chosen and both
 // badges at once). The chat's own buttons keep the rules they had in the header and under the box: New chat, History and Tools in the sidebar,
 // Instructions, Memory and Project in the message box; off while a reply arrives, the same sentences, focus back to the button after a dialog;
@@ -25,17 +26,23 @@ const OPUS = 'claude-opus-5-5'
 const reset = () => fetch(`${mockUrl}/__reset`, { method: 'POST' })
 
 // ---- what the page looks like ----
-/** The header as one row or not: its height, how far apart the vertical centres of its shown controls are, whether each is inside the window and none overlaps the next. */
+/**
+ * (D-052) Two rows: the header (the title and the badges) and the menus' row under the box. For each: how far apart the vertical centres of its shown parts
+ * are; for all: whether each is inside the window and none overlaps the next in its row.
+ */
 const headerShape = () => ev(`(() => {
-  const kids = [...document.querySelectorAll('.app-header .chat-title, .app-header-actions > *')].filter((e) => e.getBoundingClientRect().width > 0)
-  const boxes = kids.map((e) => { const b = e.getBoundingClientRect(); return { l: b.left, r: b.right, c: (b.top + b.bottom) / 2, w: b.width, cls: e.className.split(' ')[0] } })
-  const byLeft = [...boxes].sort((a, b) => a.l - b.l)
-  const cs = boxes.map((b) => b.c)
-  return { vw: innerWidth, h: document.querySelector('.app-header').getBoundingClientRect().height, spread: Math.max(...cs) - Math.min(...cs), count: boxes.length,
-    inside: boxes.every((b) => b.l >= 0 && b.r <= innerWidth), noOverlap: byLeft.every((b, i) => i === 0 || byLeft[i - 1].r <= b.l + 0.5),
+  const take = (sel) => [...document.querySelectorAll(sel)].filter((e) => e.getBoundingClientRect().width > 0).map((e) => { const b = e.getBoundingClientRect(); return { l: b.left, r: b.right, c: (b.top + b.bottom) / 2, w: b.width, cls: e.className.split(' ')[0] } })
+  const head = take('.app-header .chat-title, .app-header-badges > *'), menus = take('.app-header-actions > *'), boxes = [...head, ...menus]
+  const spread = (g) => g.length === 0 ? 0 : Math.max(...g.map((b) => b.c)) - Math.min(...g.map((b) => b.c))
+  // (the menus' group is right-aligned, so menus that do not give way spill LEFT, over the note, while staying inside the window: measure against the row and the note)
+  const row = document.querySelector('.composer-meta').getBoundingClientRect(), nb = document.querySelector('.chat-footnote').getBoundingClientRect()
+  const inRow = menus.every((b) => b.l >= row.left + 0.5 && b.r <= row.right + 0.5), offNote = menus.every((b) => b.r <= nb.left + 0.5 || b.l >= nb.right - 0.5 || b.c - (nb.top + nb.bottom) / 2 > 12 || (nb.top + nb.bottom) / 2 - b.c > 12)
+  const apart = (g) => { const byLeft = [...g].sort((a, b) => a.l - b.l); return byLeft.every((b, i) => i === 0 || byLeft[i - 1].r <= b.l + 0.5) }
+  return { vw: innerWidth, h: document.querySelector('.app-header').getBoundingClientRect().height, spread: spread(head), menuSpread: spread(menus), count: boxes.length,
+    inside: boxes.every((b) => b.l >= 0 && b.r <= innerWidth) && inRow, noOverlap: apart(head) && apart(menus) && offNote, inRow, offNote,
     overflowX: document.documentElement.scrollWidth > innerWidth, widths: Object.fromEntries(boxes.map((b) => [b.cls + (b.cls === 'app-badge' ? '#' + Math.round(b.l) : ''), Math.round(b.w)])) }
 })()`)
-const oneRow = (s) => s.h < 64 && s.spread <= 4 && s.inside && s.noOverlap && !s.overflowX
+const oneRow = (s) => s.h < 64 && s.spread <= 4 && s.menuSpread <= 4 && s.inside && s.noOverlap && !s.overflowX
 const layout = () => ev(`(() => {
   const r = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return { l: b.left, r: b.right, t: b.top, b: b.bottom, h: b.height } }
   return { vw: innerWidth, vh: innerHeight, side: r('.sidebar'), main: r('.app-main'), header: r('.app-header'), list: r('.message-list'), composer: r('.composer'), chat: r('main.chat'), box: r('.composer-inner'), bar: r('.chat-bar'), first: r('.chat-bar .chat-button'),
@@ -46,7 +53,7 @@ const layout = () => ev(`(() => {
 const chatBtns = () => ev(`[...document.querySelectorAll('.chat-button')].filter((b) => b.textContent !== 'Attach...').map((b) => ({ text: b.textContent, disabled: b.disabled, title: b.title, mark: b.querySelector('.chat-mark')?.textContent ?? null, focused: document.activeElement === b }))`)
 const btn = async (text) => (await chatBtns()).find((b) => b.text.startsWith(text))
 const setSel = (cls, value) => ev(`(() => { const s = document.querySelector('${cls}'); const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set; set.call(s, ${JSON.stringify(value)}); s.dispatchEvent(new Event('change', { bubbles: true })); return s.value })()`)
-const addProbes = () => ev(`(() => { const a = document.querySelector('.app-header-actions'); for (const [tag, cls, text] of [['button', 'app-badge app-badge-warn app-badge-button', 'Not saved'], ['span', 'app-badge app-badge-warn', 'No API key']]) { const e = document.createElement(tag); e.className = cls + ' probe'; e.textContent = text; a.append(e) } return a.querySelectorAll('.probe').length })()`)
+const addProbes = () => ev(`(() => { const a = document.querySelector('.app-header-badges'); for (const [tag, cls, text] of [['button', 'app-badge app-badge-warn app-badge-button', 'Not saved'], ['span', 'app-badge app-badge-warn', 'No API key']]) { const e = document.createElement(tag); e.className = cls + ' probe'; e.textContent = text; a.append(e) } return a.querySelectorAll('.probe').length })()`)
 const removeProbes = () => ev(`(() => { document.querySelectorAll('.probe').forEach((e) => e.remove()); return document.querySelectorAll('.probe').length })()`)
 const metrics = async (width, height = 634) => { await page.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false }); await sleep(350) }
 const active = () => ev(`(() => { const a = document.activeElement; return a ? (a.textContent || a.className || a.tagName).trim().slice(0, 30) : null })()`)
@@ -63,7 +70,7 @@ try {
   const headerTexts = await ev(`[...document.querySelectorAll('.app-header button')].map((b) => b.textContent)`)
   check('the header has no button: Settings is at the foot of the sidebar, New chat, History and Tools above it (D-051)', JSON.stringify(headerTexts) === '[]', JSON.stringify(headerTexts))
   const order = await ev(`[...document.querySelectorAll('.app-header-actions > *')].map((e) => e.className.split(' ')[0])`)
-  check('the header holds the Task menu, the model menu and the Effort menu, in that order', JSON.stringify(order) === JSON.stringify(['task-select', 'header-select', 'effort-select']), JSON.stringify(order))
+  check('the menus\' row (under the box since D-052) holds the Task menu, the model menu and the Effort menu, in that order', JSON.stringify(order) === JSON.stringify(['task-select', 'header-select', 'effort-select']), JSON.stringify(order))
   const bar = await ev(`(() => { const b = document.querySelector('.chat-bar'); return b ? { role: b.getAttribute('role'), label: b.getAttribute('aria-label'), inBox: !!b.closest('.composer-inner'), afterText: !!b.closest('.composer-row')?.previousElementSibling?.matches('textarea.composer-input') } : null })()`)
   check('the chat bar is a named group INSIDE the message box, under the text, holding Instructions, Memory and Project; New chat, History and Tools are in the sidebar', bar !== null && bar.role === 'group' && bar.label === 'This chat' && bar.inBox && bar.afterText && JSON.stringify((await chatBtns()).map((b) => b.text)) === JSON.stringify(['New chat', 'History', 'Tools', 'Instructions', 'Memory', 'Project']), JSON.stringify(bar))
   check('the sidebar holds New chat, History and Tools', (await ev(`['New chat', 'History', 'Tools'].every((t) => [...document.querySelectorAll('.sidebar .chat-button')].some((b) => b.textContent === t))`)))
@@ -105,7 +112,7 @@ try {
   const widest = async (width, how) => {
     await metrics(width)
     const s = await headerShape()
-    check(`the widest state at ${width} px ${how} (a task chosen, both badges): still ONE row (${Math.round(s.h)} px), the menus give way and none is below 96 px`, oneRow(s) && ['task-select', 'header-select', 'effort-select'].every((k) => s.widths[k] >= 95.5), JSON.stringify(s))
+    check(`the widest state at ${width} px ${how} (a task chosen, both badges): the header still ONE row (${Math.round(s.h)} px) and the menus ONE line, none below 56 px`, oneRow(s) && ['task-select', 'header-select', 'effort-select'].every((k) => s.widths[k] >= 55.5), JSON.stringify(s))
   }
   await widest(886, 'with the sidebar open')
   await page.screenshot(`${shots}/7-6-widest.png`)
@@ -118,9 +125,12 @@ try {
   await widest(800, 'with the rail')
   await widest(720, 'with the rail')
   await widest(700, '(a narrow window: always the rail)')
+  // (D-052) a state where the menus cannot all fit at their full width (416 px of row for about 442 px of menus; at 560 px they still fit): they must give
+  // way, staying on one line
+  await widest(500, '(a narrow window: the menus give way)')
   await metrics(600)
   const below = await headerShape()
-  check('with less than 600 px of chat area (a 600 px window) the menus drop under the title, with no sideways scroll and every control inside', !below.overflowX && below.inside, JSON.stringify(below))
+  check('with less than 600 px of chat area (a 600 px window) nothing scrolls sideways and every control is inside', !below.overflowX && below.inside, JSON.stringify(below))
   await page.send('Emulation.clearDeviceMetricsOverride')
   await sleep(300)
   await rail(false)
@@ -178,7 +188,8 @@ try {
   await sleep(100)
   const domOrder = await ev(`[...document.querySelectorAll('select, button:not(:disabled), textarea')].filter((e) => !e.closest('dialog') && !e.closest('.sidebar-recent')).map((e) => e.classList.contains('chat-button') ? 'chat:' + e.textContent.replace(/ on$/, '') : e.classList.contains('composer-input') ? 'input' : e.classList.contains('composer-button') ? 'send' : e.classList.contains('header-button') ? 'settings' : e.className.split(' ')[0])`)
   const at = (k) => domOrder.indexOf(k)
-  check('in the order the keyboard goes: the sidebar (New chat, History, Tools, Settings), the header (Task, model, Effort), the messages, then the box: the text, Attach..., Instructions, Memory, Project, and Send last', at('chat:New chat') < at('chat:History') && at('chat:History') + 1 === at('chat:Tools') && at('chat:Tools') < at('settings') && at('settings') < at('task-select') && at('task-select') < at('header-select') && at('header-select') < at('effort-select') && at('effort-select') < at('input') && at('input') + 1 === at('chat:Attach...') && at('chat:Attach...') + 1 === at('chat:Instructions') && at('chat:Instructions') + 1 === at('chat:Memory') && at('chat:Memory') + 1 === at('chat:Project') && at('send') === domOrder.length - 1, JSON.stringify(domOrder))
+  // (D-052) The menus are under the box: they come after Send, and are the last of the page.
+  check('in the order the keyboard goes: the sidebar (New chat, History, Tools, Settings), the messages, the box (the text, Attach..., Instructions, Memory, Project, Send), then the menus under it (Task, model, Effort), last', at('chat:New chat') < at('chat:History') && at('chat:History') + 1 === at('chat:Tools') && at('chat:Tools') < at('settings') && at('settings') < at('input') && at('send') + 1 === at('task-select') && at('task-select') + 1 === at('header-select') && at('header-select') + 1 === at('effort-select') && at('effort-select') === domOrder.length - 1 && at('input') + 1 === at('chat:Attach...') && at('chat:Attach...') + 1 === at('chat:Instructions') && at('chat:Instructions') + 1 === at('chat:Memory') && at('chat:Memory') + 1 === at('chat:Project') && at('chat:Project') < at('send'), JSON.stringify(domOrder))
   const walk = []
   for (let i = 0; i < 5; i++) { await page.press('Tab'); walk.push(await active()) }
   check('Tab from the text goes Attach..., Instructions on, Memory, Project, then Send', JSON.stringify(walk) === JSON.stringify(['Attach...', 'Instructions on', 'Memory', 'Project', 'Send']), JSON.stringify(walk))
