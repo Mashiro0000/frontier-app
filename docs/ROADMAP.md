@@ -549,6 +549,70 @@ The violet gradient is kept as the one bright touch; nothing was taken away.
 - **Not in this stage:** ChatGPT's single "+" menu (it would hide Attach and Make an image), the model menu inside the box, Claude's warm palette
   and serif replies, a "..." menu per chat in the sidebar.
 
+## Stage 21 and 22 - Ideas from AI Fiesta (asked for 6 November 2026: "look into chat.v2.aifiesta.ai thoroughly and upgrade my frontier app just like it"; PLAN, nothing built)
+
+**What the study found** (chat.v2.aifiesta.ai, read in the built-in browser on 6 November 2026, signed in as the owner on its Free plan,
+1280x800; nothing was sent, so no answer screen was seen):
+
+- **The home.** A light page: white with a soft green glow behind "Hi Bishal, how can I help you today?" (34 px, weight 400, Google Sans
+  Flex); one pill-shaped box (800 px, radius 28, a faint shadow) with "+", a placeholder that types example prompts, "Auto" (the model) and
+  the mic; under it five chips: Websites, Videos, Slides, Images, Compare. The box also has an "Enhance prompt" button.
+- **The "+" menu:** Attach files, Web search, Compare, Deep research.
+- **Compare** (their main idea): one message to up to 5 models at once; the box shows the models' logos and "3 models"; the chooser says
+  "3/5 models selected" and "Apply for this chat". Settings > AI Preferences picks the default model per maker.
+- **The model chooser:** a dialog with tabs Popular / Intelligent / Latest, a search, a filter by cost (1x everyday, 4x advanced, 8x most
+  capable) and by maker (11 makers, 41 models plus legacy), logos, a cost badge per model, and **Auto Mode**, which picks the model for you.
+- **The sidebar (248 px):** New Chat, Image Studio, Video Studio, Slides, Websites, Experts, Projects, Library; a search of chats; the plan
+  card and the account at the bottom.
+- **Image Studio:** a page with the box, aspect ratio and count chips, an Editor ("transform a photo") and a gallery of style templates.
+  **Video Studio, Slides and Websites** are paid (Websites builds and publishes a site to a public link).
+- **Experts:** ready-made assistants in categories (Career Coach, Finance Advisor, Fitness Coach, Personal Chef, Personal Doctor), a
+  "Legends" tab and "My Experts". **Projects:** name, instructions, "use account memory". **Library:** everything uploaded or made, with
+  All / Favourites / Images / Files, a search, a filter and sorting.
+- **Settings:** General (language English / Hindi / Bengali, System / Light / Dark, an accent colour, 8 fonts, a female or male read-aloud
+  voice), AI Preferences, Memory (one switch), Tokens Usage (7 days / 30 days / 3 months / custom), Subscription, Refer & Earn, Profile.
+
+**What Frontier already has:** projects, instructions and memory (Stage 10), files in (9), web search (11), images (16), voice (15), usage
+and limits (8), three makers and eight models. **What it lacks:** Compare, Auto, a model chooser with search and cost badges, chips and
+Enhance under the box, a search of chats, a Library, Experts, an Image Studio page, System theme, accent and font choices, a usage chart.
+
+**The plan** (_mine_; two stages so each is merged on its own).
+
+- **Stage 21 - the chat** (21.1 to 21.6):
+  - **A. The model chooser** (21.1): a dialog in place of the model menu: search, filter by maker and by cost, a badge per model (1x, 4x,
+    8x worked out from the registry's prices against the cheapest), "no key" shown, Auto at the top.
+  - **B. Compare** (21.2): one message to **2 to 4 models** side by side in columns, each streaming on its own with its own Stop and cost;
+    "Keep this one" carries the chat on with that model. The limits and the question before a large request count **all the columns
+    together**, before anything is sent. Saved, backed up and restored like any chat.
+  - **C. Auto** (21.3): "Auto" picks the model **by rules, with no extra call**: the Task menu's shortlist, a model that takes pictures
+    when one is attached, only makers you have a key for. The reply says which model answered and why.
+  - **D. Under the box** (21.4): chips in an empty chat (Compare, Make an image, Web search, Experts); the placeholder shows example
+    prompts; **Enhance** rewrites your message with the cheapest model you have a key for and puts it back in the box to edit, never sent
+    by itself (its cost goes in the ledger).
+  - **E. Search chats** (21.5): a search button and Ctrl+K over titles and text, on this computer only.
+  - **F.** (21.6) The threat note, the full regression, the merge.
+- **Stage 22 - the pages** (22.1 to 22.6):
+  - **G. Library** (22.1): every file you attached and image you made, with All / Starred / Images / Files, a search, open, star.
+  - **H. Experts** (22.2): ready-made assistants (instructions plus a suggested model) in categories, "My experts" you make yourself; a
+    health or money expert says it is not professional advice.
+  - **I. Image Studio** (22.3): a page from the sidebar with the box, aspect ratio and count, style presets in words (none of their
+    pictures), and your images under it. Built on Stage 16.
+  - **J. Look and Settings** (22.4): System / Light / Dark (follow Windows), a choice of accent colour, a choice of font from the fonts
+    Windows already has (nothing downloaded), the light theme's soft glow behind the greeting.
+  - **K. A usage chart** (22.5): tokens and cost for 7 days / 30 days / 3 months, from the ledger Frontier already keeps.
+  - **L.** (22.6) The threat note, the full regression, the merge.
+- **Not in these stages:** video (OpenAI's video API is gone, D-048), Slides and Websites (Websites publishes to a public link), plans,
+  upgrades, referrals, Hindi and Bengali, Deep research, their names, logo, fonts or pictures.
+- **Not proven (and cannot be from here):** a real call to any model (the mock stands in), Compare's real costs.
+
+**Questions for the owner** (the picks above stand until you say otherwise): (1) Compare: **up to 4 models** (my pick) or 5 like AI Fiesta?
+(2) Auto **by rules, no extra call** (my pick), or ask a small model to choose (sends your message one more time, costs a little)?
+(3) Enhance: **in, with the cheapest model, never sent by itself** (my pick), or left out? (4) The look: **dark stays the default, the light
+theme gets AI Fiesta's soft glow** (my pick), or light first like AI Fiesta? (5) More models: AI Fiesta has 41 from 11 makers, Frontier 8
+from 3. **A later stage** (for example one OpenRouter key for many makers) (my pick), or in Stage 21? (6) Their Compare answer screen can only
+be seen by sending one message on your AI Fiesta Free plan (1 of 10): **may I send one harmless test message** (my pick), or build it from what
+I saw? (7) Order: **Stage 21 first** (my pick), or Stage 22 first?
+
 ## What is deliberately not promised
 
 Exact copies of vendor-only features (their memory, Projects and Artifacts, custom GPTs, the one-click connector directory), and any power
