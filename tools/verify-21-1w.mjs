@@ -30,13 +30,13 @@ const H = helpers(page, { userData, mockUrl })
 const { ev } = H
 const READY = `document.readyState === 'complete' && !!document.querySelector('.header-select')`
 const OPEN = `!!document.querySelector('dialog.model-chooser')?.open`
-const cards = () => ev(`[...document.querySelectorAll('dialog.model-chooser .model-card')].map((c) => ({ id: c.dataset.model, name: c.querySelector('.model-card-name')?.textContent, maker: c.querySelector('.model-card-maker')?.textContent, badge: c.querySelector('.cost-badge')?.textContent, price: c.querySelector('.model-card-price')?.textContent, pressed: c.getAttribute('aria-pressed'), nokey: !!c.querySelector('.model-tag-warn') }))`)
+const cards = () => ev(`[...document.querySelectorAll('dialog.model-chooser .model-chooser-list .model-card')].map((c) => ({ id: c.dataset.model, name: c.querySelector('.model-card-name')?.textContent, maker: c.querySelector('.model-card-maker')?.textContent, badge: c.querySelector('.cost-badge')?.textContent, price: c.querySelector('.model-card-price')?.textContent, pressed: c.getAttribute('aria-pressed'), nokey: !!c.querySelector('.model-tag-warn') }))`)
 const ids = async () => (await cards()).map((c) => c.id)
 const setSearch = (text) => ev(`(() => { const i = document.querySelector('.model-chooser-search'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, ${JSON.stringify(text)}); i.dispatchEvent(new Event('input', { bubbles: true })); return true })()`)
 const chip = (group, text) => `dialog.model-chooser .model-chooser-filters[aria-label="${group}"] .chip@${text}`
 const metrics = async (width, height = 700) => { await page.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false }); await sleep(350) }
 const clearMetrics = async () => { await page.send('Emulation.clearDeviceMetricsOverride'); await sleep(350) }
-const cardIntoView = async (id) => { await ev(`document.querySelector('dialog.model-chooser .model-card[data-model="${id}"]').scrollIntoView({ block: 'center' })`); await sleep(200) }
+const cardIntoView = async (id) => { await ev(`document.querySelector('dialog.model-chooser .model-chooser-list .model-card[data-model="${id}"]').scrollIntoView({ block: 'center' })`); await sleep(200) }
 const selectValue = () => ev(`document.querySelector('.header-select').value`)
 
 try {
@@ -92,13 +92,13 @@ try {
 
   // ============ E. choosing a card saves the choice ============
   await page.click('.header-select'); await page.waitFor(OPEN, { timeoutMs: 4000 })
-  await cardIntoView('gemini-3.8-flash'); await page.click('dialog.model-chooser .model-card[data-model="gemini-3.8-flash"]')
+  await cardIntoView('gemini-3.8-flash'); await page.click('dialog.model-chooser .model-chooser-list .model-card[data-model="gemini-3.8-flash"]')
   await H.settle('gemini-3.8-flash')
   check('E: choosing a card closes the chooser and the model menu shows it', !(await ev(OPEN)) && (await selectValue()) === 'gemini-3.8-flash')
   check('E: ...main saved it (preferences.json) and says so in its status', JSON.parse(H.prefs() ?? '{}').modelId === 'gemini-3.8-flash' && (await H.status()).selectedModelId === 'gemini-3.8-flash')
   await page.click('.header-select'); await page.waitFor(OPEN, { timeoutMs: 4000 })
   check('E: opened again, the new choice is the marked card', (await cards()).filter((c) => c.pressed === 'true').map((c) => c.id).join() === 'gemini-3.8-flash')
-  await cardIntoView('gemini-3.8-flash'); await page.click(`dialog.model-chooser .model-card[data-model="gemini-3.8-flash"]`); await sleep(300)
+  await cardIntoView('gemini-3.8-flash'); await page.click(`dialog.model-chooser .model-chooser-list .model-card[data-model="gemini-3.8-flash"]`); await sleep(300)
   check('E: choosing the chosen model again closes it and asks main nothing new', !(await ev(OPEN)) && (await selectValue()) === 'gemini-3.8-flash')
 
   // ============ F. the keyboard still uses the menu ============

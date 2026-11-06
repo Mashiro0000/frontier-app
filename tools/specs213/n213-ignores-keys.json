@@ -1,0 +1,14 @@
+{
+  "label": "n213-ignores-keys",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/autoPick.ts",
+      "from": "    .filter((m) => keyed.has(m.provider))\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-21-3.mjs"
+  ],
+  "env": {}
+}

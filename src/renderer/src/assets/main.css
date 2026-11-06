@@ -1,8 +1,8 @@
 @import './base.css';
 
 :root {
-  /* Width of the centred column that holds messages and the input box. */
-  --chat-width: 768px;
+  /* Width of the centred column that holds messages and the input box: 800 px, as AI Fiesta's message box (21.4, D-053; 768 before). */
+  --chat-width: 800px;
   /* The sidebar (D-051, D-052): open, and folded to a rail of icons. */
   --sidebar-width: 260px;
   --rail-width: 60px;
@@ -656,7 +656,7 @@ body {
 /* The greeting in a serif, light, as Claude's (31 px, weight 360 there; Georgia is its fallback, and Windows has it). */
 .empty-heading {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 31px;
+  font-size: 34px;
   font-weight: 400;
   line-height: 1.25;
   letter-spacing: -0.01em;
@@ -1313,10 +1313,10 @@ body {
   gap: 6px;
   max-width: var(--chat-width);
   margin: 0 auto;
-  padding: 12px 10px 10px 16px;
+  padding: 14px 12px 12px 20px;
   background: var(--color-composer);
   border: 1px solid var(--color-input-border);
-  border-radius: 26px;
+  border-radius: 28px;
   box-shadow: var(--shadow-small);
 }
 
@@ -3831,4 +3831,259 @@ body {
 
 .maker-google {
   background: #4c8df6;
+}
+
+/* ---------- (21.3, D-053) Auto: the card at the top of the chooser, the pill in place of the model menu, the line above a reply ---------- */
+
+.model-chooser-auto {
+  padding: 16px 22px 0;
+}
+
+.model-card-auto {
+  height: auto;
+}
+
+.maker-auto {
+  background: var(--gradient);
+}
+
+.model-chooser-or {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 4px 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.model-chooser-or::before,
+.model-chooser-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.auto-pill {
+  height: 32px;
+  padding: 0 26px 0 10px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  background: transparent var(--chevron) no-repeat right 8px center / 14px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.auto-pill:hover:not(:disabled) {
+  background-color: var(--ev-c-gray-3);
+}
+
+.auto-pill:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.auto-pill:disabled {
+  color: var(--ev-c-text-3);
+  cursor: default;
+}
+
+.message-auto {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* ---------- (21.4, D-053) Enhance: a button beside the microphone, as AI Fiesta's "Enhance prompt"; the line under the box with Undo ---------- */
+
+.composer-enhance {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.composer-enhance:hover:not(:disabled) {
+  color: var(--color-accent-text);
+  background: var(--ev-c-gray-3);
+}
+
+.composer-enhance:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.composer-enhance:disabled {
+  color: var(--ev-c-text-3);
+  cursor: default;
+}
+
+/* While it works: the accent's colour, pulsing, so that it is not only a colour. */
+.composer-enhance-busy {
+  color: var(--color-accent-text);
+  animation: enhance-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes enhance-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .composer-enhance-busy {
+    animation: none;
+  }
+}
+
+/* ---------- (21.4, D-053) The chips under the box of an empty chat, as AI Fiesta's: round, roomy, a word and an icon each ---------- */
+
+.empty-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  width: min(100%, calc(var(--chat-width) + 48px));
+  margin: 14px auto 0;
+  padding: 0 24px;
+}
+
+.chip-start {
+  height: 38px;
+  padding: 0 16px;
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-composer);
+  border-color: var(--color-input-border);
+  border-radius: 19px;
+  box-shadow: var(--shadow-small);
+}
+
+.chip-start .icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-muted);
+}
+
+/* ---------- (21.5, D-053) Search chats, as AI Fiesta's: a roomy box at the top of the window, the chats found under it ---------- */
+
+.search-chats {
+  margin: 12vh auto auto;
+  width: min(640px, calc(100vw - 32px));
+  max-height: min(560px, calc(100vh - 24vh));
+  padding: 0;
+  overflow: hidden;
+  color: var(--color-text);
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  box-shadow: var(--shadow-large);
+}
+
+.search-chats[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-chats::backdrop {
+  background: var(--backdrop);
+  backdrop-filter: blur(3px);
+}
+
+.search-chats-input {
+  flex: none;
+  height: 56px;
+  padding: 0 22px;
+  font: inherit;
+  font-size: 17px;
+  color: var(--color-text);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  outline: 0;
+}
+
+.search-chats-body {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px 10px 14px;
+}
+
+.search-chats-body > .settings-hint {
+  padding: 8px 12px;
+}
+
+.search-chats-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.search-hit {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  text-align: left;
+  color: var(--color-text);
+  background: transparent;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.search-hit:hover,
+.search-hit:focus-visible {
+  background: var(--color-sidebar-active);
+  outline: 0;
+}
+
+.search-hit-top {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.search-hit-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.search-hit-date {
+  flex: none;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.search-hit-snippet {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.search-chats-note {
+  padding: 6px 12px 0;
+}
+
+/* The sidebar is a rail: no room for the search button beside the fold button (Ctrl+K still opens it). */
+@container sidebar (max-width: 120px) {
+  .sidebar-search {
+    display: none;
+  }
 }

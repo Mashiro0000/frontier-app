@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { AttachmentInfo } from '../../../shared/attachments'
+import { pickAuto } from '../../../shared/autoPick'
 import type { SettingsStatus } from '../../../shared/ipc'
+import type { TaskId } from '../../../shared/rankings'
 import LinkConfirm from '../markdown/LinkConfirm'
 import { providerMissingKey } from '../settings/format'
 import { filesBlock } from './attachmentText'
 import AttachmentChips from './AttachmentChips'
+import { enhance, type EnhanceResult } from './enhance'
 import Composer from './Composer'
 import { PreviewsContext, useAttachmentPreviews } from './previews'
 import LargeRequestDialog from './LargeRequestDialog'
@@ -36,7 +39,22 @@ interface ChatViewProps {
   toolbar: React.ReactNode
   /** The Task, model and Effort menus (D-052): drawn under the message box, beside the note, as Claude draws its model menu. */
   menus: React.ReactNode
+  /** (21.3, D-053) Auto is on, and the task the person chose (Auto's rules read it). */
+  auto: boolean
+  task: TaskId | null
+  /** (21.4, D-053) The chips under the box of an empty chat. */
+  chips?: React.ReactNode
 }
+
+/** (21.4, D-053) What the empty box suggests, one after another (AI Fiesta types examples in its box). Plain everyday asks, in no maker's words. */
+const EXAMPLE_PROMPTS = [
+  'Explain inflation in simple terms',
+  'Help me decide between two job offers',
+  'Turn these notes into a project plan',
+  'Write a polite reply declining a meeting',
+  'Find the bug in this function',
+  'Plan a 3-day trip on a small budget'
+]
 
 function ChatView({
   status,
@@ -50,10 +68,53 @@ function ChatView({
   projectFiles,
   toolsOn,
   toolbar,
-  menus
+  menus,
+  auto,
+  task,
+  chips
 }: ChatViewProps): React.JSX.Element {
-  const { messages, isReplying, largeRequest, answerLargeRequest, send, stop, regenerate, resend } =
-    chat
+  const {
+    messages,
+    isReplying,
+    largeRequest,
+    answerLargeRequest,
+    send,
+    stop,
+    regenerate,
+    resend,
+    setAutoPicker,
+    askLarge
+  } = chat
+  // (21.4, D-053) Enhance: the draft rewritten by the cheapest model with a key; the question before a large request is the chat's own dialog.
+  const onEnhance = useCallback(
+    (text: string, signal: AbortSignal): Promise<EnhanceResult> =>
+      status === null
+        ? Promise.resolve({ ok: false, error: 'The app is not ready yet.' })
+        : enhance(text, status, signal, (request) => askLarge(request, signal)),
+    [status, askLarge]
+  )
+  // (21.3, D-053) While Auto is on, the chat asks this for the model of each reply: the rules of shared/autoPick.ts on what the page knows now (the keys,
+  // the task, the shortlist, and whether the chat or its project carries pictures or PDFs: every file goes again with every message).
+  useEffect(() => {
+    if (!auto || status === null) {
+      setAutoPicker(null)
+      return
+    }
+    setAutoPicker((history) => {
+      const kinds = new Set([
+        ...history.flatMap((m) => (m.files ?? []).map((f) => f.info.kind)),
+        ...projectFiles.map((f) => f.kind)
+      ])
+      return pickAuto({
+        models: status.models,
+        providers: status.providers,
+        suggestions: status.suggestions,
+        task,
+        pictures: kinds.has('image'),
+        pdfs: kinds.has('pdf')
+      })
+    })
+  }, [auto, status, task, projectFiles, setAutoPicker])
   // Asking again (Regenerate, an edited message) takes the keyboard back to the input box, as sending does.
   const [asked, setAsked] = useState(0)
   // Stable from one render to the next (the chat re-renders with every word of a reply), so that the messages that have not changed
@@ -187,6 +248,9 @@ function ChatView({
         onPasteFiles={attachments.addFiles}
         stopEverything={toolsOn}
         toolbar={toolbar}
+        onEnhance={onEnhance}
+        {...(messages.length === 0 ? { examples: EXAMPLE_PROMPTS } : {})}
+        modelName={modelName}
         attachments={
           <AttachmentChips
             files={attachments.files}
@@ -200,6 +264,7 @@ function ChatView({
         <p className="chat-footnote">Models can make mistakes. Check what matters.</p>
         {menus}
       </div>
+      {messages.length === 0 && chips}
       {/* A large request is held by the main process until the person says yes here (D-032). */}
       <LargeRequestDialog
         request={largeRequest}

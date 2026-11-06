@@ -1,8 +1,9 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ATTACHMENT_LIMITS, type AttachmentInfo } from '../../shared/attachments'
 import { limitsAreSet } from '../../shared/limits'
 import type { TaskId } from '../../shared/rankings'
 import { useRail } from './appearance'
+import { IconGlobe, IconImage, IconInstructions, IconProject } from './icons'
 import ChatBar from './chat/ChatBar'
 import ChatView from './chat/ChatView'
 import { ipcReply } from './chat/ipcReply'
@@ -13,6 +14,7 @@ import GalleryDialog from './images/GalleryDialog'
 import { useImageStatus } from './images/imageStatus'
 import MakeImageDialog from './images/MakeImageDialog'
 import HistoryDialog from './history/HistoryDialog'
+import SearchDialog from './history/SearchDialog'
 import { useHistory } from './history/useHistory'
 import InstructionsDialog from './instructions/InstructionsDialog'
 import { useEveryChat } from './instructions/useEveryChat'
@@ -46,9 +48,25 @@ function App(): React.JSX.Element {
   // What the person says they are doing. Only the model menu reads it, to mark the models named for it (D-023).
   // It is not saved: it is a hint for the next choice, not a setting.
   const [task, setTask] = useState<TaskId | null>(null)
+  // (21.3, D-053) Auto: a model picked by rules for each message. For this run of the app only (off at every start).
+  const [auto, setAuto] = useState(false)
+  // (21.5, D-053) Search chats is open.
+  const [searchOpen, setSearchOpen] = useState(false)
   // The chat is held here, not in ChatView, because the header and the chat bar need to know when a reply is arriving:
   // the model cannot be changed meanwhile, and no other chat can be opened or started.
   const chat = useChat(ipcReply)
+  // (21.5, D-053) Ctrl+K opens Search chats (not while a reply arrives, as its button).
+  const replying = chat.isReplying
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => {
+      if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        if (!replying) setSearchOpen(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [replying])
   // Saves the conversation on screen as it goes, and keeps the list of saved ones (D-016, D-017).
   const history = useHistory(chat)
   // The files on the message being written (D-037): copies kept by main, attached with "Attach...", a paste or a drop.
@@ -128,6 +146,7 @@ function App(): React.JSX.Element {
         onOpenHistory={() => setHistoryOpen(true)}
         onOpenTools={openTools}
         onOpenSettings={() => setSettingsOpen(true)}
+        onSearch={() => setSearchOpen(true)}
       />
       <div className="app-main">
         <header className="app-header">
@@ -167,6 +186,45 @@ function App(): React.JSX.Element {
           onRemember={onRemember}
           projectFiles={chatProject?.files ?? NO_FILES}
           toolsOn={anyToolOn(toolSettings.status, toolSettings.workspace, toolSettings.programs)}
+          auto={auto}
+          task={task}
+          chips={
+            // (21.4, D-053) Under the box of an empty chat, as AI Fiesta's chips: ways in to what the app can do. Each opens what its button opens.
+            <div className="empty-chips" role="group" aria-label="Start with">
+              {imageStatus?.on === true && (
+                <button type="button" className="chip chip-start" onClick={() => setMakeOpen(true)}>
+                  <IconImage />
+                  Make an image
+                </button>
+              )}
+              <button type="button" className="chip chip-start" onClick={openTools}>
+                <IconGlobe />
+                Web search
+              </button>
+              <button
+                type="button"
+                className="chip chip-start"
+                onClick={() => {
+                  projects.reload()
+                  setProjectsOpen(true)
+                }}
+              >
+                <IconProject />
+                Projects
+              </button>
+              <button
+                type="button"
+                className="chip chip-start"
+                onClick={() => {
+                  everyChat.reload()
+                  setInstructionsOpen(true)
+                }}
+              >
+                <IconInstructions />
+                Instructions
+              </button>
+            </div>
+          }
           menus={
             // Under the message box, at the right (D-052, as Claude's model menu). "app-header-actions": the name the checks know the group by,
             // from the time it sat in the header.
@@ -181,6 +239,8 @@ function App(): React.JSX.Element {
                 task={task}
                 disabled={chat.isReplying}
                 onStatusChange={setStatus}
+                auto={auto}
+                onAuto={setAuto}
               />
               <EffortPicker status={status} disabled={chat.isReplying} onStatusChange={setStatus} />
             </div>
@@ -219,6 +279,11 @@ function App(): React.JSX.Element {
           }
         />
       </div>
+      <SearchDialog
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onOpenChat={history.open}
+      />
       <MakeImageDialog
         open={makeOpen}
         chatId={history.activeId}

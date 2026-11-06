@@ -119,6 +119,7 @@ function MessageList({
               imageModelName={imageModelName}
               canAttachPictures={canAttachPictures}
               onUsePicture={onUsePicture}
+              modelName={modelName}
             />
           ))}
         </div>

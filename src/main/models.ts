@@ -109,6 +109,24 @@ export async function currentModel(): Promise<ModelChoice> {
 }
 
 /**
+ * (21.3, D-053) A model the page named for one request (Auto picks one for each message): that model if the registry offers it, with the effort the person
+ * saved for it (or the registry's pick). Refused when it is not on offer: the request is not sent to another model in its place.
+ */
+export async function modelById(modelId: string): Promise<ModelChoice> {
+  const registry = getRegistry()
+  if (!registry.ok) {
+    return {
+      ok: false,
+      error: `The list of models could not be loaded: ${registry.error}. Check registry/models.json.`
+    }
+  }
+  const entry = registry.registry.models.find((model) => model.id === modelId)
+  if (!entry) return { ok: false, error: 'That model is not on offer any more.' }
+  await ensureLoaded()
+  return { ok: true, entry, effort: resolveEffort(entry, savedEfforts).effort }
+}
+
+/**
  * Writes both choices, in place, and does not claim success unless they really read back. The two live in one file, so every
  * write carries both: choosing a model keeps the efforts, and choosing an effort keeps the model. Throws if it cannot be saved.
  */

@@ -50,6 +50,15 @@ export interface ChatMessage {
    * this holds their ids. Saved with the chat, NEVER sent to the model.
    */
   picture?: PictureNote
+  /** (21.3, D-053) Why Auto picked the model of this reply, shown above it. On screen only: not saved (the model is, as for any reply). */
+  autoReason?: string
+}
+
+/** (21.3, D-053) What one reply asks of main besides the conversation: the model Auto picked for it. */
+export interface ReplyOptions {
+  modelId?: string
+  /** (21.4) A rewrite of the draft (Enhance), not a reply in the chat. */
+  purpose?: 'enhance'
 }
 
 /** Which model is answering, as the main process reports it when a reply begins. */
@@ -95,5 +104,7 @@ export type ReplyFn = (
   /** The project the chat belongs to (D-039, 10.6), or null: main adds that project's instructions, notes and files itself. */
   projectId?: string | null,
   /** Called for every event of a tool call of this reply (D-041, 11.4), in order, as main reports them. */
-  onTool?: (event: ToolEvent) => void
+  onTool?: (event: ToolEvent) => void,
+  /** (21.3, D-053) The model Auto picked for this reply. */
+  options?: ReplyOptions
 ) => AsyncIterable<string>

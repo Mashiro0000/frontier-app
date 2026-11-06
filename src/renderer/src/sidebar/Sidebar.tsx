@@ -5,6 +5,7 @@ import {
   IconHistory,
   IconMoon,
   IconPlus,
+  IconSearch,
   IconSettings,
   IconSidebar,
   IconSun,
@@ -23,6 +24,8 @@ interface SidebarProps {
   onOpenHistory: () => void
   onOpenTools: () => void
   onOpenSettings: () => void
+  /** (21.5, D-053) Opens Search chats. */
+  onSearch: () => void
 }
 
 /**
@@ -37,7 +40,8 @@ function Sidebar({
   onNewChat,
   onOpenHistory,
   onOpenTools,
-  onOpenSettings
+  onOpenSettings,
+  onSearch
 }: SidebarProps): React.JSX.Element {
   const rail = useRail()
   const theme = useTheme()
@@ -65,6 +69,21 @@ function Sidebar({
           <LogoMark />
         </span>
         <h1 className="app-title">Frontier App</h1>
+        {/* (21.5, D-053) Search chats, beside the fold button, as AI Fiesta's. */}
+        <button
+          type="button"
+          className="icon-button sidebar-search"
+          disabled={isReplying}
+          title={
+            isReplying
+              ? 'Chats can be searched when the reply has finished.'
+              : 'Search chats (Ctrl+K)'
+          }
+          onClick={onSearch}
+        >
+          <IconSearch />
+          <span className="visually-hidden">Search chats</span>
+        </button>
         <button
           type="button"
           className="icon-button sidebar-toggle"

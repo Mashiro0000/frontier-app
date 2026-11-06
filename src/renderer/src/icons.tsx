@@ -78,6 +78,27 @@ export const IconImage = (): React.JSX.Element => (
   </Icon>
 )
 
+/** (21.5) Search: a magnifying glass. */
+export const IconSearch = (): React.JSX.Element => (
+  <Icon>
+    <path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4" />
+  </Icon>
+)
+
+/** (21.4) Web search: a globe. */
+export const IconGlobe = (): React.JSX.Element => (
+  <Icon>
+    <path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z" />
+  </Icon>
+)
+
+/** (21.4) Enhance: a wand with a spark. */
+export const IconEnhance = (): React.JSX.Element => (
+  <Icon>
+    <path d="M4 20 15 9M14 4v3M19.5 9.5h-3M17.8 5.2l-2 2M9 3.5v2M6 6.5H4" />
+  </Icon>
+)
+
 export const IconProject = (): React.JSX.Element => (
   <Icon>
     <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />

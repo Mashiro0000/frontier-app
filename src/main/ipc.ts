@@ -1,3 +1,4 @@
+import { checkSearchQuery, searchConversations } from '../shared/chatSearch'
 import { app, BrowserWindow, ipcMain, shell, type IpcMainInvokeEvent } from 'electron'
 import { join } from 'path'
 import {
@@ -14,6 +15,8 @@ import {
   type HistoryRestoreApplyResult,
   type HistoryRestoreLookResult,
   type HistoryLoadResult,
+  type HistorySearchResult,
+  type SavedConversation,
   type HistoryRemoveResult,
   type HistorySaveResult,
   type SaveEveryChatResult,
@@ -749,6 +752,30 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       } catch (error) {
         console.error('Listing the saved conversations failed:', reason(error))
         throw new Error('The saved conversations could not be listed.')
+      }
+    })
+  )
+
+  // (21.5, D-053) A search of the saved chats: every readable chat is opened here (as History opens one to show it) and searched; the page gets titles and short
+  // pieces only. A chat that cannot be read is left out and counted.
+  ipcMain.handle(
+    CHANNELS.historySearch,
+    guarded(async (input: unknown): Promise<HistorySearchResult> => {
+      const query = checkSearchQuery(input)
+      if (!query.ok) return query
+      try {
+        const listed = await history.list()
+        const chats: SavedConversation[] = []
+        let unreadable = listed.unreadable
+        for (const summary of listed.conversations) {
+          const loaded = await history.load(summary.id)
+          if (loaded.ok) chats.push(loaded.conversation)
+          else unreadable += 1
+        }
+        return { ok: true, hits: searchConversations(chats, query.words), unreadable }
+      } catch (error) {
+        console.error('Searching the saved conversations failed:', reason(error))
+        return { ok: false, error: 'The saved chats could not be searched.' }
       }
     })
   )

@@ -15,6 +15,9 @@ interface ModelPickerProps {
    */
   disabled: boolean
   onStatusChange: (status: SettingsStatus) => void
+  /** (21.3, D-053) Auto is on: the menu shows "Auto" (and the chooser marks it); `onAuto` turns it on or off. */
+  auto?: boolean
+  onAuto?: (on: boolean) => void
 }
 
 /** The menu in the header that chooses which model answers. The list comes from the registry. */
@@ -22,7 +25,9 @@ function ModelPicker({
   status,
   task,
   disabled,
-  onStatusChange
+  onStatusChange,
+  auto = false,
+  onAuto
 }: ModelPickerProps): React.JSX.Element | null {
   // The choice the person just made, shown until main has answered, so the menu does not flick back to
   // the old model for a moment. It is not disabled meanwhile: holding an arrow key changes the choice
@@ -61,7 +66,20 @@ function ModelPicker({
   const named = new Set(suggestionsForTask(status, task).map((suggestion) => suggestion.modelId))
   return (
     <>
+      {auto && (
+        <button
+          type="button"
+          className="auto-pill"
+          aria-haspopup="dialog"
+          disabled={disabled}
+          title="Auto picks a model for each message. Click to choose a model yourself."
+          onClick={() => setChooserOpen(true)}
+        >
+          Auto
+        </button>
+      )}
       <select
+        hidden={auto}
         className="header-select"
         aria-label="Model"
         aria-haspopup="dialog"
@@ -98,8 +116,20 @@ function ModelPicker({
         task={task}
         onChoose={(modelId) => {
           setChooserOpen(false)
+          if (auto) onAuto?.(false)
           if (modelId !== shown) void choose(modelId)
         }}
+        {...(onAuto !== undefined
+          ? {
+              auto: {
+                on: auto,
+                onAuto: () => {
+                  setChooserOpen(false)
+                  onAuto(true)
+                }
+              }
+            }
+          : {})}
         onClose={() => setChooserOpen(false)}
       />
     </>

@@ -34,7 +34,7 @@ import type { ReadResult } from './attachmentStore'
 import { baseUrlOverride } from './baseUrl'
 import { createConfirmations } from './confirmation'
 import { readApiKey } from './keyStore'
-import { currentModel } from './models'
+import { currentModel, modelById } from './models'
 import type { LimitsStore } from './limits'
 import { adapterFor, OFFERS_SEARCH } from './providers'
 import { describeFailure, unknownError } from './providers/errors'
@@ -284,7 +284,9 @@ async function runReply(
   try {
     // The model is fixed here, for this whole reply: a later change of model applies from the next one. Its provider
     // decides which adapter answers, and which key goes with the request.
-    const model = await currentModel()
+    // (21.3, D-053) A request that names its model (Auto picked it for this message) is answered by that model; any other by the chosen one.
+    const model =
+      request.modelId !== undefined ? await modelById(request.modelId) : await currentModel()
     if (!model.ok) {
       send({ streamId, type: 'error', message: model.error })
       return
@@ -351,7 +353,10 @@ async function runReply(
     }
     // The person's instructions for every chat (D-039), from main's own file and never from the page, read for every request. A file that cannot be read
     // refuses the request: a chat is never sent without them in silence.
-    const everyChat = await context.everyChat()
+    // (21.4, D-053) Enhance rewrites the person's draft and carries nothing else: no instructions, no notes, no tools (the request check refuses a project,
+    // a chat or instructions with it).
+    const enhancing = request.purpose === 'enhance'
+    const everyChat = enhancing ? { ok: true as const, text: '' } : await context.everyChat()
     if (!everyChat.ok) {
       send({ streamId, type: 'error', message: everyChat.error })
       return
@@ -371,7 +376,9 @@ async function runReply(
     }
     // The person's notes (10.4), from main's own file and never from the page, read for every request: every chat's, then the project's (10.6).
     // A file that cannot be read refuses the request, and so does a note that holds a saved key (looked at one note at a time).
-    const memory = await context.notes(project?.id ?? null)
+    const memory = enhancing
+      ? { ok: true as const, notes: [] as Note[] }
+      : await context.notes(project?.id ?? null)
     if (!memory.ok) {
       send({ streamId, type: 'error', message: memory.error })
       return
@@ -460,7 +467,7 @@ async function runReply(
     }
     const toolsContext = context.tools
     const replyTools =
-      toolsContext === undefined
+      toolsContext === undefined || enhancing
         ? null
         : toolsContext.runtime.forReply({
             owner,

@@ -1,0 +1,24 @@
+{
+  "label": "w213-ignores-keys",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/autoPick.ts",
+      "from": "    .filter((m) => keyed.has(m.provider))\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-21-3w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s213nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8854",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w213-ignores-keys"
+  }
+}

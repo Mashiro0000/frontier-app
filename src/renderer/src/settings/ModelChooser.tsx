@@ -20,6 +20,10 @@ interface ModelChooserProps {
   task: TaskId | null
   onChoose: (modelId: string) => void
   onClose: () => void
+  /**
+   * (21.3, D-053) Auto, offered at the top: `on` says whether it is on now, `onAuto` turns it on (choosing a model turns it off). Absent: no Auto card.
+   */
+  auto?: { on: boolean; onAuto: () => void }
 }
 
 const TIERS: CostTier[] = [1, 2, 3, 4]
@@ -39,7 +43,8 @@ function ModelChooser({
   chosenId,
   task,
   onChoose,
-  onClose
+  onClose,
+  auto
 }: ModelChooserProps): React.JSX.Element {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -159,12 +164,42 @@ function ModelChooser({
           ))}
         </div>
       </div>
+      {auto !== undefined && (
+        <div className="model-chooser-auto">
+          <button
+            type="button"
+            className="model-card model-card-auto"
+            aria-pressed={auto.on}
+            data-model="auto"
+            onClick={auto.onAuto}
+          >
+            <span className="model-card-top">
+              <span className="maker-dot maker-auto" aria-hidden="true" />
+              <span className="model-card-name">Auto</span>
+              {auto.on && (
+                <svg className="icon model-card-check" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
+              )}
+            </span>
+            <span className="model-card-desc">
+              Picks a model for each message, by rules and without asking any model: the cheapest
+              for a quick answer, the lowest-priced model its maker names for the task you chose,
+              otherwise a balanced all-rounder. Only makers you have a key for. Each message is sent
+              once, to one model. The reply says which it picked and why.
+            </span>
+          </button>
+          <p className="model-chooser-or" aria-hidden="true">
+            or pick your own
+          </p>
+        </div>
+      )}
       <ul className="model-chooser-list" aria-label="Models">
         {shown.map((model) => {
           const step = costTier(model.pricing)
           const hasKey =
             status.providers.find((provider) => provider.id === model.provider)?.hasKey === true
-          const chosen = model.id === chosenId
+          const chosen = model.id === chosenId && auto?.on !== true
           return (
             <li key={model.id}>
               <button
