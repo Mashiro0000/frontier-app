@@ -3593,3 +3593,242 @@ body {
   overflow-wrap: anywhere;
   margin: 0;
 }
+
+/* ---------- (21.1, D-053) the model chooser, as AI Fiesta's: a roomy dialog, a search, filters as chips, each model a card ---------- */
+
+.model-chooser {
+  margin: auto;
+  width: min(760px, calc(100vw - 32px));
+  max-height: min(680px, calc(100vh - 32px));
+  padding: 0;
+  overflow: hidden;
+  color: var(--color-text);
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  box-shadow: var(--shadow-large);
+}
+
+.model-chooser[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.model-chooser::backdrop {
+  background: var(--backdrop);
+  backdrop-filter: blur(3px);
+}
+
+.model-chooser-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 22px 6px 26px;
+}
+
+.model-chooser-head .settings-title {
+  margin-bottom: 4px;
+}
+
+.model-chooser-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 10px 26px 14px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.model-chooser-search {
+  flex: 1 1 220px;
+  height: 38px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-composer);
+  border: 1px solid var(--color-input-border);
+  border-radius: 19px;
+  outline: 0;
+}
+
+.model-chooser-search:focus-visible {
+  border-color: var(--color-focus);
+}
+
+.model-chooser-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* A round chip that can be pressed (a filter, or a shortcut under the message box). */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 13px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.chip:hover {
+  color: var(--color-text);
+  background: var(--ev-c-gray-3);
+}
+
+.chip[aria-pressed='true'] {
+  color: var(--color-text);
+  background: var(--color-sidebar-active);
+  border-color: var(--color-input-border);
+  font-weight: 600;
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.model-chooser-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 16px 22px 22px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.model-chooser-none {
+  padding: 0 26px 26px;
+}
+
+.model-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  padding: 14px 16px;
+  font: inherit;
+  text-align: left;
+  color: var(--color-text);
+  background: var(--color-composer);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.model-card:hover {
+  border-color: var(--color-input-border);
+  background: var(--color-background-mute);
+}
+
+.model-card[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent) inset;
+}
+
+.model-card:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.model-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.model-card-name {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.model-card-check {
+  color: var(--color-accent-text);
+}
+
+.model-card-maker {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.model-card-desc {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.model-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.cost-badge,
+.model-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 11px;
+  background: var(--color-background-mute);
+  border: 1px solid var(--color-border);
+}
+
+.cost-badge {
+  letter-spacing: 0.04em;
+  color: var(--color-accent-text);
+}
+
+.model-card-price {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.model-tag-good {
+  color: var(--color-accent-text);
+  background: var(--color-accent-soft);
+  border-color: transparent;
+}
+
+.model-tag-warn {
+  color: var(--color-warning-text);
+  background: var(--color-warning-soft);
+  border-color: var(--color-warning-border);
+}
+
+/* Each maker's dot: a colour, never its logo. */
+.maker-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+}
+
+.maker-anthropic {
+  background: #d97757;
+}
+
+.maker-openai {
+  background: #10a37f;
+}
+
+.maker-google {
+  background: #4c8df6;
+}

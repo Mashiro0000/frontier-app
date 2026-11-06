@@ -1,0 +1,24 @@
+{
+  "label": "w211-search-name-only",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/settings/ModelChooser.tsx",
+      "from": "  `${model.label} ${providerName(status, model.provider)} ${model.id} ${model.description}`.toLowerCase()",
+      "to": "  `${model.label}`.toLowerCase()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-21-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-s211nc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8851",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w211-search-name-only"
+  }
+}

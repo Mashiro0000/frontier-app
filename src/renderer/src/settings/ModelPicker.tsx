@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { SettingsStatus } from '../../../shared/ipc'
 import type { TaskId } from '../../../shared/rankings'
 import { suggestionsForTask } from './format'
+import ModelChooser from './ModelChooser'
 
 interface ModelPickerProps {
   /** What the main process says about settings; null until it has answered. */
@@ -28,6 +29,7 @@ function ModelPicker({
   // for every option it passes, and main handles those calls one at a time, in order.
   const [pendingId, setPendingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [chooserOpen, setChooserOpen] = useState(false)
 
   // Nothing is shown until the main process has answered, so the header never flashes a wrong model.
   if (status === null) return null
@@ -62,14 +64,21 @@ function ModelPicker({
       <select
         className="header-select"
         aria-label="Model"
+        aria-haspopup="dialog"
         title={
           disabled
             ? 'The model can be changed when the reply has finished.'
-            : `${label ?? 'Model'}. The details are in Settings.`
+            : `${label ?? 'Model'}. Click to see every model with its prices.`
         }
         value={shown}
         disabled={disabled}
         onChange={(event) => void choose(event.target.value)}
+        // (21.1, D-053) A click opens the model chooser instead of the plain list; the keyboard (arrows, Alt+Down) still uses the list.
+        onMouseDown={(event) => {
+          if (event.button !== 0) return
+          event.preventDefault()
+          if (!disabled) setChooserOpen(true)
+        }}
       >
         {status.models.map((model) => (
           <option key={model.id} value={model.id}>
@@ -82,6 +91,17 @@ function ModelPicker({
           {error}
         </span>
       )}
+      <ModelChooser
+        open={chooserOpen && !disabled}
+        status={status}
+        chosenId={shown}
+        task={task}
+        onChoose={(modelId) => {
+          setChooserOpen(false)
+          if (modelId !== shown) void choose(modelId)
+        }}
+        onClose={() => setChooserOpen(false)}
+      />
     </>
   )
 }

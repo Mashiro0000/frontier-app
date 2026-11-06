@@ -549,7 +549,18 @@ The violet gradient is kept as the one bright touch; nothing was taken away.
 - **Not in this stage:** ChatGPT's single "+" menu (it would hide Attach and Make an image), the model menu inside the box, Claude's warm palette
   and serif replies, a "..." menu per chat in the sidebar.
 
-## Stage 21 and 22 - Ideas from AI Fiesta (asked for 6 November 2026: "look into chat.v2.aifiesta.ai thoroughly and upgrade my frontier app just like it"; PLAN, nothing built)
+## Stage 21 and 22 - Ideas from AI Fiesta (asked for 6 November 2026: "look into chat.v2.aifiesta.ai thoroughly and upgrade my frontier app just like it"; plan approved the same day: "Yes, your picks", all seven kept; Stage 21 started)
+
+**The owner's answers (6 November 2026):** (1) up to 4 models; (2) Auto by rules, no extra call; (3) Enhance in, the cheapest model, never
+sent by itself; (4) dark stays the default, the light theme gets the glow; (5) more models in a later stage; (6) one test message sent;
+(7) Stage 21 first.
+
+**The Compare screen** (seen after the one test message, "In one short paragraph, what is a rainbow?", to three models; 1 of 10 used): a
+switch **Compare / Focus** at the top; in Compare the answers are **cards 340 px wide side by side** (radius 16, a thin border, a near-white
+fill), scrolling sideways when they do not fit, each with the model's logo and name, "expand" and "x" (drop that model), and under the answer
+Copy, Read aloud, thumbs up and down, Download; above the box a bar "Want one combined answer from all models?" with **Generate Consensus**
+(not tried: it would be a second message); the box says "Message 3 models...". In **Focus** one answer fills the column with the other models
+listed at the right to switch, and the box then talks to that one model only.
 
 **What the study found** (chat.v2.aifiesta.ai, read in the built-in browser on 6 November 2026, signed in as the owner on its Free plan,
 1280x800; nothing was sent, so no answer screen was seen):
