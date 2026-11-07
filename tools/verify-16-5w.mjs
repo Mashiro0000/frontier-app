@@ -86,8 +86,8 @@ try {
   // ============ C. Use in chat, and sending ============
   await part('C', async () => {
     await clickMarked(`[...document.querySelectorAll('.bubble-picture button')].find((b) => b.textContent === 'Use in chat')`)
-    await page.waitFor(`document.querySelectorAll('.attachment-chip, .chip').length > 0`, { timeoutMs: 8000 })
-    const chips = await ev(`[...document.querySelectorAll('.attachment-chip, .chip')].map((c) => c.innerText)`)
+    await page.waitFor(`document.querySelectorAll('.attachment-chip').length > 0`, { timeoutMs: 8000 })
+    const chips = await ev(`[...document.querySelectorAll('.attachment-chip')].map((c) => c.innerText)`)
     check('C: the picture is on the next message as an attachment (named by its id)', chips.length === 1 && /picture-[0-9a-f]{8}\.png/.test(chips[0]), show(chips))
     const before = (await H.mockReqs()).length
     const req = await H.askMock('What do you see?')

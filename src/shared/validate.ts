@@ -293,10 +293,8 @@ export function checkChatRequest(input: unknown): ChatCheck {
   if (typeof input !== 'object' || input === null) {
     return { ok: false, error: 'The request was not understood.' }
   }
-  const { streamId, messages, instructions, conversationId, projectId } = input as Record<
-    string,
-    unknown
-  >
+  const { streamId, messages, instructions, conversationId, projectId, modelId, purpose } =
+    input as Record<string, unknown>
   if (typeof streamId !== 'string' || !STREAM_ID.test(streamId)) {
     return { ok: false, error: 'The request was not understood.' }
   }
@@ -311,6 +309,25 @@ export function checkChatRequest(input: unknown): ChatCheck {
   }
   if (conversationId !== undefined && !isConversationId(conversationId)) {
     return refuse('The request was not understood.')
+  }
+  // (21.3, D-053) A model named for this request (Auto picks one per message): the spelling of a model id; main checks it is on offer.
+  if (modelId !== undefined && !isModelId(modelId)) return refuse('The request was not understood.')
+  // (21.4, D-053) Enhance: a named model and one message of the person's without files, and nothing that belongs to a chat.
+  if (purpose !== undefined) {
+    if (
+      purpose !== 'enhance' ||
+      modelId === undefined ||
+      projectId !== undefined ||
+      conversationId !== undefined ||
+      instructions !== undefined ||
+      !Array.isArray(messages) ||
+      messages.length !== 1 ||
+      typeof messages[0] !== 'object' ||
+      messages[0] === null ||
+      (messages[0] as Record<string, unknown>).attachments !== undefined
+    ) {
+      return refuse('The request was not understood.')
+    }
   }
 
   if (!Array.isArray(messages) || messages.length === 0) return refuse('There is nothing to send.')
@@ -365,7 +382,9 @@ export function checkChatRequest(input: unknown): ChatCheck {
         ? {}
         : { instructions: checkedInstructions.instructions }),
       ...(conversationId === undefined ? {} : { conversationId }),
-      ...(projectId === undefined ? {} : { projectId })
+      ...(projectId === undefined ? {} : { projectId }),
+      ...(typeof modelId === 'string' ? { modelId } : {}),
+      ...(purpose === 'enhance' ? { purpose } : {})
     }
   }
 }

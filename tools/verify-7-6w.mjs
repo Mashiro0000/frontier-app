@@ -69,7 +69,8 @@ try {
   check('the page is as wide as the default window gives it (900 px window, 886 px of page): with the sidebar open this is the width that must stay one row', Math.abs(L.vw - 886) <= 2, `vw=${L.vw} vh=${L.vh}`)
   const headerTexts = await ev(`[...document.querySelectorAll('.app-header button')].map((b) => b.textContent)`)
   check('the header has no button: Settings is at the foot of the sidebar, New chat, History and Tools above it (D-051)', JSON.stringify(headerTexts) === '[]', JSON.stringify(headerTexts))
-  const order = await ev(`[...document.querySelectorAll('.app-header-actions > *')].map((e) => e.className.split(' ')[0])`)
+  // (21.1, D-053) The model chooser's dialog sits beside the model menu, shown only when opened: the row is what is SHOWN.
+  const order = await ev(`[...document.querySelectorAll('.app-header-actions > *')].filter((e) => e.tagName !== 'DIALOG').map((e) => e.className.split(' ')[0])`)
   check('the menus\' row (under the box since D-052) holds the Task menu, the model menu and the Effort menu, in that order', JSON.stringify(order) === JSON.stringify(['task-select', 'header-select', 'effort-select']), JSON.stringify(order))
   const bar = await ev(`(() => { const b = document.querySelector('.chat-bar'); return b ? { role: b.getAttribute('role'), label: b.getAttribute('aria-label'), inBox: !!b.closest('.composer-inner'), afterText: !!b.closest('.composer-row')?.previousElementSibling?.matches('textarea.composer-input') } : null })()`)
   check('the chat bar is a named group INSIDE the message box, under the text, holding Instructions, Memory and Project; New chat, History and Tools are in the sidebar', bar !== null && bar.role === 'group' && bar.label === 'This chat' && bar.inBox && bar.afterText && JSON.stringify((await chatBtns()).map((b) => b.text)) === JSON.stringify(['New chat', 'History', 'Tools', 'Instructions', 'Memory', 'Project']), JSON.stringify(bar))
@@ -191,11 +192,11 @@ try {
   // (D-052) The menus are under the box: they come after Send, and are the last of the page.
   check('in the order the keyboard goes: the sidebar (New chat, History, Tools, Settings), the messages, the box (the text, Attach..., Instructions, Memory, Project, Send), then the menus under it (Task, model, Effort), last', at('chat:New chat') < at('chat:History') && at('chat:History') + 1 === at('chat:Tools') && at('chat:Tools') < at('settings') && at('settings') < at('input') && at('send') + 1 === at('task-select') && at('task-select') + 1 === at('header-select') && at('header-select') + 1 === at('effort-select') && at('effort-select') === domOrder.length - 1 && at('input') + 1 === at('chat:Attach...') && at('chat:Attach...') + 1 === at('chat:Instructions') && at('chat:Instructions') + 1 === at('chat:Memory') && at('chat:Memory') + 1 === at('chat:Project') && at('chat:Project') < at('send'), JSON.stringify(domOrder))
   const walk = []
-  for (let i = 0; i < 5; i++) { await page.press('Tab'); walk.push(await active()) }
-  check('Tab from the text goes Attach..., Instructions on, Memory, Project, then Send', JSON.stringify(walk) === JSON.stringify(['Attach...', 'Instructions on', 'Memory', 'Project', 'Send']), JSON.stringify(walk))
+  for (let i = 0; i < 6; i++) { await page.press('Tab'); walk.push(await active()) } // (21.4) Enhance comes before Send
+  check('Tab from the text goes Attach..., Instructions on, Memory, Project, Enhance (21.4), then Send', JSON.stringify(walk) === JSON.stringify(['Attach...', 'Instructions on', 'Memory', 'Project', 'composer-enhance', 'Send']), JSON.stringify(walk))
   const back = []
   for (let i = 0; i < 3; i++) { await page.press('Tab', { shift: true }); back.push(await active()) }
-  check('and Shift+Tab goes back the same way', JSON.stringify(back) === JSON.stringify(['Project', 'Memory', 'Instructions on']), JSON.stringify(back))
+  check('and Shift+Tab goes back the same way (Enhance first, 21.4)', JSON.stringify(back) === JSON.stringify(['composer-enhance', 'Project', 'Memory']), JSON.stringify(back))
   await page.click('.chat-button@New chat')
   await page.waitFor(`document.querySelectorAll('.message-list-inner > .message').length === 0`, { timeoutMs: 6000 })
   await sleep(300)

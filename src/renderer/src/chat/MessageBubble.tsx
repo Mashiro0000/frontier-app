@@ -28,6 +28,8 @@ interface MessageBubbleProps {
   canAttachPictures: boolean
   /** (16.5) "Use in chat" on a picture: it goes on the next message as an attachment. */
   onUsePicture: (id: string) => void
+  /** (21.3, D-053) What to call a model (for the line Auto writes above a reply). */
+  modelName: (modelId: string) => string
 }
 
 /** A short line shown under a message when something other than "all went well" happened. */
@@ -49,7 +51,8 @@ function MessageBubble({
   onRemember,
   imageModelName,
   canAttachPictures,
-  onUsePicture
+  onUsePicture,
+  modelName
 }: MessageBubbleProps): React.JSX.Element {
   // The tool calls of a reply (D-041, 11.4), each in the place of the text where the model asked for it, and the pages they brought back under the reply.
   const notes = message.role === 'assistant' ? (message.tools ?? []) : []
@@ -75,7 +78,15 @@ function MessageBubble({
       className={`message message-${message.role}${editing ? ' message-editing' : ''}`}
       aria-label={message.role === 'user' ? 'You' : 'Assistant'}
     >
-      {answeredBy && <p className="message-model">{answeredBy}</p>}
+      {message.autoReason !== undefined && message.model ? (
+        // (21.3, D-053) Auto picked this reply's model: which, and why.
+        <p className="message-model">
+          {modelName(message.model)}{' '}
+          <span className="message-auto">Auto: {message.autoReason}</span>
+        </p>
+      ) : (
+        answeredBy && <p className="message-model">{answeredBy}</p>
+      )}
       {message.files !== undefined && message.files.length > 0 && (
         <MessageFiles files={message.files} />
       )}

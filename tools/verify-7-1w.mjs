@@ -92,7 +92,8 @@ check('...worded: the first is "faster", the last "smarter", the registry\'s pic
 check('...it starts on the registry\'s pick for Opus (medium)', m0.value === 'medium')
 check('...its tooltip says higher is slower, billed as output, and that a reply may be cut off', /slower/.test(m0.title) && /billed as output/.test(m0.title) && /cut off/.test(m0.title), m0.title)
 check('the model menu is still the FIRST and ONLY ".header-select" (older suites find it that way); the Effort menu has its own class', await ev(`document.querySelectorAll('.header-select').length === 1 && document.querySelector('.header-select').getAttribute('aria-label') === 'Model'`))
-check('the Effort menu comes right after the model menu in the header', await ev(`(() => { const all = [...document.querySelectorAll('.app-header-actions > *')]; const i = all.findIndex((e) => e.classList.contains('header-select')); return all[i + 1]?.classList.contains('effort-select') === true })()`))
+// (21.1, D-053) The model chooser's dialog sits beside the model menu (it shows only when opened): the next thing that is SHOWN after the menu is meant.
+check('the Effort menu comes right after the model menu in the header', await ev(`(() => { const all = [...document.querySelectorAll('.app-header-actions > *')].filter((e) => e.tagName !== 'DIALOG'); const i = all.findIndex((e) => e.classList.contains('header-select')); return all[i + 1]?.classList.contains('effort-select') === true })()`))
 const st0 = await status()
 check('getStatus.effort is exactly { levels, selected, default } for the chosen model', Object.keys(st0.effort).join() === 'levels,selected,default' && st0.effort.selected === 'medium' && st0.effort.default === 'medium', JSON.stringify(st0.effort))
 check('...and the model list itself still says nothing about effort', st0.models.every((m) => !/effort/i.test(JSON.stringify(m))))
@@ -238,7 +239,9 @@ await page.press('Tab')
 check('keyboard: Tab from the model menu lands on the Effort menu', (await ev(`document.activeElement.getAttribute('aria-label')`)) === 'Effort')
 await page.press('Tab')
 // (D-051) Settings is at the foot of the sidebar, before the header in the page: after the Effort menu the keyboard goes on into the chat
-// (D-052) The menus are under the message box, the last of the page: the next Tab goes back to the top (the sidebar).
+// (D-052) The menus are under the message box, the last of the page: the next Tab goes back to the top (the sidebar). (21.4, D-053) In an empty chat the chips
+// under the menus come first.
+for (let i = 0; i < 6 && (await ev(`!!document.activeElement.closest('.empty-chips')`)); i++) await page.press('Tab')
 check('...and the next Tab goes back to the sidebar: the menus are the last of the page, after Send (Settings is in the sidebar, before them)', (await ev(`!!document.activeElement.closest('.sidebar')`)) && (await ev(`!!(document.querySelector('.composer-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(document.querySelector('.header-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING)`)), await ev(`document.activeElement.className + ' ' + document.activeElement.textContent`))
 await chooseEffort('medium')
 await ev(`document.querySelector('.effort-select').focus()`)

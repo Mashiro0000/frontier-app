@@ -40,6 +40,7 @@ const api: FrontierApi = {
   history: {
     list: () => ipcRenderer.invoke(CHANNELS.historyList),
     load: (id) => ipcRenderer.invoke(CHANNELS.historyLoad, id),
+    search: (query) => ipcRenderer.invoke(CHANNELS.historySearch, query),
     save: (conversation) => ipcRenderer.invoke(CHANNELS.historySave, conversation),
     remove: (id) => ipcRenderer.invoke(CHANNELS.historyRemove, id),
     exportChats: (request) => ipcRenderer.invoke(CHANNELS.historyExport, request),

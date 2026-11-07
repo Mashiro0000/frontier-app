@@ -4,7 +4,7 @@ import type { ToolEvent } from '../../../shared/tools'
 import { withEditedMessage, withoutLastReply } from './rewrite'
 import type { AttachedFile } from '../../../shared/attachments'
 import type { PictureNote } from '../../../shared/images'
-import type { ChatMessage, LargeRequest, ReplyFn } from './types'
+import type { ChatMessage, LargeRequest, ReplyFn, ReplyOptions } from './types'
 
 export interface UseChat {
   messages: ChatMessage[]
@@ -49,7 +49,16 @@ export interface UseChat {
    * sent to it. Does nothing while a reply is arriving.
    */
   addPicture: (description: string, note: PictureNote) => void
+  /** (21.3, D-053) While Auto is on, the function that picks the model of each reply (by rules); null when it is off. Stable from one render to the next. */
+  setAutoPicker: (picker: AutoPicker | null) => void
+  /** (21.4) The chat's own question before a large request, for a request that is not a reply (Enhance): answered in the same dialog. */
+  askLarge: (request: LargeRequest, signal: AbortSignal) => Promise<boolean>
 }
+
+/** (21.3) Picks the model for a reply to `history`: its id and the reason in words, or why none can be picked. */
+export type AutoPicker = (
+  history: ChatMessage[]
+) => { ok: true; modelId: string; reason: string } | { ok: false; reason: string }
 
 /**
  * Holds the conversation and runs one cycle: the user sends, a reply streams in, it finishes.
@@ -71,6 +80,11 @@ export function useChat(reply: ReplyFn): UseChat {
   const activeReply = useRef<AbortController | null>(null)
   // A large request waiting for the person's yes (D-032): what to show, and how its answer reaches the reply that is waiting for it.
   const [largeRequest, setLargeRequest] = useState<LargeRequest | null>(null)
+  // (21.3) Auto's picker, while Auto is on: the chat view sets it (it knows the settings, the task and the project's files).
+  const autoPicker = useRef<AutoPicker | null>(null)
+  const setAutoPicker = useCallback((picker: AutoPicker | null): void => {
+    autoPicker.current = picker
+  }, [])
   const answerRef = useRef<((yes: boolean) => void) | null>(null)
 
   // If the chat goes away mid-reply (window closing, hot reload), stop the reply too.
@@ -107,7 +121,8 @@ export function useChat(reply: ReplyFn): UseChat {
   async function streamReply(
     history: ChatMessage[],
     replyId: string,
-    controller: AbortController
+    controller: AbortController,
+    options?: ReplyOptions
   ): Promise<void> {
     // The tool calls of this reply (D-041, 11.4): the events as main reports them, and the length of the reply's text when each call began, so that a note
     // stands where the model stopped to ask. The events and the pieces of text arrive in one order, so a count of the text so far is exact.
@@ -135,7 +150,8 @@ export function useChat(reply: ReplyFn): UseChat {
           if (!toolOffsets.has(event.call)) toolOffsets.set(event.call, written)
           const tools = notesOf(toolEvents, toolOffsets)
           updateMessage(replyId, (m) => ({ ...m, tools }))
-        }
+        },
+        options
       )
       for await (const piece of answered) {
         if (controller.signal.aborted) break // ignore a piece that was already on its way
@@ -169,19 +185,32 @@ export function useChat(reply: ReplyFn): UseChat {
 
   /** Asks for a reply to `history` (which ends with the person's message) and puts an empty one after it, replacing whatever came after. */
   function begin(history: ChatMessage[]): void {
+    // (21.3, D-053) Auto: the model is picked now, by rules, for this reply; when nothing can be picked the reply says why and nothing is sent.
+    const picked = autoPicker.current?.(history) ?? null
     const replyMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'assistant',
       content: '',
-      status: 'streaming',
+      status: picked !== null && !picked.ok ? 'error' : 'streaming',
       provider: null,
-      model: null
+      model: null,
+      ...(picked !== null && !picked.ok ? { error: picked.reason } : {}),
+      ...(picked !== null && picked.ok ? { autoReason: picked.reason } : {})
+    }
+    if (picked !== null && !picked.ok) {
+      setMessages([...history, replyMessage])
+      return
     }
     const controller = new AbortController()
 
     activeReply.current = controller
     setMessages([...history, replyMessage])
-    void streamReply(history, replyMessage.id, controller)
+    void streamReply(
+      history,
+      replyMessage.id,
+      controller,
+      picked !== null && picked.ok ? { modelId: picked.modelId } : undefined
+    )
   }
 
   function send(text: string, files: AttachedFile[] = []): void {
@@ -268,6 +297,8 @@ export function useChat(reply: ReplyFn): UseChat {
     setConversationId,
     regenerate,
     resend,
-    addPicture
+    addPicture,
+    setAutoPicker,
+    askLarge: askAboutLargeRequest
   }
 }

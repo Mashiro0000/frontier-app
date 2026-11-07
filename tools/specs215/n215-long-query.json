@@ -1,0 +1,14 @@
+{
+  "label": "n215-long-query",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/chatSearch.ts",
+      "from": "input.length > SEARCH_LIMITS.maxQueryChars",
+      "to": "input.length > 100000"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-21-5.mjs"
+  ],
+  "env": {}
+}

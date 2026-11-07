@@ -53,7 +53,7 @@ const headerParts = () => ev(`(() => {
   const t = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, r: r.right, t: r.top, b: r.bottom } }
   return { menus: b('.app-header-actions'), title: b('.chat-title'), badges: b('.app-header-badges'), header: b('.app-header'), box: t('.composer-inner'), menusBox: t('.app-header-actions'), note: t('.chat-footnote'),
     inHeader: !!document.querySelector('.app-header .app-header-actions'), underBox: !!document.querySelector('.composer-meta > .app-header-actions'),
-    menuKids: [...document.querySelectorAll('.app-header-actions > *')].map((e) => e.className.split(' ')[0]),
+    menuKids: [...document.querySelectorAll('.app-header-actions > *')].filter((e) => e.tagName !== 'DIALOG').map((e) => e.className.split(' ')[0]), /* (21.1) the chooser's dialog sits beside the menu */
     badgeKids: [...document.querySelectorAll('.app-header-badges > *')].map((e) => e.textContent.trim()),
     titleAlign: getComputedStyle(document.querySelector('.chat-title')).textAlign, menusLabel: document.querySelector('.app-header-actions')?.getAttribute('aria-label') }
 })()`)
@@ -102,7 +102,7 @@ try {
   // Measured in a wide window, where the chat area (940 px) has room for more.
   const col = await box('.message-list-inner')
   const composerW = (await box('.composer-inner')).w
-  check('B: in a wide window the column of messages and the box are 768 px wide, not wider', Math.abs(col.w - 768) < 1 && Math.abs(composerW - 768) < 1, JSON.stringify({ col, composerW }))
+  check('B: in a wide window the column of messages and the box are 800 px wide (21.4, D-053: as AI Fiesta; 768 before), not wider', Math.abs(col.w - 800) < 1 && Math.abs(composerW - 800) < 1, JSON.stringify({ col, composerW }))
   const wide = await headerParts()
   check('B: in a wide window the title is at the header\'s left, and the note sits beside the menus in ONE row under the box (as Claude\'s)', wide.title.shown && wide.title.l - wide.header.l < 24 && Math.abs((wide.note.t + wide.note.b) / 2 - (wide.menusBox.t + wide.menusBox.b) / 2) < 4 && wide.note.r <= wide.menusBox.l, JSON.stringify(wide))
   await page.screenshot(`${shots}/20-dark-wide.png`)

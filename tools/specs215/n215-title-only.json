@@ -1,0 +1,14 @@
+{
+  "label": "n215-title-only",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/chatSearch.ts",
+      "from": "    const all = `${chat.title}\\n${texts.join('\\n')}`.toLowerCase()",
+      "to": "    const all = `${chat.title}`.toLowerCase()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-21-5.mjs"
+  ],
+  "env": {}
+}

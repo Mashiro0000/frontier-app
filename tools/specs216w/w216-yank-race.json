@@ -1,0 +1,24 @@
+{
+  "label": "w216-yank-race",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/chat/MessageList.tsx",
+      "from": "      stickToBottom.current = false\n",
+      "to": "      void 0\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-1-3.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-specs216wnc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8861",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w216-yank-race"
+  }
+}

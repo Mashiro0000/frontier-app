@@ -1,0 +1,14 @@
+{
+  "label": "n214-enhance-gets-tools",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chat.ts",
+      "from": "      toolsContext === undefined || enhancing",
+      "to": "      toolsContext === undefined"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-21-4.mjs"
+  ],
+  "env": {}
+}

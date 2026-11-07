@@ -1,0 +1,14 @@
+{
+  "label": "n211-nan-is-cheap",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/costTier.ts",
+      "from": "  if (!Number.isFinite(out) || out < 0) return 4",
+      "to": "  if (!Number.isFinite(out) || out < 0) return 1"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-21-1.mjs"
+  ],
+  "env": {}
+}

@@ -549,7 +549,23 @@ The violet gradient is kept as the one bright touch; nothing was taken away.
 - **Not in this stage:** ChatGPT's single "+" menu (it would hide Attach and Make an image), the model menu inside the box, Claude's warm palette
   and serif replies, a "..." menu per chat in the sidebar.
 
-## Stage 21 and 22 - Ideas from AI Fiesta (asked for 6 November 2026: "look into chat.v2.aifiesta.ai thoroughly and upgrade my frontier app just like it"; PLAN, nothing built)
+## Stage 21 and 22 - Ideas from AI Fiesta (asked for 6 November 2026: "look into chat.v2.aifiesta.ai thoroughly and upgrade my frontier app just like it"; plan approved the same day: "Yes, your picks", all seven kept; Stage 21 started)
+
+**The owner's answers (6 November 2026):** (1) up to 4 models; (2) Auto by rules, no extra call; (3) Enhance in, the cheapest model, never
+sent by itself; (4) dark stays the default, the light theme gets the glow; (5) more models in a later stage; (6) one test message sent;
+(7) Stage 21 first.
+
+**Compare dropped (6 November 2026, the owner, mid-build):** "I don't want the comparing the 2-4 model side by side feature: that feature is not
+efficient from the environment point of view." Everything else of AI Fiesta's stays ("I like their other features"). Compare had been built and
+checked under Node (74 checks) but never passed in the window; it is kept, unmerged, on the local branch `stage-21-compare-shelved` (563c126), and
+its own files in the git-ignored `tools/.out/shelved-21-2/`. Auto fits the owner's reason: each message goes once, to one model, picked by rules.
+
+**The Compare screen** (seen after the one test message, "In one short paragraph, what is a rainbow?", to three models; 1 of 10 used): a
+switch **Compare / Focus** at the top; in Compare the answers are **cards 340 px wide side by side** (radius 16, a thin border, a near-white
+fill), scrolling sideways when they do not fit, each with the model's logo and name, "expand" and "x" (drop that model), and under the answer
+Copy, Read aloud, thumbs up and down, Download; above the box a bar "Want one combined answer from all models?" with **Generate Consensus**
+(not tried: it would be a second message); the box says "Message 3 models...". In **Focus** one answer fills the column with the other models
+listed at the right to switch, and the box then talks to that one model only.
 
 **What the study found** (chat.v2.aifiesta.ai, read in the built-in browser on 6 November 2026, signed in as the owner on its Free plan,
 1280x800; nothing was sent, so no answer screen was seen):
@@ -581,12 +597,12 @@ Enhance under the box, a search of chats, a Library, Experts, an Image Studio pa
 - **Stage 21 - the chat** (21.1 to 21.6):
   - **A. The model chooser** (21.1): a dialog in place of the model menu: search, filter by maker and by cost, a badge per model (1x, 4x,
     8x worked out from the registry's prices against the cheapest), "no key" shown, Auto at the top.
-  - **B. Compare** (21.2): one message to **2 to 4 models** side by side in columns, each streaming on its own with its own Stop and cost;
+  - **B. ~~Compare~~ (21.2) DROPPED by the owner (see above).** Was: one message to **2 to 4 models** side by side in columns, each streaming on its own with its own Stop and cost;
     "Keep this one" carries the chat on with that model. The limits and the question before a large request count **all the columns
     together**, before anything is sent. Saved, backed up and restored like any chat.
   - **C. Auto** (21.3): "Auto" picks the model **by rules, with no extra call**: the Task menu's shortlist, a model that takes pictures
     when one is attached, only makers you have a key for. The reply says which model answered and why.
-  - **D. Under the box** (21.4): chips in an empty chat (Compare, Make an image, Web search, Experts); the placeholder shows example
+  - **D. Under the box** (21.4): chips in an empty chat (Make an image, Web search, Experts); the placeholder shows example
     prompts; **Enhance** rewrites your message with the cheapest model you have a key for and puts it back in the box to edit, never sent
     by itself (its cost goes in the ledger).
   - **E. Search chats** (21.5): a search button and Ctrl+K over titles and text, on this computer only.
@@ -601,6 +617,21 @@ Enhance under the box, a search of chats, a Library, Experts, an Image Studio pa
     Windows already has (nothing downloaded), the light theme's soft glow behind the greeting.
   - **K. A usage chart** (22.5): tokens and cost for 7 days / 30 days / 3 months, from the ledger Frontier already keeps.
   - **L.** (22.6) The threat note, the full regression, the merge.
+- **Stage 21 progress** (D-053):
+  - [x] (21.1) The model chooser: search, maker and cost filters, a $ to $$$$ badge and the exact prices on every model (32 Node checks, 26 in the window,
+        9 negative controls all caught).
+  - [ ] ~~(21.2) Compare~~: dropped by the owner (above); shelved, never merged.
+  - [x] (21.3) Auto: a model picked by rules for each message, the reason above the reply; off at every start (27 Node checks, 19 in the window; 3 Node
+        and 5 window controls caught, one window control unseeable there and caught under Node).
+  - [x] (21.4) The box: chips under an empty chat's box (Make an image, Web search, Projects, Instructions), examples in the empty box, Enhance (the
+        cheapest model with a key, one request carrying only the draft, put back with Undo, never sent by itself), and AI Fiesta's sizes (an 800 px column,
+        28 px corners, a 34 px greeting) (20 Node checks, 18 in the window; 2 Node and 6 window controls caught).
+  - [x] (21.5) Search chats: a button beside the sidebar's fold button and Ctrl+K; every word, title or text, newest first, a piece of text around it;
+        searched in main on this computer (26 Node checks, 13 in the window; 3 Node and 5 window controls caught).
+  - [x] (21.6) The threat note (D-053), the full regression, the merge. Regression t21: 252 runs, 225 clean the first time; the other 27 all
+        clean on re-runs after 25 stale checks were put right, two runs that clashed with a check of mine on the same port, and one real fault:
+        a reader who scrolled up while a reply streamed could be pulled back down (the scroll event comes a frame late). Fixed in the message
+        list, with a new check that holds the scroll event back and a control that takes the fix out (caught).
 - **Not in these stages:** video (OpenAI's video API is gone, D-048), Slides and Websites (Websites publishes to a public link), plans,
   upgrades, referrals, Hindi and Bengali, Deep research, their names, logo, fonts or pictures.
 - **Not proven (and cannot be from here):** a real call to any model (the mock stands in), Compare's real costs.

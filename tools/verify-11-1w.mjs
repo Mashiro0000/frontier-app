@@ -120,7 +120,8 @@ try {
   const chrome = await ev(`['.sidebar-head', '.sidebar-new', '.sidebar-nav', '.sidebar-foot', '.app-header-badges', '.chat-bar', '.composer', '.app-header-actions'].map((s) => document.querySelector(s)?.innerText ?? '').join('\\n')`)
   check('E: the page itself (the sidebar, the header, the chat bar, the message box) says nothing of a search or the audit log; its one word about tools is the "Tools" button', chrome.length > 40 && !/web search|search the web|audit/i.test(chrome) && (chrome.match(/\btools?\b/gi) ?? []).length === 1, show(chrome.slice(0, 300)))
   const buttons = await ev(`[...document.querySelectorAll('.sidebar-head button, .sidebar-new, .sidebar-nav button, .sidebar-foot button, .app-header button, .chat-bar button, .composer button, dialog.settings button')].map((b) => b.textContent.trim()).filter(Boolean)`)
-  check('E: no button of the page is about a search, an approval or Stop everything; the only one about tools is "Tools"', buttons.length >= 8 && !buttons.some((b) => /search|audit|stop everything|approv/i.test(b)) && buttons.filter((b) => /tool/i.test(b)).join() === 'Tools', show(buttons))
+  // (21.5, D-053) "Search chats" searches the saved chats on this computer (main, no model, no network): it is not a web search, and is the one button let through.
+  check('E: no button of the page is about a search (but "Search chats", a search of the saved chats on this computer), an approval or Stop everything; the only one about tools is "Tools"', buttons.length >= 8 && !buttons.some((b) => b !== 'Search chats' && /search|audit|stop everything|approv/i.test(b)) && buttons.filter((b) => /tool/i.test(b)).join() === 'Tools', show(buttons))
 } catch (error) {
   check(`the suite stopped before its end: ${String(error?.stack ?? error).slice(0, 400)}`, false)
 }

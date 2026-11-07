@@ -1,0 +1,14 @@
+{
+  "label": "n213-quick-dearest",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/autoPick.ts",
+      "from": "      modelId: able[0].id,\n      reason: 'the cheapest model you have a key for, for a quick answer'",
+      "to": "      modelId: able[able.length - 1].id,\n      reason: 'the cheapest model you have a key for, for a quick answer'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-21-3.mjs"
+  ],
+  "env": {}
+}

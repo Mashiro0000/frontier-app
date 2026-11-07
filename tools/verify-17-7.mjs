@@ -111,7 +111,10 @@ await guard('E', async () => {
   // (18.1) package.json's scripts changed (build:mac and build:linux went): the rule is about packages, so its dependencies are compared, and the lock file byte for byte.
   const pkg = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8'))
   const deps = createHash('sha256').update(JSON.stringify({ d: pkg.dependencies, dd: pkg.devDependencies })).digest('hex')
-  check('E: no new package: package.json\'s dependencies and package-lock.json are main\'s of before the stage (rule 10)', deps === '4310cf6266fc5398ef3153573104034496f93918c5dee13d71f8c835a70aac5c' && hash('package-lock.json') === '47ae1caaa4d8628a0500f046d038a00d95110708b15a1f3a34adb8e4eda7a906')
+  // (Stage 21) The 0.2.0 release (e6a4783) changed the app's own version in the lock file and nothing else: the lock is compared with its two root "version"
+  // lines read as 0.1.0, so a version bump is not taken for a new package, and any other change still is.
+  const lockAsBefore = readFileSync(join(REPO, 'package-lock.json'), 'utf8').replace(/^(\{\s*"name": "frontier-app",\s*"version": )"[^"]*"/, '$1"0.1.0"').replace(/("packages": \{\s*"": \{\s*"name": "frontier-app",\s*"version": )"[^"]*"/, '$1"0.1.0"')
+  check('E: no new package: package.json\'s dependencies and package-lock.json are main\'s of before the stage (rule 10)', deps === '4310cf6266fc5398ef3153573104034496f93918c5dee13d71f8c835a70aac5c' && createHash('sha256').update(lockAsBefore).digest('hex') === '47ae1caaa4d8628a0500f046d038a00d95110708b15a1f3a34adb8e4eda7a906', createHash('sha256').update(lockAsBefore).digest('hex'))
   check('E: the window\'s policy (index.html) is unchanged (rule 7)', hash('src/renderer/index.html') === 'f80ed67d49883c8105c73f0b5b502537829b5d35f59145c10418d71133a29a90')
   const gemini = source('src/main/providers/gemini.ts')
   check('E: the adapter logs nothing at all (no console), so it can log no key (rule 5)', !/console\./.test(gemini))

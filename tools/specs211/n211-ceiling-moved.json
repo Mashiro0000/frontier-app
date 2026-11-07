@@ -1,0 +1,14 @@
+{
+  "label": "n211-ceiling-moved",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/costTier.ts",
+      "from": "export const COST_TIER_CEILINGS: readonly [number, number, number] = [1, 5, 15]",
+      "to": "export const COST_TIER_CEILINGS: readonly [number, number, number] = [1, 4, 15]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-21-1.mjs"
+  ],
+  "env": {}
+}

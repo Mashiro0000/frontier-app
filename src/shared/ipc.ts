@@ -11,6 +11,7 @@ import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from './mem
 import type { ProgramsChangeResult, ProgramsStatus } from './programs'
 import type { ConnectorChangeResult, ConnectorsStatus } from './connectors'
 import type { ProjectChangeResult, ProjectsStatus } from './projects'
+import type { ChatSearchHit } from './chatSearch'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
 import type { ToolCaps, ToolChangeResult, ToolEvent, ToolsStatus } from './tools'
@@ -202,7 +203,21 @@ export interface ChatRequest {
    * request. A project that is not there is none. Absent for a chat in no project, which is sent exactly as before.
    */
   projectId?: string
+  /**
+   * (21.3, D-053) The model that answers this request instead of the chosen one: Auto picks one for each message, by rules. Main checks it is on offer. Absent:
+   * the chosen model answers, as always.
+   */
+  modelId?: string
+  /**
+   * (21.4, D-053) What the request is for, when it is not a reply in a chat: 'enhance' rewrites the draft in the message box. It names its model and carries one
+   * message of the person's and nothing else (no project, chat or instructions: the request check refuses them); main adds no notes, instructions or tools.
+   */
+  purpose?: 'enhance'
 }
+
+/** (21.5, D-053) What a search of the saved chats found, or why it could not search. `unreadable`: chats that could not be read were left out. */
+export type HistorySearchResult =
+  { ok: true; hits: ChatSearchHit[]; unreadable: number } | { ok: false; error: string }
 
 /** What the main process reports while a reply is being produced. */
 export type ChatStreamEvent =
@@ -541,6 +556,8 @@ export interface FrontierApi {
     list(): Promise<HistoryList>
     /** One saved conversation, to put on screen. Main only answers for an id that is a saved conversation. */
     load(id: string): Promise<HistoryLoadResult>
+    /** (21.5, D-053) The saved chats that hold every word of the query, newest first, with a short piece of text each. Searched in main, on this computer. */
+    search(query: string): Promise<HistorySearchResult>
     /** Saves the whole conversation. Main checks it and writes it; the page cannot choose the title or dates. */
     save(conversation: ConversationToSave): Promise<HistorySaveResult>
     /** Deletes a saved conversation's file. */
@@ -826,6 +843,7 @@ export const CHANNELS = {
   historyRestoreApply: 'history:restore-apply',
   historyRestoreCancel: 'history:restore-cancel',
   historyStorage: 'history:storage',
+  historySearch: 'history:search',
   historyEncrypt: 'history:encrypt',
   historyDecrypt: 'history:decrypt',
   attachmentsPick: 'attachments:pick',

@@ -1,0 +1,14 @@
+{
+  "label": "n214-enhance-takes-a-project",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/validate.ts",
+      "from": "      projectId !== undefined ||\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-21-4.mjs"
+  ],
+  "env": {}
+}

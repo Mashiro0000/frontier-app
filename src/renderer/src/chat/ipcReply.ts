@@ -2,7 +2,7 @@ import type { ChatStreamEvent } from '../../../shared/ipc'
 import type { ToolEvent } from '../../../shared/tools'
 import type { ReplyUsage } from '../../../shared/usage'
 import { toWireMessages } from './history'
-import type { Answerer, ChatMessage, LargeRequest } from './types'
+import type { Answerer, ChatMessage, LargeRequest, ReplyOptions } from './types'
 
 /** What a reply says when the person answered "Don't send" to a large request (D-032). It is shown like any other reason a reply did not come, with "Try again". */
 export const NOT_SENT_MESSAGE = 'Not sent: you chose not to send this request.'
@@ -28,7 +28,8 @@ export async function* ipcReply(
   onUsage: (usage: ReplyUsage) => void,
   onLargeRequest: (request: LargeRequest) => Promise<boolean>,
   projectId: string | null = null,
-  onTool: (event: ToolEvent) => void = () => {}
+  onTool: (event: ToolEvent) => void = () => {},
+  options: ReplyOptions = {}
 ): AsyncGenerator<string> {
   if (!window.api) {
     throw new Error('The window could not connect to the app (the preload did not load).')
@@ -58,7 +59,9 @@ export async function* ipcReply(
       messages: toWireMessages(history),
       ...(instructions === '' ? {} : { instructions }),
       ...(conversationId === null ? {} : { conversationId }),
-      ...(projectId === null ? {} : { projectId })
+      ...(projectId === null ? {} : { projectId }),
+      ...(options.modelId === undefined ? {} : { modelId: options.modelId }),
+      ...(options.purpose === undefined ? {} : { purpose: options.purpose })
     })
     while (!signal.aborted) {
       const event = arrived.shift()

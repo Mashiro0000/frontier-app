@@ -1,0 +1,14 @@
+{
+  "label": "n213-ignores-pictures",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/autoPick.ts",
+      "from": "(!input.pictures || m.imageInput)",
+      "to": "true"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-21-3.mjs"
+  ],
+  "env": {}
+}
