@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { formatMoney, type LimitSetting, type Limits } from '../../../shared/limits'
 import type { UsageSummary, UsageTotals } from '../../../shared/usage'
 import { formatCount, formatSpend, inputSide } from './format'
+import UsageChart from './UsageChart'
 
 interface UsageSectionProps {
   /** Whether Settings is open: the sums are asked for each time it opens, and not while it is shut. */
@@ -115,6 +116,7 @@ function UsageSection({ open, conversationId, limits }: UsageSectionProps): Reac
           )}
         </>
       )}
+      <UsageChart open={open} />
       <p className="settings-hint">
         Counted by this app from what each provider reports, at list prices (cached input at its
         own, lower price). Your provider&apos;s invoice is what counts. &quot;About&quot; marks a

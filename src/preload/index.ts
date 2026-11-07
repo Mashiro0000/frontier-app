@@ -35,7 +35,8 @@ const api: FrontierApi = {
     }
   },
   usage: {
-    summary: (conversationId) => ipcRenderer.invoke(CHANNELS.usageSummary, conversationId)
+    summary: (conversationId) => ipcRenderer.invoke(CHANNELS.usageSummary, conversationId),
+    daily: (range) => ipcRenderer.invoke(CHANNELS.usageDaily, range)
   },
   history: {
     list: () => ipcRenderer.invoke(CHANNELS.historyList),
@@ -130,6 +131,15 @@ const api: FrontierApi = {
     begin: () => ipcRenderer.invoke(CHANNELS.voiceBegin),
     end: (bytes, ms) => ipcRenderer.invoke(CHANNELS.voiceEnd, { bytes, ms }),
     cancel: () => ipcRenderer.invoke(CHANNELS.voiceCancel)
+  },
+  library: {
+    files: () => ipcRenderer.invoke(CHANNELS.libraryFiles),
+    star: (id, on) => ipcRenderer.invoke(CHANNELS.libraryStar, { id, on })
+  },
+  experts: {
+    list: () => ipcRenderer.invoke(CHANNELS.expertsList),
+    save: (expert) => ipcRenderer.invoke(CHANNELS.expertsSave, expert),
+    remove: (id) => ipcRenderer.invoke(CHANNELS.expertsRemove, id)
   },
   images: {
     status: () => ipcRenderer.invoke(CHANNELS.imagesStatus),

@@ -1,0 +1,14 @@
+{
+  "label": "n221-key-in-expert",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/myExperts.ts",
+      "from": "        if (!secrets.ok) return { ok: false, error: secrets.error }\n",
+      "to": "\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-22-1.mjs"
+  ],
+  "env": {}
+}

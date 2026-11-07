@@ -3139,3 +3139,26 @@ Asked for 6 November 2026 ("look into chat.v2.aifiesta.ai thoroughly and upgrade
 **Found by the regression and fixed (not a Stage 21 feature):** a person who scrolled up while a reply streamed in could be pulled back down to the bottom. The list learned that they had scrolled from the scroll event, which comes a frame after the move (later still in a hidden window); text that landed in between still saw "at the bottom" and jumped. The Stage 1 check failed twice in a row in t21 and was first thought flaky (it was seen once in Stage 20 too). Now the list also remembers its height and position when it last knew them, and a reader who moved up from the bottom of what was there is not followed, whether or not the event has come. A new check holds every scroll event of the list back so the race happens each time; a control that takes the fix out is caught (`w216-yank-race`).
 
 **Not proven (and cannot be from here):** a real call to any provider, so the real cost of an Enhance and whether a real model returns only the rewrite (the clean-up takes off one pair of quotation marks and nothing else); how Search feels with thousands of chats (it opens every chat at each search).
+
+## D-054 - Stage 22: the pages, with ideas from AI Fiesta (the Library, Experts, Image Studio, the look, a usage chart)
+
+Started 7 November 2026 on the owner's "Yeah start it. Also in last emphasis on look setting and how the app looks to user." Built on branch `stage-22-pages`.
+The plan is in ROADMAP (G to L); the owner asked for the most care at the end, on the look.
+
+**22.1, the Library.** A page from the sidebar (AI Fiesta's "Library"): every file on the person's messages in the saved chats, each once, with the chats that
+carry it (worked out in main from the chats it can read, as Search does; an unreadable chat is counted and said), and every picture of the gallery. All /
+Starred / Images / Files, a search by name or description, a file opens with its kind, size and its chats (a click opens the chat), a picture opens large.
+A star is a mark only, kept by main in `library.json` (a kept document, D-039: written and read back, sealed with the chats when encryption is on, never
+written over when it cannot be read); the page names an id and on/off, nothing else. A file of a project's is the project's (Projects shows those).
+
+**22.2, Experts.** Twelve ready-made assistants in seven categories (the app's own words; health and money ones say they are not licensed professionals and
+when to see one) and "My experts", the person's own (name, a line, instructions, a task; at most 50, kept by main in `experts.json`, sealed like the others).
+"Start a chat" opens a new, empty chat whose own instructions (D-027) are the expert's and sets the task; nothing is sent until the person writes, and the
+Instructions button shows "on". An expert whose words hold a saved key is refused, as a project's instructions are (D-042); deleting one asks first.
+
+**22.3, Image Studio.** A page of its own for pictures, first among the sidebar's pages as AI Fiesta's: the Stage 16 form unchanged in what it checks (the
+cost before anything is sent, the Windows box above the amount, ONE request), ten styles in words as chips (no picture, no artist's name) that add
+"Style: ..." under the description (in what is sent, its length and its cost), and the newest twelve pictures under it. A picture made there is kept in the
+gallery and the Library and put into no chat.
+
+**The sidebar** now lists, under New chat: Image Studio, Experts, Projects, Library, then History and Tools (AI Fiesta's order, without the paid pages).

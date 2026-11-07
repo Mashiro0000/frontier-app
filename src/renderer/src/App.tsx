@@ -15,6 +15,9 @@ import { useImageStatus } from './images/imageStatus'
 import MakeImageDialog from './images/MakeImageDialog'
 import HistoryDialog from './history/HistoryDialog'
 import SearchDialog from './history/SearchDialog'
+import LibraryDialog from './library/LibraryDialog'
+import ExpertsDialog from './experts/ExpertsDialog'
+import ImageStudioDialog from './images/ImageStudioDialog'
 import { useHistory } from './history/useHistory'
 import InstructionsDialog from './instructions/InstructionsDialog'
 import { useEveryChat } from './instructions/useEveryChat'
@@ -52,6 +55,11 @@ function App(): React.JSX.Element {
   const [auto, setAuto] = useState(false)
   // (21.5, D-053) Search chats is open.
   const [searchOpen, setSearchOpen] = useState(false)
+  // (22.1, 22.2, D-054) The Library and Experts are open.
+  const [libraryOpen, setLibraryOpen] = useState(false)
+  const [libraryVisit, setLibraryVisit] = useState(0) // each opening is a fresh one, as the gallery's
+  const [expertsOpen, setExpertsOpen] = useState(false)
+  const [studioOpen, setStudioOpen] = useState(false)
   // The chat is held here, not in ChatView, because the header and the chat bar need to know when a reply is arriving:
   // the model cannot be changed meanwhile, and no other chat can be opened or started.
   const chat = useChat(ipcReply)
@@ -147,6 +155,16 @@ function App(): React.JSX.Element {
         onOpenTools={openTools}
         onOpenSettings={() => setSettingsOpen(true)}
         onSearch={() => setSearchOpen(true)}
+        onOpenStudio={() => setStudioOpen(true)}
+        onOpenExperts={() => setExpertsOpen(true)}
+        onOpenProjects={() => {
+          projects.reload()
+          setProjectsOpen(true)
+        }}
+        onOpenLibrary={() => {
+          setLibraryVisit((n) => n + 1)
+          setLibraryOpen(true)
+        }}
       />
       <div className="app-main">
         <header className="app-header">
@@ -284,6 +302,36 @@ function App(): React.JSX.Element {
         onClose={() => setSearchOpen(false)}
         onOpenChat={history.open}
       />
+      <LibraryDialog
+        key={`library-${libraryVisit}`}
+        open={libraryOpen}
+        onClose={() => setLibraryOpen(false)}
+        onOpenChat={history.open}
+      />
+      <ExpertsDialog
+        open={expertsOpen}
+        replying={chat.isReplying}
+        onClose={() => setExpertsOpen(false)}
+        onStart={(expert) => {
+          // A new chat whose own instructions are the expert's (the person sees them on the Instructions button), and the expert's task.
+          history.startNew()
+          chat.setInstructions(expert.instructions)
+          setTask(expert.task)
+          setExpertsOpen(false)
+        }}
+      />
+      <ImageStudioDialog
+        open={studioOpen}
+        onClose={() => setStudioOpen(false)}
+        onOpenGallery={() => {
+          setGalleryVisit((n) => n + 1)
+          setGalleryOpen(true)
+        }}
+        onOpenSettings={() => {
+          setStudioOpen(false)
+          setSettingsOpen(true)
+        }}
+      />
       <MakeImageDialog
         open={makeOpen}
         chatId={history.activeId}
@@ -300,7 +348,7 @@ function App(): React.JSX.Element {
         onClose={() => setMakeOpen(false)}
       />
       <GalleryDialog
-        key={galleryVisit}
+        key={`gallery-${galleryVisit}`}
         open={galleryOpen}
         canAttach={chosenModel?.imageInput === true}
         onUse={usePicture}

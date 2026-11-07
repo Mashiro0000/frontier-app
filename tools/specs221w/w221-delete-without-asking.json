@@ -1,0 +1,24 @@
+{
+  "label": "w221-delete-without-asking",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/experts/ExpertsDialog.tsx",
+      "from": "    if (!window.confirm(",
+      "to": "    if (false && !window.confirm("
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-22-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-specs221wncc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8863",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w221-delete-without-asking"
+  }
+}

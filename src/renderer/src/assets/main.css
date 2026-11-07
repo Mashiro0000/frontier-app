@@ -4087,3 +4087,741 @@ body {
     display: none;
   }
 }
+
+/* ---- (22.1, 22.2, D-054) The Library and Experts: big pages over the chat, as AI Fiesta's, in the chooser's style ---- */
+.library,
+.experts {
+  margin: auto;
+  width: min(1040px, calc(100vw - 48px));
+  height: min(760px, calc(100vh - 48px));
+  padding: 0;
+  overflow: hidden;
+  color: var(--color-text);
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  box-shadow: var(--shadow-large);
+}
+
+.library[open],
+.experts[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.library::backdrop,
+.experts::backdrop {
+  background: var(--backdrop);
+  backdrop-filter: blur(3px);
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 26px 24px 8px 30px;
+}
+
+.page-title {
+  margin: 0 0 6px;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.library-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 30px 14px;
+}
+
+.library-search {
+  flex: 0 1 320px;
+  margin-left: auto;
+}
+
+.experts-categories {
+  padding: 0 30px 14px;
+}
+
+.library-notes {
+  padding: 0 30px 8px;
+}
+
+.library-notes .settings-hint,
+.library-notes.settings-hint {
+  margin: 0 0 4px;
+}
+
+.library-empty {
+  padding: 40px 30px;
+  text-align: center;
+}
+
+/* The cards: a grid that fills the width, scrolling under the tools. */
+.library-grid,
+.experts-grid {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 10px 30px 30px;
+  overflow-y: auto;
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+}
+
+.library-grid {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  align-content: start;
+  padding-top: 18px;
+}
+
+.experts-grid {
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  align-content: start;
+  padding-top: 18px;
+}
+
+.library-card {
+  position: relative;
+}
+
+.library-open {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 0 0 12px;
+  font: inherit;
+  text-align: left;
+  color: var(--color-text);
+  background: var(--color-composer);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.library-open:hover {
+  border-color: var(--color-input-border);
+}
+
+.library-open:focus-visible,
+.library-star:focus-visible,
+.expert-card:focus-within {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.library-thumb {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 6px;
+  background: var(--color-background-mute);
+}
+
+/* Placed over the box, so a tall or wide picture never changes the card's height. */
+.library-thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.library-kind {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.library-name {
+  display: -webkit-box;
+  padding: 0 12px;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow-wrap: anywhere;
+}
+
+.library-meta {
+  padding: 0 12px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.library-star {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--color-text-muted);
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.library-star-on {
+  color: var(--color-accent-text);
+  border-color: var(--color-accent);
+}
+
+.library-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 30px 30px;
+  overflow-y: auto;
+  border-top: 1px solid var(--color-border);
+}
+
+.library-detail .link-button {
+  align-self: flex-start;
+}
+
+.library-large {
+  max-width: 100%;
+  max-height: 460px;
+  align-self: flex-start;
+  border-radius: 14px;
+}
+
+.library-detail-title {
+  margin: 4px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.library-chats-heading {
+  margin: 10px 0 2px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.library-chats {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* An expert: a round mark of its initials, its name, a line about it, and "Start a chat". */
+.expert-card {
+  display: flex;
+  gap: 14px;
+  padding: 18px;
+  background: var(--color-composer);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+}
+
+.expert-card:hover {
+  border-color: var(--color-input-border);
+}
+
+.expert-mark {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-accent-text);
+  background: var(--color-accent-soft, var(--color-background-mute));
+  border-radius: 50%;
+}
+
+.expert-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.expert-text .model-tag {
+  align-self: flex-start;
+}
+
+.expert-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.expert-desc {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.expert-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: 8px;
+}
+
+.experts-mine-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 30px 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.expert-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 30px 30px;
+  overflow-y: auto;
+  border-top: 1px solid var(--color-border);
+}
+
+.expert-instructions {
+  min-height: 160px;
+  resize: vertical;
+}
+
+@media (max-width: 720px) {
+  .page-head,
+  .library-tools,
+  .experts-categories,
+  .library-notes {
+    padding-left: 18px;
+    padding-right: 16px;
+  }
+
+  .library-grid,
+  .experts-grid,
+  .library-detail,
+  .expert-form {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .library-search {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+}
+
+/* ---- (22.3, D-054) Image Studio: the Library's page, with the styles, the form in a card, and the newest pictures ---- */
+.studio {
+  margin: auto;
+  width: min(1040px, calc(100vw - 48px));
+  height: min(760px, calc(100vh - 48px));
+  padding: 0;
+  overflow: hidden;
+  color: var(--color-text);
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  box-shadow: var(--shadow-large);
+}
+
+.studio[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.studio::backdrop {
+  background: var(--backdrop);
+  backdrop-filter: blur(3px);
+}
+
+.studio-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 0;
+  padding: 8px 30px 30px;
+  overflow-y: auto;
+}
+
+.studio-styles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* The form sits in a card like the message box: big, rounded, quiet. */
+.studio-form {
+  padding: 20px 22px;
+  background: var(--color-composer);
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+}
+
+.studio-form .make-image-input {
+  min-height: 110px;
+  font-size: 15px;
+}
+
+.studio-recent-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.studio-recent-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.studio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.studio-thumb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  overflow: hidden;
+  background: var(--color-background-mute);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.studio-thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.studio-thumb:hover {
+  border-color: var(--color-input-border);
+}
+
+.studio-thumb:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .studio-body {
+    padding: 8px 16px 20px;
+  }
+}
+
+/* ---- (22.4, D-054) Settings > Appearance: the theme, the accent colour, the font ---- */
+.look-label {
+  margin: 14px 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.look-label:first-of-type {
+  margin-top: 4px;
+}
+
+.accent-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.accent-option {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 64px;
+  padding: 8px 4px 6px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.accent-option:hover {
+  color: var(--color-text);
+  background: var(--color-background-mute);
+}
+
+.accent-option[aria-pressed='true'] {
+  color: var(--color-text);
+  border-color: var(--color-input-border);
+  background: var(--color-background-mute);
+}
+
+.accent-option:focus-visible,
+.font-option:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.accent-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.accent-option[aria-pressed='true'] .accent-swatch {
+  box-shadow:
+    0 0 0 2px var(--color-background-soft),
+    0 0 0 4px var(--color-text);
+}
+
+.font-choice {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.font-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  font: inherit;
+  text-align: left;
+  color: var(--color-text);
+  background: var(--color-composer);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.font-option:hover {
+  border-color: var(--color-input-border);
+}
+
+.font-option[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent) inset;
+}
+
+.font-sample {
+  flex: none;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.font-name {
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+/* ---- (22.4, D-054) The light theme's soft glow behind the greeting, as AI Fiesta's, in the accent's colour; a fainter one in the dark ---- */
+.empty {
+  position: relative;
+  isolation: isolate;
+}
+
+.empty::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -140px -220px;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 50% 45% at 50% 45%,
+    rgba(var(--accent-rgb, 124, 92, 255), 0.07),
+    transparent 70%
+  );
+}
+
+:root[data-theme='light'] .empty::before {
+  background:
+    radial-gradient(
+      ellipse 42% 40% at 38% 45%,
+      rgba(var(--accent-rgb, 124, 92, 255), 0.16),
+      transparent 70%
+    ),
+    radial-gradient(ellipse 40% 38% at 64% 52%, rgba(56, 189, 248, 0.12), transparent 70%);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .empty::before {
+    display: none;
+  }
+}
+
+/* ---- (22.4, D-054) The polish pass ---- */
+
+/* The theme switch: a grey track with the chosen one raised, so it reads in the light theme too (white on white was too faint). */
+.theme-choice {
+  background: var(--color-background-mute);
+}
+
+:root[data-theme='dark'] .theme-option[aria-pressed='true'] {
+  background: var(--ev-c-gray-1);
+}
+
+/* The menus of a dialog (voice, pictures): rounded, with the app's chevron, as the menus under the message box. */
+.voice-pick-field select {
+  height: 36px;
+  min-width: 96px;
+  padding: 0 32px 0 12px;
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-composer) var(--chevron) no-repeat right 10px center / 14px 14px;
+  border: 1px solid var(--color-input-border);
+  border-radius: 10px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.voice-pick-field select:hover:not(:disabled) {
+  background-color: var(--color-background-mute);
+}
+
+.voice-pick-field select:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.voice-pick-field select:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.studio-form .voice-pick-field select {
+  background-color: var(--color-background-soft);
+}
+
+/* ---- (22.5, D-054) The usage chart: one colour (the accent's text colour, readable on every surface), thin rounded bars, a quiet grid ---- */
+.usage-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0 6px;
+  padding: 16px 18px 12px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+}
+
+.usage-chart-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.usage-chart-total {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.usage-chart-total strong {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.usage-chart-plot {
+  position: relative;
+}
+
+.usage-chart-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.usage-grid {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.usage-baseline {
+  stroke: var(--color-input-border);
+  stroke-width: 1;
+}
+
+.usage-axis {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  fill: var(--color-text-muted);
+}
+
+.usage-hit {
+  fill: transparent;
+}
+
+.usage-bar {
+  fill: var(--color-accent-text);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.usage-bar-on {
+  opacity: 1;
+}
+
+.usage-tip {
+  position: absolute;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--color-text);
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-small);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.usage-tip-day {
+  font-weight: 600;
+}
+
+.usage-tip-muted {
+  color: var(--color-text-muted);
+}
