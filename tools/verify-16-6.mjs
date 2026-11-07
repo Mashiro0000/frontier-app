@@ -41,14 +41,14 @@ await guard('B', async () => {
   check('B: an answer that comes after the choice changed is dropped (live flag)', /if \(live\) setAnswered/.test(MD) && /return \(\) => \{\s*live = false\s*\}/.test(MD))
   const can = MD.match(/const canMake =([\s\S]*?)\n\n/)?.[1] ?? ''
   check('B: Make waits for: not busy, a status, no block, a model, a description, within the limit, an estimate, no refusal', ['!making', 'status !== null', 'blocked === null', 'chosenModel !== null', "trimmed !== ''", '!tooLong', 'estimate !== null', '!refused'].every((part) => can.includes(part)), can)
-  check('B: the length limit is the shared one (4,000 characters)', /const tooLong = prompt\.length > IMAGE_LIMITS\.maxPromptChars/.test(MD))
+  check('B: the length limit is the shared one (4,000 characters)', /const tooLong = full\.length > IMAGE_LIMITS\.maxPromptChars/.test(MD))
   check('B: make() checks canMake again before it sends', /async function make\(\): Promise<void> \{\s*if \(!canMake \|\|/.test(MD))
-  check('B: what is sent is exactly the prompt, model, shape, quality, count and chat', /const ask = \{ prompt, model: chosenModel\.id, shape, quality, count, chat: chatId \}/.test(MD) && /window\.api\.images\.generate\(ask\)/.test(MD))
+  check('B: what is sent is exactly the prompt, model, shape, quality, count and chat', /const ask = \{ prompt: full, model: chosenModel\.id, shape, quality, count, chat: chatId \}/.test(MD) && /window\.api\.images\.generate\(ask\)/.test(MD))
   check('B: a retired model cannot be chosen', /m\.state !== 'retired'/.test(MD) && /disabled=\{m\.state === 'retired'\}/.test(MD))
   check('B: Escape does not close the dialog while a request is on its way', /if \(busy\.current\) event\.preventDefault\(\)/.test(MD))
   check('B: Stop asks main to stop', /onClick=\{\(\) => void window\.api\.images\.stop\(\)\}/.test(MD))
   check('B: the form exists only while the dialog is open', /\{open && \(\s*<MakeImageForm/.test(MD))
-  check('B: a made picture goes into the chat with the ids main gave, then the dialog closes', /onMade\(prompt, \{\s*ids: result\.pictures\.map\(\(p\) => p\.id\)/.test(MD) && /\}\)\s*onDone\(\)\s*\}/.test(MD) && /onMade=\{chat\.addPicture\}/.test(AP))
+  check('B: a made picture goes into the chat with the ids main gave, then the dialog closes', /onMade\(full, \{\s*ids: result\.pictures\.map\(\(p\) => p\.id\)/.test(MD) && /\}\)\s*onDone\(\)\s*\}/.test(MD) && /onMade=\{chat\.addPicture\}/.test(AP))
   check('B: a refusal is shown in words and nothing goes into the chat', /if \(!result\.ok\) \{\s*setError\(result\.error\)\s*return\s*\}/.test(MD))
 })
 
@@ -59,7 +59,7 @@ await guard('C', async () => {
   check('C: Use in chat asks main to make it an attachment, and an answer is adopted or said', /\.useInChat\(id\)\s*\.then\(\(result\) => \(result\.ok \? adopt\(result\.file\) : say\(result\.error\)\)\)/.test(AP))
   check('C: after a delete the list and the count are read again', /setLarge\(null\)\s*reloadImageStatus\(\)\s*load\(\)/.test(GD))
   check('C: Escape goes back to the grid first, and does nothing while busy', /if \(busyRef\.current\) \{\s*event\.preventDefault\(\)\s*return\s*\}/.test(GD) && /event\.preventDefault\(\) \/\/ Escape goes back to the grid first\s*setLarge\(null\)/.test(GD))
-  check('C: each opening of the gallery is a fresh one (keyed by the visit)', /key=\{galleryVisit\}/.test(AP) && /setGalleryVisit\(\(n\) => n \+ 1\)/.test(AP))
+  check('C: each opening of the gallery is a fresh one (keyed by the visit)', /key=\{`gallery-\$\{galleryVisit\}`\}/.test(AP) && /setGalleryVisit\(\(n\) => n \+ 1\)/.test(AP))
   check('C: the description is shown as text', !/Markdown/.test(GD))
 })
 

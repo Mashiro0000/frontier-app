@@ -1810,7 +1810,9 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       workspaceStore.file.whenIdle(),
       undoJournal.whenIdle(),
       connectorStore.file.whenIdle(),
-      updateSettings.file.whenIdle()
+      updateSettings.file.whenIdle(),
+      library.file.whenIdle(), // (22.1) a star on its way is written before the app closes
+      myExperts.file.whenIdle() // (22.2) ...and an expert being saved
     ]).then(() => undefined)
   }
 }

@@ -113,6 +113,9 @@ check(`D: experts.json: at most ${MAX_MY_EXPERTS}`, parseExpertsFile(expertsFile
   const start = ipc.indexOf('documents: keptDocuments([')
   const docs = ipc.slice(start, ipc.indexOf('])', start))
   check('F: library.json and experts.json are sealed and opened with the chats', docs.includes('library.file') && docs.includes('myExperts.file'))
+  // (22.3, found by the built app's run) the page must open before the form's own effect puts the keyboard in the description
+  check('F: Image Studio opens its dialog in a layout effect (before the form focuses the description)', /useLayoutEffect\(\(\) => \{\s*const dialog = dialogRef\.current\s*if \(!dialog\) return\s*if \(open && !dialog\.open\) dialog\.showModal\(\)/.test(read('src/renderer/src/images/ImageStudioDialog.tsx')))
+  check('F: quitting waits for a star or an expert on its way to the disk', /library\.file\.whenIdle\(\)/.test(ipc) && /myExperts\.file\.whenIdle\(\)/.test(ipc))
   check('F: My experts read the saved keys', /createMyExperts\(\{[^}]*savedKeys/.test(ipc))
   check('F: a star names only an id and on/off (anything else is refused)', ipc.includes("k !== 'id' && k !== 'on'"))
 }

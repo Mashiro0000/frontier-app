@@ -63,7 +63,7 @@ try {
     walk(window.api, '', 0)
     return { top: Object.keys(window.api).sort(), names }
   })()`)
-  check('B: window.api is Stage 10\'s eight groups and the audit log\'s (attachments, audit, chat, history, instructions, memory, projects, settings, tools, usage)', show(api.top) === show(['attachments', 'audit', 'changes', 'chat', 'connectors', 'history', 'images', 'instructions', 'memory', 'programs', 'projects', 'settings', 'tools', 'updates', 'usage', 'voice', 'workspace']), show(api.top))
+  check('B: window.api is Stage 10\'s eight groups and the audit log\'s (attachments, audit, chat, history, instructions, memory, projects, settings, tools, usage)', show(api.top) === show(['attachments', 'audit', 'changes', 'chat', 'connectors', 'experts', 'history', 'images', 'instructions', 'library', 'memory', 'programs', 'projects', 'settings', 'tools', 'updates', 'usage', 'voice', 'workspace']), show(api.top))
   check('B: nothing in it, at any depth, is called a tool or an approval', !api.names.some((n) => /approv|answer|run|allow/i.test(n)) && show(api.names.filter((n) => /^tools/.test(n)).sort()) === show(['tools', 'tools.reset', 'tools.setCaps', 'tools.setEnabled', 'tools.status']), show(api.names.filter((n) => TOOLISH.test(n))))
   check('B: the audit group is exactly read, exportAll and deleteAll (no way to add, change or remove a line)', show(api.names.filter((n) => /^audit/.test(n)).sort()) === show(['audit', 'audit.deleteAll', 'audit.exportAll', 'audit.read']), show(api.names.filter((n) => /audit/i.test(n))))
   check('B: ...and the walk reached the functions of the groups (54 names at the end of Stage 10, 58 with the audit log)', api.names.length >= 55, String(api.names.length))

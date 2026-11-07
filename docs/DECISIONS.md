@@ -3178,3 +3178,43 @@ focus rings take the accent instead of Windows' blue and orange.
 months, from main's ledger summed day by day on this computer's clock (a record goes to the day it began in; a refused request is not counted). The page
 asks for the sums with a range and nothing else. One colour (the accent's text colour, readable on every surface), so no legend; each day says its amounts
 when pointed at; the same numbers are in a table for a screen reader.
+
+**22.6, the threat note.** Written at the end of the stage, from what was built and tried. Nothing here was tried against a real provider: every answer
+was the mock's.
+
+1. **Money: a page sends more than the person meant.** _Stops it:_ no new page sends anything by itself. Experts only put instructions on a new, empty chat;
+   nothing goes until the person writes, and then as any message (the limits, the Windows box above the amount). Image Studio is the Stage 16 form with its
+   checks unchanged: the most it can cost is shown first, one request per Make, the box above the amount; a style only adds words under the description,
+   which are counted in its length and cost. The Library and the chart only read.
+2. **An expert carries a key, or a hostile set of instructions.** _Stops it:_ the person's own experts are checked by main like a project's instructions:
+   a saved key in the name, the line or the instructions is refused, and so is a text that only looks like a key (main would take a "save anyway",
+   but the Experts page offers none, so the person takes it out). The
+   ready-made ones are the app's own words, plain data in the page; using one shows its instructions on the chat's Instructions button, where the person
+   reads, changes or removes them. Health and money experts say they are not licensed professionals and when to see one.
+3. **The Library or the chart leaks what the page should not have.** _Stops it:_ main works the Library out from the chats it can already show (as Search,
+   21.5) and the gallery the page could already list; the page gets names, sizes, dates and chat titles, never a path. The chart gets sums per day for a
+   range the page names (7, 30 or 90, nothing else), never a ledger line. A star is an id and on/off; anything else is refused.
+4. **The new files are read wrongly, or written over.** _Stops it:_ library.json and experts.json are kept documents (D-039): checked to the exact shape
+   this app writes, sealed with the chats when encryption is on, never written over when they cannot be read (said instead), one change at a time (two
+   quick stars are both kept: a control that takes the order away is caught).
+5. **The look hides something or cannot be read.** _Stops it:_ every accent is checked by numbers in both themes against base.css's own surfaces; the
+   look is the page's own choice on this computer and changes no setting of main's; the default accent and font leave the page exactly as before.
+6. **A check of mine hides a hole.** Four times this stage. (a) The Library never opened in the window, because the Library and the gallery were siblings
+   with the same React key; the first runs blamed the click (it was found by reading the page's console). (b) Clicking by screen position missed under a
+   widened window, so the sidebar rows are pressed directly in the checks (what is checked is the page, not the mouse). (c) Five window controls first
+   proved nothing: their profile path had lost its backslashes in the shell and the app never started; they were made again and all five caught. (d) The
+   Escape check expected the page to close with text in its search box; a search box's own first Escape clears the text, as Search chats does (21.5).
+
+**Found by the regression (t22, 261 runs, 204 clean the first time) and fixed:** (a) quitting did not wait for library.json and experts.json, so
+a star or an expert being written when the app closed could be cut off; both are now in the list quitting waits for (a check of it is in verify-22-1).
+(b) The light theme's glow is wider than a narrow window, and the page scrolled sideways at 420 px and under; the chat column now clips what reaches past
+its sides. (c) In Settings at 320 px the three themes did not fit one row and pushed the dialog sideways; the switch wraps. (d) The chart's table for a
+screen reader stuck out of Settings at 280 px (a table keeps its full width, even inside the 1 px box that hides it); it is now a list, whose lines take
+the hidden box's width. (e) In the BUILT app, Image Studio opened with the keyboard on its first button, not in the description, so what was typed went
+nowhere: the form put the keyboard in a box of a dialog that was not open yet, and opening it then moved the keyboard (the development build runs every
+effect twice, which hid it). The page now opens in a layout effect, before the form's own, as Make an image always did; a check holds that order. (f) The bigger Settings title
+was 6 px taller, so a section brought to the top sat under it; its line is now as high as before. The other 50-odd failures were old checks that named
+the old set of files, the old bridge, the old sidebar or two themes, and were put right. Every failed run was run again (t22r, t22s, t22t) and is clean.
+
+**Not proven (and cannot be from here):** a real call to any provider (the mock stands in); that the fonts look the same on every Windows (a missing one
+falls back to the app's own); Image Studio's styles on a real image model.

@@ -26,8 +26,8 @@ const SETTINGS = `!!document.querySelector('dialog.settings')?.open`
 const theme = () => ev(`document.documentElement.dataset.theme`)
 const windows = (scheme) => page.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: scheme }] })
 const press = (selector) => ev(`(() => { const b = document.querySelector(${JSON.stringify(selector)}); if (!b) return false; b.click(); return true })()`)
-const themeButton = (label) => `dialog.settings .theme-choice .theme-option:nth-child(${['System', 'Light', 'Dark'].indexOf(label) + 1})`
-const pressedThemes = () => ev(`[...document.querySelectorAll('dialog.settings .theme-option')].filter((b) => b.getAttribute('aria-pressed') === 'true').map((b) => b.textContent.trim())`)
+const themeButton = (label) => `#settings-appearance-heading ~ .theme-choice .theme-option:nth-child(${['System', 'Light', 'Dark'].indexOf(label) + 1})`
+const pressedThemes = () => ev(`[...document.querySelectorAll('#settings-appearance-heading ~ .theme-choice .theme-option')].filter((b) => b.getAttribute('aria-pressed') === 'true').map((b) => b.textContent.trim())`)
 const openAppearance = async () => {
   await ev(`[...document.querySelectorAll('.sidebar button, .sidebar-foot button')].find((b) => /Settings/.test(b.textContent))?.click()`)
   await page.waitFor(SETTINGS, { timeoutMs: 4000 })
@@ -49,7 +49,7 @@ try {
 
   // ============ B. the theme ============
   await openAppearance()
-  check('B: Appearance offers System, Light and Dark; Dark is pressed', JSON.stringify(await ev(`[...document.querySelectorAll('dialog.settings .theme-option')].map((b) => b.textContent.trim())`)) === '["System","Light","Dark"]' && JSON.stringify(await pressedThemes()) === '["Dark"]')
+  check('B: Appearance offers System, Light and Dark; Dark is pressed', JSON.stringify(await ev(`[...document.querySelectorAll('#settings-appearance-heading ~ .theme-choice .theme-option')].map((b) => b.textContent.trim())`)) === '["System","Light","Dark"]' && JSON.stringify(await pressedThemes()) === '["Dark"]')
   check('B: six accents and eight fonts, each a button with its name', (await ev(`document.querySelectorAll('dialog.settings .accent-option').length`)) === 6 && (await ev(`document.querySelectorAll('dialog.settings .font-option').length`)) === 8)
   await page.screenshot(join(shots, '22-4-appearance-dark.png'))
   await press(themeButton('Light'))

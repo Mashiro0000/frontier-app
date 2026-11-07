@@ -11,7 +11,7 @@ if (!run || !/^C:\\frontier-tmp\\guarded-w-[^\\]+$/i.test(run)) {
   process.exit(2)
 }
 const result = runApp({
-  label: `${tag}w166`,
+  label: `${tag}w223`,
   mode,
   scripts: 'verify-22-3w.mjs',
   env: { USER_DATA_DIR: scratch('s223'), WIPE_USER_DATA: '1', INSPECT_PORT: '9246', MOCK_PORT: '8862' },

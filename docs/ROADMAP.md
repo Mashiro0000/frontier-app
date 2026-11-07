@@ -624,7 +624,8 @@ Enhance under the box, a search of chats, a Library, Experts, an Image Studio pa
   - [x] (22.4) Look and Settings: System / Light / Dark, six accents checked by contrast, eight Windows fonts, the light theme's glow, and a polish pass
         over every page in both themes (34 Node checks, 16 in the window, a 50-page tour).
   - [x] (22.5) A usage chart: cost or tokens per day for 7 days, 30 days, 3 months (21 Node checks).
-  - [ ] (22.6) The threat note, the full regression, the merge.
+  - [x] (22.6) The threat note, the full regression (t22, 261 runs, 204 clean the first time; six real faults fixed, the rest old checks put right; every
+        failed run clean on re-run), the merge.
 - **Stage 21 progress** (D-053):
   - [x] (21.1) The model chooser: search, maker and cost filters, a $ to $$$$ badge and the exact prices on every model (32 Node checks, 26 in the window,
         9 negative controls all caught).

@@ -200,30 +200,22 @@ function UsageChart({ open }: { open: boolean }): React.JSX.Element {
               message.
             </p>
           )}
-          {/* The same numbers as a table, for a screen reader (the bars are a picture). */}
-          <table className="visually-hidden">
-            <caption>Usage per day, the last {RANGE_LABELS[range]}</caption>
-            <thead>
-              <tr>
-                <th scope="col">Day</th>
-                <th scope="col">Cost</th>
-                <th scope="col">Tokens</th>
-                <th scope="col">Requests</th>
-              </tr>
-            </thead>
-            <tbody>
+          {/* The same numbers as a list, for a screen reader (the bars are a picture). A list, not a table: a table keeps its full width even inside
+              the hidden box, and stuck out of Settings in a narrow window. */}
+          <div className="visually-hidden">
+            <p>Usage per day, the last {RANGE_LABELS[range]}:</p>
+            <ul className="usage-chart-days">
               {days
                 .filter((d) => d.requests > 0)
                 .map((d) => (
-                  <tr key={d.start}>
-                    <th scope="row">{dayName(d.start, true)}</th>
-                    <td>{formatSpend(d.costUsd, d.about)}</td>
-                    <td>{formatCount(tokensOf(d))}</td>
-                    <td>{d.requests}</td>
-                  </tr>
+                  <li key={d.start}>
+                    {dayName(d.start, true)}: {formatSpend(d.costUsd, d.about)},{' '}
+                    {formatCount(tokensOf(d))} tokens,{' '}
+                    {d.requests === 1 ? '1 request' : `${d.requests} requests`}
+                  </li>
                 ))}
-            </tbody>
-          </table>
+            </ul>
+          </div>
         </>
       )}
     </div>

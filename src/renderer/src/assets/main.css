@@ -130,6 +130,8 @@ body {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  /* (22.4) Nothing in the chat column reaches past its sides (the greeting's glow is wider than a narrow window); clip makes no scroll box of its own. */
+  overflow-x: clip;
 }
 
 /* ---------- sidebar ---------- */
@@ -4897,5 +4899,13 @@ body {
 .settings-title {
   font-size: 24px;
   font-weight: 600;
+  /* The height the old title had (26 px of line, measured by verify-20-1w), so the sticky offsets of the list and the sections (58 px, 64 px) stay right. */
+  line-height: 26px;
   letter-spacing: -0.01em;
+}
+
+/* (22.4) Three themes are wider than a 320 px dialog: the switch wraps instead of pushing the dialog sideways. */
+.theme-choice {
+  flex-wrap: wrap;
+  max-width: 100%;
 }

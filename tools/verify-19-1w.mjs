@@ -143,7 +143,8 @@ try {
   await page.click('.header-button@Settings')
   await page.waitFor(`!!document.querySelector('dialog.settings')?.open`, { timeoutMs: 6000 })
   const look = await ev(`(() => { const s = document.querySelector('#settings-appearance-heading')?.closest('section'); return s ? [...s.querySelectorAll('.theme-option')].map((b) => ({ text: b.textContent, pressed: b.getAttribute('aria-pressed') })) : null })()`)
-  check('C: Settings has an Appearance section: Dark (pressed) and Light', JSON.stringify(look) === JSON.stringify([{ text: 'Dark', pressed: 'true' }, { text: 'Light', pressed: 'false' }]), JSON.stringify(look))
+  // (22.4, D-054) System joined Dark and Light (System, Light, Dark, as AI Fiesta's); Dark is still the default.
+  check('C: Settings has an Appearance section: System, Light and Dark (pressed)', JSON.stringify(look) === JSON.stringify([{ text: 'System', pressed: 'false' }, { text: 'Light', pressed: 'false' }, { text: 'Dark', pressed: 'true' }]), JSON.stringify(look))
   await ev(`document.querySelector('#settings-appearance-heading').scrollIntoView({ block: 'center' })`)
   await sleep(200)
   await page.screenshot(`${shots}/19-dark-settings.png`)

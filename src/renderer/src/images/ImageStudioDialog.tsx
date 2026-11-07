@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { PictureSummary } from '../../../shared/images'
 import { IMAGE_STYLES } from '../../../shared/imageStyles'
 import { MakeImageForm } from './MakeImageDialog'
@@ -34,7 +34,10 @@ function ImageStudioDialog({
   const [recent, setRecent] = useState<PictureSummary[] | null>(null)
   const [problem, setProblem] = useState<string | null>(null)
 
-  useEffect(() => {
+  // Opened in a LAYOUT effect, as the Make an image dialog is: it runs before the form's own effect, which puts the keyboard in the description. With a
+  // plain effect the form focused a box in a closed dialog and showModal then moved the keyboard to the first button (only in the built app: the
+  // development build runs every effect twice, which hid it).
+  useLayoutEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
     if (open && !dialog.open) dialog.showModal()

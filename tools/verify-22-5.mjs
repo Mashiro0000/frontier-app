@@ -71,7 +71,7 @@ check('D: bridged in the preload', /daily: \(range\) => ipcRenderer\.invoke\(CHA
 const chart = read('src/renderer/src/settings/UsageChart.tsx')
 check('D: the page asks for sums only (no ledger file, no record)', !/LedgerRecord|readFile|ledger\.jsonl/.test(chart) && (chart.match(/window\.api/g) ?? []).length === 1 && /window\.api\.usage\s*\.daily\(range\)/.test(chart))
 check('D: one scale at a time (cost or tokens), never two axes', /type Measure = 'cost' \| 'tokens'/.test(chart) && (chart.match(/<line className="usage-baseline"/g) ?? []).length === 1)
-check('D: the same numbers as a table for a screen reader', /<table className="visually-hidden">/.test(chart))
+check('D: the same numbers as a list for a screen reader, in a hidden box', /<div className="visually-hidden">\s*<p>Usage per day[\s\S]*?<ul className="usage-chart-days">/.test(chart) && !/<table/.test(chart))
 check('D: one colour from the accent\'s text colour (readable on every surface, 22.4)', /\.usage-bar \{\s*fill: var\(--color-accent-text\)/.test(read('src/renderer/src/assets/main.css')))
 
 process.exit(check.summary() ? 0 : 1)
