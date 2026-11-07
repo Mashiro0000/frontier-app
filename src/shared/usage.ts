@@ -439,3 +439,53 @@ export function summarize(
   }
   return { chat: inChat, today, month, unreadable, at: now }
 }
+
+// --- (22.5, D-054) The usage chart: day by day ------------------------------------------------------------------------------------
+
+/** The ranges the chart offers, in days (AI Fiesta's 7 days / 30 days / 3 months). */
+export const USAGE_RANGES = [7, 30, 90] as const
+export type UsageRange = (typeof USAGE_RANGES)[number]
+
+export const isUsageRange = (value: unknown): value is UsageRange =>
+  (USAGE_RANGES as readonly unknown[]).includes(value)
+
+/** One day of the chart: midnight at its start (this computer's clock), and what was used that day. */
+export interface UsageDay extends UsageTotals {
+  start: number
+}
+
+/** What the chart shows: one entry per day, the oldest first, ending today, and the range's sum. */
+export interface DailyUsage {
+  days: UsageDay[]
+  total: UsageTotals
+  unreadable: number
+  at: number
+}
+
+/**
+ * Sums the ledger day by day for the last `range` days (today included), on this computer's clock: a day is from its midnight to the next (so a day of a clock
+ * change is 23 or 25 hours, as the person lived it). A record before the first day or after now is left out; a refused request is not counted (addRecord).
+ */
+export function dailyUsage(
+  records: Iterable<LedgerRecord>,
+  range: UsageRange,
+  now: number,
+  unreadable: number
+): DailyUsage {
+  const today = new Date(now)
+  const starts: number[] = []
+  for (let back = range - 1; back >= 0; back -= 1)
+    starts.push(new Date(today.getFullYear(), today.getMonth(), today.getDate() - back).getTime())
+  const days: UsageDay[] = starts.map((start) => ({ start, ...emptyTotals() }))
+  const total = emptyTotals()
+  const first = starts[0] as number
+  for (const record of records) {
+    if (record.at < first || record.at > now) continue
+    // The last day whose midnight is not after the record.
+    let index = days.length - 1
+    while (index > 0 && (days[index] as UsageDay).start > record.at) index -= 1
+    addRecord(days[index] as UsageDay, record)
+    addRecord(total, record)
+  }
+  return { days, total, unreadable, at: now }
+}

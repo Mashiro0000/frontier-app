@@ -12,12 +12,14 @@ import type { ProgramsChangeResult, ProgramsStatus } from './programs'
 import type { ConnectorChangeResult, ConnectorsStatus } from './connectors'
 import type { ProjectChangeResult, ProjectsStatus } from './projects'
 import type { ChatSearchHit } from './chatSearch'
+import type { LibraryFilesResult, StarResult } from './library'
+import type { MyExpertsResult } from './myExperts'
 import type { Suggestion, TaskOption } from './rankings'
 import type { Effort, ModelPricing, ProviderId } from './registry'
 import type { ToolCaps, ToolChangeResult, ToolEvent, ToolsStatus } from './tools'
 import type { AppliedChange, ChangeActionResult, ChangeSummary } from './changes'
 import type { WorkspaceChangeResult, WorkspaceStatus } from './workspace'
-import type { ReplyUsage, UsageSummary } from './usage'
+import type { DailyUsage, ReplyUsage, UsageRange, UsageSummary } from './usage'
 import {
   VOICE_CHANNELS,
   type VoiceBeginResult,
@@ -550,6 +552,8 @@ export interface FrontierApi {
      * own ledger; the page only asks. An id that is not a conversation id is treated as none.
      */
     summary(conversationId: string | null): Promise<UsageSummary>
+    /** (22.5, D-054) Day by day for the last 7, 30 or 90 days, for the chart in Settings > Usage. Sums only, as above. */
+    daily(range: UsageRange): Promise<DailyUsage>
   }
   history: {
     /** The saved conversations, newest first. */
@@ -795,6 +799,30 @@ export interface FrontierApi {
     /** Hands a picture to the attachments of the next message, as a pasted file. */
     useInChat(id: string): Promise<AttachBytesResult>
   }
+  /**
+   * (22.1, D-054) The Library: the files on the person's messages in the saved chats (main reads the chats, as Search does) and the stars, kept in
+   * library.json. The pictures are the gallery's (images.list). A star is only a mark; the page names an id, nothing else.
+   */
+  library: {
+    files(): Promise<LibraryFilesResult>
+    star(id: string, on: boolean): Promise<StarResult>
+  }
+  /**
+   * (22.2, D-054) The person's own experts, kept in experts.json; the ready-made ones are plain data in the page (shared/experts.ts). An expert is used by
+   * starting a chat with its instructions as the chat's own; nothing is sent until the person sends a message.
+   */
+  experts: {
+    list(): Promise<MyExpertsResult>
+    /** A new one (no id) or a change to one of the person's (its id). */
+    save(expert: {
+      id?: string
+      name: string
+      description: string
+      instructions: string
+      task: string
+    }): Promise<MyExpertsResult>
+    remove(id: string): Promise<MyExpertsResult>
+  }
   projects: {
     status(): Promise<ProjectsStatus>
     create(name: string): Promise<ProjectChangeResult>
@@ -834,6 +862,7 @@ export const CHANNELS = {
   chatConfirm: 'chat:confirm',
   chatEvent: 'chat:event',
   usageSummary: 'usage:summary',
+  usageDaily: 'usage:daily',
   historyList: 'history:list',
   historyLoad: 'history:load',
   historySave: 'history:save',
@@ -844,6 +873,11 @@ export const CHANNELS = {
   historyRestoreCancel: 'history:restore-cancel',
   historyStorage: 'history:storage',
   historySearch: 'history:search',
+  libraryFiles: 'library:files',
+  libraryStar: 'library:star',
+  expertsList: 'experts:list',
+  expertsSave: 'experts:save',
+  expertsRemove: 'experts:remove',
   historyEncrypt: 'history:encrypt',
   historyDecrypt: 'history:decrypt',
   attachmentsPick: 'attachments:pick',

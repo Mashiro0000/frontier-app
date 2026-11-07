@@ -128,3 +128,24 @@ export const IconStop = (): React.JSX.Element => (
     <rect x="6.5" y="6.5" width="11" height="11" rx="2" />
   </Icon>
 )
+
+/** (22.2) Experts: a person with a small star. */
+export const IconExperts = (): React.JSX.Element => (
+  <Icon>
+    <path d="M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM3 21c0-3.9 3.1-7 7-7 1.4 0 2.7.4 3.8 1.1M18 13l1.1 2.3 2.4.3-1.8 1.7.5 2.4-2.2-1.2-2.2 1.2.5-2.4-1.8-1.7 2.4-.3z" />
+  </Icon>
+)
+
+/** (22.1) Library: books on a shelf. */
+export const IconLibrary = (): React.JSX.Element => (
+  <Icon>
+    <path d="M3 4h4v16H3zM9 4h4v16H9zM15 5.2l3.6-1 3.9 15.1-3.6 1z" />
+  </Icon>
+)
+
+/** (22.3) Image Studio: a frame with a hill and a sun. */
+export const IconStudio = (): React.JSX.Element => (
+  <Icon>
+    <path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM3 16l5-5 4 4 3-3 6 6M15.5 9.5a1.5 1.5 0 1 0 0-.01" />
+  </Icon>
+)

@@ -34,8 +34,12 @@ interface MakeImageDialogProps {
   onClose: () => void
 }
 
-interface MakeImageFormProps {
+export interface MakeImageFormProps {
   chatId: string | null
+  /** (22.3, D-054) Image Studio's style, in words: added under the description as "Style: ..." (and counted in its length and cost). */
+  style?: string | null
+  /** False in Image Studio: the pictures do not go into a chat (the words say so). */
+  inChat?: boolean
   onMade: (description: string, note: PictureNote) => void
   onOpenGallery: () => void
   onOpenSettings: () => void
@@ -44,8 +48,10 @@ interface MakeImageFormProps {
 }
 
 /** The form: it exists only while the dialog is open, so what is typed starts empty each time and nothing of an old choice lingers. */
-function MakeImageForm({
+export function MakeImageForm({
   chatId,
+  style = null,
+  inChat = true,
   onMade,
   onOpenGallery,
   onOpenSettings,
@@ -55,6 +61,9 @@ function MakeImageForm({
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const status = useImageStatus()
   const [prompt, setPrompt] = useState('')
+  // What is sent: the description, and the Studio's style under it when one is chosen.
+  const full =
+    style === null || prompt.trim() === '' ? prompt : `${prompt.trim()}\n\nStyle: ${style}.`
   const [shape, setShape] = useState<ImageShape>('square')
   const [quality, setQuality] = useState<ImageQuality>('medium')
   const [count, setCount] = useState(1)
@@ -82,7 +91,7 @@ function MakeImageForm({
   // figure on screen until the new one comes (it moves by a fraction of a cent); a change of the choice shows "Working out the cost..." first.
   const modelId = chosenModel?.id ?? null
   const choiceKey = `${modelId}|${shape}|${quality}|${count}`
-  const bytes = Math.min(promptBytes(prompt), IMAGE_LIMITS.maxPromptBytes)
+  const bytes = Math.min(promptBytes(full), IMAGE_LIMITS.maxPromptBytes)
   useEffect(() => {
     if (modelId === null) return
     let live = true
@@ -106,7 +115,7 @@ function MakeImageForm({
 
   const blocked = status?.blocked ?? null
   const trimmed = prompt.trim()
-  const tooLong = prompt.length > IMAGE_LIMITS.maxPromptChars
+  const tooLong = full.length > IMAGE_LIMITS.maxPromptChars
   const refused = estimate !== null && (!estimate.ok || estimate.refusal !== null)
   const canMake =
     !making &&
@@ -124,7 +133,7 @@ function MakeImageForm({
     onBusy(true)
     setError(null)
     setWaitingBox(estimate.asks)
-    const ask = { prompt, model: chosenModel.id, shape, quality, count, chat: chatId }
+    const ask = { prompt: full, model: chosenModel.id, shape, quality, count, chat: chatId }
     let result: ImageGenerateResult
     try {
       result = await window.api.images.generate(ask)
@@ -139,7 +148,7 @@ function MakeImageForm({
       setError(result.error)
       return
     }
-    onMade(prompt, {
+    onMade(full, {
       ids: result.pictures.map((p) => p.id),
       model: chosenModel.id,
       shape,
@@ -172,8 +181,10 @@ function MakeImageForm({
         <div className="make-image-body">
           <p className="instructions-hint">
             Your description goes to OpenAI, which makes the picture, even when you chat with Claude
-            (Anthropic cannot make pictures). The pictures are kept in the gallery and appear in
-            this chat; they are not sent to the model you chat with unless you attach one.
+            (Anthropic cannot make pictures).{' '}
+            {inChat
+              ? 'The pictures are kept in the gallery and appear in this chat; they are not sent to the model you chat with unless you attach one.'
+              : 'The pictures are kept in the gallery and the Library; none is sent to a model unless you attach it to a message.'}
           </p>
           {status === null && <p className="settings-status">Reading the image settings...</p>}
           {blocked !== null && (

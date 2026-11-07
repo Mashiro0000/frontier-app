@@ -35,7 +35,7 @@ import type { WorkspaceChangeResult, WorkspaceStatus } from '../shared/workspace
 import type { ProgramsChangeResult, ProgramsStatus } from '../shared/programs'
 import type { MemoryChangeResult, MemoryExportResult, MemoryStatus } from '../shared/memory'
 import type { ProjectChangeResult, ProjectsStatus } from '../shared/projects'
-import type { UsageSummary } from '../shared/usage'
+import { isUsageRange, type DailyUsage, type UsageSummary } from '../shared/usage'
 import type {
   VoiceBeginResult,
   VoiceChangeResult,
@@ -98,6 +98,8 @@ import { createLimitChanges } from './limitChanges'
 import { createLimitsStore } from './limits'
 import { createMemory } from './memory'
 import { createProjects } from './projects'
+import { createLibrary } from './library'
+import { createMyExperts } from './myExperts'
 import { chooseEffort, chooseModel, currentModel, inOrder } from './models'
 import { adapterFor } from './providers'
 import { describeFailure, timeoutError } from './providers/errors'
@@ -721,6 +723,31 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     savedKeys,
     record: (event) => auditLog.append(event)
   })
+  // Every saved chat main can read, opened as History opens one, and how many could not be (Search, 21.5, and the Library, 22.1).
+  async function readAllChats(): Promise<{ chats: SavedConversation[]; unreadable: number }> {
+    const listed = await history.list()
+    const chats: SavedConversation[] = []
+    let unreadable = listed.unreadable
+    for (const summary of listed.conversations) {
+      const loaded = await history.load(summary.id)
+      if (loaded.ok) chats.push(loaded.conversation)
+      else unreadable += 1
+    }
+    return { chats, unreadable }
+  }
+  // (22.1, 22.2, D-054) The Library's stars (library.json) and the person's own experts (experts.json): small kept documents, sealed with the chats.
+  const library = createLibrary({
+    folder: () => app.getPath('userData'),
+    box: secureStorage,
+    writeMode: protection.writeMode,
+    chats: readAllChats
+  })
+  const myExperts = createMyExperts({
+    folder: () => app.getPath('userData'),
+    box: secureStorage,
+    writeMode: protection.writeMode,
+    savedKeys
+  })
   const encryption = createChatEncryptionService({
     store: history,
     protection,
@@ -740,7 +767,9 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       connectorStore.file,
       voiceSettings.file,
       imageSettings.file,
-      imageIndex
+      imageIndex,
+      library.file,
+      myExperts.file
     ]) // rewritten with the chats (D-039, D-041, D-045, D-047, D-048, D-050: updates.json sits after memory.json, where no older check reads two lines side by side)
   })
 
@@ -764,20 +793,42 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       const query = checkSearchQuery(input)
       if (!query.ok) return query
       try {
-        const listed = await history.list()
-        const chats: SavedConversation[] = []
-        let unreadable = listed.unreadable
-        for (const summary of listed.conversations) {
-          const loaded = await history.load(summary.id)
-          if (loaded.ok) chats.push(loaded.conversation)
-          else unreadable += 1
-        }
+        const { chats, unreadable } = await readAllChats()
         return { ok: true, hits: searchConversations(chats, query.words), unreadable }
       } catch (error) {
         console.error('Searching the saved conversations failed:', reason(error))
         return { ok: false, error: 'The saved chats could not be searched.' }
       }
     })
+  )
+
+  ipcMain.handle(
+    CHANNELS.libraryFiles,
+    guarded(() => library.files())
+  )
+  ipcMain.handle(
+    CHANNELS.libraryStar,
+    guarded(async (input: unknown) => {
+      const fields =
+        typeof input === 'object' && input !== null && !Array.isArray(input)
+          ? (input as Record<string, unknown>)
+          : null
+      if (fields === null || Object.keys(fields).some((k) => k !== 'id' && k !== 'on'))
+        return { ok: false as const, error: 'That was not understood.' }
+      return library.star(fields.id, fields.on)
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.expertsList,
+    guarded(() => myExperts.list())
+  )
+  ipcMain.handle(
+    CHANNELS.expertsSave,
+    guarded((input: unknown) => myExperts.save(input))
+  )
+  ipcMain.handle(
+    CHANNELS.expertsRemove,
+    guarded((input: unknown) => myExperts.remove(input))
   )
 
   ipcMain.handle(
@@ -1367,6 +1418,19 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       }
     })
   )
+  // (22.5, D-054) The chart: sums day by day. The page names a range (7, 30 or 90 days) and nothing else.
+  ipcMain.handle(
+    CHANNELS.usageDaily,
+    guarded(async (input: unknown): Promise<DailyUsage> => {
+      if (!isUsageRange(input)) throw new Error('That range was not understood.')
+      try {
+        return await ledger.daily(input)
+      } catch (error) {
+        console.error('Reading the usage ledger failed:', reason(error))
+        throw new Error('The usage could not be read.')
+      }
+    })
+  )
 
   // Voice (D-047, 15.5). The page reads the status and asks; "Speak to type" is switched on only after the person's yes in the system's message box for the window that
   // asked. `begin` and `end` are the hold of the button: the microphone's gate is opened by `begin` after every check and closed by `end`, `cancel`, the clock or the window.
@@ -1746,7 +1810,9 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       workspaceStore.file.whenIdle(),
       undoJournal.whenIdle(),
       connectorStore.file.whenIdle(),
-      updateSettings.file.whenIdle()
+      updateSettings.file.whenIdle(),
+      library.file.whenIdle(), // (22.1) a star on its way is written before the app closes
+      myExperts.file.whenIdle() // (22.2) ...and an expert being saved
     ]).then(() => undefined)
   }
 }

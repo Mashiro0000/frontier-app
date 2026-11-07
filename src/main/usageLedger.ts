@@ -9,6 +9,9 @@ import {
   NO_TOKENS,
   parseLedgerRecord,
   summarize,
+  dailyUsage,
+  type DailyUsage,
+  type UsageRange,
   type LedgerRecord,
   type LedgerState,
   type SearchFee,
@@ -93,6 +96,8 @@ export interface UsageLedger {
   finish(id: string, outcome: FinishInput): Promise<{ record: LedgerRecord; saved: boolean } | null>
   /** This chat's sum (when `chat` is given), today's and this month's, from the records as they are now. */
   summary(chat: string | null): Promise<UsageSummary>
+  /** (22.5) Day by day, for the chart: the last 7, 30 or 90 days. */
+  daily(range: UsageRange): Promise<DailyUsage>
   /** Resolves when every write asked for so far has finished. For quitting the app. */
   whenIdle(): Promise<void>
 }
@@ -277,6 +282,12 @@ export function createUsageLedger(path: string, options: LedgerOptions = {}): Us
       inOrder(async () => {
         await ensureLoaded()
         return summarize(records.values(), chat, now(), unreadable)
+      }),
+
+    daily: (range) =>
+      inOrder(async () => {
+        await ensureLoaded()
+        return dailyUsage(records.values(), range, now(), unreadable)
       }),
 
     whenIdle: () => queue.then(() => undefined)

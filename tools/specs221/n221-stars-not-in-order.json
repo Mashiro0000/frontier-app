@@ -1,0 +1,14 @@
+{
+  "label": "n221-stars-not-in-order",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/library.ts",
+      "from": "      return inOrder(async () => {",
+      "to": "      return Promise.resolve().then(async () => {"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-22-1.mjs"
+  ],
+  "env": {}
+}

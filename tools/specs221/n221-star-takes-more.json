@@ -1,0 +1,14 @@
+{
+  "label": "n221-star-takes-more",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "Object.keys(fields).some((k) => k !== 'id' && k !== 'on')",
+      "to": "false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-22-1.mjs"
+  ],
+  "env": {}
+}

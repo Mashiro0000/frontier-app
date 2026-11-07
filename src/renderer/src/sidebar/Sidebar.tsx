@@ -2,12 +2,16 @@ import { useState } from 'react'
 import { setRail, setTheme, useRail, useTheme } from '../appearance'
 import type { UseHistory } from '../history/useHistory'
 import {
+  IconExperts,
   IconHistory,
+  IconLibrary,
+  IconProject,
   IconMoon,
   IconPlus,
   IconSearch,
   IconSettings,
   IconSidebar,
+  IconStudio,
   IconSun,
   IconTools,
   LogoMark
@@ -26,6 +30,12 @@ interface SidebarProps {
   onOpenSettings: () => void
   /** (21.5, D-053) Opens Search chats. */
   onSearch: () => void
+  /** (22.1, 22.2, D-054) The pages AI Fiesta lists under New chat: Experts, Projects, Library. */
+  /** (22.3) Image Studio, the first page, as AI Fiesta's. */
+  onOpenStudio: () => void
+  onOpenExperts: () => void
+  onOpenProjects: () => void
+  onOpenLibrary: () => void
 }
 
 /**
@@ -41,7 +51,11 @@ function Sidebar({
   onOpenHistory,
   onOpenTools,
   onOpenSettings,
-  onSearch
+  onSearch,
+  onOpenStudio,
+  onOpenExperts,
+  onOpenProjects,
+  onOpenLibrary
 }: SidebarProps): React.JSX.Element {
   const rail = useRail()
   const theme = useTheme()
@@ -117,6 +131,63 @@ function Sidebar({
       </button>
 
       <nav className="sidebar-nav" aria-label="Pages">
+        {/* (22.1-22.3, D-054) As AI Fiesta's sidebar: the pages first, then History and Tools. */}
+        <button
+          type="button"
+          className="chat-button sidebar-item sidebar-studio"
+          disabled={isReplying}
+          title={
+            isReplying
+              ? 'Image Studio can be opened when the reply has finished.'
+              : 'Make pictures from a description, in a style you pick.'
+          }
+          onClick={onOpenStudio}
+        >
+          <IconStudio />
+          <span className="sidebar-label">Image Studio</span>
+        </button>
+        <button
+          type="button"
+          className="chat-button sidebar-item sidebar-experts"
+          disabled={isReplying}
+          title={
+            isReplying
+              ? 'Experts can be opened when the reply has finished.'
+              : 'Start a chat with a ready-made assistant, or make your own.'
+          }
+          onClick={onOpenExperts}
+        >
+          <IconExperts />
+          <span className="sidebar-label">Experts</span>
+        </button>
+        <button
+          type="button"
+          className="chat-button sidebar-item sidebar-projects"
+          disabled={isReplying}
+          title={
+            isReplying
+              ? 'Projects can be opened when the reply has finished.'
+              : 'Group chats with their own instructions and files.'
+          }
+          onClick={onOpenProjects}
+        >
+          <IconProject />
+          <span className="sidebar-label">Projects</span>
+        </button>
+        <button
+          type="button"
+          className="chat-button sidebar-item sidebar-library"
+          disabled={isReplying}
+          title={
+            isReplying
+              ? 'The Library can be opened when the reply has finished.'
+              : 'Every file you attached and every picture made, in one place.'
+          }
+          onClick={onOpenLibrary}
+        >
+          <IconLibrary />
+          <span className="sidebar-label">Library</span>
+        </button>
         <button
           type="button"
           className="chat-button sidebar-item"

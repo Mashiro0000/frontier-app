@@ -110,7 +110,8 @@ try {
   check('Settings has a Usage section with three rows: this chat, today (a date) and this month (a month and a year)', rows.length === 3 && /^This chat$/.test(rows[0].label) && /^Today \(\w{3} \d{1,2}\)$/.test(rows[1].label) && /^This month \(\w+ \d{4}\)$/.test(rows[2].label), JSON.stringify(rows.map((r) => r.label)))
   check('...each at 0 in, 0 out, 0 requests and $0.00, and none "about"', rows.every((r) => r.detail === '0 in, 0 out, 0 requests' && r.cost === '$0.00'), JSON.stringify(rows))
   check('...and looking did not make a ledger file either', !existsSync(ledgerFile))
-  check('the page can ask for the sums and for nothing else: window.api.usage has one function, summary', (await ev(`JSON.stringify(Object.keys(window.api.usage))`)) === '["summary"]')
+  // (22.5) `daily` joined it: sums per day for the chart, a range named and nothing else (verify-22-5).
+  check('the page can ask for the sums and for nothing else: window.api.usage has summary and daily, both sums', (await ev(`JSON.stringify(Object.keys(window.api.usage))`)) === '["summary","daily"]')
 
   // ============ B. one reply, with the provider's own report (25 in, 12 out) ============
   let r = await ask('hello', 1)

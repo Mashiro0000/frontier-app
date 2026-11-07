@@ -3139,3 +3139,82 @@ Asked for 6 November 2026 ("look into chat.v2.aifiesta.ai thoroughly and upgrade
 **Found by the regression and fixed (not a Stage 21 feature):** a person who scrolled up while a reply streamed in could be pulled back down to the bottom. The list learned that they had scrolled from the scroll event, which comes a frame after the move (later still in a hidden window); text that landed in between still saw "at the bottom" and jumped. The Stage 1 check failed twice in a row in t21 and was first thought flaky (it was seen once in Stage 20 too). Now the list also remembers its height and position when it last knew them, and a reader who moved up from the bottom of what was there is not followed, whether or not the event has come. A new check holds every scroll event of the list back so the race happens each time; a control that takes the fix out is caught (`w216-yank-race`).
 
 **Not proven (and cannot be from here):** a real call to any provider, so the real cost of an Enhance and whether a real model returns only the rewrite (the clean-up takes off one pair of quotation marks and nothing else); how Search feels with thousands of chats (it opens every chat at each search).
+
+## D-054 - Stage 22: the pages, with ideas from AI Fiesta (the Library, Experts, Image Studio, the look, a usage chart)
+
+Started 7 November 2026 on the owner's "Yeah start it. Also in last emphasis on look setting and how the app looks to user." Built on branch `stage-22-pages`.
+The plan is in ROADMAP (G to L); the owner asked for the most care at the end, on the look.
+
+**22.1, the Library.** A page from the sidebar (AI Fiesta's "Library"): every file on the person's messages in the saved chats, each once, with the chats that
+carry it (worked out in main from the chats it can read, as Search does; an unreadable chat is counted and said), and every picture of the gallery. All /
+Starred / Images / Files, a search by name or description, a file opens with its kind, size and its chats (a click opens the chat), a picture opens large.
+A star is a mark only, kept by main in `library.json` (a kept document, D-039: written and read back, sealed with the chats when encryption is on, never
+written over when it cannot be read); the page names an id and on/off, nothing else. A file of a project's is the project's (Projects shows those).
+
+**22.2, Experts.** Twelve ready-made assistants in seven categories (the app's own words; health and money ones say they are not licensed professionals and
+when to see one) and "My experts", the person's own (name, a line, instructions, a task; at most 50, kept by main in `experts.json`, sealed like the others).
+"Start a chat" opens a new, empty chat whose own instructions (D-027) are the expert's and sets the task; nothing is sent until the person writes, and the
+Instructions button shows "on". An expert whose words hold a saved key is refused, as a project's instructions are (D-042); deleting one asks first.
+
+**22.3, Image Studio.** A page of its own for pictures, first among the sidebar's pages as AI Fiesta's: the Stage 16 form unchanged in what it checks (the
+cost before anything is sent, the Windows box above the amount, ONE request), ten styles in words as chips (no picture, no artist's name) that add
+"Style: ..." under the description (in what is sent, its length and its cost), and the newest twelve pictures under it. A picture made there is kept in the
+gallery and the Library and put into no chat.
+
+**The sidebar** now lists, under New chat: Image Studio, Experts, Projects, Library, then History and Tools (AI Fiesta's order, without the paid pages).
+
+**22.4, the look (the owner's emphasis).** Settings > Appearance, as AI Fiesta's Settings > General: the theme is System, Light or Dark (Dark stays the
+default; System follows Windows, and changes while the app is open when Windows does); six accent colours (violet, the default, then blue, teal, green,
+orange, pink), each checked by numbers: white on it and on its gradient 4.5:1 or more, and its text colour 4.5:1 or more on every surface of each theme
+(read from base.css by the check, so a change of a surface is checked too); eight fonts that come with Windows (nothing is downloaded). The choices are
+kept on this computer by the page itself, as the theme was (D-051); the default accent and font leave base.css's own colours and font untouched. The light
+theme has AI Fiesta's soft glow behind the greeting, in the accent's colour (a fainter one in the dark). **The polish pass:** every page was opened and
+looked at in both themes, wide and narrow (tools/tour-22w.mjs, 50 pages, its screenshots kept with the run): the older pages (History, Projects, Memory,
+Tools, Instructions, Make an image, the gallery) were brought to the new pages' measure (720 px, 22 px corners, a 24 px title, as Settings' title); the
+theme switch got a grey track (the chosen theme was white on white in the light theme); the menus left in pages got the app's rounded look; checkboxes and
+focus rings take the accent instead of Windows' blue and orange.
+
+**22.5, the usage chart.** In Settings > Usage, as AI Fiesta's Tokens Usage: cost or tokens per day (one at a time: one scale) for 7 days, 30 days or 3
+months, from main's ledger summed day by day on this computer's clock (a record goes to the day it began in; a refused request is not counted). The page
+asks for the sums with a range and nothing else. One colour (the accent's text colour, readable on every surface), so no legend; each day says its amounts
+when pointed at; the same numbers are in a table for a screen reader.
+
+**22.6, the threat note.** Written at the end of the stage, from what was built and tried. Nothing here was tried against a real provider: every answer
+was the mock's.
+
+1. **Money: a page sends more than the person meant.** _Stops it:_ no new page sends anything by itself. Experts only put instructions on a new, empty chat;
+   nothing goes until the person writes, and then as any message (the limits, the Windows box above the amount). Image Studio is the Stage 16 form with its
+   checks unchanged: the most it can cost is shown first, one request per Make, the box above the amount; a style only adds words under the description,
+   which are counted in its length and cost. The Library and the chart only read.
+2. **An expert carries a key, or a hostile set of instructions.** _Stops it:_ the person's own experts are checked by main like a project's instructions:
+   a saved key in the name, the line or the instructions is refused, and so is a text that only looks like a key (main would take a "save anyway",
+   but the Experts page offers none, so the person takes it out). The
+   ready-made ones are the app's own words, plain data in the page; using one shows its instructions on the chat's Instructions button, where the person
+   reads, changes or removes them. Health and money experts say they are not licensed professionals and when to see one.
+3. **The Library or the chart leaks what the page should not have.** _Stops it:_ main works the Library out from the chats it can already show (as Search,
+   21.5) and the gallery the page could already list; the page gets names, sizes, dates and chat titles, never a path. The chart gets sums per day for a
+   range the page names (7, 30 or 90, nothing else), never a ledger line. A star is an id and on/off; anything else is refused.
+4. **The new files are read wrongly, or written over.** _Stops it:_ library.json and experts.json are kept documents (D-039): checked to the exact shape
+   this app writes, sealed with the chats when encryption is on, never written over when they cannot be read (said instead), one change at a time (two
+   quick stars are both kept: a control that takes the order away is caught).
+5. **The look hides something or cannot be read.** _Stops it:_ every accent is checked by numbers in both themes against base.css's own surfaces; the
+   look is the page's own choice on this computer and changes no setting of main's; the default accent and font leave the page exactly as before.
+6. **A check of mine hides a hole.** Four times this stage. (a) The Library never opened in the window, because the Library and the gallery were siblings
+   with the same React key; the first runs blamed the click (it was found by reading the page's console). (b) Clicking by screen position missed under a
+   widened window, so the sidebar rows are pressed directly in the checks (what is checked is the page, not the mouse). (c) Five window controls first
+   proved nothing: their profile path had lost its backslashes in the shell and the app never started; they were made again and all five caught. (d) The
+   Escape check expected the page to close with text in its search box; a search box's own first Escape clears the text, as Search chats does (21.5).
+
+**Found by the regression (t22, 261 runs, 204 clean the first time) and fixed:** (a) quitting did not wait for library.json and experts.json, so
+a star or an expert being written when the app closed could be cut off; both are now in the list quitting waits for (a check of it is in verify-22-1).
+(b) The light theme's glow is wider than a narrow window, and the page scrolled sideways at 420 px and under; the chat column now clips what reaches past
+its sides. (c) In Settings at 320 px the three themes did not fit one row and pushed the dialog sideways; the switch wraps. (d) The chart's table for a
+screen reader stuck out of Settings at 280 px (a table keeps its full width, even inside the 1 px box that hides it); it is now a list, whose lines take
+the hidden box's width. (e) In the BUILT app, Image Studio opened with the keyboard on its first button, not in the description, so what was typed went
+nowhere: the form put the keyboard in a box of a dialog that was not open yet, and opening it then moved the keyboard (the development build runs every
+effect twice, which hid it). The page now opens in a layout effect, before the form's own, as Make an image always did; a check holds that order. (f) The bigger Settings title
+was 6 px taller, so a section brought to the top sat under it; its line is now as high as before. The other 50-odd failures were old checks that named
+the old set of files, the old bridge, the old sidebar or two themes, and were put right. Every failed run was run again (t22r, t22s, t22t) and is clean.
+
+**Not proven (and cannot be from here):** a real call to any provider (the mock stands in); that the fonts look the same on every Windows (a missing one
+falls back to the app's own); Image Studio's styles on a real image model.

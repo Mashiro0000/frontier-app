@@ -1,0 +1,25 @@
+{
+  "label": "w223-no-fresh-form",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/images/ImageStudioDialog.tsx",
+      "from": "                  setRound((n) => n + 1)\n",
+      "to": "\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "verify-22-3w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-specs221wnce",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8864",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w223-no-fresh-form",
+    "INSPECT_PORT": "9247"
+  }
+}

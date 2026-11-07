@@ -45,7 +45,9 @@ check('C: found at the very start: no "..." before it', start.startsWith('NEEDLE
 const ipc = readFileSync(`${REPO}/src/main/ipc.ts`, 'utf8')
 const handler = /CHANNELS\.historySearch,[\s\S]*?\n  \)\n/.exec(ipc)?.[0] ?? ''
 check('D: main checks the query before anything is read', /const query = checkSearchQuery\(input\)\s*\n\s*if \(!query\.ok\) return query/.test(handler))
-check('D: main searches the chats it can read (the same load as History) and counts the others', /history\.list\(\)/.test(handler) && /history\.load\(summary\.id\)/.test(handler) && /unreadable \+= 1/.test(handler))
+// (22.1) The reading of every chat moved into readAllChats, shared with the Library: the handler calls it, and it does what the handler did.
+const readAll = /async function readAllChats\(\)[\s\S]*?\n  \}\n/.exec(ipc)?.[0] ?? ''
+check('D: main searches the chats it can read (the same load as History) and counts the others', /await readAllChats\(\)/.test(handler) && /history\.list\(\)/.test(readAll) && /history\.load\(summary\.id\)/.test(readAll) && /unreadable \+= 1/.test(readAll))
 check('D: the page is handed the hits (titles and pieces) only', /hits: searchConversations\(chats, query\.words\)/.test(handler) && !/conversation:/.test(handler))
 check('D: the handler is guarded like the others (only the app\'s own page)', /guarded\(async \(input: unknown\): Promise<HistorySearchResult>/.test(handler))
 
