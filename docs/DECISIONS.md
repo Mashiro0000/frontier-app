@@ -3162,3 +3162,19 @@ cost before anything is sent, the Windows box above the amount, ONE request), te
 gallery and the Library and put into no chat.
 
 **The sidebar** now lists, under New chat: Image Studio, Experts, Projects, Library, then History and Tools (AI Fiesta's order, without the paid pages).
+
+**22.4, the look (the owner's emphasis).** Settings > Appearance, as AI Fiesta's Settings > General: the theme is System, Light or Dark (Dark stays the
+default; System follows Windows, and changes while the app is open when Windows does); six accent colours (violet, the default, then blue, teal, green,
+orange, pink), each checked by numbers: white on it and on its gradient 4.5:1 or more, and its text colour 4.5:1 or more on every surface of each theme
+(read from base.css by the check, so a change of a surface is checked too); eight fonts that come with Windows (nothing is downloaded). The choices are
+kept on this computer by the page itself, as the theme was (D-051); the default accent and font leave base.css's own colours and font untouched. The light
+theme has AI Fiesta's soft glow behind the greeting, in the accent's colour (a fainter one in the dark). **The polish pass:** every page was opened and
+looked at in both themes, wide and narrow (tools/tour-22w.mjs, 50 pages, its screenshots kept with the run): the older pages (History, Projects, Memory,
+Tools, Instructions, Make an image, the gallery) were brought to the new pages' measure (720 px, 22 px corners, a 24 px title, as Settings' title); the
+theme switch got a grey track (the chosen theme was white on white in the light theme); the menus left in pages got the app's rounded look; checkboxes and
+focus rings take the accent instead of Windows' blue and orange.
+
+**22.5, the usage chart.** In Settings > Usage, as AI Fiesta's Tokens Usage: cost or tokens per day (one at a time: one scale) for 7 days, 30 days or 3
+months, from main's ledger summed day by day on this computer's clock (a record goes to the day it began in; a refused request is not counted). The page
+asks for the sums with a range and nothing else. One colour (the accent's text colour, readable on every surface), so no legend; each day says its amounts
+when pointed at; the same numbers are in a table for a screen reader.

@@ -621,8 +621,9 @@ Enhance under the box, a search of chats, a Library, Experts, an Image Studio pa
   - [x] (22.1) The Library (66 Node checks with 22.2, 33 in the window with 22.2).
   - [x] (22.2) Experts: twelve ready-made, My experts, Start a chat.
   - [x] (22.3) Image Studio: styles in words, the newest pictures; a picture made there goes into no chat (23 checks in the window).
-  - [ ] (22.4) Look and Settings: System / Light / Dark, an accent colour, a font, the light theme's glow, and a pass over how every page looks.
-  - [ ] (22.5) A usage chart.
+  - [x] (22.4) Look and Settings: System / Light / Dark, six accents checked by contrast, eight Windows fonts, the light theme's glow, and a polish pass
+        over every page in both themes (34 Node checks, 16 in the window, a 50-page tour).
+  - [x] (22.5) A usage chart: cost or tokens per day for 7 days, 30 days, 3 months (21 Node checks).
   - [ ] (22.6) The threat note, the full regression, the merge.
 - **Stage 21 progress** (D-053):
   - [x] (21.1) The model chooser: search, maker and cost filters, a $ to $$$$ badge and the exact prices on every model (32 Node checks, 26 in the window,

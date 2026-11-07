@@ -4825,3 +4825,77 @@ body {
 .usage-tip-muted {
   color: var(--color-text-muted);
 }
+
+/* The older pages (History, Projects, Memory, Tools, Instructions, Make an image, the gallery) brought to the new pages' measure: wider, rounder, with
+   the same big title (AI Fiesta's "big and spacious"; the owner's word). The Library, Experts and Image Studio set the measure. */
+.history,
+.projects,
+.memory,
+.tools,
+.gallery,
+.instructions,
+.make-image {
+  width: min(720px, calc(100vw - 32px));
+  padding: 26px 30px;
+  border-radius: 22px;
+}
+
+.history-heading,
+.instructions-heading,
+.memory-heading,
+.tools-heading,
+.projects-heading {
+  margin-bottom: 16px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 720px) {
+  .history,
+  .projects,
+  .memory,
+  .tools,
+  .gallery,
+  .instructions,
+  .make-image {
+    padding: 20px 18px;
+  }
+}
+
+/* Windows' own blue and orange never show: checkboxes and focus rings take the app's accent (a rule of no weight, so a control's own wins). */
+:root {
+  accent-color: var(--color-accent);
+}
+
+:where(select, input[type='checkbox'], input[type='radio']):focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* The menus left in pages: the same rounded look as the dialogs' menus. */
+.projects-chat-select,
+.history select,
+.expert-form select {
+  height: 36px;
+  padding: 0 32px 0 12px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-composer) var(--chevron) no-repeat right 10px center / 14px 14px;
+  border: 1px solid var(--color-input-border);
+  border-radius: 10px;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* The chart's words, a size that reads (the picture is drawn at 640 units and shown narrower). */
+.usage-axis {
+  font-size: 13px;
+}
+
+.settings-title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
