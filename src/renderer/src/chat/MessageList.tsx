@@ -59,23 +59,39 @@ function MessageList({
   // True while the user is reading the newest message; false once they scroll up to read older ones.
   const stickToBottom = useRef(true)
   const previousCount = useRef(0)
+  // The list's height the last time its scroll position was known; lets a new chunk of text tell "the reader moved" apart from "the
+  // text grew" even when the scroll event for the reader's move has not arrived yet (it comes a frame later, slower in a hidden window).
+  const knownHeight = useRef(0)
+  const knownTop = useRef(0)
 
   function handleScroll(): void {
     const list = listRef.current
     if (!list) return
     const distanceFromBottom = list.scrollHeight - list.scrollTop - list.clientHeight
     stickToBottom.current = distanceFromBottom <= BOTTOM_THRESHOLD
+    knownHeight.current = list.scrollHeight
+    knownTop.current = list.scrollTop
   }
 
   // Runs after every change to the messages: a new message, or more text in the last one.
   useLayoutEffect(() => {
     const list = listRef.current
     if (!list) return
+    // Measured against the height before this change: if the reader moved up and is no longer at the bottom of what was there, they
+    // scrolled up. (A window made shorter leaves the position alone; a taller one only moves it to the bottom of the same text.)
+    if (
+      stickToBottom.current &&
+      list.scrollTop < knownTop.current - BOTTOM_THRESHOLD &&
+      knownHeight.current - list.scrollTop - list.clientHeight > BOTTOM_THRESHOLD
+    )
+      stickToBottom.current = false
     // A new message means the user just sent something, so jump to it even if they had scrolled up. A conversation that got shorter is
     // one where an earlier message was edited and sent again (D-026): the new reply is at the end, and that is where to look.
     if (messages.length !== previousCount.current) stickToBottom.current = true
     previousCount.current = messages.length
     if (stickToBottom.current) list.scrollTop = list.scrollHeight
+    knownHeight.current = list.scrollHeight
+    knownTop.current = list.scrollTop
   }, [messages])
 
   const captions = captionsFor(messages, modelName)

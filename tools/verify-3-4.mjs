@@ -43,7 +43,8 @@ check('it lists the registry models, in the registry\'s order (labels)', JSON.st
 check('...and the option values are the registry ids', JSON.stringify(menu.values) === JSON.stringify(ids))
 check('the default model (from the registry) is selected: Claude Opus 5.5', menu.value === registry.defaultModelId && menu.value === OPUS && menu.label === 'Claude Opus 5.5', `${menu.value}`)
 check('the menu is enabled when no reply is arriving', menu.disabled === false)
-check('its tooltip names the model and points at Settings', /^Claude Opus 5\.5\. The details are in Settings\.$/.test(menu.title), menu.title)
+// (21.1, D-053) A click opens the model chooser, with every model's prices: the tooltip says so (it pointed at Settings before).
+check('its tooltip names the model and says a click shows every model with its prices', /^Claude Opus 5\.5\. Click to see every model with its prices\.$/.test(menu.title), menu.title)
 check('reading the status at startup wrote nothing: no preferences.json yet', H.prefs() === null)
 let badges = await H.badges()
 check('no key: exactly one badge, the warning "No API key" (the model is no longer a badge)', badges.length === 1 && badges[0].text === 'No API key' && badges[0].warn, JSON.stringify(badges))
@@ -86,8 +87,14 @@ await ev(`document.querySelector('.header-select').focus()`)
 await page.press('Tab')
 check('keyboard: Tab from the model menu lands on the Effort menu (7.1)', (await ev(`document.activeElement.getAttribute('aria-label')`)) === 'Effort', await ev(`document.activeElement.getAttribute('aria-label')`))
 await page.press('Tab')
-// (D-052) The menus are under the message box, the last of the page: Send comes before them, and the next Tab goes back to the top (the sidebar).
-check('keyboard: the menus are the last of the page (after Send), so the next Tab goes back to the sidebar; Settings comes before them', (await ev(`!!document.activeElement.closest('.sidebar')`)) && (await ev(`!!(document.querySelector('.composer-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(document.querySelector('.header-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING)`)), await ev(`document.activeElement.className + ' ' + document.activeElement.textContent`))
+// (D-052) The menus are under the message box: Send comes before them. (21.4, D-053) In an empty chat the chips under them come next (Web search, Projects,
+// Instructions), then the Tab goes back to the top (the sidebar).
+const chipCount = await ev(`document.querySelectorAll('.empty-chips .chip-start').length`)
+for (let i = 0; i < chipCount; i++) {
+  if (!(await ev(`!!document.activeElement.closest('.empty-chips')`))) break
+  await page.press('Tab')
+}
+check('keyboard: after the menus (after Send) come only the chips of an empty chat, then the next Tab goes back to the sidebar; Settings comes before them', (await ev(`!!document.activeElement.closest('.sidebar')`)) && (await ev(`!!(document.querySelector('.composer-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(document.querySelector('.header-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING)`)), await ev(`document.activeElement.className + ' ' + document.activeElement.textContent`))
 
 // ===================== B. choosing a model =====================
 await H.chooseInPage(SONNET)

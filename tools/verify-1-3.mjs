@@ -149,6 +149,21 @@ await sleep(200)
 check('sending again jumps back to the bottom', (await ev(dist)) < 2, `${await ev(dist)}px from bottom`)
 await page.waitFor(SEND_READY)
 
+// ---- 8b. The same, with the reader's scroll event held back (Stage 21 fix) ----
+// A scroll event arrives a frame after the move, later still in a hidden window; text that lands in between must not yank the reader
+// down. Holding every scroll event of the list back (a capturing listener stops it) makes that race happen every time.
+await send(tall)
+await page.waitFor(`(document.querySelector('.message-assistant:last-child .bubble')?.textContent.length ?? 0) > 20`)
+await sleep(300)
+await ev(`(() => { window.__holdScroll = (e) => { if (e.target?.classList?.contains('message-list')) e.stopImmediatePropagation() }; document.addEventListener('scroll', window.__holdScroll, true) })()`)
+const h3 = await ev(`document.querySelector('.message-list').scrollHeight`)
+await ev(`document.querySelector('.message-list').scrollTop = 0`)
+await sleep(700)
+check('held-back scroll event: reply kept growing', (await ev(`document.querySelector('.message-list').scrollHeight`)) > h3)
+check('held-back scroll event: reader is NOT yanked down', (await ev(`document.querySelector('.message-list').scrollTop`)) === 0, JSON.stringify(await ev(where)))
+await page.waitFor(SEND_READY, { timeoutMs: 8000 })
+await ev(`document.removeEventListener('scroll', window.__holdScroll, true)`)
+
 // ---- 9. Typing dots respect "reduce motion" ----
 await page.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] })
 await send('reduced')

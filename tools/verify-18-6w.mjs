@@ -36,7 +36,12 @@ const server = await startUpdateServer(updatePort)
 const privateKey = privateFromPem(process.env.UPDATE_TEST_PRIVATE_PEM)
 const repo = 'Mashiro0000/frontier-app-releases' // the build's own RELEASES_REPO: the app checks the address against it
 const INSTALLER = Buffer.concat([Buffer.from('MZ stand-in installer for the window check '), Buffer.alloc(200_000, 9)])
-const m = manifestFor({ repo, version: '0.2.0', date: '2026-10-20', notes: 'Faster replies.\nA new Updates section.', size: INSTALLER.length, sha256: sha(INSTALLER) })
+// (Stage 21) The app's own version is read from package.json (the 0.2.0 release made the old "0.1.0 here, 0.2.0 offered" stale), and the stand-in offers the next
+// minor version.
+const APP_VERSION = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version
+const NEXT = APP_VERSION.split('.').map(Number).map((n, i) => (i === 1 ? n + 1 : i === 2 ? 0 : n)).join('.')
+const esc = (v) => v.replace(/\./g, '\\.')
+const m = manifestFor({ repo, version: NEXT, date: '2026-10-20', notes: 'Faster replies.\nA new Updates section.', size: INSTALLER.length, sha256: sha(INSTALLER) })
 server.setInstaller(m.installer.name, INSTALLER)
 server.setEnvelope(envelope(m, privateKey))
 
@@ -73,7 +78,7 @@ try {
     await openSettings()
     const s = await section()
     check('A: Settings has an Updates section', s !== null && /Updates/.test(s.text), show(s))
-    check('A: it is off, not checked yet, version 0.1.0, no "Check now"', s?.on === 'false' && /Not checked yet/.test(s.text) && /This is version 0\.1\.0/.test(s.text) && !s.checkNow, show(s))
+    check(`A: it is off, not checked yet, version ${APP_VERSION}, no "Check now"`, s?.on === 'false' && /Not checked yet/.test(s.text) && new RegExp(`This is version ${esc(APP_VERSION)}`).test(s.text) && !s.checkNow, show(s))
     check('A: the hint names where it reads from', /github\.com\/Mashiro0000\/frontier-app-releases/.test(s?.text ?? ''))
     check('A: no updates.json yet', !existsSync(join(userData, 'updates.json')))
     await sleep(1500)
@@ -100,7 +105,7 @@ try {
     await sleepUntil(async () => /is available/.test((await section())?.text ?? ''))
     await reopen()
     const t = (await section())?.text ?? ''
-    check('B: the newer version is shown, with its date, size and notes', /Version 0\.2\.0 \(2026-10-20, 0\.2 MB\) is\s+available/.test(t) && /Faster replies\./.test(t) && /A new Updates section\./.test(t), t)
+    check('B: the newer version is shown, with its date, size and notes', new RegExp(`Version ${esc(NEXT)} \\(2026-10-20, 0\\.2 MB\\) is\\s+available`).test(t) && /Faster replies\./.test(t) && /A new Updates section\./.test(t), t)
     check('B: "Last checked" replaces "Not checked yet"', /Last checked/.test(t) && !/Not checked yet/.test(t))
     check('B: nothing was downloaded', downloads() === 0)
     check('B: one check only (no second one by itself)', checks() === 1)
@@ -113,10 +118,10 @@ try {
     if (!(await sleepUntil(async () => (await Q.count()) === 1))) console.log(`(no question after the first Install click; the section says: ${show(await section())}; settings: ${show(settingsFile())})`)
     await sleep(500)
     const o = (await Q.asked())[0]?.options
-    check('C: Install asks in the box: "Install Frontier App 0.2.0?"', o?.message === 'Install Frontier App 0.2.0?' && /You have version 0\.1\.0/.test(o?.detail ?? '') && /github\.com\/Mashiro0000\/frontier-app-releases/.test(o?.detail ?? '') && o?.buttons?.includes('Download and install') && o?.buttons?.includes('Not now'), show(o))
+    check(`C: Install asks in the box: "Install Frontier App ${NEXT}?"`, o?.message === `Install Frontier App ${NEXT}?` && new RegExp(`You have version ${esc(APP_VERSION)}`).test(o?.detail ?? '') && /github\.com\/Mashiro0000\/frontier-app-releases/.test(o?.detail ?? '') && o?.buttons?.includes('Download and install') && o?.buttons?.includes('Not now'), show(o))
     check('C: the notes are quoted in the box, each line on its own', /"Faster replies\."\n"A new Updates section\."/.test(o?.detail ?? ''), show(o?.detail))
     check('C: "Not now" downloads nothing', downloads() === 0)
-    check('C: ... and is kept in updates.json', settingsFile()?.declined === '0.2.0', show(settingsFile()))
+    check('C: ... and is kept in updates.json', settingsFile()?.declined === NEXT, show(settingsFile()))
     await sleep(3300)
     await Q.queue('yes')
     await clickOn(button('.updates-section', 'Install...'))
@@ -124,7 +129,7 @@ try {
     await sleepUntil(async () => /Only the installed app runs an installer/.test((await section())?.text ?? ''), 8000)
     const t = (await section())?.text ?? ''
     check('C: running from source it says it was downloaded and checked, and not run', /The update was downloaded and checked\. Only the installed app runs an installer\./.test(t), t)
-    const file = join(userData, 'updates', 'frontier-app-0.2.0-setup.exe')
+    const file = join(userData, 'updates', `frontier-app-${NEXT}-setup.exe`)
     check('C: the file in the data folder is the signed installer, byte for byte', existsSync(file) && sha(readFileSync(file)) === sha(INSTALLER))
     check('C: the app is still running (nothing was run, nothing closed)', (await ev('1 + 1')) === 2)
     const before = checks()

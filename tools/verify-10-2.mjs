@@ -398,7 +398,7 @@ await guard('E', async () => {
 await guard('F', async () => {
   const chat = source('src/main/chat.ts')
   const at = (s, text) => s.indexOf(text)
-  const read = at(chat, 'const everyChat = await context.everyChat()')
+  const read = at(chat, 'await context.everyChat()') // (21.4) since Enhance: `const everyChat = enhancing ? ... : await context.everyChat()`
   const build = at(chat, 'const buildFor = (): ReturnType<typeof buildStreamRequest> =>') // a function since 11.3: it builds the request again after a tool
   check('F: chat.ts reads the instructions for every chat from main\'s own file for every request, before the request is built', read > 0 && build > read && /if \(!everyChat\.ok\) \{\s*send\(\{ streamId, type: 'error', message: everyChat\.error \}\)\s*return/.test(chat))
   check('F: ...and refuses a request whose instructions (either part) hold a saved key, before it is built', at(chat, 'const held = heldKey(text, keys)') > read && at(chat, 'const held = heldKey(text, keys)') < build && /\['for every chat', everyChat\.text\],\s*(\['for this project', project\?\.instructions \?\? ''\],\s*)?\['for this chat', request\.instructions \?\? ''\]/.test(chat))

@@ -619,16 +619,19 @@ Enhance under the box, a search of chats, a Library, Experts, an Image Studio pa
   - **L.** (22.6) The threat note, the full regression, the merge.
 - **Stage 21 progress** (D-053):
   - [x] (21.1) The model chooser: search, maker and cost filters, a $ to $$$$ badge and the exact prices on every model (32 Node checks, 26 in the window,
-    9 negative controls all caught).
+        9 negative controls all caught).
   - [ ] ~~(21.2) Compare~~: dropped by the owner (above); shelved, never merged.
   - [x] (21.3) Auto: a model picked by rules for each message, the reason above the reply; off at every start (27 Node checks, 19 in the window; 3 Node
-    and 5 window controls caught, one window control unseeable there and caught under Node).
+        and 5 window controls caught, one window control unseeable there and caught under Node).
   - [x] (21.4) The box: chips under an empty chat's box (Make an image, Web search, Projects, Instructions), examples in the empty box, Enhance (the
-    cheapest model with a key, one request carrying only the draft, put back with Undo, never sent by itself), and AI Fiesta's sizes (an 800 px column,
-    28 px corners, a 34 px greeting) (20 Node checks, 18 in the window; 2 Node and 6 window controls caught).
+        cheapest model with a key, one request carrying only the draft, put back with Undo, never sent by itself), and AI Fiesta's sizes (an 800 px column,
+        28 px corners, a 34 px greeting) (20 Node checks, 18 in the window; 2 Node and 6 window controls caught).
   - [x] (21.5) Search chats: a button beside the sidebar's fold button and Ctrl+K; every word, title or text, newest first, a piece of text around it;
-    searched in main on this computer (26 Node checks, 13 in the window; 3 Node and 5 window controls caught).
-  - [ ] (21.6) The threat note, the full regression, the merge.
+        searched in main on this computer (26 Node checks, 13 in the window; 3 Node and 5 window controls caught).
+  - [x] (21.6) The threat note (D-053), the full regression, the merge. Regression t21: 252 runs, 225 clean the first time; the other 27 all
+        clean on re-runs after 25 stale checks were put right, two runs that clashed with a check of mine on the same port, and one real fault:
+        a reader who scrolled up while a reply streamed could be pulled back down (the scroll event comes a frame late). Fixed in the message
+        list, with a new check that holds the scroll event back and a control that takes the fix out (caught).
 - **Not in these stages:** video (OpenAI's video API is gone, D-048), Slides and Websites (Websites publishes to a public link), plans,
   upgrades, referrals, Hindi and Bengali, Deep research, their names, logo, fonts or pictures.
 - **Not proven (and cannot be from here):** a real call to any model (the mock stands in), Compare's real costs.

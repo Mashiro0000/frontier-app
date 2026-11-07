@@ -87,7 +87,8 @@ try {
   check('A: an empty chat: New chat is off and says "This chat is empty."', named('New chat').disabled && named('New chat').title === 'This chat is empty.', JSON.stringify(named('New chat')))
   check('A: the list of saved chats says there are none yet', (await ev(`document.querySelector('.sidebar-none')?.textContent ?? null`)) === 'Your chats appear here once you send a message.')
   const head = await headerShape()
-  const actions = await ev(`[...document.querySelectorAll('.app-header-actions > *')].map((e) => e.className.split(' ')[0])`)
+  // (21.1, D-053) The model chooser's dialog sits beside the model menu, shown only when opened: the row is what is SHOWN.
+  const actions = await ev(`[...document.querySelectorAll('.app-header-actions > *')].filter((e) => e.tagName !== 'DIALOG').map((e) => e.className.split(' ')[0])`)
   check('A: the header beside the sidebar is ONE row (the title and the "No API key" badge while no key is saved); the Task, model and Effort menus are under the box (D-052)', oneRow(head) && JSON.stringify(actions) === JSON.stringify(['task-select', 'header-select', 'effort-select']) && (await ev(`!!document.querySelector('.composer-meta > .app-header-actions') && !document.querySelector('.app-header select')`)), JSON.stringify({ head, actions }))
   check('A: at the default window the chat\'s title ("New chat") is shown (D-052: the menus left the header)', (await chatTitle()) === 'New chat' && (await visible('.chat-title')))
   await metrics(1200, 700)
@@ -207,7 +208,7 @@ try {
 
   // ============ F. the keyboard: the sidebar, the header, the messages, the box ============
   // No element has a tabindex of its own, so the order of the page is the order of the keyboard (buttons that are off are skipped by it, not moved).
-  const order = await ev(`[...document.querySelectorAll('select, button, textarea')].filter((e) => !e.closest('dialog') && getComputedStyle(e).display !== 'none').map((e) => e.tagName === 'SELECT' ? e.className.split(' ')[0] : e.classList.contains('sidebar-chat') ? 'chat' : e.classList.contains('composer-input') ? 'input' : e.classList.contains('composer-button') ? 'send' : e.textContent.trim())`)
+  const order = await ev(`[...document.querySelectorAll('select, button, textarea')].filter((e) => !e.closest('dialog') && !e.closest('.empty-chips') && getComputedStyle(e).display !== 'none') /* (21.4) the chips of an empty chat follow the menus: checked in verify-21-4w */.map((e) => e.tagName === 'SELECT' ? e.className.split(' ')[0] : e.classList.contains('sidebar-chat') ? 'chat' : e.classList.contains('composer-input') ? 'input' : e.classList.contains('composer-button') ? 'send' : e.textContent.trim())`)
   const at = (k) => order.indexOf(k)
   check('F: no element changes the keyboard order with a tabindex', (await ev(`document.querySelectorAll('[tabindex]:not(dialog)').length`)) === 0)
   check('F: the keyboard goes through the sidebar (New chat, History, Tools, the chats, Settings, the theme), then the box (the text, its buttons, Send), then the menus under it (D-052)', at('New chat') < at('History') && at('History') < at('Tools') && at('Tools') < at('chat') && at('chat') < at('Settings') && at('Settings') < at('input') && at('input') < at('Attach...') && at('Attach...') < at('send') && at('send') < at('task-select') && at('task-select') < at('header-select') && at('header-select') < at('effort-select') && order.at(-1) === 'effort-select', JSON.stringify(order))

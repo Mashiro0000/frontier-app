@@ -37,6 +37,6 @@ const chooser = readFileSync(`${REPO}/src/renderer/src/settings/ModelChooser.tsx
 const picker = readFileSync(`${REPO}/src/renderer/src/settings/ModelPicker.tsx`, 'utf8')
 check('E: the chooser takes the step from shared/costTier (one rule for the badge and the filter)', /from '\.\.\/\.\.\/\.\.\/shared\/costTier'/.test(chooser) && (chooser.match(/costTier\(model\.pricing\)/g) ?? []).length === 2)
 check('E: the menu opens the chooser on a left mouse press only, and not while a reply arrives', /onMouseDown=/.test(picker) && /event\.button !== 0/.test(picker) && /if \(!disabled\) setChooserOpen\(true\)/.test(picker) && /open=\{chooserOpen && !disabled\}/.test(picker))
-check('E: the menu stays a <select> with its change handler (the keyboard and the checks of earlier stages use it)', /<select\s+className="header-select"/.test(picker) && /onChange=\{\(event\) => void choose\(event\.target\.value\)\}/.test(picker))
+check('E: the menu stays a <select> with its change handler (the keyboard and the checks of earlier stages use it)', /<select\s+(?:hidden=\{auto\}\s+)?className="header-select"/.test(picker) && /onChange=\{\(event\) => void choose\(event\.target\.value\)\}/.test(picker))
 
 process.exit(check.summary() ? 0 : 1)
