@@ -1,7 +1,7 @@
 import type React from 'react'
 
 // (23.8, D-055) What makes a row of a list the person may reorder: drag it with the mouse onto another row, or, on its button, Alt+Up / Alt+Down. After
-// a move by keys the keyboard stays on the moved row (found again by its data-reorder-id, since the list is drawn anew).
+// a move by keys the keyboard stays on the moved row by itself: React moves the row's node, it does not draw a new one (verify-23-8w checks it).
 
 const DRAG_TYPE = 'application/x-frontier-reorder'
 
@@ -13,7 +13,6 @@ export function reorderable(
   onMove: (id: string, to: number) => void
 ): {
   draggable: true
-  'data-reorder-id': string
   onDragStart: React.DragEventHandler
   onDragOver: React.DragEventHandler
   onDrop: React.DragEventHandler
@@ -21,7 +20,6 @@ export function reorderable(
 } {
   return {
     draggable: true,
-    'data-reorder-id': `${list}:${id}`,
     onDragStart: (event) => {
       event.dataTransfer.setData(DRAG_TYPE, `${list}:${id}`)
       event.dataTransfer.effectAllowed = 'move'
@@ -41,12 +39,6 @@ export function reorderable(
       const to = index + (event.key === 'ArrowUp' ? -1 : 1)
       if (to < 0 || to >= count) return
       onMove(id, to)
-      requestAnimationFrame(() => {
-        const row = document.querySelector<HTMLElement>(
-          `[data-reorder-id="${CSS.escape(`${list}:${id}`)}"]`
-        )
-        ;(row?.matches('button') ? row : row?.querySelector<HTMLElement>('button'))?.focus()
-      })
     }
   }
 }

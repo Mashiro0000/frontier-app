@@ -32,7 +32,9 @@ const write = (dir, specs, make) => {
   console.log(`wrote ${Object.keys(specs).length} specs in ${dir}`)
 }
 write('specs238', nodeSpecs, () => ({ argv: ['{{TOOLS}}/verify-23-8.mjs'], env: {} }))
+const RETIRED_W = { 'w238-focus-lost': 'the code it took out is gone: it was not needed (23.8 found the keyboard stays on the moved row by itself, React moves the node)' }
 write('specs238w', windowSpecs, (name) => ({
+  ...(RETIRED_W[name] ? { retired: RETIRED_W[name] } : {}),
   argv: ['{{TOOLS}}/run-with-app.mjs', 'dev', 'setup-key.mjs,verify-23-8w.mjs', '{{OUT}}/shots', '9222'],
   env: { USER_DATA_DIR: scratch('specs238wnc'), WIPE_USER_DATA: '1', MOCK_PORT: '8869', PRESEED_FILE: '', LOG_LABEL: `nc-${name}` }
 }))

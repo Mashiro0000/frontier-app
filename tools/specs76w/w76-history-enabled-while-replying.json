@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/sidebar/Sidebar.tsx",
-      "from": "          disabled={isReplying}\n          title={\n            isReplying\n              ? 'History can be opened",
-      "to": "          disabled={false}\n          title={\n            isReplying\n              ? 'History can be opened"
+      "from": "              disabled={isReplying}\n              title={isReplying ? page.wait",
+      "to": "              disabled={isReplying && id !== 'history'}\n              title={isReplying ? page.wait"
     }
   ],
   "argv": [
