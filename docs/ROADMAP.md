@@ -653,6 +653,74 @@ from 3. **A later stage** (for example one OpenRouter key for many makers) (my p
 be seen by sending one message on your AI Fiesta Free plan (1 of 10): **may I send one harmless test message** (my pick), or build it from what
 I saw? (7) Order: **Stage 21 first** (my pick), or Stage 22 first?
 
+## Stage 23 - Quick wins from ChatGPT, Claude and AI Fiesta (plan written 8 November 2026 on the owner's "Plan quick wins"; NOT approved yet, nothing built)
+
+**Why:** a comparison on 8 November 2026 (ChatGPT, Claude and AI Fiesta; ChatGPT's own release notes refused the fetch, so some of it is from
+secondary sources) found Frontier has the big features but lacks the everyday polish all three share. These are the eight smallest of those
+gaps. Bigger ones (reply versions, a temporary chat, maths, a quick-ask window, a side panel for documents, more models, deep research,
+scheduled tasks) are left for later stages. Compare stays dropped. Nothing here makes an extra model call.
+
+**What is there today (read in the code):** a chat's title is the first message cut at 60 characters, worked out at every save
+(`titleFor`, `src/main/conversationStore.ts`), raw Markdown and all, and cannot be changed; the Recent list in the sidebar is one flat list,
+with no pinning and no way to delete (only the History dialog deletes); under each message the actions are words (Copy, Regenerate, Edit,
+Remember..., Read aloud); under the box sit three menus (Task, model, Effort; `App.tsx`, `.composer-menus`); the box has Instructions,
+Memory and Project as text buttons, and the empty chat repeats Projects and Instructions as chips; code blocks are plain text with a Copy
+button (`CodeBlock.tsx`, D-025); the only shortcut is Ctrl+K; Export writes a chat as a JSON backup only.
+
+**The plan** (_mine_; branch `stage-23-quick` from main):
+
+- **A. Names, pins and days in the sidebar** (23.1): a "..." menu on each recent chat (hover or focus): **Rename**, **Pin** / Unpin,
+  **Export**, **Delete** (asks "Delete?" in place, like History). Pinned chats sit in their own group at the top; the rest are grouped
+  **Today / Yesterday / Previous 7 days / Previous 30 days / older by month**. New titles drop Markdown marks (`**`, `#`, backticks, link
+  brackets); an old chat's title is cleaned when it is shown. A renamed title is kept and is never worked out again.
+- **B. Message actions as icons** (23.2): Copy, Read aloud, Regenerate, Edit and Remember as small icons with tooltips (the long texts stay
+  in the tooltips and in `aria-label`), shown on hover and on keyboard focus, and always shown under the last reply. The cost line stays as
+  it is.
+- **C. One model button** (23.3): the three menus under the box become one pill, for example "Claude Opus 5.5 · Medium", that opens the
+  model chooser (21.1). The chooser gets the effort levels of the picked model and the Task shortlist (Stage 6) as a filter chip. Auto stays.
+- **D. A "+" menu in the box** (23.4): Attach files, Make an image (when on), Instructions, Memory, Project. What is on stays visible: a
+  small chip in the box for each part that goes with the message (for example "Project: Thesis", "Memory: 4 notes"), each opening its page.
+  The empty chat's chips keep only what is not in the menu (Web search, Experts, Make an image).
+- **E. Colours in code blocks** (23.5): the language named on the fence is coloured with theme tokens that pass contrast in both themes; a
+  block with no language, or one not known, stays plain. Code is still only shown, never run.
+- **F. Keyboard shortcuts** (23.6): ChatGPT's set, which people know: Ctrl+Shift+O (and Ctrl+N) new chat, Ctrl+Shift+S fold the sidebar,
+  Shift+Esc to the message box, Ctrl+Shift+C copy the last reply, Ctrl+Shift+; copy the last code block, Esc stops a reply that is arriving
+  (when no dialog is open), Ctrl+/ a list of every shortcut. None works while a dialog is open, and none sends anything.
+- **G. Export as Markdown** (23.7): Export (in History and in the sidebar menu) asks for the format in the save dialog: the JSON backup (the
+  one restore reads) or a readable `.md` (title, date, model, each message under "You" / the model's name; attached files named, pictures
+  not embedded). Markdown is one way: it is never read back.
+- **H.** (23.8) The threat note (D-055), the full regression (expect stale checks: the three menus, the box's buttons, the message actions'
+  words, the sidebar rows), the merge into main, the push. A release (v0.4.0) only after the owner's yes.
+
+**Rough time** (an estimate; measured slices took 1-2 h each with their window checks and controls; the last regression was 261 runs, about 3 h):
+
+| Slice | Hours |
+|---|---|
+| 23.1 Names, pins, days | 2-3 |
+| 23.2 Icons | 1 |
+| 23.3 One model button | 2 |
+| 23.4 "+" menu | 1.5-2 |
+| 23.5 Code colours | 1-1.5 |
+| 23.6 Shortcuts | 1 |
+| 23.7 Markdown export | 1 |
+| 23.8 Regression and merge | 3-5 |
+| **Total** | **about 12-16** |
+
+What could stretch it: stale checks after 23.3 and 23.4 (many suites find the menus and the box's buttons by name), and window runs that
+stall when the window is covered.
+
+**Questions for the owner** (the picks stand until you say otherwise):
+(1) Where names and pins are kept: **a small file of their own, `chat-names.json`, in the encrypted set like `library.json`** (my pick: chat
+files stay version 3, so an older Frontier still opens every chat), or inside each chat file (version 4: an older build could not open a
+renamed chat)?
+(2) Do backups carry names and pins? **Yes, as an extra part that restore reads when it is there** (my pick; older backups still restore), or no?
+(3) Code colours: **the highlight.js package, its core and about 15 common languages** (my pick: one dependency, MIT, it only colours text),
+or a small colourer of our own for about 5 languages (no dependency, more work, fewer languages)?
+(4) Message icons: **on hover and focus, always under the last reply** (my pick, like ChatGPT and Claude), or always shown?
+(5) Shortcuts: **ChatGPT's set** (my pick), or your own?
+(6) The Task menu: **a filter chip inside the chooser** (my pick), or keep it as a menu under the box?
+(7) After the merge: **ask you before releasing v0.4.0** (my pick), or leave releases for later?
+
 ## What is deliberately not promised
 
 Exact copies of vendor-only features (their memory, Projects and Artifacts, custom GPTs, the one-click connector directory), and any power
