@@ -39,6 +39,6 @@ const write = (dir, specs, make) => {
 }
 write('specs232w', windowSpecs, (name) => ({
   argv: ['{{TOOLS}}/run-with-app.mjs', 'dev', 'setup-key.mjs,verify-23-2w.mjs', '{{OUT}}/shots', '9222'],
-  env: { USER_DATA_DIR: scratch('specs232wnc'), WIPE_USER_DATA: '1', MOCK_PORT: '8867', PRESEED_FILE: '', LOG_LABEL: `nc-${name}` }
+  env: { USER_DATA_DIR: scratch('specs232wnc'), WIPE_USER_DATA: '1', MOCK_PORT: '8867', INSPECT_PORT: '9251', PRESEED_FILE: '', LOG_LABEL: `nc-${name}` }
 }))
 write('specs235', nodeSpecs, () => ({ argv: ['{{TOOLS}}/verify-23-5.mjs'], env: {} }))

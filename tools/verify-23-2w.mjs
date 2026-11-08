@@ -10,6 +10,7 @@ import { join } from 'node:path'
 import { connect, checker, sleep } from './cdp.mjs'
 import { assertScratchProfile } from './profile-guard.mjs'
 import { helpers } from './lib3.mjs'
+import { sayYesFromMain } from './lib10.mjs'
 
 const shots = join(process.argv[2], '..', 'shots23')
 mkdirSync(shots, { recursive: true })
@@ -19,6 +20,8 @@ const userData = process.env.USER_DATA_DIR
 if (!process.env.MOCK_PORT || !userData) throw new Error('MOCK_PORT and USER_DATA_DIR must be set')
 
 const check = checker()
+// Saving a note asks in the system's own box (D-039): the suite answers it from main, so no real box ever appears on the screen.
+const { main, Q } = await sayYesFromMain()
 const page = await connect(port)
 await assertScratchProfile()
 const H = helpers(page, { userData, mockUrl })
@@ -44,7 +47,9 @@ try {
   await page.press('Escape'); await sleep(300)
   const labels = () => ev(`['chat-instructions', 'chat-memory', 'chat-project'].map((c) => { const l = document.querySelector('.' + c + ' .chat-label'); return c + ':' + (l.classList.contains('visually-hidden') ? 'hidden' : 'shown') + ':' + document.querySelector('.' + c).textContent.trim() })`)
   check('D: Instructions, Memory and Project are icons while nothing goes with the messages, still named', JSON.stringify(await labels()) === JSON.stringify(['chat-instructions:hidden:Instructions', 'chat-memory:hidden:Memory', 'chat-project:hidden:Project']), JSON.stringify(await labels()))
-  const added = await ev(`window.api.memory.add('I prefer short answers.', 'all').then((r) => r.ok)`)
+  const asked = (await Q.asked()).length
+  const added = await ev(`window.api.memory.add('A test note.', 'all').then((r) => r.ok)`)
+  check('D: saving the note asked in the system box (answered by the suite, not shown on screen)', (await Q.asked()).length === asked + 1)
   await ev(`document.querySelector('.chat-memory').click()`); await sleep(900); await page.press('Escape'); await sleep(600) // the page reads the notes again when Memory opens
   const after = await labels()
   check('D: with a note going with every message, Memory shows its word and the count', added && after[1].startsWith('chat-memory:shown:Memory') && /1$/.test(after[1]), JSON.stringify({ added, after }))
@@ -111,4 +116,5 @@ try {
 } catch (error) {
   check('the suite ran to the end', false, error?.stack ?? String(error))
 }
+main.close()
 process.exit(check.summary() ? 0 : 1)

@@ -14,7 +14,7 @@ const result = runApp({
   label: `${tag}w232`,
   mode,
   scripts: 'setup-key.mjs,verify-23-2w.mjs',
-  env: { USER_DATA_DIR: scratch('s232'), WIPE_USER_DATA: '1', MOCK_PORT: '8864' },
+  env: { USER_DATA_DIR: scratch('s232'), WIPE_USER_DATA: '1', MOCK_PORT: '8864', INSPECT_PORT: '9251' },
   timeoutMs: 600000
 })
 console.log(`${result.passed}/${result.total} checks passed`)
