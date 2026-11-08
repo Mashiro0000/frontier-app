@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/backup.ts",
-      "from": "          ...(withKept\n            ? { projects: keptWritten.projects.length, notes: keptWritten.notes.length }\n            : {})\n        })}",
-      "to": "        })}"
+      "from": "          ...(withKept\n            ? { projects: keptWritten.projects.length, notes: keptWritten.notes.length }\n            : {}),\n          ...(withMarks",
+      "to": "          ...(withMarks"
     }
   ],
   "argv": [

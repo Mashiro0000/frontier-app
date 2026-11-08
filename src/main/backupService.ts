@@ -14,6 +14,7 @@ import type { Project } from '../shared/projects'
 import { checkBackupRequest } from '../shared/validate'
 import type { AdoptOutcome } from './attachmentStore'
 import { contentKey, readBackup, writeBackup } from './backup'
+import type { ChatMarkResult, ChatMarks } from '../shared/chatNames'
 import { titleFor, type ConversationStore } from './conversationStore'
 import { keptQuestion, nothingAdded, planKept, type KeptBackup, type KeptPlan } from './restoreKept'
 import type { SavedKey } from './secrets'
@@ -84,7 +85,20 @@ export interface BackupServiceOptions {
     addProjects(projects: readonly Project[]): Promise<{ ok: true } | { ok: false; error: string }>
     addNotes(notes: readonly Note[]): Promise<{ ok: true } | { ok: false; error: string }>
   }
+  /**
+   * (23.1, D-055) The chats' names and pins: a backup carries those of its chats (version 4), and a restore adds those of the chats it added, never
+   * changing a mark already here. Without it a backup holds none and a restore adds none.
+   */
+  marks?: {
+    read(): Promise<{ marks: ChatMarks; problem: string | null }>
+    addMissing(marks: ChatMarks): Promise<ChatMarkResult>
+  }
 }
+
+/** Whether a backup holds projects or notes to show and plan (a version 4 backup of chats only has an empty section). */
+const hasKept = <T extends { projects: { seen: number }; notes: { seen: number } }>(
+  kept: T | undefined
+): kept is T => kept !== undefined && kept.projects.seen + kept.notes.seen > 0
 
 /** The ids of the files a chat's messages carry. */
 const filesOf = (chat: SavedConversation): string[] =>
@@ -220,6 +234,14 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
       ids = [id]
       name = `frontier-chat-${day}-${id.slice(0, 8)}.jsonl`
     }
+    // The names and pins of the chats (D-055): what can be read; what cannot is said, and the chats are backed up anyway.
+    let marks: ChatMarks | undefined
+    if (options.marks !== undefined) {
+      const read = await options.marks.read()
+      if (read.problem !== null)
+        keptLeftOut.push(keptUnreadable('The names and pins of your chats', read.problem))
+      else marks = read.marks
+    }
     const dest = await pickers.savePath(
       owner,
       name,
@@ -246,7 +268,8 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
             return loaded.ok ? loaded.conversation : null
           },
           ...(options.files !== undefined ? { readFile: options.files.read } : {}),
-          ...(kept !== undefined ? { kept } : {})
+          ...(kept !== undefined ? { kept } : {}),
+          ...(marks !== undefined ? { marks } : {})
         },
         now()
       )
@@ -375,7 +398,7 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
       )
       if (read.problem !== null) return { ok: false, error: read.problem }
       files.refused += read.files?.refusedCount ?? 0
-      const kept = read.kept === undefined ? undefined : await keptPreview(fromBackup, read.kept)
+      const kept = !hasKept(read.kept) ? undefined : await keptPreview(fromBackup, read.kept)
       const { conversations } = await store.list()
       const token = randomUUID()
       pending = { token, path, size: info.size, mtimeMs: info.mtimeMs, at: now() }
@@ -433,7 +456,7 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
       if (first.problem !== null) return { ok: false, error: first.problem }
       let kept: NonNullable<Extract<HistoryRestoreApplyResult, { ok: true }>['kept']> | undefined
       let projectOf: ReadonlyMap<string, string | null> = new Map()
-      if (first.kept !== undefined) {
+      if (hasKept(first.kept)) {
         const unusable = first.kept.projects.refusedCount + first.kept.notes.refusedCount
         const planned = await keptPlan(fromBackup)
         if ('problem' in planned) {
@@ -524,6 +547,9 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
       // The files (D-037): those of chats that are here once this restore has added what it could (added, copied, or already here) are put back; a file
       // named by a chat that could not be added is left (the chat's own failure is reported); a file no chat in the backup names is not usable.
       const files = { added: 0, already: 0, noRoom: 0, failed: 0, refused: 0 }
+      // (23.1, D-055) The backup's names and pins (they come before the chats), and those of the chats added, under the id each was added with.
+      const marksInBackup = new Map<string, ChatMarks[string]>()
+      const marksAdded: ChatMarks = {}
       const read = await readBackup(
         plan.path,
         async (read) => {
@@ -537,13 +563,17 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
           }
           try {
             let asCopy = kind === 'copy'
-            let outcome = await store.add(asCopy ? { ...chat, id: randomUUID() } : chat)
+            let addedAs = asCopy ? randomUUID() : chat.id
+            let outcome = await store.add({ ...chat, id: addedAs })
             if (!outcome.ok && outcome.why === 'occupied') {
               // Taken after it was looked at, or by a file the list did not know of: never written over, so a new id.
               asCopy = true
-              outcome = await store.add({ ...chat, id: randomUUID() })
+              addedAs = randomUUID()
+              outcome = await store.add({ ...chat, id: addedAs })
             }
             if (outcome.ok) {
+              const mark = marksInBackup.get(read.id)
+              if (mark !== undefined) marksAdded[addedAs] = mark
               if (asCopy) copies += 1
               else added += 1
               for (const id of filesOf(chat)) here.add(id)
@@ -567,8 +597,19 @@ export function createBackupService(options: BackupServiceOptions): BackupServic
           else if (outcome === 'full') files.noRoom += 1
           else if (outcome === 'failed') files.failed += 1
           else files.refused += 1
+        },
+        {
+          mark: (id, mark) => {
+            marksInBackup.set(id, mark)
+          }
         }
       )
+      if (Object.keys(marksAdded).length > 0 && options.marks !== undefined) {
+        // shortcut: a mark that cannot be added is only logged (the chat itself is added); say it in the result if the owner wants it shown.
+        const done = await options.marks.addMissing(marksAdded)
+        if (!done.ok)
+          console.error('Adding the names and pins of restored chats failed:', done.error)
+      }
       if (read.problem !== null) return { ok: false, error: read.problem }
       files.refused += read.files?.refusedCount ?? 0
       return {

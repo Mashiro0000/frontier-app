@@ -1,0 +1,14 @@
+{
+  "label": "n231-mark-unchecked",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "    const checked = typeof id === 'string' ? checkChatMarks({ [id]: mark }) : null",
+      "to": "    const checked = typeof id === 'string' ? ({ [id]: mark } as ChatMarks) : null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

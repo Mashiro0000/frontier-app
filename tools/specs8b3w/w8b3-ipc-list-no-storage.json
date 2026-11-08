@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "return { ...(await history.list()), folder, storage: await encryption.status() }",
-      "to": "return { ...(await history.list()), folder, storage: { choice: 'off', canEncrypt: true, keyUsable: null, plain: 0, encrypted: 0, unreadable: 0, unopened: 0, blocked: null } }"
+      "from": "return { ...listed, conversations, folder, storage: await encryption.status() }",
+      "to": "return { ...listed, conversations, folder, storage: { choice: 'off', canEncrypt: true, keyUsable: null, plain: 0, encrypted: 0, unreadable: 0, unopened: 0, blocked: null } }"
     }
   ],
   "argv": [

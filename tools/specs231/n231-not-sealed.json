@@ -1,0 +1,14 @@
+{
+  "label": "n231-not-sealed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      myExperts.file,\n      chatNames.file\n",
+      "to": "      myExperts.file\n"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

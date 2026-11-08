@@ -99,9 +99,23 @@ function SettingsDialog({
       aria-labelledby="settings-title"
       onClose={handleClosed}
     >
-      <h2 id="settings-title" className="settings-title">
-        Settings
-      </h2>
+      {/* (23.7, D-055) The title row stays in view, with the close button at its right (as ChatGPT's and Claude's). */}
+      <div className="settings-top">
+        <h2 id="settings-title" className="settings-title">
+          Settings
+        </h2>
+        <button
+          type="button"
+          className="icon-button settings-close"
+          title="Close (Esc)"
+          aria-label="Close Settings"
+          onClick={() => dialogRef.current?.close()}
+        >
+          <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
 
       <div className="settings-layout">
         <nav className="settings-nav" aria-label="Sections of Settings">
@@ -152,11 +166,10 @@ function SettingsDialog({
                 </p>
                 <p className="settings-hint">{model.description}</p>
                 <p className="settings-hint">
-                  It can read about {formatTokens(model.contextWindow)} tokens of conversation at
-                  once. List price: {formatPrice(model.pricing.inputPerMTok)} per million tokens it
-                  reads and {formatPrice(model.pricing.outputPerMTok)} per million tokens it writes,
-                  billed to your {providerName(status, model.provider)} account. Prices were checked
-                  on {status.modelsCheckedOn}.
+                  Reads up to {formatTokens(model.contextWindow)} tokens.{' '}
+                  {formatPrice(model.pricing.inputPerMTok)} in,{' '}
+                  {formatPrice(model.pricing.outputPerMTok)} out per million tokens (checked{' '}
+                  {status.modelsCheckedOn}).
                 </p>
                 {model.priceChange !== null && (
                   // (17.5, D-049) a change the provider has announced: the app prices each request at the prices of its day by itself
@@ -172,9 +185,7 @@ function SettingsDialog({
                   </p>
                 )}
                 <p className="settings-hint">
-                  Change the model with the menu under the message box. If you change it in the
-                  middle of a chat, the whole chat so far is sent to the new model with your next
-                  message.
+                  Change it under the message box. Mid-chat, the whole chat goes to the new model.
                 </p>
               </>
             )}
@@ -219,16 +230,6 @@ function SettingsDialog({
           {/* Appearance (D-051): dark or light, as the button at the foot of the sidebar. */}
           <AppearanceSection />
         </div>
-      </div>
-
-      <div className="settings-footer">
-        <button
-          type="button"
-          className="button button-secondary"
-          onClick={() => dialogRef.current?.close()}
-        >
-          Close
-        </button>
       </div>
     </dialog>
   )

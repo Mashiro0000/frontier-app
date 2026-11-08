@@ -6,6 +6,7 @@ import {
   type SavedConversation,
   type SavedMessage
 } from '../shared/ipc'
+import { plainTitle } from '../shared/chatNames'
 import { isProjectId } from '../shared/projects'
 import { checkInstructions, checkSavedMessages, isConversationId } from '../shared/validate'
 import {
@@ -185,8 +186,10 @@ export function titleFor(messages: readonly SavedMessage[]): string {
         ? firstMessage.content
         : (firstMessage.attachments ?? []).map((file) => file.name).join(', ')
   const oneLine = first.replace(/\s+/g, ' ').trim()
-  const letters = Array.from(oneLine) // by character, so an emoji is not cut in half
-  return letters.length > 60 ? `${letters.slice(0, 60).join('')}...` : oneLine || 'New chat'
+  // (23.1, D-055) without Markdown's marks, which would show as they are in a list
+  const plain = plainTitle(oneLine)
+  const letters = Array.from(plain) // by character, so an emoji is not cut in half
+  return letters.length > 60 ? `${letters.slice(0, 60).join('')}...` : plain
 }
 
 const summaryOf = (conversation: SavedConversation): ConversationSummary => ({

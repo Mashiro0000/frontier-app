@@ -1,0 +1,14 @@
+{
+  "label": "n231-yesterday-wrong",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/sidebar/groups.ts",
+      "from": "        : days === 1",
+      "to": "        : days === 2"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto'
+import { moveTo } from '../shared/order'
 import { isAttachmentId, type AttachmentInfo } from '../shared/attachments'
 import type { AttachPickResult } from '../shared/ipc'
 import {
@@ -193,6 +194,7 @@ export interface ProjectsService {
   removeFile(input: unknown): Promise<ProjectChangeResult>
   /** `{ id }`: deletes it, its notes, and the copies of its files nothing else uses. Asks nothing here (the page asks first). */
   remove(input: unknown): Promise<ProjectChangeResult>
+  move(input: unknown): Promise<ProjectChangeResult>
   /** Every project, deleted, the damaged file kept as a copy: the way out when projects.json cannot be read. */
   removeAll(): Promise<ProjectChangeResult>
   /**
@@ -512,6 +514,20 @@ export function createProjects(options: ProjectsOptions): ProjectsService {
     })
   }
 
+  // (23.8, D-055) one project to another place; the others keep their order
+  function move(input: unknown): Promise<ProjectChangeResult> {
+    const fields = fieldsOf(input)
+    if (fields === null || !isProjectId(fields.id))
+      return Promise.resolve({ ok: false, error: NOT_UNDERSTOOD })
+    return oneAtATime(async () => {
+      const now = await readable()
+      if (!now.ok) return now
+      const next = moveTo(now.projects, fields.id, fields.to)
+      if (next === null) return { ok: false, error: NO_PROJECT }
+      return write(next)
+    })
+  }
+
   function removeAll(): Promise<ProjectChangeResult> {
     return oneAtATime(async () => {
       const current = await file.read()
@@ -591,6 +607,7 @@ export function createProjects(options: ProjectsOptions): ProjectsService {
     addFiles,
     removeFile,
     remove,
+    move,
     removeAll,
     addRestored,
     restoreView,

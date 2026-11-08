@@ -12,6 +12,7 @@ import type { ProgramsChangeResult, ProgramsStatus } from './programs'
 import type { ConnectorChangeResult, ConnectorsStatus } from './connectors'
 import type { ProjectChangeResult, ProjectsStatus } from './projects'
 import type { ChatSearchHit } from './chatSearch'
+import type { ChatMarkResult } from './chatNames'
 import type { LibraryFilesResult, StarResult } from './library'
 import type { MyExpertsResult } from './myExperts'
 import type { Suggestion, TaskOption } from './rankings'
@@ -327,6 +328,8 @@ export interface ConversationSummary {
   messageCount: number
   /** The project the chat belongs to (D-039): absent for none. It may name a project that has since been deleted (then it is in none). */
   project?: string
+  /** (23.1, D-055) Present when the person pinned the chat. The title is then also the name they gave it, if they gave one. */
+  pinned?: true
 }
 
 export interface HistoryList {
@@ -566,6 +569,10 @@ export interface FrontierApi {
     save(conversation: ConversationToSave): Promise<HistorySaveResult>
     /** Deletes a saved conversation's file. */
     remove(id: string): Promise<HistoryRemoveResult>
+    /** (23.1, D-055) Gives a chat its own name ('' goes back to the title worked out from its first message). Kept apart from the chat's file. */
+    rename(id: string, title: string): Promise<ChatMarkResult>
+    /** (23.1, D-055) Pins a chat to the top of the sidebar, or unpins it. */
+    pin(id: string, on: boolean): Promise<ChatMarkResult>
     /**
      * Backs up one chat or all of them to a file the person picks in the system's own save dialog (D-034). The page sends no path and learns
      * where the file went only afterwards. The file is read back and checked before this answers "ok".
@@ -822,6 +829,8 @@ export interface FrontierApi {
       task: string
     }): Promise<MyExpertsResult>
     remove(id: string): Promise<MyExpertsResult>
+    /** (23.8, D-055) Moves one of the person's experts to place `to` (0 is first). */
+    move(id: string, to: number): Promise<MyExpertsResult>
   }
   projects: {
     status(): Promise<ProjectsStatus>
@@ -831,6 +840,8 @@ export interface FrontierApi {
     addFiles(id: string): Promise<ProjectChangeResult>
     removeFile(id: string, fileId: string): Promise<ProjectChangeResult>
     remove(id: string): Promise<ProjectChangeResult>
+    /** (23.8, D-055) Moves a project to place `to` (0 is first). */
+    move(id: string, to: number): Promise<ProjectChangeResult>
     /** The way out when projects.json cannot be read: every project deleted, the damaged file kept as a copy. */
     removeAll(): Promise<ProjectChangeResult>
   }
@@ -867,6 +878,8 @@ export const CHANNELS = {
   historyLoad: 'history:load',
   historySave: 'history:save',
   historyRemove: 'history:remove',
+  historyRename: 'history:rename',
+  historyPin: 'history:pin',
   historyExport: 'history:export',
   historyRestoreLook: 'history:restore-look',
   historyRestoreApply: 'history:restore-apply',
@@ -878,6 +891,7 @@ export const CHANNELS = {
   expertsList: 'experts:list',
   expertsSave: 'experts:save',
   expertsRemove: 'experts:remove',
+  expertsMove: 'experts:move',
   historyEncrypt: 'history:encrypt',
   historyDecrypt: 'history:decrypt',
   attachmentsPick: 'attachments:pick',
@@ -901,6 +915,7 @@ export const CHANNELS = {
   projectsAddFiles: 'projects:add-files',
   projectsRemoveFile: 'projects:remove-file',
   projectsRemove: 'projects:remove',
+  projectsMove: 'projects:move',
   projectsRemoveAll: 'projects:remove-all',
   auditRead: 'audit:read',
   auditExport: 'audit:export',

@@ -1,0 +1,14 @@
+{
+  "label": "n231-bidi-allowed",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/chatNames.ts",
+      "from": "\\u007f\\u202a-\\u202e\\u2066-\\u2069]",
+      "to": "\\u007f]"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

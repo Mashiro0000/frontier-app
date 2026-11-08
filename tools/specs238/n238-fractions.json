@@ -1,0 +1,14 @@
+{
+  "label": "n238-fractions",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/order.ts",
+      "from": "typeof to !== 'number' || !Number.isInteger(to) ||",
+      "to": "typeof to !== 'number' ||"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-8.mjs"
+  ],
+  "env": {}
+}

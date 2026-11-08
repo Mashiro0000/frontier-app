@@ -74,6 +74,9 @@ function memoryTitle(isReplying: boolean, memory: MemoryStatus | null): string {
  * they add to every message must always be in view (D-027, D-039). New chat, History and Tools moved to the sidebar. The buttons keep their
  * rules: they wait for a reply that is arriving, and a tooltip says why and when they come back.
  */
+/** (23.4, D-055) A button's words: shown while what it adds goes with every message, else hidden beside its icon (still its name). */
+const labelClass = (on: boolean): string => (on ? 'chat-label' : 'chat-label visually-hidden')
+
 function ChatBar({
   isReplying,
   instructions,
@@ -89,6 +92,9 @@ function ChatBar({
   imagesOn,
   onMakeImage
 }: ChatBarProps): React.JSX.Element {
+  const instructionsOn =
+    everyChat?.problem != null || instructions !== '' || (everyChat?.text ?? '') !== ''
+  const memoryOn = memory?.problem != null || notesSent(memory).length > 0
   return (
     <div className="chat-bar" role="group" aria-label="This chat">
       <button
@@ -128,7 +134,7 @@ function ChatBar({
         onClick={onOpenInstructions}
       >
         <IconInstructions />
-        <span className="chat-label">Instructions</span>
+        <span className={labelClass(instructionsOn)}>Instructions</span>
         {everyChat?.problem != null ? (
           <>
             {' '}
@@ -152,7 +158,7 @@ function ChatBar({
         onClick={onOpenMemory}
       >
         <IconMemory />
-        <span className="chat-label">Memory</span>
+        <span className={labelClass(memoryOn)}>Memory</span>
         {memory?.problem != null ? (
           <>
             {' '}
@@ -182,7 +188,7 @@ function ChatBar({
         onClick={onOpenProjects}
       >
         <IconProject />
-        <span className="chat-label">
+        <span className={labelClass(projectName !== null)}>
           {projectName === null ? (
             'Project'
           ) : (

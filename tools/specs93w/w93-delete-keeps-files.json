@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/ipc.ts",
-      "from": "        if (removed.ok) await deleteUnusedFiles(files)",
-      "to": "        if (removed.ok) void files"
+      "from": "          await deleteUnusedFiles(files)\n",
+      "to": "          void files\n"
     }
   ],
   "argv": [

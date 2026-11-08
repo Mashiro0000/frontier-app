@@ -1,0 +1,14 @@
+{
+  "label": "n231-no-queue",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatNames.ts",
+      "from": "    const run = queue.then(task)",
+      "to": "    const run = task()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

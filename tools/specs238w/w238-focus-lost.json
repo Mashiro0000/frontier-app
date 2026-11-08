@@ -1,0 +1,24 @@
+{
+  "label": "w238-focus-lost",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/reorder.ts",
+      "from": "        ;(row?.matches('button') ? row : row?.querySelector<HTMLElement>('button'))?.focus()",
+      "to": "        void row"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-23-8w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-specs238wnc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8869",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w238-focus-lost"
+  }
+}

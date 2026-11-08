@@ -1,0 +1,14 @@
+{
+  "label": "n231-any-id",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/ipc.ts",
+      "from": "      if (!(await isSaved(fields.id))) return NOT_SAVED\n      return chatNames.rename(fields.id, fields.title)",
+      "to": "      return chatNames.rename(fields.id, fields.title)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

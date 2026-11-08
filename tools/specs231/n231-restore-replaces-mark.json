@@ -1,0 +1,14 @@
+{
+  "label": "n231-restore-replaces-mark",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatNames.ts",
+      "from": "        for (const [id, mark] of Object.entries(marks)) if (!(id in next)) next[id] = mark",
+      "to": "        for (const [id, mark] of Object.entries(marks)) next[id] = mark"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

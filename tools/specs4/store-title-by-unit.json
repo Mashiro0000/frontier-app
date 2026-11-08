@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",
-      "from": "const letters = Array.from(oneLine) // by character, so an emoji is not cut in half",
-      "to": "const letters = oneLine.split('')"
+      "from": "const letters = Array.from(plain) // by character, so an emoji is not cut in half",
+      "to": "const letters = plain.split('')"
     }
   ],
   "argv": [

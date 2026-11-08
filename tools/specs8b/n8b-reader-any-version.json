@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/backup.ts",
-      "from": "if (\n          header.version !== BACKUP_VERSION &&\n          header.version !== BACKUP_VERSION_FILES &&\n          header.version !== BACKUP_VERSION_KEPT\n        ) {",
+      "from": "if (\n          header.version !== BACKUP_VERSION &&\n          header.version !== BACKUP_VERSION_FILES &&\n          header.version !== BACKUP_VERSION_KEPT &&\n          header.version !== BACKUP_VERSION_MARKS\n        ) {",
       "to": "if (false) {"
     }
   ],

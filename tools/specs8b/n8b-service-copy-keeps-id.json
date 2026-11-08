@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/backupService.ts",
-      "from": "let outcome = await store.add(asCopy ? { ...chat, id: randomUUID() } : chat)",
-      "to": "let outcome = await store.add(chat)"
+      "from": "let addedAs = asCopy ? randomUUID() : chat.id",
+      "to": "let addedAs = chat.id"
     },
     {
       "file": "{{REPO}}/src/main/backupService.ts",

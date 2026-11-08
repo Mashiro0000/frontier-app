@@ -1,0 +1,14 @@
+{
+  "label": "n231-title-not-plain",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/conversationStore.ts",
+      "from": "  const plain = plainTitle(oneLine)",
+      "to": "  const plain = oneLine || 'New chat'"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

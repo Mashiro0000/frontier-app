@@ -1,0 +1,14 @@
+{
+  "label": "n238-repeats-kept",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/order.ts",
+      "from": " && saved.indexOf(id) === i",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-8.mjs"
+  ],
+  "env": {}
+}

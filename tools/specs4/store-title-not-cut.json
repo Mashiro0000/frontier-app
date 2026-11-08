@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/conversationStore.ts",
-      "from": "return letters.length > 60 ? `${letters.slice(0, 60).join('')}...` : oneLine || 'New chat'",
-      "to": "return oneLine || 'New chat'"
+      "from": "return letters.length > 60 ? `${letters.slice(0, 60).join('')}...` : plain",
+      "to": "return plain"
     }
   ],
   "argv": [

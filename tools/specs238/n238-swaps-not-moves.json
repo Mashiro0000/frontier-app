@@ -1,0 +1,14 @@
+{
+  "label": "n238-swaps-not-moves",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/order.ts",
+      "from": "  next.splice(to, 0, item)",
+      "to": "  next.splice(to, 0, item)\n  if (Math.abs(to - from) > 1) next.reverse()"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-8.mjs"
+  ],
+  "env": {}
+}

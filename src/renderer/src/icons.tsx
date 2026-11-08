@@ -149,3 +149,56 @@ export const IconStudio = (): React.JSX.Element => (
     <path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM3 16l5-5 4 4 3-3 6 6M15.5 9.5a1.5 1.5 0 1 0 0-.01" />
   </Icon>
 )
+
+// (23.1, D-055) The sidebar's chat menu.
+export const IconMore = (): React.JSX.Element => (
+  <Icon>
+    <circle cx="5" cy="12" r="1.2" />
+    <circle cx="12" cy="12" r="1.2" />
+    <circle cx="19" cy="12" r="1.2" />
+  </Icon>
+)
+
+export const IconPin = (): React.JSX.Element => (
+  <Icon>
+    <path d="M9 3h6l-1 6 4 4H6l4-4zM12 13v8" />
+  </Icon>
+)
+
+export const IconPencil = (): React.JSX.Element => (
+  <Icon>
+    <path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4" />
+  </Icon>
+)
+
+export const IconTrash = (): React.JSX.Element => (
+  <Icon>
+    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6" />
+  </Icon>
+)
+
+// (23.2, D-055) The actions under a message.
+export const IconCopy = (): React.JSX.Element => (
+  <Icon>
+    <rect x="8.5" y="8.5" width="11" height="11" rx="2" />
+    <path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5" />
+  </Icon>
+)
+
+export const IconCheck = (): React.JSX.Element => (
+  <Icon>
+    <path d="M5 12.5l4.5 4.5L19 7.5" />
+  </Icon>
+)
+
+export const IconRegenerate = (): React.JSX.Element => (
+  <Icon>
+    <path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4.5v4h-4" />
+  </Icon>
+)
+
+export const IconSpeaker = (): React.JSX.Element => (
+  <Icon>
+    <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />
+  </Icon>
+)

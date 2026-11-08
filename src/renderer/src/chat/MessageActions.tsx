@@ -1,3 +1,12 @@
+import {
+  IconCheck,
+  IconCopy,
+  IconMemory,
+  IconPencil,
+  IconRegenerate,
+  IconSpeaker,
+  IconStop
+} from '../icons'
 import { copyLabel, useCopy } from '../useCopy'
 import { speaker } from '../voice/speaker'
 import { useSpeaker } from '../voice/useSpeaker'
@@ -17,6 +26,11 @@ interface MessageActionsProps {
 }
 
 const WAIT = 'This can be done when the reply has finished.'
+
+/** (23.2, D-055) An action's words: hidden beside its icon (its name for screen readers and the checks), or shown when they say something went wrong. */
+const Label = ({ text, shown = false }: { text: string; shown?: boolean }): React.JSX.Element => (
+  <span className={shown ? 'message-action-label' : 'visually-hidden'}>{text}</span>
+)
 
 /** The text the person selected inside this message's bubble, or null when nothing in it is selected. */
 function selectedIn(from: Element): string | null {
@@ -70,7 +84,8 @@ function MessageActions({
           }
           onClick={() => copy(message.content)}
         >
-          {copyLabel(state)}
+          {state === 'copied' ? <IconCheck /> : <IconCopy />}
+          <Label text={copyLabel(state)} shown={state === 'failed'} />
         </button>
       )}
       {canRead && (
@@ -92,7 +107,8 @@ function MessageActions({
                 })
           }
         >
-          {readingThis ? 'Stop reading' : 'Read aloud'}
+          {readingThis ? <IconStop /> : <IconSpeaker />}
+          <Label text={readingThis ? 'Stop reading' : 'Read aloud'} />
         </button>
       )}
       {canRegenerate && (
@@ -108,7 +124,11 @@ function MessageActions({
           }
           onClick={onRegenerate}
         >
-          {message.status === 'error' ? 'Try again' : 'Regenerate'}
+          <IconRegenerate />
+          <Label
+            text={message.status === 'error' ? 'Try again' : 'Regenerate'}
+            shown={message.status === 'error'}
+          />
         </button>
       )}
       {canEdit && (
@@ -124,7 +144,8 @@ function MessageActions({
           }
           onClick={onEdit}
         >
-          Edit
+          <IconPencil />
+          <Label text="Edit" />
         </button>
       )}
       {canRemember && (
@@ -134,7 +155,8 @@ function MessageActions({
           title="Keep a note of this for the model: the part you have selected, or the whole message. You can cut it down before it is saved."
           onClick={(event) => onRemember(selectedIn(event.currentTarget) ?? message.content)}
         >
-          Remember...
+          <IconMemory />
+          <Label text="Remember..." />
         </button>
       )}
     </div>

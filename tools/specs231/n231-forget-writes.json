@@ -1,0 +1,14 @@
+{
+  "label": "n231-forget-writes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatNames.ts",
+      "from": "(id in now ? withMark(now, id, {}) : null)",
+      "to": "(id in now ? withMark(now, id, {}) : now)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

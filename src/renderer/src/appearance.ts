@@ -22,6 +22,7 @@ const THEME_KEY = 'frontier.theme'
 const RAIL_KEY = 'frontier.sidebar'
 const ACCENT_KEY = 'frontier.accent'
 const FONT_KEY = 'frontier.font'
+const PAGES_KEY = 'frontier.pages'
 
 function read(key: string): string | null {
   try {
@@ -117,6 +118,17 @@ export function setFont(id: string): void {
   applyTheme()
   changed()
 }
+
+/** (23.8, D-055) The order of the sidebar's pages as saved (anything: shared/order.ts makes it usable), and saving a new one. */
+export function savedPageOrder(): unknown {
+  try {
+    return JSON.parse(read(PAGES_KEY) ?? 'null')
+  } catch {
+    return null
+  }
+}
+export const savePageOrder = (order: readonly string[]): void =>
+  write(PAGES_KEY, JSON.stringify(order))
 
 export function setRail(next: boolean): void {
   rail = next

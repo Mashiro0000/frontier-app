@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { MOVE_HINT, reorderable } from '../reorder'
 import { EXPERT_CATEGORIES, EXPERTS, type Expert } from '../../../shared/experts'
 import { MY_EXPERT_LIMITS, type MyExpert } from '../../../shared/myExperts'
 import { TASKS, type TaskId } from '../../../shared/rankings'
@@ -116,12 +117,29 @@ function ExpertsDialog({
     else setProblem(result.error)
   }
 
+  // (23.8, D-055) My experts in the person's order: drag a card, or Alt+Up / Alt+Down on it (not while a search narrows the list).
+  async function moveExpert(id: string, to: number): Promise<void> {
+    const result = await window.api.experts.move(id, to)
+    if (result.ok) setMine(result.experts)
+    else setProblem(result.error)
+  }
   const card = (
     e: Expert | MyExpert,
     category: string | null,
-    editable: boolean
+    editable: boolean,
+    at?: number
   ): React.JSX.Element => (
-    <li key={e.id} className="expert-card" data-expert={e.id}>
+    <li
+      key={e.id}
+      className="expert-card"
+      data-expert={e.id}
+      {...(at !== undefined && words.length === 0
+        ? {
+            ...reorderable('experts', e.id, at, mine.length, (id, to) => void moveExpert(id, to)),
+            title: MOVE_HINT
+          }
+        : {})}
+    >
       <span className="expert-mark" aria-hidden="true">
         {initials(e.name)}
       </span>
@@ -344,7 +362,7 @@ function ExpertsDialog({
             </p>
           ) : (
             <ul className="experts-grid" aria-label="My experts">
-              {own.map((e) => card(e, null, true))}
+              {own.map((e, at) => card(e, null, true, at))}
             </ul>
           )}
         </>

@@ -653,7 +653,7 @@ from 3. **A later stage** (for example one OpenRouter key for many makers) (my p
 be seen by sending one message on your AI Fiesta Free plan (1 of 10): **may I send one harmless test message** (my pick), or build it from what
 I saw? (7) Order: **Stage 21 first** (my pick), or Stage 22 first?
 
-## Stage 23 - Quick wins from ChatGPT, Claude and AI Fiesta (plan written 8 November 2026 on the owner's "Plan quick wins"; NOT approved yet, nothing built)
+## Stage 23 - Quick wins from ChatGPT, Claude and AI Fiesta (plan written 8 November 2026 on the owner's "Plan quick wins"; approved the same day: "Yes, your picks"; D-055)
 
 **Why:** a comparison on 8 November 2026 (ChatGPT, Claude and AI Fiesta; ChatGPT's own release notes refused the fetch, so some of it is from
 secondary sources) found Frontier has the big features but lacks the everyday polish all three share. These are the eight smallest of those
@@ -709,7 +709,24 @@ button (`CodeBlock.tsx`, D-025); the only shortcut is Ctrl+K; Export writes a ch
 What could stretch it: stale checks after 23.3 and 23.4 (many suites find the menus and the box's buttons by name), and window runs that
 stall when the window is covered.
 
-**Questions for the owner** (the picks stand until you say otherwise):
+- **Stage 23 progress** (D-055):
+  - [x] (23.1) Names, pins and days: the "..." menu (Rename, Pin, Delete), the groups, plain titles, `chat-names.json`, version 4 backups (76 Node checks,
+        32 in the window; 15 Node and 6 window controls caught, one of each retired as unseeable).
+  - **Trimmed on 8 November 2026** (the owner's "ponytail ultra" and "your pick", D-055): no highlight.js, three shortcuts, the model pill a visual merge,
+    no Markdown export, and no "+" menu (it would hide what goes with every message).
+  - [x] (23.2) Message actions as icons.
+  - [x] (23.3) One pill: the model and its effort; the Task menu in the chooser.
+  - [x] (23.4) The box: Instructions, Memory, Project as icons while off; the chips without the two the box has.
+  - [x] (23.5) Code colours, a small colourer of our own (16 Node checks).
+  - [x] (23.6) Three shortcuts: Ctrl+Shift+O, Esc, Ctrl+/.
+  - [x] (23.7) Settings simpler (the owner's ask, 8 November 2026): a close button at the top, none at the foot, short key and model sections.
+  - [x] (23.2-23.7) checked together: verify-23-2w 23 in the window; a probe (probe-23-6) showed the app stays open after every shortcut (an
+        earlier "closed" run was a test app left running from an older run).
+  - [x] (23.8) Reordering (the owner's ask, 8 November 2026): the sidebar's pages, My experts, Your projects, by a drag or Alt+Up / Alt+Down (24 Node
+        checks, 15 in the window, 4 Node controls caught).
+  - [ ] (23.9) The threat note, the full regression, the merge.
+
+**Questions for the owner** (answered 8 November 2026: "Yes, your picks", all seven kept):
 (1) Where names and pins are kept: **a small file of their own, `chat-names.json`, in the encrypted set like `library.json`** (my pick: chat
 files stay version 3, so an older Frontier still opens every chat), or inside each chat file (version 4: an older build could not open a
 renamed chat)?
