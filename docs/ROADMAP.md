@@ -694,17 +694,17 @@ button (`CodeBlock.tsx`, D-025); the only shortcut is Ctrl+K; Export writes a ch
 
 **Rough time** (an estimate; measured slices took 1-2 h each with their window checks and controls; the last regression was 261 runs, about 3 h):
 
-| Slice | Hours |
-|---|---|
-| 23.1 Names, pins, days | 2-3 |
-| 23.2 Icons | 1 |
-| 23.3 One model button | 2 |
-| 23.4 "+" menu | 1.5-2 |
-| 23.5 Code colours | 1-1.5 |
-| 23.6 Shortcuts | 1 |
-| 23.7 Markdown export | 1 |
-| 23.8 Regression and merge | 3-5 |
-| **Total** | **about 12-16** |
+| Slice                     | Hours           |
+| ------------------------- | --------------- |
+| 23.1 Names, pins, days    | 2-3             |
+| 23.2 Icons                | 1               |
+| 23.3 One model button     | 2               |
+| 23.4 "+" menu             | 1.5-2           |
+| 23.5 Code colours         | 1-1.5           |
+| 23.6 Shortcuts            | 1               |
+| 23.7 Markdown export      | 1               |
+| 23.8 Regression and merge | 3-5             |
+| **Total**                 | **about 12-16** |
 
 What could stretch it: stale checks after 23.3 and 23.4 (many suites find the menus and the box's buttons by name), and window runs that
 stall when the window is covered.
