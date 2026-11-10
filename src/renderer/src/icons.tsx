@@ -202,3 +202,16 @@ export const IconSpeaker = (): React.JSX.Element => (
     <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />
   </Icon>
 )
+
+export const IconKey = (): React.JSX.Element => (
+  <Icon>
+    <circle cx="8" cy="15" r="4" />
+    <path d="M11 12l8-8M16 7l3 3M14 9l2 2" />
+  </Icon>
+)
+
+export const IconChart = (): React.JSX.Element => (
+  <Icon>
+    <path d="M4 20V10M10 20V4M16 20v-7M21 20H3" />
+  </Icon>
+)

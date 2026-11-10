@@ -10,6 +10,7 @@ import UsageSection from './UsageSection'
 import VoiceSection from './VoiceSection'
 import ImagesSection from './ImagesSection'
 import UpdatesSection from './UpdatesSection'
+import { IconChart, IconHistory, IconImage, IconKey, IconSettings } from '../icons'
 
 interface SettingsDialogProps {
   open: boolean
@@ -25,21 +26,17 @@ interface SettingsDialogProps {
 }
 
 /**
- * The list of sections at the left of Settings (D-052, as ChatGPT's and Claude's settings): a click brings that section to the top. Every
- * section stays on the one page (nothing is hidden behind a tab), so the list only saves scrolling. Each entry is the section's heading.
+ * (24.7, D-056) Settings shows one group of sections at a time, as AI Fiesta's (until then every section was on one long page, D-052). The
+ * list at the left picks the group. The keys come first: they are what a new person needs, and where the keyboard starts.
  */
-const SECTIONS = [
-  'API keys',
-  'Model',
-  'Usage',
-  'Spending limits',
-  'Large requests',
-  'Voice',
-  'Images',
-  'Updates',
-  'Saved chats',
-  'Appearance'
+const PANES = [
+  { id: 'keys', label: 'Keys and model', icon: <IconKey /> },
+  { id: 'usage', label: 'Usage and limits', icon: <IconChart /> },
+  { id: 'media', label: 'Voice and images', icon: <IconImage /> },
+  { id: 'chats', label: 'Saved chats', icon: <IconHistory /> },
+  { id: 'general', label: 'General', icon: <IconSettings /> }
 ] as const
+type PaneId = (typeof PANES)[number]['id']
 
 function SettingsDialog({
   open,
@@ -54,6 +51,9 @@ function SettingsDialog({
   // Each key section holds what the person is typing and what it last said. Closing the dialog gives them new keys, so
   // they start afresh the next time: a half-typed key is not left sitting in the page.
   const [session, setSession] = useState(0)
+  const [pane, setPane] = useState<PaneId>('keys')
+  // (24.8) The long explanations are one click away: each section says one line until "Show details" is on.
+  const [details, setDetails] = useState(false)
 
   // The parent decides whether the dialog is open; the <dialog> element does the modal work: it
   // traps focus, closes on Escape, and makes everything behind it unreachable.
@@ -74,28 +74,16 @@ function SettingsDialog({
 
   function handleClosed(): void {
     setSession((count) => count + 1)
+    setPane('keys')
     onClose()
   }
 
   const model = status?.models.find((option) => option.id === status.selectedModelId)
 
-  // The keys have one heading per provider ("Anthropic API key"...), so "API keys" goes to the first section.
-  function goTo(section: (typeof SECTIONS)[number]): void {
-    const dialog = dialogRef.current
-    if (!dialog) return
-    const target =
-      section === 'API keys'
-        ? dialog.querySelector('.settings-body > .settings-section')
-        : [...dialog.querySelectorAll('.settings-heading')].find(
-            (heading) => heading.textContent?.trim() === section
-          )
-    target?.scrollIntoView({ block: 'start' })
-  }
-
   return (
     <dialog
       ref={dialogRef}
-      className="settings"
+      className={details ? 'settings settings-details' : 'settings'}
       aria-labelledby="settings-title"
       onClose={handleClosed}
     >
@@ -119,116 +107,138 @@ function SettingsDialog({
 
       <div className="settings-layout">
         <nav className="settings-nav" aria-label="Sections of Settings">
-          {SECTIONS.map((section) => (
+          {PANES.map((item) => (
             <button
-              key={section}
+              key={item.id}
               type="button"
               className="settings-nav-item"
-              onClick={() => goTo(section)}
+              aria-current={pane === item.id ? 'page' : undefined}
+              onClick={() => {
+                setPane(item.id)
+                dialogRef.current?.scrollTo({ top: 0 })
+              }}
             >
-              {section}
+              {item.icon}
+              {item.label}
             </button>
           ))}
+          <button
+            type="button"
+            className="settings-nav-item settings-details-toggle"
+            aria-pressed={details}
+            onClick={() => setDetails(!details)}
+          >
+            {details ? 'Hide details' : 'Show details'}
+          </button>
         </nav>
 
         <div className="settings-body">
-          {status === null ? (
-            <section className="settings-section">
-              <h3 className="settings-heading">API keys</h3>
-              <p className="settings-status">
-                {loadError ? `Settings are unavailable: ${loadError}.` : 'Checking...'}
-              </p>
-            </section>
-          ) : (
-            status.providers.map((provider) => (
-              <ProviderKeySection
-                key={`${provider.id}:${session}`}
-                provider={provider}
-                canStoreKey={status.canStoreKey}
-                onStatusChange={onStatusChange}
-              />
-            ))
-          )}
-
-          <section className="settings-section" aria-labelledby="settings-model-heading">
-            <h3 id="settings-model-heading" className="settings-heading">
-              Model
-            </h3>
-            {status?.modelsError && (
-              <p className="settings-notice settings-notice-error" role="status">
-                The list of models could not be loaded: {status.modelsError}.
-              </p>
-            )}
-            {status && model && (
-              <>
+          <div className="settings-pane" hidden={pane !== 'keys'}>
+            {status === null ? (
+              <section className="settings-section">
+                <h3 className="settings-heading">API keys</h3>
                 <p className="settings-status">
-                  {model.label}, from {providerName(status, model.provider)}
+                  {loadError ? `Settings are unavailable: ${loadError}.` : 'Checking...'}
                 </p>
-                <p className="settings-hint">{model.description}</p>
-                <p className="settings-hint">
-                  Reads up to {formatTokens(model.contextWindow)} tokens.{' '}
-                  {formatPrice(model.pricing.inputPerMTok)} in,{' '}
-                  {formatPrice(model.pricing.outputPerMTok)} out per million tokens (checked{' '}
-                  {status.modelsCheckedOn}).
-                </p>
-                {model.priceChange !== null && (
-                  // (17.5, D-049) a change the provider has announced: the app prices each request at the prices of its day by itself
-                  <p className="settings-hint settings-price-change">
-                    From {formatDay(model.priceChange.from)}:{' '}
-                    {formatPrice(model.priceChange.pricing.inputPerMTok)} per million tokens it
-                    reads and {formatPrice(model.priceChange.pricing.outputPerMTok)} per million
-                    tokens it writes
-                    {model.priceChange.pricing.inputPerMTok > model.pricing.inputPerMTok
-                      ? `, ${priceRatio(model.pricing, model.priceChange.pricing)}`
-                      : ''}
-                    . The app counts each request at the prices of the day it is sent.
-                  </p>
-                )}
-                <p className="settings-hint">
-                  Change it under the message box. Mid-chat, the whole chat goes to the new model.
-                </p>
-              </>
+              </section>
+            ) : (
+              status.providers.map((provider) => (
+                <ProviderKeySection
+                  key={`${provider.id}:${session}`}
+                  provider={provider}
+                  canStoreKey={status.canStoreKey}
+                  onStatusChange={onStatusChange}
+                />
+              ))
             )}
-          </section>
 
-          <UsageSection
-            open={open}
-            conversationId={conversationId}
-            limits={status?.limits ?? null}
-          />
+            <section className="settings-section" aria-labelledby="settings-model-heading">
+              <h3 id="settings-model-heading" className="settings-heading">
+                Model
+              </h3>
+              {status?.modelsError && (
+                <p className="settings-notice settings-notice-error" role="status">
+                  The list of models could not be loaded: {status.modelsError}.
+                </p>
+              )}
+              {status && model && (
+                <>
+                  <p className="settings-status">
+                    {model.label}, from {providerName(status, model.provider)}
+                  </p>
+                  <p className="settings-hint">{model.description}</p>
+                  <p className="settings-hint">
+                    Reads up to {formatTokens(model.contextWindow)} tokens.{' '}
+                    {formatPrice(model.pricing.inputPerMTok)} in,{' '}
+                    {formatPrice(model.pricing.outputPerMTok)} out per million tokens (checked{' '}
+                    {status.modelsCheckedOn}).
+                  </p>
+                  {model.priceChange !== null && (
+                    // (17.5, D-049) a change the provider has announced: the app prices each request at the prices of its day by itself
+                    <p className="settings-hint settings-price-change">
+                      From {formatDay(model.priceChange.from)}:{' '}
+                      {formatPrice(model.priceChange.pricing.inputPerMTok)} per million tokens it
+                      reads and {formatPrice(model.priceChange.pricing.outputPerMTok)} per million
+                      tokens it writes
+                      {model.priceChange.pricing.inputPerMTok > model.pricing.inputPerMTok
+                        ? `, ${priceRatio(model.pricing, model.priceChange.pricing)}`
+                        : ''}
+                      . The app counts each request at the prices of the day it is sent.
+                    </p>
+                  )}
+                  <p className="settings-hint">
+                    Change it in the message box. Mid-chat, the whole chat goes to the new model.
+                  </p>
+                </>
+              )}
+            </section>
+          </div>
 
-          {/* Fresh each time Settings opens (and closes), so the boxes show the limits as they are saved NOW: they may have been chosen in the first-run question. */}
-          <LimitsSection
-            key={`${session}:${open}`}
-            status={status}
-            onStatusChange={onStatusChange}
-          />
+          <div className="settings-pane" hidden={pane !== 'usage'}>
+            <UsageSection
+              open={open}
+              conversationId={conversationId}
+              limits={status?.limits ?? null}
+            />
 
-          {/* Its own key: the section above has `${session}:${open}`, and two children of one parent must not share a key. */}
-          <AskFirstSection
-            key={`ask-first:${session}:${open}`}
-            status={status}
-            onStatusChange={onStatusChange}
-          />
+            {/* Fresh each time Settings opens (and closes), so the boxes show the limits as they are saved NOW: they may have been chosen in the first-run question. */}
+            <LimitsSection
+              key={`${session}:${open}`}
+              status={status}
+              onStatusChange={onStatusChange}
+            />
 
-          {/* Voice (D-047): fresh each time Settings is closed, like the section below. */}
-          <VoiceSection key={`voice:${session}`} open={open} />
+            {/* Its own key: the section above has `${session}:${open}`, and two children of one parent must not share a key. */}
+            <AskFirstSection
+              key={`ask-first:${session}:${open}`}
+              status={status}
+              onStatusChange={onStatusChange}
+            />
+          </div>
 
-          {/* Images (D-048): fresh each time Settings is closed, like the sections around it. */}
-          <ImagesSection key={`images:${session}`} open={open} />
+          <div className="settings-pane" hidden={pane !== 'media'}>
+            {/* Voice (D-047): fresh each time Settings is closed, like the section below. */}
+            <VoiceSection key={`voice:${session}`} open={open} />
 
-          {/* Updates (D-050): fresh each time Settings is closed, like the sections around it. */}
-          <UpdatesSection key={`updates:${session}`} open={open} />
+            {/* Images (D-048): fresh each time Settings is closed, like the sections around it. */}
+            <ImagesSection key={`images:${session}`} open={open} />
+          </div>
 
-          {/* Fresh each time Settings is closed, so a notice about the last change is not still there the next time it opens. */}
-          <ChatStorageSection
-            key={`chat-storage:${session}`}
-            open={open}
-            onChanged={onChatStorageChanged}
-          />
+          <div className="settings-pane" hidden={pane !== 'chats'}>
+            {/* Fresh each time Settings is closed, so a notice about the last change is not still there the next time it opens. */}
+            <ChatStorageSection
+              key={`chat-storage:${session}`}
+              open={open}
+              onChanged={onChatStorageChanged}
+            />
+          </div>
 
-          {/* Appearance (D-051): dark or light, as the button at the foot of the sidebar. */}
-          <AppearanceSection />
+          <div className="settings-pane" hidden={pane !== 'general'}>
+            {/* Appearance (D-051): dark or light, as the button at the foot of the sidebar. */}
+            <AppearanceSection />
+            {/* Updates (D-050): fresh each time Settings is closed, like the sections around it. */}
+            <UpdatesSection key={`updates:${session}`} open={open} />
+          </div>
         </div>
       </div>
     </dialog>

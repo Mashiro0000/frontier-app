@@ -1,6 +1,13 @@
 import type { EveryChatStatus } from '../../../shared/ipc'
 import type { MemoryStatus } from '../../../shared/memory'
-import { IconAttach, IconImage, IconInstructions, IconMemory, IconProject } from '../icons'
+import {
+  IconAttach,
+  IconImage,
+  IconInstructions,
+  IconMemory,
+  IconPlus,
+  IconProject
+} from '../icons'
 import { notesSent } from '../memory/useMemory'
 
 interface ChatBarProps {
@@ -69,14 +76,11 @@ function memoryTitle(isReplying: boolean, memory: MemoryStatus | null): string {
 }
 
 /**
- * The buttons of the chat on screen, in a row inside the message box under the text (D-051; under the box since D-029, in the header
- * before that). Attach and Make an image are icons with a hidden name; the chat's project, instructions and notes are named, because what
- * they add to every message must always be in view (D-027, D-039). New chat, History and Tools moved to the sidebar. The buttons keep their
- * rules: they wait for a reply that is arriving, and a tooltip says why and when they come back.
+ * The buttons of the chat on screen, in a row inside the message box under the text (D-051). (24.2, D-056) A "+" opens a short menu with
+ * every button by name: Attach, Make an image, Instructions, Memory, Project. What goes with every message is never only in the menu:
+ * while instructions, notes or a project are on, their button stands in the row itself, with its words and mark (D-027, D-039). The
+ * buttons keep their rules: they wait for a reply that is arriving, and a tooltip says why and when they come back.
  */
-/** (23.4, D-055) A button's words: shown while what it adds goes with every message, else hidden beside its icon (still its name). */
-const labelClass = (on: boolean): string => (on ? 'chat-label' : 'chat-label visually-hidden')
-
 function ChatBar({
   isReplying,
   instructions,
@@ -95,110 +99,142 @@ function ChatBar({
   const instructionsOn =
     everyChat?.problem != null || instructions !== '' || (everyChat?.text ?? '') !== ''
   const memoryOn = memory?.problem != null || notesSent(memory).length > 0
+  const attach = (
+    <button
+      type="button"
+      className="chat-button chat-attach"
+      disabled={attachDisabled}
+      title={attachTitle}
+      onClick={onAttach}
+    >
+      <IconAttach />
+      <span className="chat-label">Attach...</span>
+    </button>
+  )
+  /* (D-048) Only while "Make images" is on, as the microphone button is only while "Speak to type" is. */
+  const makeImage = imagesOn && (
+    <button
+      type="button"
+      className="chat-button chat-make-image"
+      disabled={isReplying}
+      title={
+        isReplying
+          ? 'A picture can be made when the reply has finished.'
+          : 'Describe a picture for OpenAI to make. You see the most it can cost first.'
+      }
+      onClick={onMakeImage}
+    >
+      <IconImage />
+      <span className="chat-label">Make an image...</span>
+    </button>
+  )
+  /* The instructions are sent with every message, so while any part is on the button says so: the always-visible mark (D-027, D-039). */
+  const instructionsButton = (
+    <button
+      type="button"
+      className="chat-button chat-instructions"
+      disabled={isReplying}
+      title={instructionsTitle(isReplying, instructions, everyChat)}
+      onClick={onOpenInstructions}
+    >
+      <IconInstructions />
+      <span className="chat-label">Instructions</span>
+      {everyChat?.problem != null ? (
+        <>
+          {' '}
+          <span className="chat-mark chat-mark-warn">!</span>
+        </>
+      ) : (
+        (instructions !== '' || (everyChat?.text ?? '') !== '') && (
+          <>
+            {' '}
+            <span className="chat-mark">on</span>
+          </>
+        )
+      )}
+    </button>
+  )
+  /* The notes go with every message too, so while any do, the button says how many: they are never sent unseen (D-039). */
+  const memoryButton = (
+    <button
+      type="button"
+      className="chat-button chat-memory"
+      disabled={isReplying}
+      title={memoryTitle(isReplying, memory)}
+      onClick={onOpenMemory}
+    >
+      <IconMemory />
+      <span className="chat-label">Memory</span>
+      {memory?.problem != null ? (
+        <>
+          {' '}
+          <span className="chat-mark chat-mark-warn">!</span>
+        </>
+      ) : (
+        notesSent(memory).length > 0 && (
+          <>
+            {' '}
+            <span className="chat-mark">{notesSent(memory).length}</span>
+          </>
+        )
+      )}
+    </button>
+  )
+  /* The project the chat belongs to (D-039): its name is the person's label, shown here and never sent to the model. */
+  const projectButton = (
+    <button
+      type="button"
+      className="chat-button chat-project"
+      disabled={isReplying}
+      title={
+        isReplying
+          ? 'Projects can be opened when the reply has finished.'
+          : projectName === null
+            ? 'Put this chat in a project, or make one: a project gives its chats the same instructions, files and notes.'
+            : `This chat is in the project "${projectName}". Click to see the project, or to move the chat.`
+      }
+      onClick={onOpenProjects}
+    >
+      <IconProject />
+      <span className="chat-label">
+        {projectName === null ? (
+          'Project'
+        ) : (
+          <>
+            <span className="visually-hidden">Project: </span>
+            <span className="chat-project-name">{projectName}</span>
+          </>
+        )}
+      </span>
+    </button>
+  )
   return (
     <div className="chat-bar" role="group" aria-label="This chat">
       <button
         type="button"
-        className="chat-button chat-attach"
-        disabled={attachDisabled}
-        title={attachTitle}
-        onClick={onAttach}
+        className="chat-plus"
+        popoverTarget="chat-menu"
+        title="Attach files, instructions, memory, project"
       >
-        <IconAttach />
-        <span className="visually-hidden">Attach...</span>
+        <IconPlus />
+        <span className="visually-hidden">More</span>
       </button>
-      {/* (D-048) Only while "Make images" is on, as the microphone button is only while "Speak to type" is. */}
-      {imagesOn && (
-        <button
-          type="button"
-          className="chat-button chat-make-image"
-          disabled={isReplying}
-          title={
-            isReplying
-              ? 'A picture can be made when the reply has finished.'
-              : 'Describe a picture for OpenAI to make. You see the most it can cost first.'
-          }
-          onClick={onMakeImage}
-        >
-          <IconImage />
-          <span className="visually-hidden">Make an image...</span>
-        </button>
-      )}
-      <span className="chat-bar-gap" aria-hidden="true" />
-      {/* The instructions are sent with every message, so while any part is on the button says so: the always-visible mark (D-027, D-039). */}
-      <button
-        type="button"
-        className="chat-button chat-instructions"
-        disabled={isReplying}
-        title={instructionsTitle(isReplying, instructions, everyChat)}
-        onClick={onOpenInstructions}
+      {/* The platform's popover: a click outside or Esc closes it; a click on one of its buttons closes it too. */}
+      <div
+        id="chat-menu"
+        className="chat-menu"
+        popover="auto"
+        onClick={(event) => event.currentTarget.hidePopover()}
       >
-        <IconInstructions />
-        <span className={labelClass(instructionsOn)}>Instructions</span>
-        {everyChat?.problem != null ? (
-          <>
-            {' '}
-            <span className="chat-mark chat-mark-warn">!</span>
-          </>
-        ) : (
-          (instructions !== '' || (everyChat?.text ?? '') !== '') && (
-            <>
-              {' '}
-              <span className="chat-mark">on</span>
-            </>
-          )
-        )}
-      </button>
-      {/* The notes go with every message too, so while any do, the button says how many: they are never sent unseen (D-039). */}
-      <button
-        type="button"
-        className="chat-button chat-memory"
-        disabled={isReplying}
-        title={memoryTitle(isReplying, memory)}
-        onClick={onOpenMemory}
-      >
-        <IconMemory />
-        <span className={labelClass(memoryOn)}>Memory</span>
-        {memory?.problem != null ? (
-          <>
-            {' '}
-            <span className="chat-mark chat-mark-warn">!</span>
-          </>
-        ) : (
-          notesSent(memory).length > 0 && (
-            <>
-              {' '}
-              <span className="chat-mark">{notesSent(memory).length}</span>
-            </>
-          )
-        )}
-      </button>
-      {/* The project the chat belongs to (D-039): its name is the person's label, shown here and never sent to the model. */}
-      <button
-        type="button"
-        className="chat-button chat-project"
-        disabled={isReplying}
-        title={
-          isReplying
-            ? 'Projects can be opened when the reply has finished.'
-            : projectName === null
-              ? 'Put this chat in a project, or make one: a project gives its chats the same instructions, files and notes.'
-              : `This chat is in the project "${projectName}". Click to see the project, or to move the chat.`
-        }
-        onClick={onOpenProjects}
-      >
-        <IconProject />
-        <span className={labelClass(projectName !== null)}>
-          {projectName === null ? (
-            'Project'
-          ) : (
-            <>
-              <span className="visually-hidden">Project: </span>
-              <span className="chat-project-name">{projectName}</span>
-            </>
-          )}
-        </span>
-      </button>
+        {attach}
+        {makeImage}
+        {!instructionsOn && instructionsButton}
+        {!memoryOn && memoryButton}
+        {projectName === null && projectButton}
+      </div>
+      {instructionsOn && instructionsButton}
+      {memoryOn && memoryButton}
+      {projectName !== null && projectButton}
     </div>
   )
 }

@@ -86,7 +86,10 @@ function UpdatesSection({ open }: { open: boolean }): React.JSX.Element {
       <h3 id="settings-updates-heading" className="settings-heading">
         Updates
       </h3>
-      <p className="settings-hint">
+      <p className="settings-hint settings-lead">
+        Off until you turn it on. Nothing about you or your chats is sent.
+      </p>
+      <p className="settings-hint settings-more">
         Off until you turn it on. When on, the app asks {status?.source ?? 'the releases page'} once
         a day for one small file that names the newest version; nothing about you or your chats is
         sent. A newer version is installed only after you say yes in a Windows message box, and only

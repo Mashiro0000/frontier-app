@@ -53,7 +53,7 @@ function AppearanceSection(): React.JSX.Element {
           </button>
         ))}
       </div>
-      <p className="settings-hint">
+      <p className="settings-hint settings-more">
         Dark is the default. System follows Windows, and changes when Windows does.
       </p>
 
@@ -103,7 +103,7 @@ function AppearanceSection(): React.JSX.Element {
           </button>
         ))}
       </div>
-      <p className="settings-hint">
+      <p className="settings-hint settings-more">
         Fonts that come with Windows; nothing is downloaded. The choices are kept on this computer,
         for this app only.
       </p>

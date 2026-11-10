@@ -68,7 +68,10 @@ function ImagesSection({ open }: { open: boolean }): React.JSX.Element {
       <h3 id="settings-images-heading" className="settings-heading">
         Images
       </h3>
-      <p className="settings-hint">
+      <p className="settings-hint settings-lead">
+        Pictures are made by OpenAI, with your OpenAI key, even when you chat with Claude.
+      </p>
+      <p className="settings-hint settings-more">
         Make images: a &quot;Make an image...&quot; button appears under the message box. You write
         a description and choose the shape and quality; the dialog shows the most it can cost before
         anything is sent. Anthropic cannot make pictures, so your description goes to OpenAI, with

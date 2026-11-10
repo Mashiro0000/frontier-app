@@ -4,7 +4,13 @@ import { writeFileSync } from 'node:fs'
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-export async function connect(port, { timeoutMs = 45000, urlPattern = /^(http|file)/, title = null } = {}) {
+// (Stage 24, D-056) What Stage 24 folded away, unfolded for the suites written before it: every group of Settings on one page with its long
+// explanations, and the message box's buttons in the row itself (not in the "+" menu). Those suites test what the sections and buttons DO, and
+// find them as they always did; the folded layout itself is tested by verify-24-1w.mjs, which connects with { plain: true }.
+const UNFOLD = `.settings-pane[hidden] { display: block !important } .settings .settings-more { display: block !important } .chat-menu { display: contents !important }`
+const UNFOLD_SCRIPT = `(() => { const add = () => { if (document.getElementById('test-unfold') || !document.head) return; const s = document.createElement('style'); s.id = 'test-unfold'; s.textContent = ${JSON.stringify(UNFOLD)}; document.head.append(s) }; add(); document.addEventListener('DOMContentLoaded', add) })()`
+
+export async function connect(port, { timeoutMs = 45000, urlPattern = /^(http|file)/, title = null, plain = false } = {}) {
   const started = Date.now()
   let target
   while (Date.now() - started < timeoutMs) {
@@ -73,6 +79,10 @@ export async function connect(port, { timeoutMs = 45000, urlPattern = /^(http|fi
   await send('Runtime.enable')
   await send('Log.enable')
   await send('Page.enable')
+  if (!plain) {
+    await send('Page.addScriptToEvaluateOnNewDocument', { source: UNFOLD_SCRIPT })
+    await send('Runtime.evaluate', { expression: UNFOLD_SCRIPT })
+  }
 
   // Evaluate an expression in the page; returns the JSON-able result.
   const latencies = [] // [time, ms the page took to answer]

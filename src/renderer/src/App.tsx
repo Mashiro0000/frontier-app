@@ -78,6 +78,22 @@ function App(): React.JSX.Element {
   }, [replying])
   // Saves the conversation on screen as it goes, and keeps the list of saved ones (D-016, D-017).
   const history = useHistory(chat)
+  // (24.4, D-056) A page fills the chat area and leaves the sidebar in view. The page is a modal dialog, so a click beside it lands on the
+  // dialog itself: the page closes, and the click goes on to the button under the pointer (another page, a chat, New chat, Settings).
+  useEffect(() => {
+    const onClick = (event: MouseEvent): void => {
+      const page = event.target
+      if (!(page instanceof HTMLDialogElement)) return
+      if (!page.matches('.studio, .experts, .projects, .library, .history, .tools')) return
+      const box = page.getBoundingClientRect()
+      if (event.clientX >= box.left && event.clientY >= box.top) return // the page's own margin, not the sidebar
+      page.close()
+      const under = document.elementFromPoint(event.clientX, event.clientY)
+      if (under instanceof Element) under.closest('button')?.click()
+    }
+    window.addEventListener('click', onClick)
+    return () => window.removeEventListener('click', onClick)
+  }, [])
   // (23.6, D-055) Ctrl+Shift+O a new chat (as the sidebar's button: not while a reply arrives, not from an empty chat), Esc stops a reply, Ctrl+/ lists the keys.
   // None works while a dialog is open (the dialog has the keyboard), and none sends anything.
   useEffect(() => {
@@ -190,6 +206,21 @@ function App(): React.JSX.Element {
           setLibraryVisit((n) => n + 1)
           setLibraryOpen(true)
         }}
+        page={
+          studioOpen
+            ? 'studio'
+            : expertsOpen
+              ? 'experts'
+              : projectsOpen
+                ? 'projects'
+                : libraryOpen
+                  ? 'library'
+                  : historyOpen
+                    ? 'history'
+                    : toolsOpen
+                      ? 'tools'
+                      : null
+        }
       />
       <div className="app-main">
         <header className="app-header">

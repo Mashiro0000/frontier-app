@@ -37,7 +37,7 @@ interface ChatViewProps {
   toolsOn: boolean
   /** The chat's own buttons (D-051), drawn inside the message box. */
   toolbar: React.ReactNode
-  /** The Task, model and Effort menus (D-052): drawn under the message box, beside the note, as Claude draws its model menu. */
+  /** The model and Effort menus: inside the message box, at the right (24.1, D-056; under the box from D-052 until then). */
   menus: React.ReactNode
   /** (21.3, D-053) Auto is on, and the task the person chose (Auto's rules read it). */
   auto: boolean
@@ -248,6 +248,7 @@ function ChatView({
         onPasteFiles={attachments.addFiles}
         stopEverything={toolsOn}
         toolbar={toolbar}
+        menus={menus}
         onEnhance={onEnhance}
         {...(messages.length === 0 ? { examples: EXAMPLE_PROMPTS } : {})}
         modelName={modelName}
@@ -262,7 +263,6 @@ function ChatView({
       />
       <div className="composer-meta">
         <p className="chat-footnote">Models can make mistakes. Check what matters.</p>
-        {menus}
       </div>
       {messages.length === 0 && chips}
       {/* A large request is held by the main process until the person says yes here (D-032). */}
