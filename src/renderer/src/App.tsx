@@ -36,6 +36,8 @@ import ModelPicker from './settings/ModelPicker'
 import SettingsDialog from './settings/SettingsDialog'
 import { useSettingsStatus } from './settings/useSettingsStatus'
 import Sidebar from './sidebar/Sidebar'
+import CanvasPanel from './canvas/CanvasPanel'
+import { CanvasContext, type CanvasDoc } from './canvas/canvasContext'
 
 /** No project files: one empty list, so the chat does not draw again for a new one each time. */
 const NO_FILES: AttachmentInfo[] = []
@@ -78,6 +80,31 @@ function App(): React.JSX.Element {
   }, [replying])
   // Saves the conversation on screen as it goes, and keeps the list of saved ones (D-016, D-017).
   const history = useHistory(chat)
+  // The side panel: one block of a reply shown beside the chat (a page, a picture, a document, or its code). Nothing of it is kept, and it
+  // belongs to the chat it was opened in (known by its first message): another chat, or a new one, has no panel.
+  const chatKey = chat.messages[0]?.id ?? null
+  const [canvas, setCanvas] = useState<{
+    doc: CanvasDoc
+    visit: number
+    chat: string | null
+    opener: Element | null
+  } | null>(null)
+  const openCanvas = useCallback(
+    (doc: CanvasDoc) =>
+      setCanvas((was) => ({
+        doc,
+        visit: (was?.visit ?? 0) + 1,
+        chat: chatKey,
+        opener: document.activeElement
+      })),
+    [chatKey]
+  )
+  const canvasShown = canvas !== null && canvas.chat === chatKey ? canvas : null
+  const closeCanvas = (): void => {
+    const opener = canvas?.opener
+    setCanvas(null)
+    if (opener instanceof HTMLElement && opener.isConnected) opener.focus() // the keyboard goes back to the button that opened it
+  }
   // (24.4, D-056) A page fills the chat area and leaves the sidebar in view. The page is a modal dialog, so a click beside it lands on the
   // dialog itself: the page closes, and the click goes on to the button under the pointer (another page, a chat, New chat, Settings).
   useEffect(() => {
@@ -190,7 +217,9 @@ function App(): React.JSX.Element {
   }
 
   return (
-    <div className={rail ? 'app app-rail' : 'app'}>
+    <div
+      className={(rail ? 'app app-rail' : 'app') + (canvasShown !== null ? ' app-with-canvas' : '')}
+    >
       <Sidebar
         isReplying={chat.isReplying}
         messageCount={chat.messages.length}
@@ -226,124 +255,137 @@ function App(): React.JSX.Element {
                       : null
         }
       />
-      <div className="app-main">
-        <header className="app-header">
-          <h2 className="chat-title" title={chatTitle}>
-            {chatTitle}
-          </h2>
-          {/* The warnings, at the right (D-052); the title is at the left, as Claude's (the menus are under the message box). */}
-          <div className="app-header-badges">
-            {history.saveError !== null && (
-              <button
-                type="button"
-                className="app-badge app-badge-warn app-badge-button"
-                title={`${history.saveError} Click to try again.`}
-                onClick={history.retrySave}
-              >
-                Not saved
-              </button>
-            )}
-            {missingKey !== null && (
-              <span
-                className="app-badge app-badge-warn"
-                title={`Open Settings to add your ${missingKey.name} API key.`}
-              >
-                No API key
-              </span>
-            )}
-          </div>
-        </header>
-        <ChatView
-          status={status}
-          chat={chat}
-          conversationId={history.activeId}
-          needsLimits={needsLimits}
-          onOpenSettings={() => setSettingsOpen(true)}
-          onOpenLimits={() => setLimitsPutOff(false)}
-          attachments={attachments}
-          onRemember={onRemember}
-          projectFiles={chatProject?.files ?? NO_FILES}
-          toolsOn={anyToolOn(toolSettings.status, toolSettings.workspace, toolSettings.programs)}
-          auto={auto}
-          task={task}
-          chips={
-            // (21.4, D-053) Under the box of an empty chat, as AI Fiesta's chips: ways in to what the app can do. Each opens what its button opens.
-            <div className="empty-chips" role="group" aria-label="Start with">
-              {imageStatus?.on === true && (
-                <button type="button" className="chip chip-start" onClick={() => setMakeOpen(true)}>
-                  <IconImage />
-                  Make an image
+      <CanvasContext.Provider value={openCanvas}>
+        <div className="app-main">
+          <header className="app-header">
+            <h2 className="chat-title" title={chatTitle}>
+              {chatTitle}
+            </h2>
+            {/* The warnings, at the right (D-052); the title is at the left, as Claude's (the menus are under the message box). */}
+            <div className="app-header-badges">
+              {history.saveError !== null && (
+                <button
+                  type="button"
+                  className="app-badge app-badge-warn app-badge-button"
+                  title={`${history.saveError} Click to try again.`}
+                  onClick={history.retrySave}
+                >
+                  Not saved
                 </button>
               )}
-              <button type="button" className="chip chip-start" onClick={openTools}>
-                <IconGlobe />
-                Web search
-              </button>
-              {/* (23.4, D-055) Projects and Instructions are in the box itself, so they are not repeated here. */}
-              <button
-                type="button"
-                className="chip chip-start"
-                onClick={() => setExpertsOpen(true)}
+              {missingKey !== null && (
+                <span
+                  className="app-badge app-badge-warn"
+                  title={`Open Settings to add your ${missingKey.name} API key.`}
+                >
+                  No API key
+                </span>
+              )}
+            </div>
+          </header>
+          <ChatView
+            status={status}
+            chat={chat}
+            conversationId={history.activeId}
+            needsLimits={needsLimits}
+            onOpenSettings={() => setSettingsOpen(true)}
+            onOpenLimits={() => setLimitsPutOff(false)}
+            attachments={attachments}
+            onRemember={onRemember}
+            projectFiles={chatProject?.files ?? NO_FILES}
+            toolsOn={anyToolOn(toolSettings.status, toolSettings.workspace, toolSettings.programs)}
+            auto={auto}
+            task={task}
+            chips={
+              // (21.4, D-053) Under the box of an empty chat, as AI Fiesta's chips: ways in to what the app can do. Each opens what its button opens.
+              <div className="empty-chips" role="group" aria-label="Start with">
+                {imageStatus?.on === true && (
+                  <button
+                    type="button"
+                    className="chip chip-start"
+                    onClick={() => setMakeOpen(true)}
+                  >
+                    <IconImage />
+                    Make an image
+                  </button>
+                )}
+                <button type="button" className="chip chip-start" onClick={openTools}>
+                  <IconGlobe />
+                  Web search
+                </button>
+                {/* (23.4, D-055) Projects and Instructions are in the box itself, so they are not repeated here. */}
+                <button
+                  type="button"
+                  className="chip chip-start"
+                  onClick={() => setExpertsOpen(true)}
+                >
+                  <IconExperts />
+                  Experts
+                </button>
+              </div>
+            }
+            menus={
+              // Under the message box, at the right (D-052, as Claude's model menu). "app-header-actions": the name the checks know the group by,
+              // from the time it sat in the header. (23.3, D-055) One pill: the model and its effort; the Task menu is in the model chooser.
+              <div
+                className="app-header-actions composer-menus model-pill"
+                role="group"
+                aria-label="Model and effort"
               >
-                <IconExperts />
-                Experts
-              </button>
-            </div>
-          }
-          menus={
-            // Under the message box, at the right (D-052, as Claude's model menu). "app-header-actions": the name the checks know the group by,
-            // from the time it sat in the header. (23.3, D-055) One pill: the model and its effort; the Task menu is in the model chooser.
-            <div
-              className="app-header-actions composer-menus model-pill"
-              role="group"
-              aria-label="Model and effort"
-            >
-              <ModelPicker
-                status={status}
-                task={task}
-                onTask={setTask}
-                disabled={chat.isReplying}
-                onStatusChange={setStatus}
-                auto={auto}
-                onAuto={setAuto}
+                <ModelPicker
+                  status={status}
+                  task={task}
+                  onTask={setTask}
+                  disabled={chat.isReplying}
+                  onStatusChange={setStatus}
+                  auto={auto}
+                  onAuto={setAuto}
+                />
+                <EffortPicker
+                  status={status}
+                  disabled={chat.isReplying}
+                  onStatusChange={setStatus}
+                />
+              </div>
+            }
+            toolbar={
+              // The chat's own buttons, in the message box (D-051): New chat, History and Tools are in the sidebar, Settings at its foot.
+              <ChatBar
+                isReplying={chat.isReplying}
+                instructions={chat.instructions}
+                everyChat={everyChat.status}
+                memory={memory.status}
+                onOpenMemory={() => openMemory(null)}
+                projectName={chatProject?.name ?? null}
+                onOpenProjects={() => {
+                  projects.reload()
+                  setProjectsOpen(true)
+                }}
+                onOpenInstructions={() => {
+                  everyChat.reload()
+                  setInstructionsOpen(true)
+                }}
+                onAttach={attachments.pick}
+                imagesOn={imageStatus?.on === true}
+                onMakeImage={() => setMakeOpen(true)}
+                attachDisabled={attachments.busy || attachFull}
+                attachTitle={
+                  attachments.busy
+                    ? 'Files are being attached.'
+                    : attachFull
+                      ? attachments.files.length >= ATTACHMENT_LIMITS.perMessage
+                        ? `A message can carry at most ${ATTACHMENT_LIMITS.perMessage} files.`
+                        : `A chat can hold at most ${ATTACHMENT_LIMITS.perChat} files. Start a new chat for more.`
+                      : 'Attach images, PDFs or text files to your message. You choose them in a Windows dialog; the app keeps a copy and sends it to the model.'
+                }
               />
-              <EffortPicker status={status} disabled={chat.isReplying} onStatusChange={setStatus} />
-            </div>
-          }
-          toolbar={
-            // The chat's own buttons, in the message box (D-051): New chat, History and Tools are in the sidebar, Settings at its foot.
-            <ChatBar
-              isReplying={chat.isReplying}
-              instructions={chat.instructions}
-              everyChat={everyChat.status}
-              memory={memory.status}
-              onOpenMemory={() => openMemory(null)}
-              projectName={chatProject?.name ?? null}
-              onOpenProjects={() => {
-                projects.reload()
-                setProjectsOpen(true)
-              }}
-              onOpenInstructions={() => {
-                everyChat.reload()
-                setInstructionsOpen(true)
-              }}
-              onAttach={attachments.pick}
-              imagesOn={imageStatus?.on === true}
-              onMakeImage={() => setMakeOpen(true)}
-              attachDisabled={attachments.busy || attachFull}
-              attachTitle={
-                attachments.busy
-                  ? 'Files are being attached.'
-                  : attachFull
-                    ? attachments.files.length >= ATTACHMENT_LIMITS.perMessage
-                      ? `A message can carry at most ${ATTACHMENT_LIMITS.perMessage} files.`
-                      : `A chat can hold at most ${ATTACHMENT_LIMITS.perChat} files. Start a new chat for more.`
-                    : 'Attach images, PDFs or text files to your message. You choose them in a Windows dialog; the app keeps a copy and sends it to the model.'
-              }
-            />
-          }
-        />
-      </div>
+            }
+          />
+        </div>
+      </CanvasContext.Provider>
+      {canvasShown !== null && (
+        <CanvasPanel key={canvasShown.visit} doc={canvasShown.doc} onClose={closeCanvas} />
+      )}
       <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <SearchDialog
         open={searchOpen}

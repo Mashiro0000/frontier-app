@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { useContext, useMemo } from 'react'
+import { CanvasContext, previewKind } from '../canvas/canvasContext'
 import { copyLabel, useCopy } from '../useCopy'
 import { colourCode } from './colour'
 
@@ -14,6 +15,7 @@ interface CodeBlockProps {
  */
 function CodeBlock({ lang, text }: CodeBlockProps): React.JSX.Element {
   const { state, copy } = useCopy()
+  const openInPanel = useContext(CanvasContext)
   // (23.5, D-055) Coloured pieces for a language it knows; each piece is still plain text.
   const pieces = useMemo(() => colourCode(text, lang), [text, lang])
 
@@ -21,6 +23,17 @@ function CodeBlock({ lang, text }: CodeBlockProps): React.JSX.Element {
     <div className="md-codeblock">
       <div className="md-codeblock-head">
         <span className="md-codeblock-lang">{lang ?? ''}</span>
+        {/* The side panel: a page, a picture or a document is drawn there, any other block is read there beside the chat. */}
+        {openInPanel !== null && (
+          <button
+            type="button"
+            className="md-open"
+            title="Show this beside the chat"
+            onClick={() => openInPanel({ lang, text })}
+          >
+            {previewKind(lang) === null ? 'Open' : 'Preview'}
+          </button>
+        )}
         <button type="button" className="md-copy" onClick={() => copy(text)}>
           {copyLabel(state)}
         </button>

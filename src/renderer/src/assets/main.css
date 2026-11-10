@@ -1060,7 +1060,8 @@ body {
   border-bottom: 1px solid var(--color-border);
 }
 
-.md-copy {
+.md-copy,
+.md-open {
   padding: 3px 10px;
   font: inherit;
   font-size: 12.5px;
@@ -1071,12 +1072,14 @@ body {
   cursor: pointer;
 }
 
-.md-copy:hover {
+.md-copy:hover,
+.md-open:hover {
   color: var(--color-text);
   background: var(--ev-c-gray-3);
 }
 
 .md-copy:focus-visible,
+.md-open:focus-visible,
 .md-link:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
@@ -5339,4 +5342,106 @@ dialog:is(.projects, .history, .tools) {
 .sidebar-item[aria-current='page'] {
   color: var(--color-text);
   background: var(--ev-c-gray-3);
+}
+
+/* ---------- the side panel (D-057): one block of a reply beside the chat ---------- */
+
+.app-with-canvas {
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr) minmax(360px, 46%);
+}
+
+.canvas {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--color-background);
+  border-left: 1px solid var(--color-border);
+}
+
+.canvas-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.canvas-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  outline: none;
+}
+
+.canvas-views {
+  display: flex;
+  flex: none;
+  padding: 2px;
+  background: var(--ev-c-gray-3);
+  border-radius: 10px;
+}
+
+.canvas-view {
+  padding: 3px 12px;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.canvas-view[aria-pressed='true'] {
+  color: var(--color-text);
+  background: var(--color-background);
+}
+
+.canvas-view:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.canvas-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.canvas-code,
+.canvas-document {
+  padding: 16px;
+}
+
+/* A page is written for a white sheet unless it says otherwise. */
+.canvas-frame {
+  width: 100%;
+  background: #fff;
+  border: 0;
+}
+
+.canvas-note {
+  flex: none;
+  padding: 6px 16px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+}
+
+/* No room for the chat and the panel side by side: the panel takes the chat's place (Close or Esc brings the chat back). */
+@media (max-width: 899px) {
+  .app-with-canvas {
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  }
+
+  .app-with-canvas .app-main {
+    display: none;
+  }
 }
