@@ -81,7 +81,8 @@ function App(): React.JSX.Element {
   // (24.4, D-056) A page fills the chat area and leaves the sidebar in view. The page is a modal dialog, so a click beside it lands on the
   // dialog itself: the page closes, and the click goes on to the button under the pointer (another page, a chat, New chat, Settings).
   useEffect(() => {
-    const onClick = (event: MouseEvent): void => {
+    // On the press, not the click: the press is what takes the keyboard out of a text field, and by the click nothing says it was in use.
+    const onPress = (event: MouseEvent): void => {
       const page = event.target
       if (!(page instanceof HTMLDialogElement)) return
       if (!page.matches('.studio, .experts, .projects, .library, .history, .tools')) return
@@ -94,8 +95,8 @@ function App(): React.JSX.Element {
       const under = document.elementFromPoint(event.clientX, event.clientY)
       if (under instanceof Element) under.closest('button')?.click()
     }
-    window.addEventListener('click', onClick)
-    return () => window.removeEventListener('click', onClick)
+    window.addEventListener('mousedown', onPress)
+    return () => window.removeEventListener('mousedown', onPress)
   }, [])
   // (23.6, D-055) Ctrl+Shift+O a new chat (as the sidebar's button: not while a reply arrives, not from an empty chat), Esc stops a reply, Ctrl+/ lists the keys.
   // None works while a dialog is open (the dialog has the keyboard), and none sends anything.

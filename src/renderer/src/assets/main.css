@@ -650,7 +650,6 @@ body {
  * chat area the row wraps: the menus go under the note.
  */
 .composer-meta {
-  container: meta / inline-size;
   display: flex;
   flex: none;
   flex-wrap: wrap;
@@ -719,16 +718,6 @@ body {
 
   .composer-menus .header-select {
     flex-shrink: 1;
-  }
-}
-
-/* Where the note and the menus do not fit side by side, the menus stay right under the box and the note goes under them, centred. */
-@container meta (max-width: 700px) {
-  .composer-meta .chat-footnote {
-    flex-basis: 100%;
-    order: 2;
-    line-height: 18px;
-    text-align: center;
   }
 }
 
@@ -1685,7 +1674,8 @@ body {
   flex: 1 1 auto;
   min-width: 0;
   font-size: 12px;
-  line-height: 32px;
+  line-height: 18px;
+  text-align: center;
   color: var(--color-text-muted);
 }
 

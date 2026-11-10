@@ -65,7 +65,7 @@ check('...shows the description from the registry', text.includes(models[1].desc
 check('...says how much it can read: "up to 1M tokens"', /Reads up to 1M tokens\./.test(text)) // (23.7, D-055: the shorter words)
 check('...gives the list prices: $4 in, $20 out, per million tokens', /\$4 in, \$20 out per million tokens/.test(text), text.match(/Reads up to[^)]*\)/)?.[0])
 check('...says when the prices were checked', /\(checked 2026-10-17\)/.test(text)) /* (the registry checked again by 17.2) */
-check('...says the bill goes to the account of the key, and how to change the model', /billed to your account/.test(text) && /Change it under the message box/.test(text)) // (D-052: the menus moved under the box)
+check('...says the bill goes to the account of the key, and how to change the model', /billed to your account/.test(text) && /Change it in the message box/.test(text)) // (D-052: the menus moved under the box)
 check('...warns that a mid-chat change sends the whole chat to the new model', /Mid-chat, the whole chat goes to the new model/.test(text))
 check('...the old "fixed for now" line is gone', !/fixed for now/i.test(text))
 await page.screenshot(`${shots}/3-4-header-nokey.png`)

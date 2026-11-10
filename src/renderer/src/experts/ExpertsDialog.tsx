@@ -181,15 +181,7 @@ function ExpertsDialog({
   )
 
   return (
-    <dialog
-      ref={dialogRef}
-      className="experts"
-      aria-labelledby="experts-title"
-      onClose={close}
-      onClick={(event) => {
-        if (event.target === dialogRef.current) close()
-      }}
-    >
+    <dialog ref={dialogRef} className="experts" aria-labelledby="experts-title" onClose={close}>
       <div className="page-head">
         <div>
           <h2 id="experts-title" className="page-title">

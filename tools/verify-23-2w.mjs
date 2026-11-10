@@ -46,7 +46,7 @@ try {
   check('D: the Experts chip opens Experts', (await openDialogs()).some((c) => c.split(' ').includes('experts')))
   await page.press('Escape'); await sleep(300)
   const labels = () => ev(`['chat-instructions', 'chat-memory', 'chat-project'].map((c) => { const l = document.querySelector('.' + c + ' .chat-label'); return c + ':' + (l.classList.contains('visually-hidden') ? 'hidden' : 'shown') + ':' + document.querySelector('.' + c).textContent.trim() })`)
-  check('D: Instructions, Memory and Project are icons while nothing goes with the messages, still named', JSON.stringify(await labels()) === JSON.stringify(['chat-instructions:hidden:Instructions', 'chat-memory:hidden:Memory', 'chat-project:hidden:Project']), JSON.stringify(await labels()))
+  check('D: Instructions, Memory and Project are icons while nothing goes with the messages, still named', JSON.stringify(await labels()) === JSON.stringify(['chat-instructions:shown:Instructions', 'chat-memory:shown:Memory', 'chat-project:shown:Project']) /* (Stage 24, D-056) while off they are rows of the "+" menu, with their words */ && (await ev(`['chat-instructions', 'chat-memory', 'chat-project'].every((c) => !!document.querySelector('.chat-menu .' + c))`)), JSON.stringify(await labels()))
   const asked = (await Q.asked()).length
   const added = await ev(`window.api.memory.add('A test note.', 'all').then((r) => r.ok)`)
   check('D: saving the note asked in the system box (answered by the suite, not shown on screen)', (await Q.asked()).length === asked + 1)

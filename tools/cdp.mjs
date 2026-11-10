@@ -79,7 +79,8 @@ export async function connect(port, { timeoutMs = 45000, urlPattern = /^(http|fi
   await send('Runtime.enable')
   await send('Log.enable')
   await send('Page.enable')
-  if (!plain) {
+  if (plain) await send('Runtime.evaluate', { expression: `document.getElementById('test-unfold')?.remove()` }) // an earlier script of the same launch (setup-key) left it
+  else {
     await send('Page.addScriptToEvaluateOnNewDocument', { source: UNFOLD_SCRIPT })
     await send('Runtime.evaluate', { expression: UNFOLD_SCRIPT })
   }
