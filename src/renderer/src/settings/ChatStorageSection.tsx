@@ -58,7 +58,8 @@ function ChatStorageSection({ open, onChanged }: ChatStorageSectionProps): React
         Saved chats
       </h3>
       <p className="settings-hint settings-lead">
-        Chats are saved on this computer. Encrypting them stops a copy being read elsewhere.
+        Chats are saved on this computer. Encrypting them stops a copy being read on another
+        computer or account.
       </p>
       <p className="settings-hint settings-more">
         Your chats are saved as files in the app&apos;s data folder on this computer. You can have

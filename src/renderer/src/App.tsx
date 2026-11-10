@@ -87,7 +87,10 @@ function App(): React.JSX.Element {
       if (!page.matches('.studio, .experts, .projects, .library, .history, .tools')) return
       const box = page.getBoundingClientRect()
       if (event.clientX >= box.left && event.clientY >= box.top) return // the page's own margin, not the sidebar
-      page.close()
+      // requestClose asks the page first: one that is busy (a file being added, a picture being made) or holds half-written text stays.
+      if (page.querySelector('textarea:focus, input[type="text"]:focus') !== null) return
+      page.requestClose()
+      if (page.open) return
       const under = document.elementFromPoint(event.clientX, event.clientY)
       if (under instanceof Element) under.closest('button')?.click()
     }

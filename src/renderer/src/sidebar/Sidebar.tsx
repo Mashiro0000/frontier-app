@@ -23,7 +23,7 @@ import {
 
 /** (23.8, D-055) The pages the sidebar lists, in their first order. */
 const PAGE_IDS = ['studio', 'experts', 'projects', 'library', 'history', 'tools'] as const
-export type PageId = (typeof PAGE_IDS)[number]
+type PageId = (typeof PAGE_IDS)[number]
 
 interface SidebarProps {
   /** A reply is arriving: no other chat can be started or opened meanwhile, and the pages that could change it wait. */

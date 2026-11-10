@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { SettingsStatus } from '../../../shared/ipc'
 import type { TaskId } from '../../../shared/rankings'
 import { suggestionsForTask } from './format'
@@ -112,30 +113,35 @@ function ModelPicker({
           {error}
         </span>
       )}
-      <ModelChooser
-        open={chooserOpen && !disabled}
-        status={status}
-        chosenId={shown}
-        task={task}
-        {...(onTask !== undefined ? { onTask } : {})}
-        onChoose={(modelId) => {
-          setChooserOpen(false)
-          if (auto) onAuto?.(false)
-          if (modelId !== shown) void choose(modelId)
-        }}
-        {...(onAuto !== undefined
-          ? {
-              auto: {
-                on: auto,
-                onAuto: () => {
-                  setChooserOpen(false)
-                  onAuto(true)
+      {/* (24.1, D-056) Drawn outside the message box's form: the button is inside it now, and Enter in the chooser's search field would
+          otherwise send the message being written. A modal dialog is shown over the page wherever it sits. */}
+      {createPortal(
+        <ModelChooser
+          open={chooserOpen && !disabled}
+          status={status}
+          chosenId={shown}
+          task={task}
+          {...(onTask !== undefined ? { onTask } : {})}
+          onChoose={(modelId) => {
+            setChooserOpen(false)
+            if (auto) onAuto?.(false)
+            if (modelId !== shown) void choose(modelId)
+          }}
+          {...(onAuto !== undefined
+            ? {
+                auto: {
+                  on: auto,
+                  onAuto: () => {
+                    setChooserOpen(false)
+                    onAuto(true)
+                  }
                 }
               }
-            }
-          : {})}
-        onClose={() => setChooserOpen(false)}
-      />
+            : {})}
+          onClose={() => setChooserOpen(false)}
+        />,
+        document.body
+      )}
     </>
   )
 }
