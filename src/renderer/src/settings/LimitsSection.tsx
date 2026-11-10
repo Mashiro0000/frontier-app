@@ -27,7 +27,10 @@ function LimitsSection({ status, onStatusChange }: LimitsSectionProps): React.JS
               No limits are set yet, so the app sends nothing until you set them.
             </p>
           )}
-          <p className="settings-hint">
+          <p className="settings-hint settings-lead">
+            A request that would pass a limit is not sent.
+          </p>
+          <p className="settings-hint settings-more">
             A request that would take today&apos;s or this month&apos;s spending past a limit is not
             sent. Spending is what the app has counted (see Usage), at list prices. A reply that
             starts under a limit can end a little over it, by at most that one reply.
@@ -38,7 +41,7 @@ function LimitsSection({ status, onStatusChange }: LimitsSectionProps): React.JS
             submitLabel="Save limits"
             onSaved={onStatusChange}
           />
-          <p className="settings-hint">
+          <p className="settings-hint settings-more">
             The count is kept in the usage file in this app&apos;s data folder (usage/ledger.jsonl).
             Deleting that file starts the count again from zero, and the limits only know what it
             shows.

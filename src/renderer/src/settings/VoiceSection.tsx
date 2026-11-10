@@ -76,7 +76,10 @@ function VoiceSection({ open }: VoiceSectionProps): React.JSX.Element {
       <h3 id="settings-voice-heading" className="settings-heading">
         Voice
       </h3>
-      <p className="settings-hint">
+      <p className="settings-hint settings-lead">
+        Speak to type sends your voice to OpenAI. Read aloud stays on this computer.
+      </p>
+      <p className="settings-hint settings-more">
         Speak to type: a microphone button appears under the message box. Hold it, say your message
         and let go; OpenAI writes it down and the words appear in the box. Nothing is sent until you
         press Send. Anthropic has no speech service, so your voice goes to OpenAI, with your OpenAI

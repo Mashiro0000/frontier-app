@@ -15,6 +15,8 @@ interface ComposerProps {
   attachments?: React.ReactNode
   /** The chat's own buttons (D-051): drawn in the box, in the row under the text, beside Send. */
   toolbar?: React.ReactNode
+  /** (24.1, D-056) The model and effort menus: inside the box, at the right, before Send. */
+  menus?: React.ReactNode
   /** Files are on the message (D-037): it can be sent with no text. */
   hasFiles?: boolean
   /** Why the message cannot be sent as it is (a model that cannot read a kind of file, too many files in the chat), or null. */
@@ -41,6 +43,7 @@ function Composer({
   onStop,
   attachments,
   toolbar,
+  menus,
   hasFiles = false,
   blocked = null,
   onPasteFiles,
@@ -161,6 +164,7 @@ function Composer({
         <div className="composer-row">
           {toolbar}
           <div className="composer-end">
+            {menus}
             {onEnhance !== undefined && (
               <button
                 type="button"

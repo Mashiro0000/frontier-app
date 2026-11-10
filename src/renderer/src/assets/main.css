@@ -650,16 +650,15 @@ body {
  * chat area the row wraps: the menus go under the note.
  */
 .composer-meta {
-  container: meta / inline-size;
   display: flex;
   flex: none;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 0 12px;
   width: min(100%, calc(var(--chat-width) + 48px));
   margin: 0 auto;
-  padding: 0 24px 8px 30px;
+  padding: 0 24px 8px;
 }
 
 .composer-menus {
@@ -678,13 +677,9 @@ body {
   min-width: 56px;
 }
 
-/* (23.3, D-055) One pill: the model, a thin line, its effort. */
+/* (23.3, D-055) One group: the model, a thin line, its effort. (24.1, D-056) Inside the message box, so it has no outline of its own. */
 .model-pill {
   flex: 0 1 auto;
-  margin-left: auto;
-  padding: 1px;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
 }
 
 .model-pill select,
@@ -715,7 +710,8 @@ body {
   flex-shrink: 0;
 }
 
-@container meta (max-width: 280px) {
+/* A narrow box: the model's name gives way too, and the effort first. */
+@container composer (max-width: 420px) {
   .composer-menus select {
     flex-shrink: 8;
   }
@@ -723,15 +719,16 @@ body {
   .composer-menus .header-select {
     flex-shrink: 1;
   }
-}
 
-/* Where the note and the menus do not fit side by side, the menus stay right under the box and the note goes under them, centred. */
-@container meta (max-width: 700px) {
-  .composer-meta .chat-footnote {
-    flex-basis: 100%;
-    order: 2;
-    line-height: 18px;
-    text-align: center;
+  /* No room for the buttons and the menus side by side: the menus and Send go under the buttons (side by side they lay over each other). */
+  .composer-row {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .composer-row .chat-bar {
+    flex: 1 0 auto;
+    max-width: 100%;
   }
 }
 
@@ -1615,9 +1612,10 @@ body {
 
 .composer-end {
   display: flex;
-  flex: none;
+  flex: 0 1 auto;
   align-items: center;
   gap: 6px;
+  min-width: 0;
   margin-left: auto;
 }
 
@@ -1687,7 +1685,8 @@ body {
   flex: 1 1 auto;
   min-width: 0;
   font-size: 12px;
-  line-height: 32px;
+  line-height: 18px;
+  text-align: center;
   color: var(--color-text-muted);
 }
 
@@ -1875,12 +1874,76 @@ body {
   cursor: pointer;
 }
 
-.chat-bar .chat-attach,
-.chat-bar .chat-make-image {
+/* (24.2, D-056) "+": opens the menu of the chat's buttons, each with its name. */
+.chat-plus {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
   justify-content: center;
   width: 34px;
+  height: 34px;
   padding: 0;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
   border-radius: 999px;
+  cursor: pointer;
+  anchor-name: --chat-plus;
+}
+
+.chat-plus:hover {
+  color: var(--color-text);
+  background: var(--ev-c-gray-3);
+}
+
+.chat-plus:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.chat-plus .icon {
+  transition: transform 0.15s;
+}
+
+.chat-plus:has(+ .chat-menu:popover-open) .icon {
+  transform: rotate(45deg);
+}
+
+/* The menu stands above the "+", its left edge on the button's. */
+.chat-menu {
+  position: fixed;
+  position-anchor: --chat-plus;
+  inset: auto;
+  bottom: calc(anchor(top) + 8px);
+  left: max(
+    8px,
+    min(anchor(left), calc(100vw - 228px))
+  ); /* in a very narrow window it moves left to stay inside (220 wide) */
+  position-try-fallbacks: flip-block;
+  min-width: 220px;
+  margin: 0;
+  padding: 6px;
+  color: var(--color-text);
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-small);
+}
+
+.chat-menu:popover-open {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chat-bar .chat-menu .chat-button {
+  gap: 12px;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 12px;
+  font-size: 14px;
+  color: var(--color-text);
+  border-radius: 10px;
 }
 
 .chat-bar .chat-button:hover:not(:disabled) {
@@ -1899,14 +1962,6 @@ body {
   cursor: default;
 }
 
-.chat-bar-gap {
-  flex: none;
-  width: 1px;
-  height: 18px;
-  margin: 0 4px;
-  background: var(--color-border);
-}
-
 /* A chat in a project shows the project's name in the text's colour. */
 .chat-bar .chat-project:has(.chat-project-name) {
   color: var(--color-text);
@@ -1919,7 +1974,7 @@ body {
 }
 
 @container composer (max-width: 520px) {
-  .chat-label {
+  .chat-bar > .chat-button .chat-label {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -1928,7 +1983,7 @@ body {
     white-space: nowrap;
   }
 
-  .chat-bar .chat-button {
+  .chat-bar > .chat-button {
     padding: 0 8px;
   }
 }
@@ -2110,7 +2165,10 @@ body {
 }
 
 .settings-nav-item {
-  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
   padding: 0 12px;
   font: inherit;
   font-size: 14px;
@@ -2132,12 +2190,37 @@ body {
   outline-offset: -2px;
 }
 
-/* A section brought to the top stops under the sticky title. */
-.settings-body > .settings-section,
-.settings-body .settings-heading {
-  scroll-margin-top: 64px;
+/* (24.7, D-056) The group on show is marked in the list, as the open chat is in the sidebar. */
+.settings-nav-item[aria-current='page'] {
+  font-weight: 600;
+  color: var(--color-text);
+  background: var(--ev-c-gray-3);
 }
 
+.settings-nav-item .icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+/* (24.8) "Show details": a quiet switch under the list; the long explanations are hidden until it is on. */
+.settings-details-toggle {
+  margin-top: 12px;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.settings:not(.settings-details) .settings-more {
+  display: none;
+}
+
+/* A fixed height, so the dialog does not jump as the groups change. */
+.settings-layout {
+  min-height: min(520px, calc(100vh - 160px));
+}
+
+/* A narrow window: the list is a row of names above the group, scrolled sideways where it is too long. */
 @media (max-width: 719px) {
   .settings {
     width: min(480px, calc(100vw - 32px));
@@ -2148,7 +2231,19 @@ body {
   }
 
   .settings-nav {
-    display: none;
+    position: static;
+    flex-direction: row;
+    gap: 4px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+  }
+
+  .settings-nav-item {
+    flex: none;
+  }
+
+  .settings-details-toggle {
+    margin-top: 0;
   }
 }
 
@@ -5196,4 +5291,52 @@ body {
   background: var(--color-background-mute);
   border: 1px solid var(--color-border);
   border-radius: 6px;
+}
+
+/* ---------- pages (24.4, D-056) ---------- */
+
+/*
+ * The sidebar's pages (Image Studio, Experts, Projects, Library, History, Tools) fill the chat area and leave the sidebar in view, as
+ * AI Fiesta's pages do; until now each was a box over the chat. They are still modal dialogs (Esc closes, the keyboard stays inside); a
+ * click on the sidebar beside one closes it and goes on to what was clicked (App.tsx).
+ */
+dialog:is(.studio, .experts, .projects, .library, .history, .tools) {
+  inset: 0 0 0 var(--sidebar-width);
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  background: var(--color-background);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+dialog:is(.studio, .experts, .projects, .library, .history, .tools)::backdrop {
+  background: transparent;
+  backdrop-filter: none;
+}
+
+/* The pages that are a form or a list keep a column of their old width, in the middle. */
+dialog:is(.projects, .history, .tools) {
+  padding: 32px max(24px, calc((100vw - var(--sidebar-width) - 720px) / 2));
+  overflow-y: auto;
+}
+
+/* A very narrow window has no room for the rail and a page side by side: the page takes the whole window, as it did before (Esc or Close leaves it). */
+@media (max-width: 340px) {
+  dialog:is(.studio, .experts, .projects, .library, .history, .tools) {
+    inset: 0;
+  }
+
+  dialog:is(.projects, .history, .tools) {
+    padding: 24px 16px;
+  }
+}
+
+/* The page on show is marked in the sidebar, as the open chat is. */
+.sidebar-item[aria-current='page'] {
+  color: var(--color-text);
+  background: var(--ev-c-gray-3);
 }

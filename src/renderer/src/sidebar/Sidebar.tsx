@@ -44,6 +44,8 @@ interface SidebarProps {
   onOpenExperts: () => void
   onOpenProjects: () => void
   onOpenLibrary: () => void
+  /** (24.4, D-056) The page that fills the chat area now, marked in the list; null while the chat is on show. */
+  page: PageId | null
 }
 
 /**
@@ -63,7 +65,8 @@ function Sidebar({
   onOpenStudio,
   onOpenExperts,
   onOpenProjects,
-  onOpenLibrary
+  onOpenLibrary,
+  page: current
 }: SidebarProps): React.JSX.Element {
   const rail = useRail()
   const theme = useTheme()
@@ -224,6 +227,7 @@ function Sidebar({
               className={`chat-button sidebar-item${page.className === '' ? '' : ` ${page.className}`}`}
               disabled={isReplying}
               title={isReplying ? page.wait : `${page.hint} ${MOVE_HINT}`}
+              aria-current={id === current ? 'page' : undefined}
               onClick={page.open}
               {...reorderable('pages', id, index, order.length, movePage)}
             >

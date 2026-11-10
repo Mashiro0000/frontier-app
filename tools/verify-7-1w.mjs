@@ -242,7 +242,7 @@ await page.press('Tab')
 // (D-052) The menus are under the message box, the last of the page: the next Tab goes back to the top (the sidebar). (21.4, D-053) In an empty chat the chips
 // under the menus come first.
 for (let i = 0; i < 6 && (await ev(`!!document.activeElement.closest('.empty-chips')`)); i++) await page.press('Tab')
-check('...and the next Tab goes back to the sidebar: the menus are the last of the page, after Send (Settings is in the sidebar, before them)', (await ev(`!!document.activeElement.closest('.sidebar')`)) && (await ev(`!!(document.querySelector('.composer-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(document.querySelector('.header-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING)`)), await ev(`document.activeElement.className + ' ' + document.activeElement.textContent`))
+check('...and the next Tab goes back to the sidebar: the menus are the last of the page, after Send (Settings is in the sidebar, before them)', (await ev(`!!document.activeElement.closest('.sidebar')`)) && (await ev(`!!(document.querySelector('.effort-select').compareDocumentPosition(document.querySelector('.composer-button')) & Node.DOCUMENT_POSITION_FOLLOWING /* (Stage 24, D-056) the menus are in the box, before Send */) && !!(document.querySelector('.header-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING)`)), await ev(`document.activeElement.className + ' ' + document.activeElement.textContent`))
 await chooseEffort('medium')
 await ev(`document.querySelector('.effort-select').focus()`)
 await page.press('ArrowDown')

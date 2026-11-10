@@ -13,10 +13,7 @@ const APP = P + 'App.tsx', CHOOSER = P + 'settings/ModelChooser.tsx', SETTINGS =
 
 const windowSpecs = {
   'w232-action-words-shown': [[ACTIONS, "  <span className={shown ? 'message-action-label' : 'visually-hidden'}>{text}</span>", '  <span className="message-action-label">{text}</span>']],
-  'w232-labels-always-shown': [[BAR, "(on ? 'chat-label' : 'chat-label visually-hidden')", "(on ? 'chat-label' : 'chat-label')"]],
-  'w232-labels-never-shown': [[BAR, "(on ? 'chat-label' : 'chat-label visually-hidden')", "(on ? 'chat-label visually-hidden' : 'chat-label visually-hidden')"]],
   'w232-no-task-in-chooser': [[CHOOSER, '        {onTask !== undefined && (', '        {false && (']],
-  'w232-pill-square': [[CSS, '  padding: 1px;\n  border: 1px solid var(--color-border);\n  border-radius: 999px;\n}', '  padding: 1px;\n  border: 1px solid var(--color-border);\n  border-radius: 8px;\n}']],
   'w232-no-colours': [[BLOCK, '  const pieces = useMemo(() => colourCode(text, lang), [text, lang])', '  const pieces = useMemo(() => (lang === lang ? null : colourCode(text, lang)), [text, lang])']],
   'w232-esc-does-not-stop': [[APP, '        chat.stop()', '        void chat']],
   'w232-no-shortcut-list': [[APP, "key === '/') {", "key === '?') {"]],

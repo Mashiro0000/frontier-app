@@ -166,15 +166,7 @@ function LibraryDialog({ open, onClose, onOpenChat }: LibraryDialogProps): React
   }
 
   return (
-    <dialog
-      ref={dialogRef}
-      className="library"
-      aria-labelledby="library-title"
-      onClose={close}
-      onClick={(event) => {
-        if (event.target === dialogRef.current) close()
-      }}
-    >
+    <dialog ref={dialogRef} className="library" aria-labelledby="library-title" onClose={close}>
       <div className="page-head">
         <div>
           <h2 id="library-title" className="page-title">

@@ -52,13 +52,13 @@ const headerParts = () => ev(`(() => {
   const b = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, r: r.right, w: r.width, shown: r.width > 2 && getComputedStyle(e).display !== 'none' } }
   const t = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, r: r.right, t: r.top, b: r.bottom } }
   return { menus: b('.app-header-actions'), title: b('.chat-title'), badges: b('.app-header-badges'), header: b('.app-header'), box: t('.composer-inner'), menusBox: t('.app-header-actions'), note: t('.chat-footnote'),
-    inHeader: !!document.querySelector('.app-header .app-header-actions'), underBox: !!document.querySelector('.composer-meta > .app-header-actions'),
+    inHeader: !!document.querySelector('.app-header .app-header-actions'), underBox: !!document.querySelector('.composer-end > .app-header-actions') /* (Stage 24, D-056) now inside the box, at its lower right */,
     menuKids: [...document.querySelectorAll('.app-header-actions > *')].filter((e) => e.tagName !== 'DIALOG').map((e) => e.className.split(' ')[0]), /* (21.1) the chooser's dialog sits beside the menu */
     badgeKids: [...document.querySelectorAll('.app-header-badges > *')].map((e) => e.textContent.trim()),
     titleAlign: getComputedStyle(document.querySelector('.chat-title')).textAlign, menusLabel: document.querySelector('.app-header-actions')?.getAttribute('aria-label') }
 })()`)
 
-const SECTIONS = ['API keys', 'Model', 'Usage', 'Spending limits', 'Large requests', 'Voice', 'Images', 'Updates', 'Saved chats', 'Appearance']
+const SECTIONS = ['Keys and model', 'Usage and limits', 'Voice and images', 'Saved chats', 'General', 'Show details'] // (Stage 24, D-056) five panes and the details switch; verify-24-1w checks what each shows
 
 try {
   await page.waitFor(READY, { timeoutMs: 20000 })
@@ -74,11 +74,13 @@ try {
   check('A: a note under the box says a model can be wrong', (await ev(`document.querySelector('.chat-footnote')?.textContent`)) === 'Models can make mistakes. Check what matters.' && (await box('.chat-footnote')).t >= inner.b)
   const hp = await headerParts()
   check('A: the header (as Claude\'s): the title at its left, left-aligned, the "No API key" badge... at the right, and no menu in it', hp.title.shown && hp.title.l - hp.header.l < 24 && hp.titleAlign !== 'center' && hp.badges.r <= hp.header.r + 0.5 && hp.badges.l >= hp.title.l && !hp.inHeader, JSON.stringify(hp))
-  check('A: the Task, model and Effort menus are a named group right under the message box, at its right edge (as Claude\'s model menu)', JSON.stringify(hp.menuKids) === JSON.stringify(['header-select', 'effort-select']) && hp.underBox && hp.menusLabel === 'Model and effort' /* (23.3, D-055) the Task menu is in the model chooser */ && hp.menusBox.t >= hp.box.b - 0.5 && hp.menusBox.t - hp.box.b < 24 && Math.abs(hp.menusBox.r - hp.box.r) < 8, JSON.stringify(hp))
+  check('A: the Task, model and Effort menus are a named group right under the message box, at its right edge (as Claude\'s model menu)', JSON.stringify(hp.menuKids) === JSON.stringify(['header-select', 'effort-select']) && hp.underBox && hp.menusLabel === 'Model and effort' /* (23.3, D-055) the Task menu is in the model chooser */ && hp.menusBox.t >= hp.box.t && hp.menusBox.b <= hp.box.b + 0.5 && hp.menusBox.r <= hp.box.r, JSON.stringify(hp))
   // "As wide as its choice": the width of the chosen option's text in the menu's own font, measured on a canvas, plus the padding (10 + 28).
+  await page.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 5, y: 5 }) // (Stage 24) the menus are now where the pointer was left: "no fill until pointed at" is measured with it away
+  await sleep(200)
   const sel = await ev(`(() => { const c = document.createElement('canvas').getContext('2d'); return [...document.querySelectorAll('.app-header-actions select')].map((e) => { const s = getComputedStyle(e); c.font = s.fontWeight + ' ' + s.fontSize + ' ' + s.fontFamily; const text = Math.ceil(c.measureText(e.selectedOptions[0]?.textContent ?? '').width); return { cls: e.className.split(' ')[0], border: s.borderTopWidth, bg: s.backgroundColor, w: Math.round(e.getBoundingClientRect().width), h: Math.round(e.getBoundingClientRect().height), text, size: s.fontSize, weight: s.fontWeight, color: s.color } }) })()`)
   const textColour = await ev(`getComputedStyle(document.body).color`)
-  check('A: the menus are words with an arrow (no edge, no fill until pointed at), 32 px high, each only as wide as its choice; the model\'s name in the text\'s colour, semibold', sel.length === 3 && sel.filter((s) => s.cls !== 'task-select').every((s) => s.border === '0px' && s.bg === 'rgba(0, 0, 0, 0)' && s.w <= s.text + 36 + 6 && s.h === 32) && sel.find((s) => s.cls === 'header-select').weight === '600' && sel.find((s) => s.cls === 'header-select').color === textColour && sel.find((s) => s.cls === 'task-select').color !== textColour, JSON.stringify({ sel, textColour }))
+  check('A: the menus are words with an arrow (no edge, no fill until pointed at), 32 px high, each only as wide as its choice; the model\'s name in the text\'s colour, semibold', sel.length === 2 && sel.every((s) => s.border === '0px' && s.bg === 'rgba(0, 0, 0, 0)' && s.w <= s.text + 36 + 6 && s.h === 32) && sel.find((s) => s.cls === 'header-select').weight === '600' && sel.find((s) => s.cls === 'header-select').color === textColour, JSON.stringify({ sel, textColour }))
   const nc = await ev(`(() => { const b = document.querySelector('.sidebar-new'); const s = getComputedStyle(b); const i = getComputedStyle(b.querySelector('.icon')); const h = document.querySelector('.sidebar-nav .sidebar-item'); return { bg: s.backgroundColor, image: s.backgroundImage, h: b.getBoundingClientRect().height, itemH: h.getBoundingClientRect().height, left: b.getBoundingClientRect().left, iconBg: i.backgroundImage.slice(0, 15), sidebar: document.querySelector('.sidebar').getBoundingClientRect().width } })()`)
   check('A: New chat is a row like History (no filled button), its plus on the gradient; the sidebar is 260 px', nc.bg === 'rgba(0, 0, 0, 0)' && nc.image === 'none' && Math.abs(nc.h - nc.itemH) <= 1 && nc.iconBg.startsWith('linear-gradient') && Math.abs(nc.sidebar - 260) < 1, JSON.stringify(nc))
   const fails = await contrastFails()
@@ -104,7 +106,7 @@ try {
   const composerW = (await box('.composer-inner')).w
   check('B: in a wide window the column of messages and the box are 800 px wide (21.4, D-053: as AI Fiesta; 768 before), not wider', Math.abs(col.w - 800) < 1 && Math.abs(composerW - 800) < 1, JSON.stringify({ col, composerW }))
   const wide = await headerParts()
-  check('B: in a wide window the title is at the header\'s left, and the note sits beside the menus in ONE row under the box (as Claude\'s)', wide.title.shown && wide.title.l - wide.header.l < 24 && Math.abs((wide.note.t + wide.note.b) / 2 - (wide.menusBox.t + wide.menusBox.b) / 2) < 4 && wide.note.r <= wide.menusBox.l, JSON.stringify(wide))
+  check('B: in a wide window the title is at the header\'s left, and the note sits beside the menus in ONE row under the box (as Claude\'s)', wide.title.shown && wide.title.l - wide.header.l < 24 && wide.note.t >= wide.box.b - 0.5 && wide.menusBox.b <= wide.box.b + 0.5 /* (Stage 24, D-056) the note alone under the box, the menus inside it */, JSON.stringify(wide))
   await page.screenshot(`${shots}/20-dark-wide.png`)
   await clearMetrics()
 
@@ -117,20 +119,7 @@ try {
   const sideways = () => ev(`(() => { const d = document.querySelector('dialog.settings'); return { sw: d.scrollWidth, cw: d.clientWidth } })()`)
   let sw = await sideways()
   check('C: nothing in Settings scrolls sideways at the default window', sw.sw <= sw.cw, JSON.stringify(sw))
-  const reached = []
-  for (const section of [...SECTIONS].reverse()) {
-    await page.click(`.settings-nav-item@${section}`)
-    await sleep(250)
-    reached.push(await ev(`(() => {
-      const d = document.querySelector('dialog.settings'); const top = d.querySelector('.settings-title').getBoundingClientRect().bottom
-      const t = ${JSON.stringify(section)} === 'API keys' ? d.querySelector('.settings-body > .settings-section') : [...d.querySelectorAll('.settings-heading')].find((h) => h.textContent.trim() === ${JSON.stringify(section)})
-      const r = t.getBoundingClientRect(); const navR = d.querySelector('.settings-nav').getBoundingClientRect()
-      return { section: ${JSON.stringify(section)}, below: Math.round(r.top - top), atEnd: Math.abs(d.scrollTop + d.clientHeight - d.scrollHeight) < 2, navTop: Math.round(navR.top - top) }
-    })()`))
-  }
-  // A section near the end cannot reach the top when the page ends first: then it must at least be in view, the page scrolled to its end.
-  check('C: each entry brings its section to the top (just under the title), or as far as the page goes; the list stays in view', reached.every((r) => (r.below >= -2 && r.below < 40) || (r.atEnd && r.below >= -2 && r.below < 500)) && reached.every((r) => r.navTop >= -2 && r.navTop < 40), JSON.stringify(reached))
-  await page.click('.settings-nav-item@Appearance')
+  await page.click('.settings-nav-item@General')
   await sleep(250)
   await page.screenshot(`${shots}/20-dark-settings.png`)
   await metrics(1200, 700)
@@ -139,10 +128,12 @@ try {
   for (const width of [420, 280]) {
     await metrics(width, 700)
     const n = await ev(`(() => { const d = document.querySelector('dialog.settings'); return { nav: getComputedStyle(d.querySelector('.settings-nav')).display, sw: d.scrollWidth, cw: d.clientWidth, w: d.getBoundingClientRect().width } })()`)
-    check(`C: at ${width} px the list is not shown, Settings is one column inside the window, and nothing scrolls sideways`, n.nav === 'none' && n.sw <= n.cw && n.w <= width - 31, JSON.stringify(n))
+    check(`C: at ${width} px the list is not shown, Settings is one column inside the window, and nothing scrolls sideways`, n.nav === 'flex' /* (Stage 24) a row of names above the pane, scrolled sideways inside itself */ && n.sw <= n.cw && n.w <= width - 31, JSON.stringify(n))
   }
   await page.screenshot(`${shots}/20-dark-settings-280.png`)
   await clearMetrics()
+  await ev(`[...document.querySelectorAll('.theme-option')].find((b) => b.textContent.trim() === 'Light').scrollIntoView({ block: 'center' })`) // (Stage 24) no entry of the list scrolls to Appearance any more
+  await sleep(200)
   await page.click('.theme-option@Light')
   await sleep(300)
   await page.screenshot(`${shots}/20-light-settings.png`)

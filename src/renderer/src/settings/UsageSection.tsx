@@ -117,7 +117,10 @@ function UsageSection({ open, conversationId, limits }: UsageSectionProps): Reac
         </>
       )}
       <UsageChart open={open} />
-      <p className="settings-hint">
+      <p className="settings-hint settings-lead">
+        Counted by this app at list prices. Your provider&apos;s invoice is what counts.
+      </p>
+      <p className="settings-hint settings-more">
         Counted by this app from what each provider reports, at list prices (cached input at its
         own, lower price). Your provider&apos;s invoice is what counts. &quot;About&quot; marks a
         sum that includes a guess: a reply that was stopped or failed has no report, so the app

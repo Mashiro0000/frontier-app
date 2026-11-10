@@ -137,7 +137,10 @@ function AskFirstSection({ status, onStatusChange }: AskFirstSectionProps): Reac
         <p className="settings-status">Checking...</p>
       ) : (
         <>
-          <p className="settings-hint">
+          <p className="settings-hint settings-lead">
+            The app asks first when a request could cost more than this.
+          </p>
+          <p className="settings-hint settings-more">
             Before a request that is large, the app shows what it could cost at the most and asks
             first. A request is large when sending it, the whole conversation so far (which goes out
             again with every message), could cost more than the amount below at list prices. The

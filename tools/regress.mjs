@@ -131,6 +131,7 @@ if (parts.includes('window')) {
   rec(seeded('w231', 'dev', 'setup-key.mjs,verify-23-1w.mjs', { USER_DATA_DIR: scratch('s231'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('w231'), 'verify-23-1 (names, pins and days in the sidebar)')
   rec(seeded('w232', 'dev', 'setup-key.mjs,verify-23-2w.mjs', { USER_DATA_DIR: scratch('s232'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK, INSPECT_PORT: '9251' }), pfx('w232'), 'verify-23-2w (icons, the model pill, the box, code colours, shortcuts, Settings)')
   rec(seeded('w238', 'dev', 'setup-key.mjs,verify-23-8w.mjs', { USER_DATA_DIR: scratch('s238'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('w238'), 'verify-23-8w (reordering the pages, experts and projects)')
+  rec(seeded('w241', 'dev', 'setup-key.mjs,verify-24-1w.mjs', { USER_DATA_DIR: scratch('s241'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('w241'), 'verify-24-1w (the model in the box, the "+" menu, full pages, Settings in panes)')
   const mtime = picked('34b') ? statSync(join(P, 'preferences.json')).mtimeMs : 0 // (the profile of an earlier run of this regression; a re-run of a few labels need not have one)
   rec(seeded('34b', 'dev', 'verify-3-4b.mjs', { USER_DATA_DIR: P, MOCK_PORT: MOCK, EXPECT_MODEL: 'claude-fable-5-1', PREFS_MTIME_MS: String(mtime) }), pfx('34b'), 'verify-3-4b (restart)')
 }
@@ -236,6 +237,7 @@ if (parts.includes('preview')) {
   rec(seeded('prev-w231', 'preview', 'setup-key.mjs,verify-23-1w.mjs', { USER_DATA_DIR: scratch('s231p'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('prev-w231'), 'built: verify-23-1 (names, pins, days)')
   rec(seeded('prev-w232', 'preview', 'setup-key.mjs,verify-23-2w.mjs', { USER_DATA_DIR: scratch('s232p'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK, INSPECT_PORT: '9251' }), pfx('prev-w232'), 'built: verify-23-2w (icons, pill, box, colours, shortcuts, Settings)')
   rec(seeded('prev-w238', 'preview', 'setup-key.mjs,verify-23-8w.mjs', { USER_DATA_DIR: scratch('s238p'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('prev-w238'), 'built: verify-23-8w (reordering)')
+  rec(seeded('prev-w241', 'preview', 'setup-key.mjs,verify-24-1w.mjs', { USER_DATA_DIR: scratch('s241p'), WIPE_USER_DATA: '1', MOCK_PORT: MOCK }), pfx('prev-w241'), 'built: verify-24-1w (box, "+" menu, pages, Settings panes)')
   stage4('preview')
 }
 

@@ -1,0 +1,24 @@
+{
+  "label": "w241-typing-page-closes",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/App.tsx",
+      "from": "      if (page.querySelector('textarea:focus, input[type=\"text\"]:focus') !== null) return\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-24-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-specs241wnc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8868",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w241-typing-page-closes"
+  }
+}

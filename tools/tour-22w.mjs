@@ -20,7 +20,7 @@ const inspectPort = Number(process.env.INSPECT_PORT)
 const mockUrl = `http://127.0.0.1:${process.env.MOCK_PORT}`
 if (!userData || !inspectPort || !process.env.MOCK_PORT) throw new Error('USER_DATA_DIR, INSPECT_PORT and MOCK_PORT must be set')
 const check = checker()
-const page = await connect(port)
+const page = await connect(port, { plain: true }) // (Stage 24) as a person sees it: Settings folded, the "+" menu closed
 await assertScratchProfile()
 const main = await mainInspector(inspectPort)
 await installQuestions(main, { fallback: 'yes' })
@@ -32,7 +32,7 @@ const READY = `document.readyState === 'complete' && !!document.querySelector('.
 const size = (width, height) => page.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false })
 const setTheme = (t) => ev(`(() => { document.documentElement.dataset.theme = ${JSON.stringify(t)}; return true })()`)
 const shot = async (name) => { await sleep(350); await page.screenshot(join(shots, `${name}.png`)) }
-const closeAll = async () => { await ev(`[...document.querySelectorAll('dialog[open]')].forEach((d) => d.close())`); await sleep(300) }
+const closeAll = async () => { await ev(`[...document.querySelectorAll('dialog[open]')].forEach((d) => d.close()); document.querySelector('.chat-menu:popover-open')?.hidePopover(); if (document.querySelector('.settings-details-toggle')?.getAttribute('aria-pressed') === 'true') document.querySelector('.settings-details-toggle').click()`); await sleep(300) }
 const clickText = (scope, text) => ev(`(() => { const b = [...document.querySelectorAll(${JSON.stringify(scope)})].find((x) => x.textContent.trim() === ${JSON.stringify(text)}); if (!b) return false; b.click(); return true })()`)
 const opened = (cls) => ev(`!!document.querySelector('dialog.${cls}')?.open`)
 const send = async (text) => {
@@ -48,7 +48,7 @@ const PAGES = [
   ['home', async () => { await ev(`document.querySelector('.sidebar-new')?.click()`) }, null],
   ['chat', async () => { await ev(`document.querySelector('.sidebar-chat')?.click()`); await sleep(500) }, null],
   ['chooser', async () => { await ev(`document.querySelector('.header-select').dispatchEvent(new MouseEvent('mousedown', { button: 0, bubbles: true, cancelable: true }))`) }, 'model-chooser'],
-  ['search', async () => { await ev(`document.querySelector('.sidebar-search').click()`) }, 'search-chats'],
+  ['search', async () => { await ev(`document.querySelector('.sidebar-search').click()`) }, 'search-chats:not(.shortcuts)'],
   ['studio', async () => { await ev(`document.querySelector('.sidebar-studio').click()`) }, 'studio'],
   ['experts', async () => { await ev(`document.querySelector('.sidebar-experts').click()`) }, 'experts'],
   ['projects', async () => { await ev(`document.querySelector('.sidebar-projects').click()`) }, 'projects'],
@@ -60,8 +60,12 @@ const PAGES = [
   ['make-image', async () => { await ev(`document.querySelector('.chat-make-image').click()`) }, 'make-image'],
   ['gallery', async () => { await ev(`document.querySelector('.sidebar-studio').click()`); await sleep(400); await clickText('dialog.studio button', 'See them all') }, 'gallery'],
   ['settings', async () => { await clickText('.sidebar button', 'Settings') }, 'settings'],
-  ['settings-usage', async () => { await clickText('.sidebar button', 'Settings'); await sleep(300); await ev(`document.getElementById('settings-usage-heading').scrollIntoView({ block: 'start' })`) }, 'settings'],
-  ['settings-appearance', async () => { await clickText('.sidebar button', 'Settings'); await sleep(300); await ev(`document.getElementById('settings-appearance-heading').scrollIntoView({ block: 'start' })`) }, 'settings']
+  ['settings-usage', async () => { await clickText('.sidebar button', 'Settings'); await sleep(300); await clickText('.settings-nav-item', "Usage and limits") }, 'settings'],
+  ['settings-media', async () => { await clickText('.sidebar button', 'Settings'); await sleep(300); await clickText('.settings-nav-item', "Voice and images") }, 'settings'],
+  ['settings-chats', async () => { await clickText('.sidebar button', 'Settings'); await sleep(300); await clickText('.settings-nav-item', "Saved chats") }, 'settings'],
+  ['settings-general', async () => { await clickText('.sidebar button', 'Settings'); await sleep(300); await clickText('.settings-nav-item', "General") }, 'settings'],
+  ['settings-details', async () => { await clickText('.sidebar button', 'Settings'); await sleep(300); await clickText('.settings-nav-item', 'Show details') }, 'settings'],
+  ['plus', async () => { await ev(`document.querySelector('.chat-plus').click()`) }, null]
 ]
 
 try {
@@ -79,7 +83,7 @@ try {
     for (const theme of ['dark', 'light']) {
       await setTheme(theme)
       for (const [name, open, dialog] of PAGES) {
-        if (label === 'narrow' && !['home', 'chat', 'library', 'experts', 'studio', 'settings', 'chooser'].includes(name)) continue
+        if (label === 'narrow' && !['home', 'chat', 'library', 'experts', 'studio', 'history', 'settings', 'settings-usage', 'chooser', 'plus'].includes(name)) continue
         await closeAll()
         await open()
         await sleep(400)
