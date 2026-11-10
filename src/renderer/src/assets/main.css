@@ -719,6 +719,17 @@ body {
   .composer-menus .header-select {
     flex-shrink: 1;
   }
+
+  /* No room for the buttons and the menus side by side: the menus and Send go under the buttons (side by side they lay over each other). */
+  .composer-row {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .composer-row .chat-bar {
+    flex: 1 0 auto;
+    max-width: 100%;
+  }
 }
 
 .header-select,
@@ -1904,7 +1915,10 @@ body {
   position-anchor: --chat-plus;
   inset: auto;
   bottom: calc(anchor(top) + 8px);
-  left: anchor(left);
+  left: max(
+    8px,
+    min(anchor(left), calc(100vw - 228px))
+  ); /* in a very narrow window it moves left to stay inside (220 wide) */
   position-try-fallbacks: flip-block;
   min-width: 220px;
   margin: 0;
@@ -5308,6 +5322,17 @@ dialog:is(.studio, .experts, .projects, .library, .history, .tools)::backdrop {
 dialog:is(.projects, .history, .tools) {
   padding: 32px max(24px, calc((100vw - var(--sidebar-width) - 720px) / 2));
   overflow-y: auto;
+}
+
+/* A very narrow window has no room for the rail and a page side by side: the page takes the whole window, as it did before (Esc or Close leaves it). */
+@media (max-width: 340px) {
+  dialog:is(.studio, .experts, .projects, .library, .history, .tools) {
+    inset: 0;
+  }
+
+  dialog:is(.projects, .history, .tools) {
+    padding: 24px 16px;
+  }
 }
 
 /* The page on show is marked in the sidebar, as the open chat is. */

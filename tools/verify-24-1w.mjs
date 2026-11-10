@@ -86,7 +86,7 @@ try {
   await page.screenshot(join(shots, '24-settings.png'))
   await page.click('.settings-nav-item@General'); await sleep(300)
   const p1 = await panes()
-  check('D: "General" shows Appearance and Updates and nothing of the keys', p1.shown === 1 && JSON.stringify(p1.current) === '["General"]' && p1.headings.includes('Appearance') && !p1.headings.includes('Anthropic API key'), JSON.stringify(p1))
+  check('D: "General" shows Appearance and Updates and nothing of the keys, its long explanations still folded', p1.more === 0 && p1.shown === 1 &&JSON.stringify(p1.current) === '["General"]' && p1.headings.includes('Appearance') && !p1.headings.includes('Anthropic API key'), JSON.stringify(p1))
   await page.click('.settings-nav-item@Show details'); await sleep(300)
   const p2 = await panes()
   check('D: "Show details" draws the pane\'s explanations and says it is on ("Hide details", pressed)', p2.more > 0 && (await ev(`(() => { const b = document.querySelector('.settings-details-toggle'); return b.textContent.trim() === 'Hide details' && b.getAttribute('aria-pressed') === 'true' })()`)), JSON.stringify(p2))
@@ -94,6 +94,58 @@ try {
   await clickText('.sidebar button', 'Settings'); await sleep(500)
   check('D: closed and opened again, Settings is back on the keys', JSON.stringify((await panes()).current) === '["Keys and model"]')
   await page.press('Escape'); await sleep(300)
+
+  // ============ E. the keyboard when a button moves between the menu and the box ============
+  const focusOn = () => ev(`(() => { const a = document.activeElement; return a.tagName + '.' + a.className + ':' + a.textContent.trim().slice(0, 20) })()`)
+  await page.click('.chat-plus'); await sleep(300)
+  await page.click('.chat-menu .chat-button@Instructions'); await sleep(500)
+  await page.press('Escape'); await sleep(400)
+  check('E: Escape from a page opened through the menu leaves the keyboard on a button of the box, not nowhere', await ev(`!!document.activeElement.closest('.chat-bar')`), await focusOn())
+  await page.click('.chat-plus'); await sleep(300)
+  await page.click('.chat-menu .chat-button@Instructions'); await sleep(500)
+  await ev(`document.querySelector('dialog.instructions textarea').focus()`)
+  await page.type('be brief')
+  await page.click('dialog.instructions button[type=submit]')
+  await page.waitFor(`!!document.querySelector('.chat-bar > .chat-instructions')`, { timeoutMs: 6000, label: 'Instructions in the box' })
+  await sleep(300)
+  check('E: saved instructions: the button leaves the menu for the box and reads "Instructions on"; the keyboard is on the "+" it was opened from', (await ev(`document.querySelector('.chat-bar > .chat-instructions').textContent.trim() === 'Instructions on' && document.activeElement.matches('.chat-plus')`)), await focusOn())
+  await page.click('.chat-bar > .chat-instructions'); await sleep(500)
+  await ev(`(() => { const t = document.querySelector('dialog.instructions textarea'); Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(t, ''); t.dispatchEvent(new Event('input', { bubbles: true })) })()`)
+  await page.click('dialog.instructions button[type=submit]')
+  await page.waitFor(`!document.querySelector('.chat-bar > .chat-instructions')`, { timeoutMs: 6000, label: 'Instructions back in the menu' })
+  await sleep(300)
+  check('E: emptied instructions: the button goes back into the menu, and the keyboard it had goes to the "+"', (await ev(`!!document.querySelector('.chat-menu .chat-instructions') && document.activeElement.matches('.chat-plus')`)), await focusOn())
+
+  // ============ F. narrow windows ============
+  const pageFit = (cls) => ev(`(() => { const d = document.querySelector('dialog.${cls}'); const r = d.getBoundingClientRect(); return { open: d.open, left: Math.round(r.left), right: Math.round(r.right - innerWidth), sideways: d.scrollWidth - d.clientWidth, past: [...d.querySelectorAll('*')].filter((e) => e.getClientRects().length > 0 && e.getBoundingClientRect().right > innerWidth + 0.5).map((e) => e.tagName + '.' + e.className).slice(0, 4) } })()`)
+  for (const width of [420, 280]) {
+    await page.send('Emulation.setDeviceMetricsOverride', { width, height: 700, deviceScaleFactor: 1, mobile: false })
+    await sleep(400)
+    const fits = {}
+    for (const [cls, row] of [['tools', '.chat-tools'], ['projects', '.sidebar-projects'], ['library', '.sidebar-library']]) {
+      await ev(`document.querySelector('.sidebar ${row}').click()`); await sleep(500)
+      fits[cls] = await pageFit(cls)
+      await page.press('Escape'); await sleep(400)
+    }
+    const left = width > 340 ? 60 : 0
+    check(`F: at ${width} px Tools, Projects and the Library fit: ${left === 60 ? 'beside the 60 px rail' : 'the whole window (no room beside the rail)'}, nothing past the window's edge, no sideways scroll`, Object.values(fits).every((f) => f.open && f.left === left && f.right === 0 && f.sideways <= 1 && f.past.length === 0), JSON.stringify(fits))
+    await clickText('.sidebar button', 'Settings'); await sleep(500)
+    const wide = []
+    for (const name of ['Keys and model', 'Usage and limits', 'Voice and images', 'Saved chats', 'General']) {
+      await clickText('.settings-nav-item', name); await sleep(250)
+      wide.push(await ev(`(() => { const d = document.querySelector('dialog.settings'); return d.scrollWidth - d.clientWidth })()`))
+    }
+    check(`F: at ${width} px no pane of Settings scrolls sideways (the list of panes scrolls inside itself)`, wide.length === 5 && wide.every((w) => w <= 1) && (await ev(`document.querySelector('dialog.settings').getBoundingClientRect().right <= innerWidth`)), JSON.stringify(wide))
+    await page.press('Escape'); await sleep(400)
+    const clear = await ev(`['.chat-plus', '.header-select', '.effort-select', '.composer-button'].filter((s) => { const e = document.querySelector(s); const r = e.getBoundingClientRect(); const u = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !(u && e.contains(u)) || r.right > innerWidth })`)
+    check(`F: at ${width} px the "+", the model, its effort and Send are each in the open, none under another`, clear.length === 0, JSON.stringify(clear))
+    await page.screenshot(join(shots, `24-box-${width}.png`))
+    await page.click('.chat-plus'); await sleep(400)
+    const m = await ev(`(() => { const r = document.querySelector('.chat-menu').getBoundingClientRect(); return { open: document.querySelector('.chat-menu').matches(':popover-open'), left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), vw: innerWidth } })()`)
+    check(`F: at ${width} px the "+" menu opens inside the window`, m.open && m.left >= 0 && m.right <= m.vw && m.top >= 0, JSON.stringify(m))
+    if (width === 280) await page.screenshot(join(shots, '24-plus-280.png'))
+    await page.press('Escape'); await sleep(300)
+  }
 
   await page.send('Emulation.clearDeviceMetricsOverride')
   check('no console errors / warnings / exceptions', page.problems.length === 0, page.problems.join(' | ').slice(0, 1500))

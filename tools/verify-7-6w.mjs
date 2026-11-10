@@ -45,7 +45,7 @@ const headerShape = () => ev(`(() => {
 const oneRow = (s) => s.h < 64 && s.spread <= 4 && s.menuSpread <= 4 && s.inside && s.noOverlap && !s.overflowX
 const layout = () => ev(`(() => {
   const r = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return { l: b.left, r: b.right, t: b.top, b: b.bottom, h: b.height } }
-  return { vw: innerWidth, vh: innerHeight, side: r('.sidebar'), main: r('.app-main'), header: r('.app-header'), list: r('.message-list'), composer: r('.composer'), chat: r('main.chat'), box: r('.composer-inner'), bar: r('.chat-bar'), first: r('.chat-bar .chat-button'),
+  return { vw: innerWidth, vh: innerHeight, side: r('.sidebar'), main: r('.app-main'), header: r('.app-header'), list: r('.message-list'), composer: r('.composer'), chat: r('main.chat'), box: r('.composer-inner'), bar: r('.chat-bar'), first: r('.chat-plus') /* (Stage 24, D-056) the "+" comes first */,
     scroll: document.documentElement.scrollHeight > innerHeight || document.documentElement.scrollWidth > innerWidth }
 })()`)
 // Every .chat-button, in the order of the page (since D-051: New chat, History and Tools in the sidebar, then Attach..., Instructions, Memory and Project in the
@@ -180,7 +180,7 @@ try {
   await sleep(250)
   const ins = await btn('Instructions')
   check('after Save the Instructions button reads "Instructions on", with the mark, and its tooltip says how long they are (8 characters)', ins.text === 'Instructions on' && ins.mark === 'on' && /^Instructions are on for this chat \(8 characters\)/.test(ins.title), JSON.stringify(ins))
-  check('the bar is still one line at the default width, and the header did not change', (await ev(`new Set([...document.querySelectorAll('.chat-bar .chat-button')].map((e) => Math.round(e.getBoundingClientRect().top))).size`)) === 1 && oneRow(await headerShape()))
+  check('the bar is still one line at the default width, and the header did not change', (await ev(`new Set([...document.querySelectorAll('.chat-plus, .chat-bar > .chat-button')].map((e) => Math.round(e.getBoundingClientRect().top))).size`)) <= 2 /* (Stage 24) the menu's rows are unfolded for the suites only and take a second line; one line as a person sees it is verify-24-1w's F */ && oneRow(await headerShape()))
   await page.screenshot(`${shots}/7-6-instructions-on.png`)
 
   // ============ D. the keyboard: the sidebar, the header, the messages, then the box ============
@@ -190,13 +190,13 @@ try {
   const domOrder = await ev(`[...document.querySelectorAll('select, button:not(:disabled), textarea')].filter((e) => !e.closest('dialog') && !e.closest('.sidebar-recent')).map((e) => e.classList.contains('chat-button') ? 'chat:' + e.textContent.replace(/ on$/, '') : e.classList.contains('composer-input') ? 'input' : e.classList.contains('composer-button') ? 'send' : e.classList.contains('header-button') ? 'settings' : e.className.split(' ')[0])`)
   const at = (k) => domOrder.indexOf(k)
   // (D-052) The menus are under the box: they come after Send, and are the last of the page.
-  check('in the order the keyboard goes: the sidebar (New chat, History, Tools, Settings), the messages, the box (the text, Attach..., Instructions, Memory, Project, Send), then the menus under it (Task, model, Effort), last', at('chat:New chat') < at('chat:History') && at('chat:History') + 1 === at('chat:Tools') && at('chat:Tools') < at('settings') && at('settings') < at('input') && at('chat:Project') < at('header-select') && at('header-select') + 1 === at('effort-select') && at('effort-select') < at('send') && at('send') === domOrder.length - 1 /* (Stage 24, D-056) the model is inside the box, before Send */ && at('input') + 1 === at('chat:Attach...') && at('chat:Attach...') + 1 === at('chat:Instructions') && at('chat:Instructions') + 1 === at('chat:Memory') && at('chat:Memory') + 1 === at('chat:Project') && at('chat:Project') < at('send'), JSON.stringify(domOrder))
+  check('in the order the keyboard goes: the sidebar (New chat, History, Tools, Settings), the messages, the box (the text, Attach..., Instructions, Memory, Project, Send), then the menus under it (Task, model, Effort), last', at('chat:New chat') < at('chat:History') && at('chat:History') + 1 === at('chat:Tools') && at('chat:Tools') < at('settings') && at('settings') < at('input') && at('chat:Project') < at('header-select') && at('header-select') + 1 === at('effort-select') && at('effort-select') < at('send') && at('send') === domOrder.length - 1 /* (Stage 24, D-056) the model is inside the box, before Send */ && at('input') + 1 === at('chat-plus') && at('chat-plus') + 1 === at('chat:Attach...') && at('chat:Attach...') + 1 === at('chat:Memory') && at('chat:Memory') + 1 === at('chat:Project') && at('chat:Project') + 1 === at('chat:Instructions') /* on: in the box, after the "+" menu's rows */ && at('chat:Instructions') < at('header-select'), JSON.stringify(domOrder))
   const walk = []
-  for (let i = 0; i < 6; i++) { await page.press('Tab'); walk.push(await active()) } // (21.4) Enhance comes before Send
-  check('Tab from the text goes Attach..., Instructions on, Memory, Project, Enhance (21.4), then Send', JSON.stringify(walk) === JSON.stringify(['Attach...', 'Instructions on', 'Memory', 'Project', 'composer-enhance', 'Send']), JSON.stringify(walk))
+  for (let i = 0; i < 9; i++) { await page.press('Tab'); walk.push(await active()) } // (21.4) Enhance comes before Send
+  check('Tab from the text goes Attach..., Instructions on, Memory, Project, Enhance (21.4), then Send', JSON.stringify(walk.slice(0, 5)) === JSON.stringify(['More', 'Attach...', 'Memory', 'Project', 'Instructions on']) && JSON.stringify(walk.slice(7)) === JSON.stringify(['composer-enhance', 'Send']) /* (Stage 24) "+", its rows, what is on, the model and its effort, Enhance, Send */, JSON.stringify(walk))
   const back = []
-  for (let i = 0; i < 3; i++) { await page.press('Tab', { shift: true }); back.push(await active()) }
-  check('and Shift+Tab goes back the same way (Enhance first, 21.4)', JSON.stringify(back) === JSON.stringify(['composer-enhance', 'Project', 'Memory']), JSON.stringify(back))
+  for (let i = 0; i < 5; i++) { await page.press('Tab', { shift: true }); back.push(await active()) }
+  check('and Shift+Tab goes back the same way (Enhance first, 21.4)', back[0] === 'composer-enhance' && back[3] === 'Instructions on' && back[4] === 'Project', JSON.stringify(back))
   await page.click('.chat-button@New chat')
   await page.waitFor(`document.querySelectorAll('.message-list-inner > .message').length === 0`, { timeoutMs: 6000 })
   await sleep(300)

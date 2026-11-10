@@ -8,6 +8,7 @@ import {
   IconPlus,
   IconProject
 } from '../icons'
+import { useEffect, useRef } from 'react'
 import { notesSent } from '../memory/useMemory'
 
 interface ChatBarProps {
@@ -99,6 +100,29 @@ function ChatBar({
   const instructionsOn =
     everyChat?.problem != null || instructions !== '' || (everyChat?.text ?? '') !== ''
   const memoryOn = memory?.problem != null || notesSent(memory).length > 0
+  // A button that turns on leaves the menu for the box (and goes back when off): it is a new element, so the keyboard that was on the
+  // old one is handed to it, or to the "+" when it went into the closed menu.
+  const barRef = useRef<HTMLDivElement>(null)
+  const inProject = projectName !== null
+  const was = useRef({ instructionsOn, memoryOn, inProject })
+  useEffect(() => {
+    const before = was.current
+    was.current = { instructionsOn, memoryOn, inProject }
+    const moved =
+      before.instructionsOn !== instructionsOn
+        ? 'chat-instructions'
+        : before.memoryOn !== memoryOn
+          ? 'chat-memory'
+          : before.inProject !== inProject
+            ? 'chat-project'
+            : null
+    if (moved === null || document.activeElement !== document.body) return
+    const bar = barRef.current
+    ;(
+      bar?.querySelector<HTMLElement>(`:scope > .${moved}`) ??
+      bar?.querySelector<HTMLElement>('.chat-plus')
+    )?.focus()
+  }, [instructionsOn, memoryOn, inProject])
   const attach = (
     <button
       type="button"
@@ -209,7 +233,7 @@ function ChatBar({
     </button>
   )
   return (
-    <div className="chat-bar" role="group" aria-label="This chat">
+    <div ref={barRef} className="chat-bar" role="group" aria-label="This chat">
       <button
         type="button"
         className="chat-plus"

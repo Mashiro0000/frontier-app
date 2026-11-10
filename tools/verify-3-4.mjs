@@ -94,7 +94,7 @@ for (let i = 0; i < chipCount; i++) {
   if (!(await ev(`!!document.activeElement.closest('.empty-chips')`))) break
   await page.press('Tab')
 }
-check('keyboard: after the menus (after Send) come only the chips of an empty chat, then the next Tab goes back to the sidebar; Settings comes before them', (await ev(`!!document.activeElement.closest('.sidebar')`)) && (await ev(`!!(document.querySelector('.composer-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(document.querySelector('.header-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING)`)), await ev(`document.activeElement.className + ' ' + document.activeElement.textContent`))
+check('keyboard: after the menus (after Send) come only the chips of an empty chat, then the next Tab goes back to the sidebar; Settings comes before them', (await ev(`!!document.activeElement.closest('.sidebar')`)) && (await ev(`!!(document.querySelector('.effort-select').compareDocumentPosition(document.querySelector('.composer-button')) & Node.DOCUMENT_POSITION_FOLLOWING /* (Stage 24, D-056) the menus are in the box, before Send */) && !!(document.querySelector('.header-button').compareDocumentPosition(document.querySelector('.effort-select')) & Node.DOCUMENT_POSITION_FOLLOWING)`)), await ev(`document.activeElement.className + ' ' + document.activeElement.textContent`))
 
 // ===================== B. choosing a model =====================
 await H.chooseInPage(SONNET)

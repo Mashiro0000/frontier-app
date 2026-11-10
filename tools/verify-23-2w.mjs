@@ -56,7 +56,7 @@ try {
 
   // ============ B. one model pill ============
   const pill = await ev(`(() => { const p = document.querySelector('.composer-menus'); return { pill: p.classList.contains('model-pill'), aria: p.getAttribute('aria-label'), model: !!p.querySelector('.header-select'), effort: !!p.querySelector('.effort-select'), task: [...p.querySelectorAll('.task-select')].some((t) => !t.closest('dialog')), radius: getComputedStyle(p).borderRadius } })()`)
-  check('B: under the box, one pill named "Model and effort": the model and its effort, no Task menu', pill.pill && pill.aria === 'Model and effort' && pill.model && pill.effort && !pill.task && parseFloat(pill.radius) > 100, JSON.stringify(pill))
+  check('B: under the box, one pill named "Model and effort": the model and its effort, no Task menu', pill.pill && pill.aria === 'Model and effort' && pill.model && pill.effort && !pill.task /* (Stage 24, D-056) inside the box: no edge of its own */, JSON.stringify(pill))
   await page.click('.header-select'); await sleep(500)
   check('B: the Task menu is in the model chooser', await ev(`!!document.querySelector('dialog.model-chooser[open] .model-chooser-task .task-select')`))
   await ev(`(() => { const s = document.querySelector('dialog.model-chooser .task-select'); s.value = 'coding'; s.dispatchEvent(new Event('change', { bubbles: true })); return true })()`)

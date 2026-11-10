@@ -738,6 +738,22 @@ or a small colourer of our own for about 5 languages (no dependency, more work, 
 (6) The Task menu: **a filter chip inside the chooser** (my pick), or keep it as a menu under the box?
 (7) After the merge: **ask you before releasing v0.4.0** (my pick), or leave releases for later?
 
+## Stage 24 - Details from AI Fiesta (asked 10 November 2026: "compare frontier app and ai fiesta ... see what can be improved", then "Make improvements even the small details" and "frontiers setting page looks so technical and so much words not minimalist"; D-056)
+
+**Why:** three passes side by side with AI Fiesta at 1280x800 (the chat, the pages, Settings). The sizes were already close (sidebar, rows, text);
+what differed was where things sit and how much is said. No new feature, no new call, nothing new kept or sent.
+
+- **Stage 24 progress** (D-056):
+  - [x] (24.1) The model and its effort inside the message box, before Send; under the box only the footnote, centred.
+  - [x] (24.2) A "+" in the box opens a menu: Attach, Make an image, and whichever of Instructions, Memory and Project is off. One that is on
+        stays in the box with its word, so what goes with every message is never hidden (the reason Stage 23 gave for having no "+" menu).
+  - [x] (24.3) Settings in five panes (Keys and model, Usage and limits, Voice and images, Saved chats, General), one line under each heading;
+        the long explanations are behind "Show details". Nothing was taken out of the page.
+  - [x] (24.4) Image Studio, Experts, Projects, Library, History and Tools fill the chat area and leave the sidebar in reach; the row of the
+        page shown is marked; a press on another row changes the page.
+  - [x] (24.5) Checks: `verify-24-1w.mjs` (window, 28), six controls (`make-specs241.mjs`, all caught), the tour (`tour-22w.mjs`) as a person sees it.
+  - [x] (24.6) Full regression `t24` (272 runs) and what it found: see D-056.
+
 ## What is deliberately not promised
 
 Exact copies of vendor-only features (their memory, Projects and Artifacts, custom GPTs, the one-click connector directory), and any power
