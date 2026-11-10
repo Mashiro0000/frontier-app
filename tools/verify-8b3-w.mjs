@@ -92,7 +92,7 @@ try {
 
   // ============ 4. what the page can do through the bridge ============
   const keys = await ev(`Object.keys(window.api.history).sort()`)
-  check('the bridge has the three new functions beside the old ones, and nothing that takes a path or a key', same(keys, ['decryptChats', 'encryptChats', 'exportChats', 'list', 'load', 'remove', 'restoreApply', 'restoreCancel', 'restoreLook', 'save', 'search', 'storage']) /* (21.5, D-053) search: titles and pieces, a query only */, JSON.stringify(keys))
+  check('the bridge has the three new functions beside the old ones, and nothing that takes a path or a key', same(keys, ['decryptChats', 'encryptChats', 'exportChats', 'list', 'load', 'pin', 'remove', 'rename', 'restoreApply', 'restoreCancel', 'restoreLook', 'save', 'search', 'storage']) /* (21.5, D-053) search: titles and pieces, a query only */, JSON.stringify(keys))
   const fields = await ev(`(async () => Object.keys(await window.api.history.storage()))()`)
   check('storage() tells the page exactly eight facts: no key, no check, no path', same(fields, ['choice', 'canEncrypt', 'keyUsable', 'plain', 'encrypted', 'unreadable', 'unopened', 'blocked']), JSON.stringify(fields))
   await dialogs.reset()
