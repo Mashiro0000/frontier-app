@@ -1402,6 +1402,8 @@ body {
 
 /* (23.2, D-055) Icons, 32 px squares; the words are in the tooltip and, hidden, in the button. */
 .message-action {
+  /* the hidden name inside is placed against the button: without this it is placed against the window and, far down a long chat, makes the page scroll */
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;

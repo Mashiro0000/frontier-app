@@ -50,7 +50,7 @@ try {
     await H.settle('gemini-4-argon')
     const chosen = await H.settingsText()
     const line = chosen.match(/Gemini 4 Argon, from Google[\s\S]{0,600}/)?.[0] ?? chosen.slice(0, 1500)
-    check('B: with Gemini 4 Argon chosen, Settings names it "from Google", with its description and today\'s list price, billed to the Google account', /Gemini 4 Argon, from Google/.test(chosen) && /most capable/.test(line) && (!beforeDecember || /List price: \$2(\.00)? per million tokens it reads and \$10(\.00)? per million tokens it writes, billed to your Google account/.test(line)), show(line))
+    check('B: with Gemini 4 Argon chosen, Settings names it "from Google", with its description and today\'s list price, billed to the Google account', /Gemini 4 Argon, from Google/.test(chosen) && /most capable/.test(line) && (!beforeDecember || /\$2(\.00)? in, \$10(\.00)? out per million tokens/.test(line)), show(line))
     await H.chooseInPage('claude-opus-5-5')
     await H.settle('claude-opus-5-5')
   })
