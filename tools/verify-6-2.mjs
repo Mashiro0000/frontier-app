@@ -96,8 +96,11 @@ await chooseTask('writing')
 check('Writing: Sonnet and Astra', sameSet(await marked(), [SONNET, ASTRA]), JSON.stringify(await marked()))
 await chooseTask('quick')
 check('Quick answer, with both keys: still nothing (OpenAI states no latency, so no GPT model is named either), and the page says so', (await marked()).length === 0 && (await note()) === 'No suggestion for quick answer', String(await note()))
-const choice = await ev(`(() => { const s = document.querySelector('.task-select'); s.focus(); return document.activeElement === s })()`)
-check('the Task menu can take the keyboard focus', choice === true)
+// (23.3, D-055) the Task menu is in the model chooser: it takes the keyboard there, once the chooser is open
+await page.click('.header-select'); await sleep(400)
+const choice = await ev(`(() => { const s = document.querySelector('dialog.model-chooser[open] .task-select'); s?.focus(); return !!s && document.activeElement === s })()`)
+await page.press('Escape'); await sleep(300)
+check('the Task menu can take the keyboard focus (in the model chooser)', choice === true)
 await page.screenshot(join(SHOTS, 'verify-6-2-quick.png'))
 
 // ============ 5. a key removed: its models drop out of the suggestions at once ============

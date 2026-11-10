@@ -1,0 +1,14 @@
+{
+  "label": "n238-past-the-end",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/order.ts",
+      "from": "to < 0 || to >= list.length)",
+      "to": "to < 0 || to > list.length)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-8.mjs"
+  ],
+  "env": {}
+}

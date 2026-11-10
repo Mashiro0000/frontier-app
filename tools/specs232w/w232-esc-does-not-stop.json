@@ -1,0 +1,25 @@
+{
+  "label": "w232-esc-does-not-stop",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/App.tsx",
+      "from": "        chat.stop()",
+      "to": "        void chat"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-23-2w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-specs232wnc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8867",
+    "INSPECT_PORT": "9251",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w232-esc-does-not-stop"
+  }
+}

@@ -22,14 +22,14 @@ await assertScratchProfile()
 const H = helpers(page, { userData, mockUrl })
 const { ev } = H
 const READY = `document.readyState === 'complete' && !!document.querySelector('.header-select')`
-const OPEN = `!!document.querySelector('dialog.search-chats')?.open`
+const OPEN = `!!document.querySelector('dialog.search-chats:not(.shortcuts)')?.open` // (23.6, D-055) the shortcuts box wears the same class and comes first in the page
 const search = async (text) => {
   await ev(`(() => { const i = document.querySelector('.search-chats-input'); i.focus(); i.select(); return true })()`)
   await page.type(text)
   await sleep(900) // the search waits a quarter of a second after the last key, then main answers
 }
-const hits = () => ev(`[...document.querySelectorAll('dialog.search-chats .search-hit')].map((h) => ({ title: h.querySelector('.search-hit-title').textContent, snippet: h.querySelector('.search-hit-snippet')?.textContent ?? '', date: h.querySelector('.search-hit-date').textContent }))`)
-const bodyText = () => ev(`document.querySelector('dialog.search-chats .search-chats-body').innerText`)
+const hits = () => ev(`[...document.querySelectorAll('dialog.search-chats:not(.shortcuts) .search-hit')].map((h) => ({ title: h.querySelector('.search-hit-title').textContent, snippet: h.querySelector('.search-hit-snippet')?.textContent ?? '', date: h.querySelector('.search-hit-date').textContent }))`)
+const bodyText = () => ev(`document.querySelector('dialog.search-chats:not(.shortcuts) .search-chats-body').innerText`)
 const newChat = async () => { await page.click('.sidebar-new'); await sleep(500) }
 
 try {
@@ -85,7 +85,7 @@ try {
   await page.send('Input.dispatchKeyEvent', { type: 'keyDown', modifiers: 2, key: 'k', code: 'KeyK', windowsVirtualKeyCode: 75 })
   await page.send('Input.dispatchKeyEvent', { type: 'keyUp', modifiers: 2, key: 'k', code: 'KeyK', windowsVirtualKeyCode: 75 })
   await sleep(400)
-  const box = await ev(`(() => { const d = document.querySelector('dialog.search-chats').getBoundingClientRect(); return { l: d.left, r: d.right, w: innerWidth, side: document.documentElement.scrollWidth - document.documentElement.clientWidth } })()`)
+  const box = await ev(`(() => { const d = document.querySelector('dialog.search-chats:not(.shortcuts)').getBoundingClientRect(); return { l: d.left, r: d.right, w: innerWidth, side: document.documentElement.scrollWidth - document.documentElement.clientWidth } })()`)
   check('D: at 420 px (the sidebar a rail: its search button hidden, Ctrl+K still works) the dialog fits, nothing scrolls sideways', (await ev(OPEN)) && box.l >= 0 && box.r <= box.w && box.side <= 0, JSON.stringify(box))
   await page.press('Escape'); await sleep(200)
   await page.send('Emulation.clearDeviceMetricsOverride'); await sleep(300)

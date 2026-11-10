@@ -1,0 +1,14 @@
+{
+  "label": "n235-groups-shift",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/colour.ts",
+      "from": "      parts.length > 0 ? `(${parts.join('|')})` : '((?!))',",
+      "to": "      parts.length > 0 ? `(${parts.join('|')})` : '(?!)',"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-5.mjs"
+  ],
+  "env": {}
+}

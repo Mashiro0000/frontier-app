@@ -62,11 +62,11 @@ check('the status carries the registry\'s facts (each model\'s provider, the pro
 let text = await H.settingsText()
 check('Settings, Model section: names the model and its provider', /Claude Opus 5\.5, from Anthropic/.test(text))
 check('...shows the description from the registry', text.includes(models[1].description))
-check('...says how much it can read: "about 1M tokens"', /about 1M tokens of conversation/.test(text))
-check('...gives the list prices: $4 in, $20 out, per million tokens', /\$4 per million tokens it reads and \$20 per million tokens it writes/.test(text), text.match(/List price:[^.]*\./)?.[0])
-check('...says when the prices were checked', /Prices were checked on 2026-10-17\./.test(text)) /* (the registry checked again by 17.2) */
-check('...says the bill goes to the Anthropic account, and how to change the model', /billed to your Anthropic account/.test(text) && /menu under the message box/.test(text)) // (D-052: the menus moved under the box)
-check('...warns that a mid-chat change sends the whole chat to the new model', /whole chat so far is sent to the new model/.test(text))
+check('...says how much it can read: "up to 1M tokens"', /Reads up to 1M tokens\./.test(text)) // (23.7, D-055: the shorter words)
+check('...gives the list prices: $4 in, $20 out, per million tokens', /\$4 in, \$20 out per million tokens/.test(text), text.match(/Reads up to[^)]*\)/)?.[0])
+check('...says when the prices were checked', /\(checked 2026-10-17\)/.test(text)) /* (the registry checked again by 17.2) */
+check('...says the bill goes to the account of the key, and how to change the model', /billed to your account/.test(text) && /Change it under the message box/.test(text)) // (D-052: the menus moved under the box)
+check('...warns that a mid-chat change sends the whole chat to the new model', /Mid-chat, the whole chat goes to the new model/.test(text))
 check('...the old "fixed for now" line is gone', !/fixed for now/i.test(text))
 await page.screenshot(`${shots}/3-4-header-nokey.png`)
 
@@ -106,7 +106,7 @@ check('...and it is saved: preferences.json holds exactly {"version":1,"modelId"
 check('...written in place on the EFS-encrypted AppData, with no temporary file left', H.strayFiles().length === 0, JSON.stringify(H.strayFiles()))
 check('...no error badge', !(await H.badges()).some((b) => b.alert))
 text = await H.settingsText()
-check('Settings now describes Sonnet and its prices ($2 / $10)', /Claude Sonnet 5\.5, from Anthropic/.test(text) && /\$2 per million tokens it reads and \$10 per million tokens it writes/.test(text))
+check('Settings now describes Sonnet and its prices ($2 / $10)', /Claude Sonnet 5\.5, from Anthropic/.test(text) && /\$2 in, \$10 out per million tokens/.test(text))
 
 // keyboard: ArrowDown / ArrowUp on the focused menu
 await ev(`document.querySelector('.header-select').focus()`)
@@ -269,7 +269,7 @@ await page.waitFor(`!!document.querySelector('dialog.settings')?.open`)
 await sleep(150)
 await page.screenshot(`${shots}/3-4-settings-fable.png`)
 await page.press('Escape')
-check('Settings for Fable: 1M tokens, $10 / $50, its own description', /about 1M tokens/.test(text) && /\$10 per million tokens it reads and \$50 per million tokens it writes/.test(text) && text.includes(models[0].description), text.match(/It can read[^.]*\./)?.[0])
+check('Settings for Fable: 1M tokens, $10 / $50, its own description', /up to 1M tokens/.test(text) && /\$10 in, \$50 out per million tokens/.test(text) && text.includes(models[0].description), text.match(/Reads up to[^)]*\)/)?.[0])
 
 // ===================== F. nothing leaked =====================
 const appLog = readFileSync(process.env.APP_LOG, 'utf8')

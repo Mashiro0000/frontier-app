@@ -3218,3 +3218,67 @@ the old set of files, the old bridge, the old sidebar or two themes, and were pu
 
 **Not proven (and cannot be from here):** a real call to any provider (the mock stands in); that the fonts look the same on every Windows (a missing one
 falls back to the app's own); Image Studio's styles on a real image model.
+
+## D-055 - Stage 23: quick wins from ChatGPT, Claude and AI Fiesta (names, pins and days, icons, one model button, a "+" menu, code colours, shortcuts, Markdown export)
+
+Started 8 November 2026 on the owner's "Yes, your picks" to the plan in ROADMAP (Stage 23, seven questions, every pick kept). Built on branch `stage-23-quick`.
+
+**23.1, names, pins and days in the sidebar.** Each recent chat has a "..." button (shown on hover, on keyboard focus, and for the chat on screen) that opens a
+small menu: Rename (typed in the row: Enter or leaving the box keeps it, Escape keeps the old name, empty goes back to the first message), Pin or Unpin, Delete
+(asks in the row, Cancel first). The list is grouped as ChatGPT and AI Fiesta group it: Pinned, Today, Yesterday, Previous 7 days, Previous 30 days, then one
+group per month, by this computer's own days; "Recent" stays as a heading for screen readers only. A title worked out from a first message now drops
+Markdown's marks (emphasis, code, heading and quote marks, link brackets), and an old title is shown that way too, without rewriting its file.
+**Where a name and a pin are kept (the owner's pick 1):** `chat-names.json`, a kept document like `library.json` (D-039: written and read back, sealed with the
+chats when encryption is on, never written over when it cannot be read; quitting waits for it). The chat files are not touched, so they stay version 3 to 7
+and an older Frontier still opens every chat (it shows the worked-out titles). Main checks a name (one line, at most 100 characters, no control or
+direction marks) and gives a mark only to a saved chat; a deleted chat's mark is dropped. The list, the header and Search show the name.
+**Backups (the owner's pick 2):** a backup whose chats have a name or a pin is **version 4**: version 3 with one "mark" line per marked chat (with its
+checksum) after the projects and notes and before the chats, and the trailer counts them; a backup with no marked chat is written exactly as before. A
+mark line is checked as `chat-names.json` would check it, and one after the chats is not used. A restore adds the marks of the chats it added (a copy's mark
+goes with the copy's new id) and never changes a mark already here; a chat already here keeps what it has. An older Frontier refuses a version 4 backup
+("made by another version"), as it refused version 3 before 10.7. Not shown: how many marks a restore added (a mark that cannot be added is logged; the
+chat itself is added).
+**Checks:** `verify-23-1.mjs` (Node, 76: the name, the file, plain titles, the groups from fixed dates, the service on a real folder, version 4 written,
+read, damaged and refused, a restore through the service, the wiring), `run231.mjs` / `verify-23-1w.mjs` (window, 32), controls `make-specs231.mjs` (15
+Node caught, one retired: keptFile.ts refuses too, so taking this service's own refusal out cannot be seen; 7 window). Older checks put right: the three
+"a newer backup is refused" checks now use version 5 (verify-8b-1, 9-5, 10-7), and twelve older controls whose lines changed (specs4 x2, 8b x2, 8b3w,
+93w, 95 x2, 107 x3, 107w) now break the same rule in the new lines; their makers still hold the old text (a known trap: do not regenerate them).
+The window run caught one fault before the slice was done: after Rename by Enter the keyboard was lost (the "..." was disabled while the name was saved);
+it is no longer disabled (its clicks wait instead).
+
+**Trims (8 November 2026).** The owner turned on "ponytail ultra" (question what the need does not justify) and answered "your pick" to four trims; all four
+were taken: (23.3) the model menu and the effort menu are joined into one pill and the Task menu moved into the model chooser, instead of rebuilding the effort
+choice inside the chooser; (23.5) no highlight.js: a small colourer of our own; (23.6) three shortcuts, not seven; (23.7) the Markdown export dropped (the JSON
+backup and each reply's Copy stay). And one pushback taken without a question, because it keeps a rule: (23.4) no "+" menu, since it would hide
+Instructions, Memory and Project, which D-027 and D-039 keep in view because they go with every message.
+
+**23.2, the actions as icons.** Copy, Read aloud, Regenerate, Edit and Remember are 32 px icons under a message (shown on hover and focus and under the
+last message, as before). Each keeps its words, hidden, as its name for screen readers and the checks, and its tooltip; "Try again" and "Could not copy"
+stay written out, because they say something went wrong; Copy turns into a check named "Copied".
+
+**23.3, one pill.** The model and its effort sit in one rounded pill under the box ("Model and effort"); the Task menu (Stage 6) is in the model chooser,
+beside the search and the filters, where the cards it marks are. The keyboard path to the model (the menu's arrows) is unchanged.
+
+**23.4, the box.** Instructions, Memory and Project are icons while they add nothing to the messages, and show their words (and their mark: "on", the
+number of notes, the project's name) while they do; their names stay for screen readers. The empty chat's chips no longer repeat them: Web search,
+Experts, and Make an image when it is on.
+
+**23.5, code colours.** `markdown/colour.ts` splits a block of a language it knows (JS/TS, C-like languages, Python, JSON, CSS, shell, PowerShell, SQL)
+into comments, strings, numbers and keywords, by one pass of regular expressions; the pieces join back to exactly the text and are shown as text in spans,
+never as markup. An unknown language stays plain. Its four colours are theme tokens, each 5:1 or more on the code block in both themes. A known limit is
+written in the file (it is not a parser). The Node suite found a fault before it shipped: in a language with no comments every tone was one group off.
+
+**23.6, shortcuts.** Ctrl+Shift+O a new chat (as the sidebar's button: not while a reply arrives, not from an empty chat), Esc stops a reply that is
+arriving, Ctrl+/ lists them (with Ctrl+K, from 21.5). None works while a dialog is open, and none sends anything.
+
+**23.7, Settings (the owner's ask on 8 November 2026, with a screenshot: "It written too much and doesn't even has close option on the top").** The title
+row stays in view with a close button (X) at its right, as ChatGPT's and Claude's; the Close at the foot is gone (the X and Esc close it). Each API key
+section is a heading, one line on what it is for and where to get a key, the state, a box that says "Paste your key", the buttons and one line on how the
+key is kept (Google's note on free keys stays as it was: it is a disclosure). The Model section's price lines are one line each. The other sections keep
+their words for now.
+
+**23.8, reordering (the owner asked on 8 November 2026: "can add a reordering feature where I can reorder everything"; asked which lists, he chose the sidebar's pages and his own experts and projects).** A row is dragged onto another, or moved with Alt+Up / Alt+Down on its button (the keyboard stays on the moved row); each says so in its tooltip. The pages' order is kept on this computer by the page (`frontier.pages`, like the theme; an unknown or repeated id is dropped and a page added later comes last). The experts' and projects' order is kept by main in `experts.json` and `projects.json` (their order already was the order of the list), through `experts:move` and `projects:move`, which take an id and a place and refuse anything else; My experts cannot be moved while a search narrows the list. No package (HTML drag events). Checks: `verify-23-8.mjs` (Node, 24), `verify-23-8w.mjs` (window), controls `make-specs238.mjs` (4 Node caught).
+
+**A trap found on the way (23.6):** the window run that showed the app "closing" after Ctrl+Shift+O, and the probe after it that could not open Settings, ran while a test app of an earlier run was still running from its folder in C:rontier-tmp (found and stopped). Whether the shortcut itself is innocent is shown by the probe re-run (see the 23.6 line in ROADMAP).
+
+**23.9, the threat note and the regression.** Nothing in Stage 23 opens a new way in or out: no new network call, no new file read by the page, no new permission. The new bridge functions are `history:pin`, `history:rename`, `experts:move` and `projects:move`; each takes an id and a short text, a flag or a place, checks them in main and refuses anything else (their Node suites hold the refusals). The pages' order is kept by the page itself (`frontier.pages`), like the theme: a hostile page could reorder its own sidebar and nothing more. The code colourer builds elements from text and never sets HTML. Full regression `t23d` (10 November 2026): 270 runs, 248 clean at once; of the 22 others, 16 were older checks pinned to the look before Stage 23 (the Task menu's old place, the old chips, three lists of bridge names, the search box's class now shared with the shortcuts box), put right and re-run clean (`t23e`, `t23f`, `t23g`), and 6 ran while the test window was hidden and passed on the re-run. No fault of the app was found by the regression after 23.9's own fix (the hidden names of the message icons).

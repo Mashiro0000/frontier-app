@@ -100,13 +100,12 @@ function ProviderKeySection({
     <form className="settings-section" onSubmit={save}>
       <h3 className="settings-heading">{provider.name} API key</h3>
       <p className="settings-hint">
-        The key lets this app use {help.uses} on your account, and the messages you send are billed
-        to that account. You can create a key in {help.whereToCreate}.
+        For {help.uses}, billed to your account. Get a key in {help.whereToCreate}.
       </p>
       {help.note !== undefined && <p className="settings-hint settings-key-note">{help.note}</p>}
       <p className="settings-status">{describeStatus(provider, canStoreKey)}</p>
 
-      <label className="settings-label" htmlFor={inputId}>
+      <label className="settings-label visually-hidden" htmlFor={inputId}>
         API key
       </label>
       <input
@@ -116,6 +115,7 @@ function ProviderKeySection({
         autoComplete="off"
         autoCapitalize="off"
         spellCheck={false}
+        placeholder={provider.hasKey ? 'Paste a new key to replace it' : 'Paste your key'}
         value={keyText}
         disabled={busy !== null}
         aria-describedby={keyText !== '' && !check.ok ? `${inputId}-problem` : undefined}
@@ -162,10 +162,7 @@ function ProviderKeySection({
           {notice.text}
         </p>
       )}
-      <p className="settings-hint">
-        Stored encrypted by your operating system, so a copy of the file is useless on another
-        computer or account. The key is sent only to {provider.name}, together with your messages.
-      </p>
+      <p className="settings-hint">Encrypted on this computer and sent only to {provider.name}.</p>
     </form>
   )
 }

@@ -1,6 +1,7 @@
 import { createHash } from 'crypto'
 import { promises as fs } from 'fs'
 import { isAttachmentId } from '../shared/attachments'
+import { checkChatMarks, type ChatMark, type ChatMarks } from '../shared/chatNames'
 import { HISTORY_LIMITS, type SavedConversation } from '../shared/ipc'
 import { parseNote, type Note } from '../shared/memory'
 import type { Project } from '../shared/projects'
@@ -29,6 +30,11 @@ import { parseProject } from './projects'
 //   note lines    {"note":{...as memory.json holds it...},"sha256":"<64 hex>"}
 //   last line     {"end":true,"count":...,"leftOut":...,"files":...,"filesLeftOut":...,"projects":<project lines>,"notes":<note lines>}
 // A project or note line is checked as its own file would check it; one after the first chat line is not used. Versions 1 and 2 still read.
+// VERSION 4 (Stage 23.1, D-055) is version 3 with the names and pins of the chats in it (chat-names.json), one line for each marked chat, after the
+// projects and notes and before the chats; it is written only when a chat in the backup has a name or a pin (of any backup, one chat or all):
+//   mark lines    {"mark":{"id":"<chat id>","title":"<its name>","pinned":true},"sha256":"<64 hex>"}   (title or pinned may be absent, not both)
+//   last line     {"end":true,...as version 3...,"marks":<mark lines>}
+// A mark line is checked as chat-names.json would check it; one after the first chat line is not used. Versions 1 to 3 still read.
 // Why lines and not one JSON object: a file that was cut off (a copy that stopped, a full disk) still gives back every chat before the cut, and
 // can say so, where one big object would give back nothing; and a reader never needs more memory than one chat. Why a checksum on each chat: a
 // byte that changed inside a message still parses as JSON, so nothing else would notice; with the checksum a changed chat is refused, named by
@@ -46,6 +52,8 @@ export const BACKUP_VERSION = 1
 export const BACKUP_VERSION_FILES = 2
 /** A backup that holds the projects and the notes (D-039, 10.7). */
 export const BACKUP_VERSION_KEPT = 3
+/** A backup that holds the names and pins of its chats (D-055, 23.1). */
+export const BACKUP_VERSION_MARKS = 4
 
 export const BACKUP_LIMITS = {
   /** One line: the largest chat file (HISTORY_LIMITS.maxFileBytes) plus the few bytes that wrap it. A longer line is skipped unread. */
@@ -83,6 +91,13 @@ export const projectText = ({
 }: Project): string => JSON.stringify({ id, name, instructions, files, createdAt, updatedAt })
 export const noteText = ({ id, text, scope, createdAt, updatedAt }: Note): string =>
   JSON.stringify({ id, text, scope, createdAt, updatedAt })
+/** The text of a chat's name and pin as written in a backup (version 4). */
+export const markText = (id: string, { title, pinned }: ChatMark): string =>
+  JSON.stringify({
+    id,
+    ...(title !== undefined ? { title } : {}),
+    ...(pinned === true ? { pinned } : {})
+  })
 
 /**
  * The text of a chat as written in a backup: its own file's text (version 3, or 4 for a chat with files, D-037), which is also what the checksum is of.
@@ -165,11 +180,11 @@ function fileOfLine(line: Record<string, unknown>): { id: string; bytes: Buffer 
   return { id, bytes }
 }
 
-/** One project or note line of a version 3 backup, checked: what it holds, or why it cannot be used. */
+/** One project, note or mark line of a version 3 or 4 backup, checked: what it holds, or why it cannot be used. */
 function keptOfLine(
   line: Record<string, unknown>,
-  kind: 'project' | 'note'
-): Project | Note | string {
+  kind: 'project' | 'note' | 'mark'
+): Project | Note | ChatMarks | string {
   const keys = Object.keys(line)
   if (keys.length !== 2 || keys[0] !== kind || keys[1] !== 'sha256')
     return `it is not a ${kind} line`
@@ -183,6 +198,11 @@ function keptOfLine(
     claimed !== sha256(JSON.stringify(value))
   ) {
     return 'it does not match its checksum: it was changed or damaged after the backup was made'
+  }
+  if (kind === 'mark') {
+    const { id, ...mark } = value as Record<string, unknown>
+    const checked = typeof id === 'string' ? checkChatMarks({ [id]: mark }) : null
+    return checked ?? 'it is not a name or a pin this app can keep'
   }
   const checked = kind === 'project' ? parseProject(value) : parseNote(value)
   return checked ?? `it is not a ${kind} this app can keep`
@@ -214,6 +234,7 @@ export interface BackupRead {
     filesLeftOut?: number
     projects?: number
     notes?: number
+    marks?: number
   } | null
   /** The file is whole: it has its last line, that line's count is the number of chat lines, and they are numbered 1, 2, 3 ... with nothing after the end. */
   complete: boolean
@@ -227,13 +248,15 @@ export interface BackupRead {
     refused: { line: number; why: string }[]
   }
   /** Version 3 (D-039): the project and note lines looked at, and what they came to. Absent for versions 1 and 2. */
-  kept?: { projects: KeptCounts; notes: KeptCounts }
+  kept?: { projects: KeptCounts; notes: KeptCounts; marks?: KeptCounts }
 }
 
 /** What a version 3 backup's projects and notes are handed to, each once it has passed its checks. */
 export interface KeptReaders {
   project?(project: Project, line: number): Promise<void> | void
   note?(note: Note, line: number): Promise<void> | void
+  /** (Version 4) one chat's name and pin, by the chat's id in the backup. */
+  mark?(id: string, mark: ChatMark, line: number): Promise<void> | void
 }
 
 /**
@@ -314,7 +337,8 @@ export async function readBackup(
         if (
           header.version !== BACKUP_VERSION &&
           header.version !== BACKUP_VERSION_FILES &&
-          header.version !== BACKUP_VERSION_KEPT
+          header.version !== BACKUP_VERSION_KEPT &&
+          header.version !== BACKUP_VERSION_MARKS
         ) {
           return stop(
             'That backup was made by another version of the app, and this one cannot read it.'
@@ -322,12 +346,16 @@ export async function readBackup(
         }
         if (!isCount(header.exportedAt)) return stop('That file is not a Frontier chat backup.')
         result.header = { exportedAt: header.exportedAt }
-        if (header.version === BACKUP_VERSION_FILES || header.version === BACKUP_VERSION_KEPT) {
+        if (header.version !== BACKUP_VERSION) {
           result.files = { seen: 0, good: 0, refusedCount: 0, refused: [] }
         }
-        if (header.version === BACKUP_VERSION_KEPT) {
+        if (header.version === BACKUP_VERSION_KEPT || header.version === BACKUP_VERSION_MARKS) {
           const counts = (): KeptCounts => ({ seen: 0, good: 0, refusedCount: 0, refused: [] })
-          result.kept = { projects: counts(), notes: counts() }
+          result.kept = {
+            projects: counts(),
+            notes: counts(),
+            ...(header.version === BACKUP_VERSION_MARKS ? { marks: counts() } : {})
+          }
         }
         continue
       }
@@ -364,7 +392,8 @@ export async function readBackup(
           isCount(line.leftOut) &&
           isCount(line.files) &&
           isCount(line.filesLeftOut) &&
-          (result.kept === undefined || (isCount(line.projects) && isCount(line.notes)))
+          (result.kept === undefined || (isCount(line.projects) && isCount(line.notes))) &&
+          (result.kept?.marks === undefined || isCount(line.marks))
         ) {
           result.trailer = {
             count: line.count,
@@ -373,7 +402,8 @@ export async function readBackup(
             filesLeftOut: line.filesLeftOut,
             ...(result.kept !== undefined
               ? { projects: line.projects as number, notes: line.notes as number }
-              : {})
+              : {}),
+            ...(result.kept?.marks !== undefined ? { marks: line.marks as number } : {})
           }
         } else {
           refuse(lineNumber, 'its last line is not understood')
@@ -381,7 +411,8 @@ export async function readBackup(
         ended = true
         continue
       }
-      // Version 3: a project or a note (D-039). Only before the chats: a restore must know every project before it meets one of its chats.
+      // Version 3: a project or a note (D-039); version 4: a chat's name and pin (D-055). Only before the chats: a restore must know every project
+      // before it meets one of its chats, and a chat's mark before the chat.
       const keptKind =
         result.kept !== undefined &&
         unreadableLine === null &&
@@ -392,10 +423,17 @@ export async function readBackup(
             ? 'project'
             : 'note' in line
               ? 'note'
-              : null
+              : 'mark' in line && result.kept.marks !== undefined
+                ? 'mark'
+                : null
           : null
       if (keptKind !== null && result.kept !== undefined && line !== null) {
-        const counts = keptKind === 'project' ? result.kept.projects : result.kept.notes
+        const counts =
+          keptKind === 'project'
+            ? result.kept.projects
+            : keptKind === 'note'
+              ? result.kept.notes
+              : (result.kept.marks as KeptCounts)
         counts.seen += 1
         const value =
           result.seen > 0 || (result.files?.seen ?? 0) > 0
@@ -409,6 +447,10 @@ export async function readBackup(
         } else if (keptKind === 'project') {
           counts.good += 1
           await onKept?.project?.(value as Project, lineNumber)
+        } else if (keptKind === 'mark') {
+          counts.good += 1
+          const [[id, mark]] = Object.entries(value as ChatMarks)
+          await onKept?.mark?.(id, mark, lineNumber)
         } else {
           counts.good += 1
           await onKept?.note?.(value as Note, lineNumber)
@@ -487,7 +529,8 @@ export async function readBackup(
       (result.files === undefined || result.trailer.files === result.files.seen) &&
       (result.kept === undefined ||
         (result.trailer.projects === result.kept.projects.seen &&
-          result.trailer.notes === result.kept.notes.seen)) &&
+          result.trailer.notes === result.kept.notes.seen &&
+          result.trailer.marks === result.kept.marks?.seen)) &&
       numbering &&
       !result.tooMany &&
       !afterTheEnd
@@ -517,6 +560,8 @@ export interface BackupSource {
    * the files of the projects among its file lines.
    */
   kept?: { projects: readonly Project[]; notes: readonly Note[] }
+  /** (D-055, 23.1) The names and pins of the chats; those of the chats written make the backup version 4. */
+  marks?: ChatMarks
 }
 
 export type WriteOutcome =
@@ -529,6 +574,8 @@ export type WriteOutcome =
       files?: { count: number; leftOut: number }
       /** Version 3: the projects and the notes written. */
       kept?: { projects: number; notes: number }
+      /** Version 4: the names and pins written. */
+      marks?: number
     }
   | { ok: false; error: string }
 
@@ -551,8 +598,11 @@ export async function writeBackup(
   let filesGone = 0
   let withFiles = false
   const kept = source.kept
-  const withKept = kept !== undefined && kept.projects.length + kept.notes.length > 0
-  const keptWritten = { projects: [] as string[], notes: [] as string[] }
+  const marks = Object.entries(source.marks ?? {}).filter(([id]) => source.ids.includes(id))
+  const withMarks = marks.length > 0
+  // Version 4 is version 3 with marks: its projects and notes may be none.
+  const withKept = withMarks || (kept !== undefined && kept.projects.length + kept.notes.length > 0)
+  const keptWritten = { projects: [] as string[], notes: [] as string[], marks: [] as string[] }
   let bytes = 0
   let gone = 0
   const discard = (): Promise<void> => fs.rm(part, { force: true }).catch(() => undefined)
@@ -569,7 +619,7 @@ export async function writeBackup(
     }
     const header = JSON.stringify({
       format: BACKUP_FORMAT,
-      version: withKept ? BACKUP_VERSION_KEPT : BACKUP_VERSION,
+      version: withMarks ? BACKUP_VERSION_MARKS : withKept ? BACKUP_VERSION_KEPT : BACKUP_VERSION,
       exportedAt: now
     })
     await put(`${header}\n`)
@@ -586,6 +636,12 @@ export async function writeBackup(
         await put(`{"note":${text},"sha256":"${sha256(text)}"}\n`)
         keptWritten.notes.push(note.id)
       }
+    }
+    // Version 4: the names and pins of the chats written, after the projects and notes (D-055).
+    for (const [id, mark] of marks) {
+      const text = markText(id, mark)
+      await put(`{"mark":${text},"sha256":"${sha256(text)}"}\n`)
+      keptWritten.marks.push(id)
     }
     for (const id of source.ids) {
       if (tooLarge) break
@@ -626,7 +682,8 @@ export async function writeBackup(
           ...(withFiles || withKept ? { files: filesWritten.length, filesLeftOut: filesGone } : {}),
           ...(withKept
             ? { projects: keptWritten.projects.length, notes: keptWritten.notes.length }
-            : {})
+            : {}),
+          ...(withMarks ? { marks: keptWritten.marks.length } : {})
         })}\n`
       )
       if (withFiles && !withKept) {
@@ -652,7 +709,7 @@ export async function writeBackup(
   const proves = async (path: string): Promise<boolean> => {
     const seen: { id: string; hash: string }[] = []
     const seenFiles: string[] = []
-    const seenKept = { projects: [] as string[], notes: [] as string[] }
+    const seenKept = { projects: [] as string[], notes: [] as string[], marks: [] as string[] }
     const read = await readBackup(
       path,
       (chat, hash) => {
@@ -667,6 +724,9 @@ export async function writeBackup(
         },
         note: (note) => {
           seenKept.notes.push(note.id)
+        },
+        mark: (id) => {
+          seenKept.marks.push(id)
         }
       }
     )
@@ -691,7 +751,12 @@ export async function writeBackup(
           read.kept.projects.refusedCount === 0 &&
           read.kept.notes.refusedCount === 0 &&
           sameList(seenKept.projects, keptWritten.projects) &&
-          sameList(seenKept.notes, keptWritten.notes))
+          sameList(seenKept.notes, keptWritten.notes) &&
+          (read.kept.marks === undefined
+            ? !withMarks
+            : withMarks &&
+              read.kept.marks.refusedCount === 0 &&
+              sameList(seenKept.marks, keptWritten.marks)))
     )
   }
   if (!(await proves(part))) {
@@ -722,8 +787,9 @@ export async function writeBackup(
     leftOut: source.leftOut + gone,
     bytes,
     ...(withFiles ? { files: { count: filesWritten.length, leftOut: filesGone } } : {}),
-    ...(withKept
+    ...(withKept && kept !== undefined
       ? { kept: { projects: keptWritten.projects.length, notes: keptWritten.notes.length } }
-      : {})
+      : {}),
+    ...(withMarks ? { marks: keptWritten.marks.length } : {})
   }
 }

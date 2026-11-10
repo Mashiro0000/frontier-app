@@ -120,7 +120,7 @@ try {
     const change = await ev(`document.querySelector('dialog.settings .settings-price-change')?.textContent ?? null`)
     if (beforeDecember) {
       check('D: Settings says the coming change: "From 1 December 2026: $4 per million tokens it reads and $20 per million tokens it writes, twice today\'s prices. The app counts each request at the prices of the day it is sent."', change === "From 1 December 2026: $4 per million tokens it reads and $20 per million tokens it writes, twice today's prices. The app counts each request at the prices of the day it is sent.", show(change))
-      check('D: ... below today\'s list price ($2 and $10)', /List price: \$2 per million tokens it reads and \$10 per million tokens it writes, billed to\s+your Google account/.test(text), show(text.match(/List price[^\n]*/)?.[0]))
+      check('D: ... below today\'s list price ($2 and $10)', /\$2 in, \$10 out per million tokens/.test(text), show(text.match(/Reads up to[^\n]*/)?.[0]))
     } else console.log('   (run after 1 December 2026: D\'s words are for October and November)')
     await closeSettings()
     await H.chooseInPage('claude-opus-5-5')

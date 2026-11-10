@@ -1,0 +1,14 @@
+{
+  "label": "n231-marks-of-all-chats",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "  const marks = Object.entries(source.marks ?? {}).filter(([id]) => source.ids.includes(id))",
+      "to": "  const marks = Object.entries(source.marks ?? {})"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

@@ -10,6 +10,7 @@ import type { ModelOption, SettingsStatus } from '../../../shared/ipc'
 import type { ProviderId } from '../../../shared/registry'
 import type { TaskId } from '../../../shared/rankings'
 import { providerName, suggestionsForTask } from './format'
+import TaskPicker from './TaskPicker'
 
 interface ModelChooserProps {
   open: boolean
@@ -18,6 +19,8 @@ interface ModelChooserProps {
   chosenId: string
   /** What the person says they are doing: the models the providers name for it are marked (D-023). */
   task: TaskId | null
+  /** (23.3, D-055) The Task menu, moved here from under the box: absent, it is not shown. */
+  onTask?: (task: TaskId | null) => void
   onChoose: (modelId: string) => void
   onClose: () => void
   /**
@@ -42,6 +45,7 @@ function ModelChooser({
   status,
   chosenId,
   task,
+  onTask,
   onChoose,
   onClose,
   auto
@@ -163,6 +167,11 @@ function ModelChooser({
             </button>
           ))}
         </div>
+        {onTask !== undefined && (
+          <div className="model-chooser-task">
+            <TaskPicker status={status} task={task} onChange={onTask} />
+          </div>
+        )}
       </div>
       {auto !== undefined && (
         <div className="model-chooser-auto">

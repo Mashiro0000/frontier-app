@@ -1,4 +1,6 @@
+import { useMemo } from 'react'
 import { copyLabel, useCopy } from '../useCopy'
+import { colourCode } from './colour'
 
 interface CodeBlockProps {
   /** The language the fence named, if it was a plain word. */
@@ -12,6 +14,8 @@ interface CodeBlockProps {
  */
 function CodeBlock({ lang, text }: CodeBlockProps): React.JSX.Element {
   const { state, copy } = useCopy()
+  // (23.5, D-055) Coloured pieces for a language it knows; each piece is still plain text.
+  const pieces = useMemo(() => colourCode(text, lang), [text, lang])
 
   return (
     <div className="md-codeblock">
@@ -22,7 +26,19 @@ function CodeBlock({ lang, text }: CodeBlockProps): React.JSX.Element {
         </button>
       </div>
       <pre className="md-pre">
-        <code>{text}</code>
+        <code>
+          {pieces === null
+            ? text
+            : pieces.map((piece, i) =>
+                piece.tone === null ? (
+                  piece.text
+                ) : (
+                  <span key={i} className={`tok-${piece.tone}`}>
+                    {piece.text}
+                  </span>
+                )
+              )}
+        </code>
       </pre>
     </div>
   )

@@ -53,6 +53,9 @@ export interface UseHistory {
   open: (id: string) => Promise<string | null>
   /** Deletes a saved conversation. Resolves to null, or to the reason it could not be deleted. */
   remove: (id: string) => Promise<string | null>
+  /** (23.1, D-055) Gives a saved chat its own name ('' for the worked-out title) or pins it; null when done, else why not. */
+  rename: (id: string, title: string) => Promise<string | null>
+  pin: (id: string, on: boolean) => Promise<string | null>
 }
 
 /**
@@ -235,6 +238,24 @@ export function useHistory(chat: UseChat): UseHistory {
     }
   }
 
+  async function mark(
+    task: () => Promise<{ ok: true } | { ok: false; error: string }>
+  ): Promise<string | null> {
+    if (!window.api) return `The change could not be made: ${NO_BRIDGE}.`
+    try {
+      const result = await task()
+      if (!result.ok) return result.error
+      reload()
+      return null
+    } catch {
+      return 'The change could not be made: the app did not answer.'
+    }
+  }
+  const rename = (id: string, title: string): Promise<string | null> =>
+    mark(() => window.api.history.rename(id, title))
+  const pin = (id: string, on: boolean): Promise<string | null> =>
+    mark(() => window.api.history.pin(id, on))
+
   function retrySave(): void {
     flush() // a failed save left nothing marked as saved, so this sends the whole chat again
   }
@@ -251,6 +272,8 @@ export function useHistory(chat: UseChat): UseHistory {
     reload,
     startNew,
     open,
-    remove
+    remove,
+    rename,
+    pin
   }
 }

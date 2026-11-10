@@ -1,0 +1,19 @@
+{
+  "label": "n231-no-pinned-group",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/sidebar/groups.ts",
+      "from": "  for (const chat of chats) if (chat.pinned === true) add('Pinned', chat)",
+      "to": "  for (const chat of chats) if (false) add('Pinned', chat)"
+    },
+    {
+      "file": "{{REPO}}/src/renderer/src/sidebar/groups.ts",
+      "from": "    if (chat.pinned === true) continue\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/backup.ts",
-      "from": "      (result.kept === undefined ||\n        (result.trailer.projects === result.kept.projects.seen &&\n          result.trailer.notes === result.kept.notes.seen)) &&\n",
+      "from": "      (result.kept === undefined ||\n        (result.trailer.projects === result.kept.projects.seen &&\n          result.trailer.notes === result.kept.notes.seen &&\n          result.trailer.marks === result.kept.marks?.seen)) &&\n",
       "to": ""
     }
   ],

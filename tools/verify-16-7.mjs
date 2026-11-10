@@ -204,7 +204,7 @@ await guard('E', async () => {
 // ============ F. the wiring ============
 await guard('F', async () => {
   const ipc = source('src/main/ipc.ts')
-  check('F: the encryption service is given the gallery\'s store (pictures), and images.json is among its documents', /files: attachments,\s*pictures: imageStore,/.test(ipc) && /imageSettings\.file,\s*imageIndex,\s*library\.file,\s*myExperts\.file\s*\]\)/.test(ipc))
+  check('F: the encryption service is given the gallery\'s store (pictures), and images.json is among its documents', /files: attachments,\s*pictures: imageStore,/.test(ipc) && /imageSettings\.file,\s*imageIndex,\s*library\.file,\s*myExperts\.file,\s*chatNames\.file\s*\]\)/.test(ipc))
   const md = source('src/renderer/src/images/MakeImageDialog.tsx')
   check('F: the dialog tells main the description\'s length in UTF-8 bytes for the figure it shows, and asks again when it changes', /const bytes = Math\.min\(promptBytes\(full\), IMAGE_LIMITS\.maxPromptBytes\)/.test(md) && /\.estimate\(\{ model: modelId, shape, quality, count, promptBytes: bytes \}\)/.test(md) && /\}, \[modelId, shape, quality, count, bytes\]\)/.test(md))
   check('F: the request itself is counted from the description it sends, not from what the page said', /maximumCost\(\s*ask\.model,\s*ask\.shape,\s*ask\.quality,\s*ask\.count,\s*promptBytes\(ask\.prompt\)\s*\)/.test(source('src/main/imageService.ts')))

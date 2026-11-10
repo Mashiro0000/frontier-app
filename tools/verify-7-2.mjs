@@ -355,7 +355,7 @@ try {
 if (render) {
   const TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'del', 'code', 'pre', 'blockquote', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr', 'br', 'div', 'span', 'button'])
   const ATTRS = new Set(['class', 'start', 'title', 'type'])
-  const CLASSES = new Set(['md-heading', 'md-code', 'md-codeblock', 'md-codeblock-head', 'md-codeblock-lang', 'md-copy', 'md-pre', 'md-table-wrap', 'md-table', 'md-align-left', 'md-align-center', 'md-align-right', 'md-link'])
+  const CLASSES = new Set(['md-heading', 'md-code', 'md-codeblock', 'md-codeblock-head', 'md-codeblock-lang', 'md-copy', 'md-pre', 'md-table-wrap', 'md-table', 'md-align-left', 'md-align-center', 'md-align-right', 'md-link', 'tok-comment', 'tok-string', 'tok-number', 'tok-keyword'])  // tok-*: the code colours of 23.5 (D-055), spans of text
   const decode = (s) => s.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
   // Everything in React's output that is not escaped text is a tag. Returns what is wrong with the markup, or ''.
   const problemsIn = (html) => {

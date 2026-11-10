@@ -1,0 +1,14 @@
+{
+  "label": "n235-loses-the-end",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/colour.ts",
+      "from": "  plain(text.slice(at))\n",
+      "to": ""
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-5.mjs"
+  ],
+  "env": {}
+}

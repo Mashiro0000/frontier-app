@@ -44,6 +44,8 @@ const api: FrontierApi = {
     search: (query) => ipcRenderer.invoke(CHANNELS.historySearch, query),
     save: (conversation) => ipcRenderer.invoke(CHANNELS.historySave, conversation),
     remove: (id) => ipcRenderer.invoke(CHANNELS.historyRemove, id),
+    rename: (id, title) => ipcRenderer.invoke(CHANNELS.historyRename, { id, title }),
+    pin: (id, on) => ipcRenderer.invoke(CHANNELS.historyPin, { id, on }),
     exportChats: (request) => ipcRenderer.invoke(CHANNELS.historyExport, request),
     restoreLook: () => ipcRenderer.invoke(CHANNELS.historyRestoreLook),
     restoreApply: (token) => ipcRenderer.invoke(CHANNELS.historyRestoreApply, token),
@@ -139,7 +141,8 @@ const api: FrontierApi = {
   experts: {
     list: () => ipcRenderer.invoke(CHANNELS.expertsList),
     save: (expert) => ipcRenderer.invoke(CHANNELS.expertsSave, expert),
-    remove: (id) => ipcRenderer.invoke(CHANNELS.expertsRemove, id)
+    remove: (id) => ipcRenderer.invoke(CHANNELS.expertsRemove, id),
+    move: (id, to) => ipcRenderer.invoke(CHANNELS.expertsMove, { id, to })
   },
   images: {
     status: () => ipcRenderer.invoke(CHANNELS.imagesStatus),
@@ -172,6 +175,7 @@ const api: FrontierApi = {
     addFiles: (id) => ipcRenderer.invoke(CHANNELS.projectsAddFiles, { id }),
     removeFile: (id, fileId) => ipcRenderer.invoke(CHANNELS.projectsRemoveFile, { id, fileId }),
     remove: (id) => ipcRenderer.invoke(CHANNELS.projectsRemove, { id }),
+    move: (id, to) => ipcRenderer.invoke(CHANNELS.projectsMove, { id, to }),
     removeAll: () => ipcRenderer.invoke(CHANNELS.projectsRemoveAll)
   }
 }

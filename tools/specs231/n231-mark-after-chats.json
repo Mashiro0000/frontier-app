@@ -1,0 +1,14 @@
+{
+  "label": "n231-mark-after-chats",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backup.ts",
+      "from": "          result.seen > 0 || (result.files?.seen ?? 0) > 0",
+      "to": "          false"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

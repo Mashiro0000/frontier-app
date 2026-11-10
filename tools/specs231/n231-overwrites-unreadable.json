@@ -1,0 +1,15 @@
+{
+  "label": "n231-overwrites-unreadable",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/chatNames.ts",
+      "from": "      if (read.state === 'unreadable') {",
+      "to": "      if (false) {"
+    }
+  ],
+  "retired": "cannot be seen: the kept file under it (keptFile.ts, D-039) also refuses to write over a file it cannot read, with the same words; two locks, this one only says why sooner",
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

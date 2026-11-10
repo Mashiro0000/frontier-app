@@ -38,10 +38,10 @@ try {
   const filesAtStart = chatFiles()
 
   // ============ A. chips ============
-  check('A: an empty chat has the chips Web search, Projects, Instructions under the box (images are off: no "Make an image")', JSON.stringify(await chips()) === '["Web search","Projects","Instructions"]', JSON.stringify(await chips()))
+  check('A: an empty chat has the chips Web search, Projects, Instructions under the box (images are off: no "Make an image")', JSON.stringify(await chips()) === '["Web search","Experts"]' /* (23.4, D-055) Projects and Instructions are in the box */, JSON.stringify(await chips()))
   const place = await ev(`(() => { const c = document.querySelector('.empty-chips').getBoundingClientRect(); const b = document.querySelector('.composer-inner').getBoundingClientRect(); return { below: c.top >= b.bottom, centred: Math.abs((c.left + c.right) / 2 - (b.left + b.right) / 2) < 30 } })()`)
   check('A: they sit under the box, centred on it', place.below && place.centred, JSON.stringify(place))
-  for (const [chip, dialog] of [['Web search', 'tools'], ['Projects', 'projects'], ['Instructions', 'instructions']]) {
+  for (const [chip, dialog] of [['Web search', 'tools'], ['Experts', 'experts']]) {
     await page.click(`.empty-chips .chip-start@${chip}`)
     await sleep(500)
     check(`A: "${chip}" opens the ${dialog} page`, (await openDialogs()).includes(dialog), JSON.stringify(await openDialogs()))
@@ -76,7 +76,7 @@ try {
   const after = await boxText()
   check('D: the rewrite is in the box (the mock echoes what it was asked)', /^Echo: Rewrite the message below/.test(after), after.slice(0, 80))
   check('D: a line says who rewrote it, to read it first, with Undo', /^Rewritten by Claude Sonnet 5\.5\. Read it before you send it\.\s*Undo$/.test(await note()), await note())
-  check('D: nothing was sent to the chat (still empty, chips still there) and no chat was saved', (await ev(`document.querySelectorAll('.message').length`)) === 0 && (await chips()).length === 3 && chatFiles() === filesAtStart)
+  check('D: nothing was sent to the chat (still empty, chips still there) and no chat was saved', (await ev(`document.querySelectorAll('.message').length`)) === 0 && (await chips()).length === 2 && chatFiles() === filesAtStart)
   await page.screenshot(join(shots, '21-4-enhanced.png'))
   await page.click('.composer-enhance-note .link-button@Undo'); await sleep(200)
   check('D: Undo puts the draft back', (await boxText()) === 'make the bug fix faster' && (await note()) === null)

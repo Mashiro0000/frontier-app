@@ -1,0 +1,14 @@
+{
+  "label": "n231-restore-drops-marks",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/main/backupService.ts",
+      "from": "              if (mark !== undefined) marksAdded[addedAs] = mark",
+      "to": "              void mark"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

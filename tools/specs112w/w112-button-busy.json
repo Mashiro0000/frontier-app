@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/sidebar/Sidebar.tsx",
-      "from": "          className=\"chat-button sidebar-item chat-tools\"\n          disabled={isReplying}",
-      "to": "          className=\"chat-button sidebar-item chat-tools\"\n          disabled={false}"
+      "from": "              disabled={isReplying}\n              title={isReplying ? page.wait",
+      "to": "              disabled={isReplying && id !== 'tools'}\n              title={isReplying ? page.wait"
     }
   ],
   "argv": [

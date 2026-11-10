@@ -99,6 +99,8 @@ import { createLimitsStore } from './limits'
 import { createMemory } from './memory'
 import { createProjects } from './projects'
 import { createLibrary } from './library'
+import { createChatNames } from './chatNames'
+import { plainTitle, type ChatMarks } from '../shared/chatNames'
 import { createMyExperts } from './myExperts'
 import { chooseEffort, chooseModel, currentModel, inOrder } from './models'
 import { adapterFor } from './providers'
@@ -468,6 +470,12 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   // Backing up chats to a file and restoring them from one (D-034), and turning the encryption of the saved chats on and off (D-035): the same lock,
   // so that never two of them run at once. The person chooses places and answers questions in the system's own dialogs, which main opens for the
   // window that asked; the page sends "all", or "one" and an id, "add what you showed me", and never a path or an answer.
+  // (23.1, D-055) The chats' own names and pins (chat-names.json), sealed with the chats; the chat files are not touched.
+  const chatNames = createChatNames({
+    folder: () => app.getPath('userData'),
+    box: secureStorage,
+    writeMode: protection.writeMode
+  })
   const backups = createBackupService({
     store: history,
     dataDir: app.getPath('userData'),
@@ -488,7 +496,9 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       gate: questions,
       addProjects: (added) => projects.addRestored(added),
       addNotes: (added) => memory.addRestored(added)
-    }
+    },
+    // A backup carries the names and pins of its chats, and a restore adds those of the chats it added (23.1, D-055).
+    marks: chatNames
   })
   // The audit log of tool calls (D-041), in audit/log.jsonl: one line for each thing that happens to a call, appended and proved, sealed like the chats when
   // encryption is on. The page can read it, export it and ask to delete it (which asks the person in the system's box); nothing else.
@@ -726,15 +736,20 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   // Every saved chat main can read, opened as History opens one, and how many could not be (Search, 21.5, and the Library, 22.1).
   async function readAllChats(): Promise<{ chats: SavedConversation[]; unreadable: number }> {
     const listed = await history.list()
+    const { marks } = await chatNames.read()
     const chats: SavedConversation[] = []
     let unreadable = listed.unreadable
     for (const summary of listed.conversations) {
       const loaded = await history.load(summary.id)
-      if (loaded.ok) chats.push(loaded.conversation)
+      if (loaded.ok)
+        chats.push({ ...loaded.conversation, title: titleWith(marks, loaded.conversation) })
       else unreadable += 1
     }
     return { chats, unreadable }
   }
+  // (23.1, D-055) The title a chat is shown with: the name the person gave it, else its worked-out title without Markdown's marks (old chats were saved with them).
+  const titleWith = (marks: ChatMarks, chat: { id: string; title: string }): string =>
+    marks[chat.id]?.title ?? plainTitle(chat.title)
   // (22.1, 22.2, D-054) The Library's stars (library.json) and the person's own experts (experts.json): small kept documents, sealed with the chats.
   const library = createLibrary({
     folder: () => app.getPath('userData'),
@@ -769,7 +784,8 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       imageSettings.file,
       imageIndex,
       library.file,
-      myExperts.file
+      myExperts.file,
+      chatNames.file
     ]) // rewritten with the chats (D-039, D-041, D-045, D-047, D-048, D-050: updates.json sits after memory.json, where no older check reads two lines side by side)
   })
 
@@ -777,7 +793,14 @@ export function registerIpc(appUrl: string): () => Promise<void> {
     CHANNELS.historyList,
     guarded(async (): Promise<HistoryList> => {
       try {
-        return { ...(await history.list()), folder, storage: await encryption.status() }
+        const listed = await history.list()
+        const { marks } = await chatNames.read() // unreadable: shown without names or pins (a change then says why)
+        const conversations = listed.conversations.map((c) => ({
+          ...c,
+          title: titleWith(marks, c),
+          ...(marks[c.id]?.pinned === true ? { pinned: true as const } : {})
+        }))
+        return { ...listed, conversations, folder, storage: await encryption.status() }
       } catch (error) {
         console.error('Listing the saved conversations failed:', reason(error))
         throw new Error('The saved conversations could not be listed.')
@@ -825,6 +848,14 @@ export function registerIpc(appUrl: string): () => Promise<void> {
   ipcMain.handle(
     CHANNELS.expertsSave,
     guarded((input: unknown) => myExperts.save(input))
+  )
+  ipcMain.handle(
+    CHANNELS.expertsMove,
+    guarded((input: unknown) => myExperts.move(input))
+  )
+  ipcMain.handle(
+    CHANNELS.projectsMove,
+    guarded((input: unknown): Promise<ProjectChangeResult> => projects.move(input))
   )
   ipcMain.handle(
     CHANNELS.expertsRemove,
@@ -883,12 +914,51 @@ export function registerIpc(appUrl: string): () => Promise<void> {
         // (else what uses them is not known). A file that cannot be deleted is left; the chat is still deleted.
         const files = await history.attachmentsOf(check.id)
         const removed = await history.remove(check.id)
-        if (removed.ok) await deleteUnusedFiles(files)
+        if (removed.ok) {
+          await deleteUnusedFiles(files)
+          await chatNames.forget(check.id)
+        }
         return removed
       } catch (error) {
         console.error('Deleting a saved conversation failed:', reason(error))
         return { ok: false, error: 'The conversation could not be deleted.' }
       }
+    })
+  )
+
+  // (23.1, D-055) A chat's own name and its pin. Main checks both; the chat's file is not touched.
+  const idAnd = (input: unknown, key: string): Record<string, unknown> | null => {
+    const fields =
+      typeof input === 'object' && input !== null && !Array.isArray(input)
+        ? (input as Record<string, unknown>)
+        : null
+    return fields === null || Object.keys(fields).some((k) => k !== 'id' && k !== key)
+      ? null
+      : fields
+  }
+  // Only a saved chat gets a mark: an id the page made up would only fill the file.
+  const isSaved = async (id: unknown): Promise<boolean> =>
+    (await history.list()).conversations.some((c) => c.id === id)
+  const NOT_SAVED = {
+    ok: false as const,
+    error: 'That chat is not saved, so it cannot be renamed or pinned.'
+  }
+  ipcMain.handle(
+    CHANNELS.historyRename,
+    guarded(async (input: unknown) => {
+      const fields = idAnd(input, 'title')
+      if (fields === null) return { ok: false as const, error: 'That was not understood.' }
+      if (!(await isSaved(fields.id))) return NOT_SAVED
+      return chatNames.rename(fields.id, fields.title)
+    })
+  )
+  ipcMain.handle(
+    CHANNELS.historyPin,
+    guarded(async (input: unknown) => {
+      const fields = idAnd(input, 'on')
+      if (fields === null) return { ok: false as const, error: 'That was not understood.' }
+      if (!(await isSaved(fields.id))) return NOT_SAVED
+      return chatNames.pin(fields.id, fields.on)
     })
   )
 
@@ -1812,7 +1882,8 @@ export function registerIpc(appUrl: string): () => Promise<void> {
       connectorStore.file.whenIdle(),
       updateSettings.file.whenIdle(),
       library.file.whenIdle(), // (22.1) a star on its way is written before the app closes
-      myExperts.file.whenIdle() // (22.2) ...and an expert being saved
+      myExperts.file.whenIdle(), // (22.2) ...and an expert being saved
+      chatNames.file.whenIdle() // (23.1) ...and a name or a pin
     ]).then(() => undefined)
   }
 }

@@ -1,0 +1,14 @@
+{
+  "label": "n235-not-case-blind",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/markdown/colour.ts",
+      "from": "      grammar.keywords.has(grammar.caseBlind ? word.toLowerCase() : word)",
+      "to": "      grammar.keywords.has(word)"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-5.mjs"
+  ],
+  "env": {}
+}

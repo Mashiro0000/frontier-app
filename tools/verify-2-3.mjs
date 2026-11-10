@@ -75,16 +75,17 @@ check('focus returns to the Settings button', await page.evaluate(`document.acti
 // 3b. The modal traps keyboard focus: tabbing around never reaches the chat behind it
 await openSettings()
 const tabStops = []
-for (let i = 0; i < 56; i++) {
+for (let i = 0; i < 60; i++) {
+  // (60 since D-055, 23.7: the close button (X) sits in the title row, before the list of sections; the Close at the foot is gone)
   // (56 since D-054: the chart adds its ranges and Cost / Tokens, Appearance its accents and fonts; the walk goes round past the list to the first key)
   // (16 since 15.6: the Voice section adds the Read aloud switch, the voice, the speed and "Try the voice" before the Close button; 9 before)
   // (18 since D-051: the Appearance section adds Dark and Light before Close)
   // (28 since D-052: the list of the ten sections comes first, beside them)
   await page.press('Tab')
-  tabStops.push(await page.evaluate(`document.activeElement.closest('dialog.settings') ? (document.activeElement.id || document.activeElement.innerText || document.activeElement.tagName) : 'OUTSIDE:' + (document.activeElement.className || document.activeElement.tagName)`))
+  tabStops.push(await page.evaluate(`document.activeElement.closest('dialog.settings') ? (document.activeElement.id || document.activeElement.innerText || document.activeElement.getAttribute('aria-label') || document.activeElement.tagName) : 'OUTSIDE:' + (document.activeElement.className || document.activeElement.tagName)`))
 }
-check('Tab stays inside the dialog (56 presses, never reaches the chat)', tabStops.every((s) => !String(s).startsWith('OUTSIDE')), JSON.stringify(tabStops))
-check('Tab visits the field and the Close button', tabStops.includes('api-key-anthropic') && tabStops.includes('Close'), JSON.stringify(tabStops))
+check('Tab stays inside the dialog (60 presses, never reaches the chat)', tabStops.every((s) => !String(s).startsWith('OUTSIDE')), JSON.stringify(tabStops))
+check('Tab visits the field and the close button', tabStops.includes('api-key-anthropic') && tabStops.includes('Close Settings'), JSON.stringify(tabStops))
 await page.press('Escape')
 await sleep(200)
 

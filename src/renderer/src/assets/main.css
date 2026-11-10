@@ -327,6 +327,176 @@ body {
   cursor: default;
 }
 
+/* (23.1, D-055) The groups (Pinned, Today, ...), each chat with its "..." menu. */
+.sidebar-group + .sidebar-group {
+  margin-top: 14px;
+}
+
+.sidebar-group-heading {
+  margin: 0;
+  padding: 0 12px 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.sidebar-group-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sidebar-chat-row {
+  position: relative;
+}
+
+.sidebar-chat-row .sidebar-chat {
+  padding-right: 40px;
+}
+
+.sidebar-chat-pin .icon {
+  width: 13px;
+  height: 13px;
+  margin-right: 6px;
+  vertical-align: -1px;
+  color: var(--color-text-muted);
+}
+
+.sidebar-chat-more {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-50%);
+}
+
+/* Shown on hover, on keyboard focus, for the chat on screen and while its menu is open. */
+.sidebar-chat-row:hover .sidebar-chat-more,
+.sidebar-chat-row:focus-within .sidebar-chat-more,
+.sidebar-chat-row-menu .sidebar-chat-more,
+.sidebar-chat[aria-current='true'] + .sidebar-chat-more {
+  opacity: 1;
+}
+
+.sidebar-chat-more:hover:not(:disabled),
+.sidebar-chat-more[aria-expanded='true'] {
+  color: var(--color-text);
+  background: var(--ev-c-gray-2);
+}
+
+.sidebar-chat-more:disabled {
+  cursor: default;
+}
+
+.sidebar-chat-more:focus-visible,
+.sidebar-chat-menu-item:focus-visible,
+.sidebar-chat-ask button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.sidebar-chat-menu {
+  position: absolute;
+  top: calc(100% - 2px);
+  right: 4px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  padding: 6px;
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-small);
+}
+
+.sidebar-chat-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  color: var(--color-text);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.sidebar-chat-menu-item:hover {
+  background: var(--ev-c-gray-3);
+}
+
+.sidebar-chat-menu-item .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.sidebar-chat-menu-danger {
+  color: var(--color-danger);
+}
+
+.sidebar-chat-rename {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 11px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-background);
+  border: 1px solid var(--color-focus);
+  border-radius: 10px;
+}
+
+.sidebar-chat-rename:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 0;
+}
+
+.sidebar-chat-ask {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 4px 6px 4px 12px;
+  font-size: 13.5px;
+}
+
+.sidebar-chat-ask-text {
+  flex: 1;
+  color: var(--color-text);
+}
+
+.sidebar-chat-ask button {
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-text);
+  background: var(--ev-c-gray-3);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.sidebar-chat-ask .sidebar-chat-ask-yes {
+  color: var(--color-on-accent);
+  background: var(--color-danger);
+}
+
 .sidebar-none,
 .sidebar-problem {
   padding: 4px 12px;
@@ -508,7 +678,39 @@ body {
   min-width: 56px;
 }
 
-/* The model's name gives way last: only where even the other two at their least leave it too little room. */
+/* (23.3, D-055) One pill: the model, a thin line, its effort. */
+.model-pill {
+  flex: 0 1 auto;
+  margin-left: auto;
+  padding: 1px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.model-pill select,
+.model-pill .auto-pill {
+  border-radius: 999px;
+}
+
+.model-pill .effort-select {
+  position: relative;
+  color: var(--color-text-muted);
+  border-left: 1px solid var(--color-border);
+  border-radius: 0 999px 999px 0;
+}
+
+.model-chooser-task {
+  display: flex;
+  align-items: center;
+}
+
+.model-chooser-task .task-select {
+  height: 30px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+/* The model's name gives way last: only where even the effort at its least leaves it too little room. */
 .composer-menus .header-select {
   flex-shrink: 0;
 }
@@ -897,6 +1099,24 @@ body {
   font: inherit;
 }
 
+/* (23.5, D-055) The colourer's pieces (colour.ts). */
+.tok-comment {
+  font-style: italic;
+  color: var(--tok-comment);
+}
+
+.tok-string {
+  color: var(--tok-string);
+}
+
+.tok-number {
+  color: var(--tok-number);
+}
+
+.tok-keyword {
+  color: var(--tok-keyword);
+}
+
 /* A wide table scrolls by itself instead of widening the message. */
 .md-table-wrap {
   max-width: 100%;
@@ -1180,9 +1400,17 @@ body {
   }
 }
 
+/* (23.2, D-055) Icons, 32 px squares; the words are in the tooltip and, hidden, in the button. */
 .message-action {
-  min-height: 28px;
-  padding: 3px 10px;
+  /* the hidden name inside is placed against the button: without this it is placed against the window and, far down a long chat, makes the page scroll */
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0 8px;
   font: inherit;
   font-size: 13px;
   color: var(--color-text-muted);
@@ -1205,6 +1433,15 @@ body {
 .message-action:disabled {
   color: var(--ev-c-text-3);
   cursor: default;
+}
+
+.message-action .icon {
+  width: 17px;
+  height: 17px;
+}
+
+.message-action-label {
+  white-space: nowrap;
 }
 
 /* The person's own message, open for editing in place. */
@@ -1831,10 +2068,14 @@ body {
   padding-top: 0;
 }
 
-.settings-title {
+/* (23.7, D-055) The title row (the title and the close button) is what stays in view; its height is the old sticky title's, so the offsets below hold. */
+.settings-top {
   position: sticky;
   top: 0;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin: 0 0 6px;
   padding: 20px 0 12px;
   background: var(--color-background-soft);
@@ -1842,6 +2083,15 @@ body {
   box-shadow:
     -24px 0 0 var(--color-background-soft),
     24px 0 0 var(--color-background-soft);
+}
+
+.settings-top .settings-title {
+  margin: 0;
+}
+
+/* 34 px tall in a 26 px row: the negative margins keep the row (and the sticky offsets) at the old title's height. */
+.settings-close {
+  margin: -4px -8px -4px 0;
 }
 
 .settings-layout {
@@ -4908,4 +5158,42 @@ body {
 .theme-choice {
   flex-wrap: wrap;
   max-width: 100%;
+}
+
+/* (23.6, D-055) Ctrl+/ : the keyboard shortcuts, in the Search dialog's frame. */
+.shortcuts {
+  width: min(440px, calc(100vw - 32px));
+}
+
+.shortcuts-title {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.shortcuts-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.shortcuts-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.shortcuts-row dd {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.shortcuts-row kbd {
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: var(--color-background-mute);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
 }

@@ -3,7 +3,7 @@ import { ATTACHMENT_LIMITS, type AttachmentInfo } from '../../shared/attachments
 import { limitsAreSet } from '../../shared/limits'
 import type { TaskId } from '../../shared/rankings'
 import { useRail } from './appearance'
-import { IconGlobe, IconImage, IconInstructions, IconProject } from './icons'
+import { IconExperts, IconGlobe, IconImage } from './icons'
 import ChatBar from './chat/ChatBar'
 import ChatView from './chat/ChatView'
 import { ipcReply } from './chat/ipcReply'
@@ -15,6 +15,7 @@ import { useImageStatus } from './images/imageStatus'
 import MakeImageDialog from './images/MakeImageDialog'
 import HistoryDialog from './history/HistoryDialog'
 import SearchDialog from './history/SearchDialog'
+import ShortcutsDialog from './ShortcutsDialog'
 import LibraryDialog from './library/LibraryDialog'
 import ExpertsDialog from './experts/ExpertsDialog'
 import ImageStudioDialog from './images/ImageStudioDialog'
@@ -33,7 +34,6 @@ import { providerMissingKey } from './settings/format'
 import LimitsDialog from './settings/LimitsDialog'
 import ModelPicker from './settings/ModelPicker'
 import SettingsDialog from './settings/SettingsDialog'
-import TaskPicker from './settings/TaskPicker'
 import { useSettingsStatus } from './settings/useSettingsStatus'
 import Sidebar from './sidebar/Sidebar'
 
@@ -55,6 +55,7 @@ function App(): React.JSX.Element {
   const [auto, setAuto] = useState(false)
   // (21.5, D-053) Search chats is open.
   const [searchOpen, setSearchOpen] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
   // (22.1, 22.2, D-054) The Library and Experts are open.
   const [libraryOpen, setLibraryOpen] = useState(false)
   const [libraryVisit, setLibraryVisit] = useState(0) // each opening is a fresh one, as the gallery's
@@ -77,6 +78,30 @@ function App(): React.JSX.Element {
   }, [replying])
   // Saves the conversation on screen as it goes, and keeps the list of saved ones (D-016, D-017).
   const history = useHistory(chat)
+  // (23.6, D-055) Ctrl+Shift+O a new chat (as the sidebar's button: not while a reply arrives, not from an empty chat), Esc stops a reply, Ctrl+/ lists the keys.
+  // None works while a dialog is open (the dialog has the keyboard), and none sends anything.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => {
+      if (document.querySelector('dialog[open]') !== null) return
+      const key = event.key.toLowerCase()
+      if (event.ctrlKey && event.shiftKey && !event.altKey && key === 'o') {
+        event.preventDefault()
+        if (!replying && chat.messages.length > 0) history.startNew()
+      } else if (event.ctrlKey && !event.shiftKey && !event.altKey && key === '/') {
+        event.preventDefault()
+        setShortcutsOpen(true)
+      } else if (
+        event.key === 'Escape' &&
+        replying &&
+        !event.defaultPrevented &&
+        !event.isComposing
+      ) {
+        chat.stop()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [replying, chat, history])
   // The files on the message being written (D-037): copies kept by main, attached with "Attach...", a paste or a drop.
   const attachments = useAttachments()
   // The person's instructions for every chat (D-039): kept by main, which adds them to every request; the page shows them and asks to change them.
@@ -219,42 +244,29 @@ function App(): React.JSX.Element {
                 <IconGlobe />
                 Web search
               </button>
+              {/* (23.4, D-055) Projects and Instructions are in the box itself, so they are not repeated here. */}
               <button
                 type="button"
                 className="chip chip-start"
-                onClick={() => {
-                  projects.reload()
-                  setProjectsOpen(true)
-                }}
+                onClick={() => setExpertsOpen(true)}
               >
-                <IconProject />
-                Projects
-              </button>
-              <button
-                type="button"
-                className="chip chip-start"
-                onClick={() => {
-                  everyChat.reload()
-                  setInstructionsOpen(true)
-                }}
-              >
-                <IconInstructions />
-                Instructions
+                <IconExperts />
+                Experts
               </button>
             </div>
           }
           menus={
             // Under the message box, at the right (D-052, as Claude's model menu). "app-header-actions": the name the checks know the group by,
-            // from the time it sat in the header.
+            // from the time it sat in the header. (23.3, D-055) One pill: the model and its effort; the Task menu is in the model chooser.
             <div
-              className="app-header-actions composer-menus"
+              className="app-header-actions composer-menus model-pill"
               role="group"
-              aria-label="Task, model and effort"
+              aria-label="Model and effort"
             >
-              <TaskPicker status={status} task={task} onChange={setTask} />
               <ModelPicker
                 status={status}
                 task={task}
+                onTask={setTask}
                 disabled={chat.isReplying}
                 onStatusChange={setStatus}
                 auto={auto}
@@ -297,6 +309,7 @@ function App(): React.JSX.Element {
           }
         />
       </div>
+      <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <SearchDialog
         open={searchOpen}
         onClose={() => setSearchOpen(false)}

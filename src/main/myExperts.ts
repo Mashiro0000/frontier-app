@@ -1,4 +1,5 @@
 import { join } from 'path'
+import { moveTo } from '../shared/order'
 import { randomUUID } from 'crypto'
 import { CHAT_LIMITS } from '../shared/ipc'
 import { checkMyExpert, type MyExpert, type MyExpertsResult } from '../shared/myExperts'
@@ -43,6 +44,7 @@ export interface MyExpertsService {
   /** Adds one (no id) or changes one (its id). */
   save(input: unknown): Promise<MyExpertsResult>
   remove(id: unknown): Promise<MyExpertsResult>
+  move(input: unknown): Promise<MyExpertsResult>
   file: KeptFile<MyExpert[]>
 }
 
@@ -130,6 +132,17 @@ export function createMyExperts(deps: {
         if (typeof id !== 'string' || !now.experts.some((e) => e.id === id))
           return { ok: false, error: 'That expert is not there any more.' }
         return write(now.experts.filter((e) => e.id !== id))
+      }),
+    // (23.8, D-055) one expert to another place; the others keep their order
+    move: (input) =>
+      inOrder(async () => {
+        const now = await current()
+        if (!now.ok) return now
+        const fields =
+          typeof input === 'object' && input !== null ? (input as Record<string, unknown>) : {}
+        const next = moveTo(now.experts, fields.id, fields.to)
+        if (next === null) return { ok: false, error: 'That expert is not there any more.' }
+        return write(next)
       })
   }
 }

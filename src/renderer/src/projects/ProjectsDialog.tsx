@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { reorderable } from '../reorder'
 import type { AttachmentInfo } from '../../../shared/attachments'
 import { CHAT_LIMITS, type SecretFinding } from '../../../shared/ipc'
 import {
@@ -459,8 +460,22 @@ function ProjectsBody({
             <p className="projects-none">No projects yet.</p>
           ) : (
             <ul className="projects-list">
-              {status.projects.map((p) => (
-                <li key={p.id} className="projects-row">
+              {/* eslint-disable-next-line react-hooks/refs -- the move runs on a drop or a key press, never while the list is drawn */}
+              {status.projects.map((p, at) => (
+                <li
+                  key={p.id}
+                  className="projects-row"
+                  // (23.8, D-055) in the person's order: drag a row, or Alt+Up / Alt+Down on it
+                  {...(busy || editing !== null || creating
+                    ? {}
+                    : reorderable(
+                        'projects',
+                        p.id,
+                        at,
+                        status.projects.length,
+                        (id, to) => void change(() => window.api.projects.move(id, to), false)
+                      ))}
+                >
                   <button
                     type="button"
                     className="projects-open"

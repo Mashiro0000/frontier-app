@@ -1,0 +1,14 @@
+{
+  "label": "n231-no-trim",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/chatNames.ts",
+      "from": "  const oneLine = input.replace(/\\s+/g, ' ').trim()",
+      "to": "  const oneLine = input"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}

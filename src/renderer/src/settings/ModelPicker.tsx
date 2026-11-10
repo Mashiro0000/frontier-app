@@ -9,6 +9,8 @@ interface ModelPickerProps {
   status: SettingsStatus | null
   /** What the person says they are doing: the models named for it are marked in the menu (D-023). */
   task: TaskId | null
+  /** (23.3, D-055) Changes the task, from the Task menu inside the model chooser. */
+  onTask?: (task: TaskId | null) => void
   /**
    * True while a reply is arriving. The model is fixed when a reply starts, so changing it now would
    * leave the header naming a model that is not the one answering.
@@ -24,6 +26,7 @@ interface ModelPickerProps {
 function ModelPicker({
   status,
   task,
+  onTask,
   disabled,
   onStatusChange,
   auto = false,
@@ -114,6 +117,7 @@ function ModelPicker({
         status={status}
         chosenId={shown}
         task={task}
+        {...(onTask !== undefined ? { onTask } : {})}
         onChoose={(modelId) => {
           setChooserOpen(false)
           if (auto) onAuto?.(false)

@@ -1,0 +1,25 @@
+{
+  "label": "w231-escape-saves-name",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/renderer/src/sidebar/ChatRow.tsx",
+      "from": "              cancelled.current = true\n              setMode('row')\n              setTimeout",
+      "to": "              setMode('row')\n              setTimeout"
+    }
+  ],
+  "retired": "cannot be seen: Chromium fires no blur when the rename box is taken away, so nothing saves after Escape even without this guard; kept in case a later Chromium does",
+  "argv": [
+    "{{TOOLS}}/run-with-app.mjs",
+    "dev",
+    "setup-key.mjs,verify-23-1w.mjs",
+    "{{OUT}}/shots",
+    "9222"
+  ],
+  "env": {
+    "USER_DATA_DIR": "C:\\Users\\91995\\AppData\\Roaming\\frontier-app-test-scratch-specs231wnc",
+    "WIPE_USER_DATA": "1",
+    "MOCK_PORT": "8863",
+    "PRESEED_FILE": "",
+    "LOG_LABEL": "nc-w231-escape-saves-name"
+  }
+}

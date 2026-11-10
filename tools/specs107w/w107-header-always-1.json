@@ -3,7 +3,7 @@
   "edits": [
     {
       "file": "{{REPO}}/src/main/backup.ts",
-      "from": "      version: withKept ? BACKUP_VERSION_KEPT : BACKUP_VERSION,",
+      "from": "      version: withMarks ? BACKUP_VERSION_MARKS : withKept ? BACKUP_VERSION_KEPT : BACKUP_VERSION,",
       "to": "      version: BACKUP_VERSION,"
     }
   ],

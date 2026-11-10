@@ -1,6 +1,10 @@
 import { useState } from 'react'
-import { setRail, setTheme, useRail, useTheme } from '../appearance'
+import { savedPageOrder, savePageOrder, setRail, setTheme, useRail, useTheme } from '../appearance'
+import { moveTo, orderOf } from '../../../shared/order'
+import { MOVE_HINT, reorderable } from '../reorder'
 import type { UseHistory } from '../history/useHistory'
+import ChatRow from './ChatRow'
+import { groupChats } from './groups'
 import {
   IconExperts,
   IconHistory,
@@ -16,6 +20,10 @@ import {
   IconTools,
   LogoMark
 } from '../icons'
+
+/** (23.8, D-055) The pages the sidebar lists, in their first order. */
+const PAGE_IDS = ['studio', 'experts', 'projects', 'library', 'history', 'tools'] as const
+type PageId = (typeof PAGE_IDS)[number]
 
 interface SidebarProps {
   /** A reply is arriving: no other chat can be started or opened meanwhile, and the pages that could change it wait. */
@@ -74,6 +82,81 @@ function Sidebar({
   }
 
   const chats = history.conversations ?? []
+  // (23.8, D-055) The pages, each with its words and what it opens ("className": the names the checks know them by), in the order the person chose.
+  const pages: Record<
+    PageId,
+    {
+      label: string
+      className: string
+      icon: React.JSX.Element
+      wait: string
+      hint: string
+      open: () => void
+    }
+  > = {
+    studio: {
+      label: 'Image Studio',
+      className: 'sidebar-studio',
+      icon: <IconStudio />,
+      wait: 'Image Studio can be opened when the reply has finished.',
+      hint: 'Make pictures from a description, in a style you pick.',
+      open: onOpenStudio
+    },
+    experts: {
+      label: 'Experts',
+      className: 'sidebar-experts',
+      icon: <IconExperts />,
+      wait: 'Experts can be opened when the reply has finished.',
+      hint: 'Start a chat with a ready-made assistant, or make your own.',
+      open: onOpenExperts
+    },
+    projects: {
+      label: 'Projects',
+      className: 'sidebar-projects',
+      icon: <IconProject />,
+      wait: 'Projects can be opened when the reply has finished.',
+      hint: 'Group chats with their own instructions and files.',
+      open: onOpenProjects
+    },
+    library: {
+      label: 'Library',
+      className: 'sidebar-library',
+      icon: <IconLibrary />,
+      wait: 'The Library can be opened when the reply has finished.',
+      hint: 'Every file you attached and every picture made, in one place.',
+      open: onOpenLibrary
+    },
+    history: {
+      label: 'History',
+      className: '',
+      icon: <IconHistory />,
+      wait: 'History can be opened when the reply has finished.',
+      hint: 'Open a saved chat, or delete one.',
+      open: onOpenHistory
+    },
+    // The tools the model may ask for, and the audit log of what it asked (D-041).
+    tools: {
+      label: 'Tools',
+      className: 'chat-tools',
+      icon: <IconTools />,
+      wait: 'Tools can be opened when the reply has finished.',
+      hint: 'See what the model has asked tools to do, and what you answered.',
+      open: onOpenTools
+    }
+  }
+  const [order, setOrder] = useState<PageId[]>(
+    () => orderOf(savedPageOrder(), PAGE_IDS) as PageId[]
+  )
+  const movePage = (id: string, to: number): void => {
+    const next = moveTo(
+      order.map((page) => ({ id: page })),
+      id,
+      to
+    )?.map((page) => page.id as PageId)
+    if (next === undefined) return
+    setOrder(next)
+    savePageOrder(next)
+  }
   const other = theme === 'dark' ? 'light' : 'dark'
 
   return (
@@ -131,123 +214,64 @@ function Sidebar({
       </button>
 
       <nav className="sidebar-nav" aria-label="Pages">
-        {/* (22.1-22.3, D-054) As AI Fiesta's sidebar: the pages first, then History and Tools. */}
-        <button
-          type="button"
-          className="chat-button sidebar-item sidebar-studio"
-          disabled={isReplying}
-          title={
-            isReplying
-              ? 'Image Studio can be opened when the reply has finished.'
-              : 'Make pictures from a description, in a style you pick.'
-          }
-          onClick={onOpenStudio}
-        >
-          <IconStudio />
-          <span className="sidebar-label">Image Studio</span>
-        </button>
-        <button
-          type="button"
-          className="chat-button sidebar-item sidebar-experts"
-          disabled={isReplying}
-          title={
-            isReplying
-              ? 'Experts can be opened when the reply has finished.'
-              : 'Start a chat with a ready-made assistant, or make your own.'
-          }
-          onClick={onOpenExperts}
-        >
-          <IconExperts />
-          <span className="sidebar-label">Experts</span>
-        </button>
-        <button
-          type="button"
-          className="chat-button sidebar-item sidebar-projects"
-          disabled={isReplying}
-          title={
-            isReplying
-              ? 'Projects can be opened when the reply has finished.'
-              : 'Group chats with their own instructions and files.'
-          }
-          onClick={onOpenProjects}
-        >
-          <IconProject />
-          <span className="sidebar-label">Projects</span>
-        </button>
-        <button
-          type="button"
-          className="chat-button sidebar-item sidebar-library"
-          disabled={isReplying}
-          title={
-            isReplying
-              ? 'The Library can be opened when the reply has finished.'
-              : 'Every file you attached and every picture made, in one place.'
-          }
-          onClick={onOpenLibrary}
-        >
-          <IconLibrary />
-          <span className="sidebar-label">Library</span>
-        </button>
-        <button
-          type="button"
-          className="chat-button sidebar-item"
-          disabled={isReplying}
-          title={
-            isReplying
-              ? 'History can be opened when the reply has finished.'
-              : 'Open a saved chat, or delete one.'
-          }
-          onClick={onOpenHistory}
-        >
-          <IconHistory />
-          <span className="sidebar-label">History</span>
-        </button>
-        {/* The tools the model may ask for, and the audit log of what it asked (D-041). */}
-        <button
-          type="button"
-          className="chat-button sidebar-item chat-tools"
-          disabled={isReplying}
-          title={
-            isReplying
-              ? 'Tools can be opened when the reply has finished.'
-              : 'See what the model has asked tools to do, and what you answered.'
-          }
-          onClick={onOpenTools}
-        >
-          <IconTools />
-          <span className="sidebar-label">Tools</span>
-        </button>
+        {/* (22.1-22.3, D-054) As AI Fiesta's sidebar: the pages first, then History and Tools. (23.8, D-055) In the person's own order. */}
+        {order.map((id, index) => {
+          const page = pages[id]
+          return (
+            <button
+              key={id}
+              type="button"
+              className={`chat-button sidebar-item${page.className === '' ? '' : ` ${page.className}`}`}
+              disabled={isReplying}
+              title={isReplying ? page.wait : `${page.hint} ${MOVE_HINT}`}
+              onClick={page.open}
+              {...reorderable('pages', id, index, order.length, movePage)}
+            >
+              {page.icon}
+              <span className="sidebar-label">{page.label}</span>
+            </button>
+          )
+        })}
       </nav>
 
       <section className="sidebar-recent" aria-labelledby="sidebar-recent-heading">
-        <h2 id="sidebar-recent-heading" className="sidebar-heading">
+        {/* Named for screen readers only: the groups under it carry visible headings (Pinned, Today, ...). */}
+        <h2 id="sidebar-recent-heading" className="sidebar-heading visually-hidden">
           Recent
         </h2>
         {history.conversations !== null && chats.length === 0 && (
           <p className="sidebar-none">Your chats appear here once you send a message.</p>
         )}
-        <ul className="sidebar-chats">
-          {chats.map((conversation) => (
-            <li key={conversation.id}>
-              <button
-                type="button"
-                className="sidebar-chat"
-                aria-current={conversation.id === history.activeId ? 'true' : undefined}
-                disabled={isReplying || opening}
-                title={
-                  isReplying
-                    ? 'Another chat can be opened when the reply has finished.'
-                    : saveFailed && conversation.id !== history.activeId
-                      ? `${conversation.title}. The chat on screen is not saved: opening another one would lose it.`
-                      : conversation.title
-                }
-                onClick={() => void openChat(conversation.id)}
-              >
-                {conversation.title}
-              </button>
-            </li>
+        {/* (23.1, D-055) In groups: Pinned, Today, Yesterday, Previous 7 and 30 days, then by month; each chat with its "..." menu. */}
+        <div className="sidebar-chats">
+          {groupChats(chats).map((group) => (
+            <section key={group.label} className="sidebar-group" aria-label={group.label}>
+              <h3 className="sidebar-group-heading">{group.label}</h3>
+              <ul className="sidebar-group-list">
+                {group.chats.map((conversation) => (
+                  <ChatRow
+                    key={conversation.id}
+                    conversation={conversation}
+                    current={conversation.id === history.activeId}
+                    disabled={isReplying || opening}
+                    tooltip={
+                      isReplying
+                        ? 'Another chat can be opened when the reply has finished.'
+                        : saveFailed && conversation.id !== history.activeId
+                          ? `${conversation.title}. The chat on screen is not saved: opening another one would lose it.`
+                          : conversation.title
+                    }
+                    onOpen={() => void openChat(conversation.id)}
+                    onRename={(title) => history.rename(conversation.id, title)}
+                    onPin={(on) => history.pin(conversation.id, on)}
+                    onDelete={() => history.remove(conversation.id)}
+                    onProblem={setProblem}
+                  />
+                ))}
+              </ul>
+            </section>
           ))}
-        </ul>
+        </div>
         {problem !== null && (
           <p className="sidebar-problem" role="alert">
             {problem}

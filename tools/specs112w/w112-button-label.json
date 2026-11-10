@@ -3,8 +3,8 @@
   "edits": [
     {
       "file": "{{REPO}}/src/renderer/src/sidebar/Sidebar.tsx",
-      "from": "          <span className=\"sidebar-label\">Tools</span>",
-      "to": "          <span className=\"sidebar-label\">Tool box</span>"
+      "from": "      label: 'Tools',",
+      "to": "      label: 'Tool box',"
     }
   ],
   "argv": [

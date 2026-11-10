@@ -1,0 +1,14 @@
+{
+  "label": "n231-pin-false-ok",
+  "edits": [
+    {
+      "file": "{{REPO}}/src/shared/chatNames.ts",
+      "from": "      if (fields.pinned !== true) return null",
+      "to": "      if (fields.pinned === 'x') return null"
+    }
+  ],
+  "argv": [
+    "{{TOOLS}}/verify-23-1.mjs"
+  ],
+  "env": {}
+}
