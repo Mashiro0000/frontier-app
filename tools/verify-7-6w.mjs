@@ -71,7 +71,7 @@ try {
   check('the header has no button: Settings is at the foot of the sidebar, New chat, History and Tools above it (D-051)', JSON.stringify(headerTexts) === '[]', JSON.stringify(headerTexts))
   // (21.1, D-053) The model chooser's dialog sits beside the model menu, shown only when opened: the row is what is SHOWN.
   const order = await ev(`[...document.querySelectorAll('.app-header-actions > *')].filter((e) => e.tagName !== 'DIALOG').map((e) => e.className.split(' ')[0])`)
-  check('the menus\' row (under the box since D-052) holds the Task menu, the model menu and the Effort menu, in that order', JSON.stringify(order) === JSON.stringify(['task-select', 'header-select', 'effort-select']), JSON.stringify(order))
+  check('the menus\' row (under the box since D-052) holds the Task menu, the model menu and the Effort menu, in that order', JSON.stringify(order) === JSON.stringify(['header-select', 'effort-select']) /* (23.3, D-055) the Task menu is in the model chooser */, JSON.stringify(order))
   const bar = await ev(`(() => { const b = document.querySelector('.chat-bar'); return b ? { role: b.getAttribute('role'), label: b.getAttribute('aria-label'), inBox: !!b.closest('.composer-inner'), afterText: !!b.closest('.composer-row')?.previousElementSibling?.matches('textarea.composer-input') } : null })()`)
   check('the chat bar is a named group INSIDE the message box, under the text, holding Instructions, Memory and Project; New chat, History and Tools are in the sidebar', bar !== null && bar.role === 'group' && bar.label === 'This chat' && bar.inBox && bar.afterText && JSON.stringify((await chatBtns()).map((b) => b.text)) === JSON.stringify(['New chat', 'Image Studio', 'Experts', 'Projects', 'Library', 'History', 'Tools', 'Instructions', 'Memory', 'Project']), JSON.stringify(bar) + ' ' + JSON.stringify((await chatBtns()).map((b) => b.text))) // (22.1-22.3) the sidebar's pages before History
   check('the sidebar holds New chat, History and Tools', (await ev(`['New chat', 'History', 'Tools'].every((t) => [...document.querySelectorAll('.sidebar .chat-button')].some((b) => b.textContent === t))`)))
@@ -113,7 +113,7 @@ try {
   const widest = async (width, how) => {
     await metrics(width)
     const s = await headerShape()
-    check(`the widest state at ${width} px ${how} (a task chosen, both badges): the header still ONE row (${Math.round(s.h)} px) and the menus ONE line, none below 56 px`, oneRow(s) && ['task-select', 'header-select', 'effort-select'].every((k) => s.widths[k] >= 55.5), JSON.stringify(s))
+    check(`the widest state at ${width} px ${how} (a task chosen, both badges): the header still ONE row (${Math.round(s.h)} px) and the menus ONE line, none below 56 px`, oneRow(s) && ['header-select', 'effort-select'].every((k) => s.widths[k] >= 55.5), JSON.stringify(s))
   }
   await widest(886, 'with the sidebar open')
   await page.screenshot(`${shots}/7-6-widest.png`)
@@ -143,7 +143,7 @@ try {
   // ============ C. the buttons keep their rules ============
   await reset()
   let nc = await btn('New chat')
-  check('an empty chat: New chat is off and says "This chat is empty."; History and Instructions are on, with their usual sentences', nc.disabled && nc.title === 'This chat is empty.' && !(await btn('History')).disabled && (await btn('History')).title === 'Open a saved chat, or delete one.' && !(await btn('Instructions')).disabled && /^Give the model instructions for this chat/.test((await btn('Instructions')).title), JSON.stringify(await chatBtns()))
+  check('an empty chat: New chat is off and says "This chat is empty."; History and Instructions are on, with their usual sentences', nc.disabled && nc.title === 'This chat is empty.' && !(await btn('History')).disabled && (await btn('History')).title.startsWith('Open a saved chat, or delete one.') /* (23.8) then how to move the row */ && !(await btn('Instructions')).disabled && /^Give the model instructions for this chat/.test((await btn('Instructions')).title), JSON.stringify(await chatBtns()))
   const first = await H.askMock('hello bar')
   nc = await btn('New chat')
   check('after a reply New chat is on and says the chat stays in History', first !== null && !nc.disabled && nc.title === 'Start a new chat. This one stays saved in History.', JSON.stringify(nc))
@@ -190,7 +190,7 @@ try {
   const domOrder = await ev(`[...document.querySelectorAll('select, button:not(:disabled), textarea')].filter((e) => !e.closest('dialog') && !e.closest('.sidebar-recent')).map((e) => e.classList.contains('chat-button') ? 'chat:' + e.textContent.replace(/ on$/, '') : e.classList.contains('composer-input') ? 'input' : e.classList.contains('composer-button') ? 'send' : e.classList.contains('header-button') ? 'settings' : e.className.split(' ')[0])`)
   const at = (k) => domOrder.indexOf(k)
   // (D-052) The menus are under the box: they come after Send, and are the last of the page.
-  check('in the order the keyboard goes: the sidebar (New chat, History, Tools, Settings), the messages, the box (the text, Attach..., Instructions, Memory, Project, Send), then the menus under it (Task, model, Effort), last', at('chat:New chat') < at('chat:History') && at('chat:History') + 1 === at('chat:Tools') && at('chat:Tools') < at('settings') && at('settings') < at('input') && at('send') + 1 === at('task-select') && at('task-select') + 1 === at('header-select') && at('header-select') + 1 === at('effort-select') && at('effort-select') === domOrder.length - 1 && at('input') + 1 === at('chat:Attach...') && at('chat:Attach...') + 1 === at('chat:Instructions') && at('chat:Instructions') + 1 === at('chat:Memory') && at('chat:Memory') + 1 === at('chat:Project') && at('chat:Project') < at('send'), JSON.stringify(domOrder))
+  check('in the order the keyboard goes: the sidebar (New chat, History, Tools, Settings), the messages, the box (the text, Attach..., Instructions, Memory, Project, Send), then the menus under it (Task, model, Effort), last', at('chat:New chat') < at('chat:History') && at('chat:History') + 1 === at('chat:Tools') && at('chat:Tools') < at('settings') && at('settings') < at('input') && at('send') + 1 === at('header-select') && at('header-select') + 1 === at('effort-select') && at('effort-select') === domOrder.length - 1 && at('input') + 1 === at('chat:Attach...') && at('chat:Attach...') + 1 === at('chat:Instructions') && at('chat:Instructions') + 1 === at('chat:Memory') && at('chat:Memory') + 1 === at('chat:Project') && at('chat:Project') < at('send'), JSON.stringify(domOrder))
   const walk = []
   for (let i = 0; i < 6; i++) { await page.press('Tab'); walk.push(await active()) } // (21.4) Enhance comes before Send
   check('Tab from the text goes Attach..., Instructions on, Memory, Project, Enhance (21.4), then Send', JSON.stringify(walk) === JSON.stringify(['Attach...', 'Instructions on', 'Memory', 'Project', 'composer-enhance', 'Send']), JSON.stringify(walk))

@@ -724,7 +724,7 @@ stall when the window is covered.
         earlier "closed" run was a test app left running from an older run).
   - [x] (23.8) Reordering (the owner's ask, 8 November 2026): the sidebar's pages, My experts, Your projects, by a drag or Alt+Up / Alt+Down (24 Node
         checks, 15 in the window, 4 Node controls caught).
-  - [ ] (23.9) The threat note, the full regression, the merge.
+  - [x] (23.9) The threat note (D-055), the full regression (`t23d`: 270 runs, 248 clean at once, the rest stale checks or a hidden test window, all clean on the re-run), the merge.
 
 **Questions for the owner** (answered 8 November 2026: "Yes, your picks", all seven kept):
 (1) Where names and pins are kept: **a small file of their own, `chat-names.json`, in the encrypted set like `library.json`** (my pick: chat
