@@ -764,6 +764,7 @@ one thing both have that Frontier had nothing of. It needs no new call, no new p
         (Markdown), "Open" for any other code. The chat stays in view, narrower.
   - [x] (25.2) A page is drawn in a locked frame: no script runs, nothing is fetched. A Preview / Code switch, Copy, Close; Esc closes.
   - [x] (25.3) Checks: `verify-25-1w.mjs` (window, 16), four controls (`make-specs251.mjs`).
+  - [x] (25.4) Full regression `t25` on the branch: 274 runs, 266 clean at first; the eight others (seven with the test window hidden or a reply not sent, one Stage 4 launch) passed on a re-run. No fault of the app. Merged; version 0.4.0.
   - [ ] Not done, the owner's call: letting a page's scripts run (see D-057), following a reply while it is still being written, saving to a file.
 
 ## What is deliberately not promised

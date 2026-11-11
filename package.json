@@ -1,6 +1,6 @@
 {
   "name": "frontier-app",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Frontier App - a desktop AI chat app (Electron + React + TypeScript)",
   "main": "./out/main/index.js",
   "author": "Frontier App",
