@@ -109,6 +109,16 @@ try {
   await page.waitFor(`!!document.querySelector('.chat-bar > .chat-instructions')`, { timeoutMs: 6000, label: 'Instructions in the box' })
   await sleep(300)
   check('E: saved instructions: the button leaves the menu for the box and reads "Instructions on"; the keyboard is on the "+" it was opened from', (await ev(`document.querySelector('.chat-bar > .chat-instructions').textContent.trim() === 'Instructions on' && document.activeElement.matches('.chat-plus')`)), await focusOn())
+  // With a button on, its words must stay whole beside the model and its effort (seen squeezed to "Instru..." by the owner, 11 November 2026).
+  for (const width of [1280, 1000, 900]) {
+    await page.send('Emulation.setDeviceMetricsOverride', { width, height: 800, deviceScaleFactor: 1, mobile: false })
+    await sleep(400)
+    const on = await ev(`(() => { const b = document.querySelector('.chat-bar > .chat-instructions'); const l = b.querySelector('.chat-label'); const m = document.querySelector('.composer-menus').getBoundingClientRect(); const r = b.getBoundingClientRect(); const c = l.cloneNode(true); c.style.cssText = 'position:absolute;visibility:hidden;width:max-content;max-width:none;overflow:visible'; b.append(c); const full = c.getBoundingClientRect().width; c.remove(); const plus = document.querySelector('.chat-plus').getBoundingClientRect(); return { whole: l.getBoundingClientRect().width >= full - 1, sameLine: Math.abs((plus.top + plus.bottom) / 2 - (r.top + r.bottom) / 2) < 3, h: Math.round(r.height), apart: r.right <= m.left + 1 || r.bottom <= m.top + 1, inBox: m.right <= document.querySelector('.composer-inner').getBoundingClientRect().right } })()`)
+    check(`E: at ${width} px "Instructions on" keeps its words whole, on the line of the "+", clear of the model menu, and the menus stay in the box`, on.whole && on.sameLine && on.h <= 36 && on.apart && on.inBox, JSON.stringify(on))
+    await page.screenshot(join(shots, `24-on-${width}.png`))
+  }
+  await page.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false })
+  await sleep(300)
   await page.click('.chat-bar > .chat-instructions'); await sleep(500)
   await ev(`(() => { const t = document.querySelector('dialog.instructions textarea'); Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(t, ''); t.dispatchEvent(new Event('input', { bubbles: true })) })()`)
   await page.click('dialog.instructions button[type=submit]')

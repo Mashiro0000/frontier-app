@@ -15,6 +15,7 @@ const specs = {
   'w241-sidebar-click-lost': [[APP, "      if (under instanceof Element) under.closest('button')?.click()", '      void under']],
   'w241-details-always-shown': [[CSS, '.settings:not(.settings-details) .settings-more {\n  display: none;', '.settings:not(.settings-details) .settings-more {\n  display: block;']],
   'w241-all-panes-shown': [[SETTINGS, "hidden={pane !== 'general'}", 'hidden={false}']],
+  'w241-button-squeezed': [[CSS, '.composer-row .chat-bar {\n  flex: 1 0 auto;', '.composer-row .chat-bar {\n  flex: 1 1 0;']],
   'w241-menu-below-the-plus': [[CSS, '  bottom: calc(anchor(top) + 8px);', '  top: calc(anchor(bottom) + 8px);']]
 }
 
