@@ -754,6 +754,19 @@ what differed was where things sit and how much is said. No new feature, no new 
   - [x] (24.5) Checks: `verify-24-1w.mjs` (window, 28), six controls (`make-specs241.mjs`, all caught), the tour (`tour-22w.mjs`) as a person sees it.
   - [x] (24.6) Full regression `t24` (272 runs) and what it found: see D-056.
 
+## Stage 25 - The side panel (asked 11 November 2026: "built a surprise feature for me what i'm planning to built ... exceed my expactations", approved unseen the same day; D-057; on branch `surprise-side-panel`, NOT merged until the owner has seen it)
+
+**Why this one:** Stage 23's plan left "a side panel for documents" for a later stage; it is what Claude calls Artifacts and ChatGPT calls Canvas, and the
+one thing both have that Frontier had nothing of. It needs no new call, no new permission and nothing kept.
+
+- **Stage 25 progress** (D-057):
+  - [x] (25.1) Every block of code in a reply has a button that shows it beside the chat: "Preview" for a page (HTML, SVG) or a document
+        (Markdown), "Open" for any other code. The chat stays in view, narrower.
+  - [x] (25.2) A page is drawn in a locked frame: no script runs, nothing is fetched. A Preview / Code switch, Copy, Close; Esc closes.
+  - [x] (25.3) Checks: `verify-25-1w.mjs` (window, 16), four controls (`make-specs251.mjs`).
+  - [x] (25.4) Full regression `t25` on the branch: 274 runs, 266 clean at first; the eight others (seven with the test window hidden or a reply not sent, one Stage 4 launch) passed on a re-run. No fault of the app. Merged; version 0.4.0.
+  - [ ] Not done, the owner's call: letting a page's scripts run (see D-057), following a reply while it is still being written, saving to a file.
+
 ## What is deliberately not promised
 
 Exact copies of vendor-only features (their memory, Projects and Artifacts, custom GPTs, the one-click connector directory), and any power
