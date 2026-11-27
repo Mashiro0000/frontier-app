@@ -4,6 +4,7 @@
   "description": "Frontier App - a desktop AI chat app (Electron + React + TypeScript)",
   "main": "./out/main/index.js",
   "author": "Frontier App",
+  "license": "MIT",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
