@@ -1,6 +1,16 @@
-# frontier-app
+# Frontier
 
-An Electron application with React and TypeScript
+A Windows desktop chat app for Claude, GPT and Gemini that uses your own API keys. Your keys and chats stay on your
+computer, you set daily and monthly spending limits, and tools (web search, files, running programs, MCP connectors)
+are off until you turn them on and approve each call. Built with Electron, React and TypeScript.
+
+- **Download:** the Windows installer is on the
+  [releases page](https://github.com/Mashiro0000/frontier-app-releases/releases); the app updates itself from there.
+- **Status:** a one-person project. It is tested against a fake provider API (see Checks below), not yet against
+  the real ones, so please open an issue if a real provider call fails.
+- **License:** MIT, see [LICENSE](LICENSE).
+
+Only the holder of the release key can sign updates, so a copy built from this code cannot update installed copies.
 
 ## Recommended IDE Setup
 
@@ -79,12 +89,7 @@ provider API, with their negative controls: `node tools/regress.mjs <tag>`, see 
 ### Build
 
 ```bash
-# For windows
 $ npm run build:win
-
-# For macOS
-$ npm run build:mac
-
-# For Linux
-$ npm run build:linux
 ```
+
+Only Windows is built and tested.
